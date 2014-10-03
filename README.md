@@ -40,3 +40,10 @@ Cineon - [Understanding Cineon](http://www.digital-intermediate.co.uk/film/pdf/C
 Rec709 - [ITU BT.709-5](http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-5-200204-I!!PDF-E.pdf)
 
 sRGB - [Wikipedia entry](http://en.wikipedia.org/wiki/SRGB)
+
+Other Code Used
+---------------
+
+Cross-browser Javascript file saving - [FileSaver.js](https://github.com/eligrey/FileSaver.js/)
+
+Cross-browser Javascript Blob implementation - [Blob.js](https://github.com/eligrey/Blob.js)
