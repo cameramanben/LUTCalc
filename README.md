@@ -10,7 +10,9 @@ Instructions are included, just open 'index.html' in a web browser with Javascri
 Supported Browsers
 ------------------
 
-Safari may cause difficulties in automatically saving LUTs, and if using Internet Explorer it should be a recent version (10+).
+Safari may cause difficulties in automatically saving LUTs - it does not support file saving via Javascript. LUTs should open up in a new tab where they can be saved with 'Save As'.
+
+If using Internet Explorer it should be a recent version (10+).
 
 Firefox, Chrome and recent IE should all work fine.
 
