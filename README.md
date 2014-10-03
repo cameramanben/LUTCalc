@@ -46,39 +46,39 @@ LUTCalc File List
 
 Main Files
 ----------
-index.html - HTML5 base of LUTCalc. Launch to start.
-lutcalc.js - main Javascript file. Initialises all the UI and calculation objects and sets up the event handlers.
+* index.html - HTML5 base of LUTCalc. Launch to start.
+* lutcalc.js - main Javascript file. Initialises all the UI and calculation objects and sets up the event handlers.
 
 UI Files
 --------
-lutcamerabox.js - builds the UI object where camera and ISO are chosen.
-lutgammabox.js - builds the UI object for transfer curve (gamma) and  colour space (gamut) selection.
-luttweaksbox.js - builds the UI object for customising the transfer (gamma) curves and colour spaces / gamuts.
-lutlutbox.js - builds the UI object containing options concerning the LUT format.
-lutgeneratebox.js - builds the 'Generate' button that triggers the LUT generation, plus the generation logic itself.
-lutinfobox.js - builds the UI object which shows instructions, the changelog, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
+* lutcamerabox.js - builds the UI object where camera and ISO are chosen.
+* lutgammabox.js - builds the UI object for transfer curve (gamma) and  colour space (gamut) selection.
+* luttweaksbox.js - builds the UI object for customising the transfer (gamma) curves and colour spaces / gamuts.
+* lutlutbox.js - builds the UI object containing options concerning the LUT format.
+* lutgeneratebox.js - builds the 'Generate' button that triggers the LUT generation, plus the generation logic itself.
+* lutinfobox.js - builds the UI object which shows instructions, the changelog, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
 
 Calculation Files
 -----------------
-lutgamma.js - contains all the data and equations for calculating the transfer curves, plus input and output functions to various ranges / scales.
-lutgamut.js - contains the data for matrix-based colour spaces, plus the calculations for those, LUT-based spaces and compound combinations of the two.
-lutgamut.lc709.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709 look profile colour. Effectively a LUT of a LUT.
-lutgamut.lc709a.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709a look profile colour. Effectively a LUT of a LUT.
-lutgamut.cpgamut.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on the Canon C300 and from the C300 to S-Gamut3.cine. Derived from test shot data with side-by-side cameras.
+* lutgamma.js - contains all the data and equations for calculating the transfer curves, plus input and output functions to various ranges / scales.
+* lutgamut.js - contains the data for matrix-based colour spaces, plus the calculations for those, LUT-based spaces and compound combinations of the two.
+* lutgamut.lc709.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709 look profile colour. Effectively a LUT of a LUT.
+* lutgamut.lc709a.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709a look profile colour. Effectively a LUT of a LUT.
+* lutgamut.cpgamut.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on the Canon C300 and from the C300 to S-Gamut3.cine. Derived from test shot data with side-by-side cameras.
 
 Helper Javascript
 -----------------
-lutfile.js - file handling object.
-lutinputs.js - simple object into which the other objects can place their form input objects, to allow interaction without globals.
+* lutfile.js - file handling object.
+* lutinputs.js - simple object into which the other objects can place their form input objects, to allow interaction without globals.
 
 Other Files
 -----------
-style.css - stylesheet controlling the look of the app. All dimensions (greater than 1 pixel) are em values.
-LUTCalc.icns - icon file containing a logo in a format suitable for Mac OSX Apps in XCode.
-README.md - this file.
-LICENSE - GPL2 License document.
+* style.css - stylesheet controlling the look of the app. All dimensions (greater than 1 pixel) are em values.
+* LUTCalc.icns - icon file containing a logo in a format suitable for Mac OSX Apps in XCode.
+* README.md - this file.
+* LICENSE - GPL2 License document.
 
 External Code Used
 ------------------
-[FileSaver.js](https://github.com/eligrey/FileSaver.js/) - Cross-browser Javascript file saving.
-[Blob.js](https://github.com/eligrey/Blob.js) - Cross-browser Javascript Blob implementation.
+* [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - Cross-browser Javascript file saving.
+* [Blob.js](https://github.com/eligrey/Blob.js) - Cross-browser Javascript Blob implementation.
