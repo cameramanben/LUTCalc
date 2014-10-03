@@ -69,16 +69,11 @@ LUTInfoBox.prototype.instructions = function() {
 LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
-	this.addText(this.changelogBox,"All the Javascript is basic code by me, Ben Turley, except for the use of 'FileSaver.js' (" + 'github.com/eligrey/FileSaver.js/' + ") and 'Blob.js' (" + 'github.com/eligrey/Blob.js' + ") by Eli Grey for saving LUTs in the webapp version and 'Sentenza Desktop' (www.sentenzadesktop.com) to produce the Mac OSX App version.");	
-	this.addText(this.changelogBox,'For the S-Log3 curve I used the equations in the Sony Technical summary.');
-	this.addText(this.changelogBox,"S-Log comes from Sony's White Paper.");
-	this.addText(this.changelogBox,"S-Log2 is an adjusted S-Log curve with a linear shadow section obtained from analysing available LUTs.");
-	this.addText(this.changelogBox,"Canon C-Log comes from Canon's white paper 'CANON-LOG CINE OPTOELECTRONIC TRANSFER FUNCTION'.");
-	this.addText(this.changelogBox,"Arri LogC comes from Arri's document 'ALEXA Log C Curve - Usage in VFX'.");
+	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
 	this.addText(this.changelogBox,'Hypergammas and Rec709(800%) came from analysing 1D LUTs produced from the Sony CvpFileEditor example file.');
-	this.addText(this.changelogBox,'LC709 and LC709 Type A have come from analysing the look profiles provided by Sony.');
-	this.addText(this.changelogBox,'Rec709 is courtesy of the Rec709 page on Wikipedia :-).');
-	this.addText(this.changelogBox,"The cube LUT formatting came from looking at Resolve LUTs and from the Adobe 'Cube LUT Specification' document.");
+	this.addText(this.changelogBox,'v0.9991',true);
+	this.addText(this.changelogBox,'Released code on Github under GPLv2.');
+	this.addText(this.changelogBox,'UI CSS tweaks and removal of Sentenza Desktop code for the time being as no binary release. Web App only again for now!');
 	this.addText(this.changelogBox,'v0.999',true);
 	this.addText(this.changelogBox,'Total rewrite of the code base to be modular and object oriented. Simplifies altering and adding features.');
 	this.addText(this.changelogBox,'Shifted UI to match between the Mac app and web app versions and hopefully make options as clear as possible.');

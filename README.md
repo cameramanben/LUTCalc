@@ -82,3 +82,6 @@ External Code Used
 ------------------
 * [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - Cross-browser Javascript file saving.
 * [Blob.js](https://github.com/eligrey/Blob.js) - Cross-browser Javascript Blob implementation.
+* The function 'createRadioElement' is used to dynamically create radio buttons. This came from a tip by Prestaul on [stackoverflow](http://stackoverflow.com/questions/118693/how-do-you-dynamically-create-a-radio-button-in-javascript-that-works-in-all-bro)
+
+All other code is by me, Ben Turley.
