@@ -4,7 +4,7 @@ function LUTGamut(inputs) {
 	this.outList = [];
 	this.inGamuts = [];
 	this.outGamuts = [];
-	this.compound = false;
+	this.doCompound = false;
 	this.curIn = 0;
 	this.curOut = 0;
 	this.curHG = 0;
@@ -18,7 +18,7 @@ function LUTGamut(inputs) {
 LUTGamut.prototype.calc = function(rgb) {
 	if (this.nul) {
 		return rgb;
-	} else if (this.compound) {
+	} else if (this.doCompound) {
 		return this.compound(this.inGamuts[this.curIn].calc(rgb));
 	} else {
 		return this.outGamuts[this.curOut].calc(this.inGamuts[this.curIn].calc(rgb));
@@ -34,7 +34,7 @@ LUTGamut.prototype.inCalc = function(rgb) {
 LUTGamut.prototype.outCalc = function(rgb) {
 	if (this.nul) {
 		return rgb;
-	} else if (this.compound) {
+	} else if (this.doCompound) {
 		return this.compound(rgb);
 	} else {
 		return this.outGamuts[this.curOut].calc(rgb);
@@ -66,7 +66,7 @@ LUTGamut.prototype.updateCur = function() {
 	this.curIn = parseInt(this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].value);
 	this.curOut = parseInt(this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].value);
 	if (this.inputs.tweakHGCheck.checked) {
-		this.compound = true;
+		this.doCompound = true;
 		this.curHG = parseInt(this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].value);
 		this.hgLowStop = parseFloat(this.inputs.tweakHGLow.value);
 		this.hgLow = Math.pow(2,this.hgLowStop)/5;

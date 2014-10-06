@@ -16,8 +16,9 @@ var lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutGamma, lutG
 var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut);
 var right = fieldSet(lutCalcForm,false,'right');
 var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutGamma, lutGamut);
-var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutGamma, lutGamut, lutTweaksBox, lutFile);
+var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutGamma, lutGamut, lutFile);
 var lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutGamma);
+lutTweaksBox.toggleTweakCheck();
 //	Set Up Form Input Events
 //		Camera Box
 lutInputs.camera.onchange = function(){lutCameraBox.changeCamera(); lutGamma.defaultGamma(); lutGamma.changeISO(); lutGammaBox.defaultGam();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
