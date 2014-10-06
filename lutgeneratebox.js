@@ -1,9 +1,8 @@
-function LUTGenerateBox(fieldset, inputs, gammas, gamuts, tweaks, file) {
+function LUTGenerateBox(fieldset, inputs, gammas, gamuts, file) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
 	this.gammas = gammas;
 	this.gamuts = gamuts;
-	this.tweaks = tweaks;
 	this.file = file;
 	this.genButton = document.createElement('input');
 	this.genButton.setAttribute('type','button');

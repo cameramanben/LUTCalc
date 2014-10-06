@@ -51,8 +51,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	this.highlightLevel();
 	tweakHolder.appendChild(this.highLevelBox);
 	this.box.appendChild(tweakHolder);
-	this.tweakCheck.checked = false;
-	this.toggleTweakCheck();
+	this.tweakCheck.checked = true;
+//	this.toggleTweakCheck();
 }
 LUTTweaksBox.prototype.highGamut = function() {
 	this.highGamutBox.setAttribute('class','graybox');
