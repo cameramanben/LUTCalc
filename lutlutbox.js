@@ -1,3 +1,14 @@
+/* lutlutbox.js
+* LUT format and title options UI object for the LUTCalc Web App.
+* 7th October 2014
+*
+* LUTCalc generates 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, 
+* principally the Sony CineAlta line.
+*
+* By Ben Turley, http://turley.tv
+* First License: GPLv2
+* Github: https://github.com/cameramanben/LUTCalc
+*/
 function LUTLutBox(fieldset, inputs, gammas, gamuts) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;

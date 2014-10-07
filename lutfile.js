@@ -1,3 +1,14 @@
+/* lutfile.js
+* File I/O handling object for the LUTCalc Web App.
+* 7th October 2014
+*
+* LUTCalc generates 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, 
+* principally the Sony CineAlta line.
+*
+* By Ben Turley, http://turley.tv
+* First License: GPLv2
+* Github: https://github.com/cameramanben/LUTCalc
+*/
 function LUTFile(inputs) {
 	this.inputs = inputs;
 	this.filesaver = true;
