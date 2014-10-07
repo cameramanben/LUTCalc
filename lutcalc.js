@@ -4,6 +4,13 @@ var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
 lutInputs.addInput('version','v0.9991');
 lutInputs.addInput('date','September 2014');
+// Test for native app bridges
+if (typeof window.lutCalcApp != 'undefined') {
+    lutInputs.addInput('isApp',true);
+} else {
+    lutInputs.addInput('isApp',false);
+}
+// Build UI
 var lutGamut = new LUTGamut(lutInputs);
 var lutGamma = new LUTGamma(lutInputs);
 var lutFile = new LUTFile(lutInputs);
