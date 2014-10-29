@@ -72,7 +72,10 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 LUTs.prototype.calcTransferFromSL3 = function(gammas,gam,legIn,legOut) {
 	var s = this.s -1;
 	var sl3ToGam = [];
-	var oneDDim = 4096;
+	var oneDDim = this.s;
+	if (oneDDim < 256) {
+		oneDDim = 256;
+	}
 // Create 1024-point 1D S-Log3 -> LUT Gamma LUT.
 	for (var z=0; z<oneDDim; z++) {	
 		var input = z/(oneDDim - 1);
@@ -88,7 +91,6 @@ LUTs.prototype.calcTransferFromSL3 = function(gammas,gam,legIn,legOut) {
 		} else {
 			input = gammas.gammas[gam].linToData(input);
 		}
-// Clip if out of bounds (data values / legal range) for later extrapolation, plus input === 1 results in NaN interpolation
 		var py = this.lumaLCub(input);
 		if (legOut) {
 			py = ((py * 876) + 64)/1023;
@@ -104,13 +106,15 @@ LUTs.prototype.calcTransferFromSL3 = function(gammas,gam,legIn,legOut) {
 }
 LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legOut) {
 	var dim = outLut.s;
-	var oneDDim = gamma.length;
-	var s = oneDDim - 1;
+	var gamDim = gamma.length;
+	var t = gamDim - 1;
+	var invDim = 4096;
+	var s = invDim - 1;
 // First find the base FromSL3 indices for all the ToSL3 indices
 	var invGamma = [];
 	var minY = 999;
 	var maxY = -1;
-	for (var i=0; i < oneDDim; i++) {
+	for (var i=0; i < gamDim; i++) {
 		var py = gamma[i]*s;
 		if (py < minY) {
 			minY = py;
@@ -122,7 +126,7 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 	maxY = Math.floor(maxY);
 	for (var i=minY; i <= maxY; i++) {
 		var low = -999;
-		for (var j=1; j < oneDDim; j++) {
+		for (var j=1; j < gamDim; j++) {
 			if (gamma[j]*s > i) {
 				low = j-1;
 				break;
@@ -130,16 +134,16 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 		}
 		if (low > -999) {
 			if (gamma[low]*s == i) {
-				invGamma[i] = low/s;
+				invGamma[i] = low/t;
 			} else {
-				invGamma[i] = (low + ( ((i/s) - gamma[low]) / (gamma[low+1] - gamma[low]) ))/s;
+				invGamma[i] = (low + ( ((i/s) - gamma[low]) / (gamma[low+1] - gamma[low]) ))/t;
 			}
 		} else {
 			invGamma[i] = -999;
 		} 
 	}
 	var minD = ((4 * invGamma[minY+1]) - (3 * invGamma[minY]) - invGamma[minY+2])/2;
-	var maxD = (2 * invGamma[maxY - 2]) + ((invGamma[maxY - 1] - invGamma[maxY - 3])/2) - (4 * invGamma[maxY - 1]) + (2 * invGamma[maxY]);
+	var maxD = (0.5 * invGamma[maxY - 2]) - (2 * invGamma[maxY - 1]) + (1.5 * invGamma[maxY]);
 	var minX = invGamma[minY];
 	var maxX = invGamma[maxY];
 	if (minY > 0) {
@@ -148,12 +152,14 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			invGamma[i] = minX - (minD * j);
 		}	
 	}
-	if (maxY < oneDDim) {
-		for (var i=maxY + 1; i < oneDDim ; i++) {
+	if (maxY < invDim) {
+		for (var i=maxY + 1; i < invDim ; i++) {
 			var j = i - maxY;
 			invGamma[i] = maxX + (maxD * j);
 		}	
 	}
+console.log(gamma);
+console.log(invGamma);
 // Create S-Log3->S-Log3 S-Gamut3.cine->LUT Gamut 3D LUT by comparing test LUT with 1D data
 	var rOut = [];
 	var gOut = [];
@@ -171,20 +177,23 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 				var output = [];
 				var ry,gy,by;
 // S-Log3 Data -> Linear
-				if (a >= 0.1673609920) {
-					input[0] = (Math.pow(10,((a / dim) - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				var A = a/(dim-1);
+				var B = b/(dim-1);
+				var C = c/(dim-1);
+				if (A >= 0.1673609920) {
+					input[0] = (Math.pow(10,(A - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
 				} else {
-					input[0] = (0.1677922920 * a / dim) - 0.0155818840;
+					input[0] = (0.1677922920 * A) - 0.0155818840;
 				}
-				if (b >= 0.1673609920) {
-					input[1] = (Math.pow(10,((b / dim) - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				if (B >= 0.1673609920) {
+					input[1] = (Math.pow(10,(B - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
 				} else {
-					input[1] = (0.1677922920 * b / dim) - 0.0155818840;
+					input[1] = (0.1677922920 * B) - 0.0155818840;
 				}
-				if (c >= 0.1673609920) {
-					input[2] = (Math.pow(10,((c / dim) - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				if (C >= 0.1673609920) {
+					input[2] = (Math.pow(10,(C - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
 				} else {
-					input[2] = (0.1677922920 * c / dim) - 0.0155818840;
+					input[2] = (0.1677922920 * C) - 0.0155818840;
 				}
 // Linear -> Input Gamma
 				input[0] = gammas.gammas[gam].linToData(input[0]);
@@ -206,13 +215,15 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 					gy = output[1];
 					by = output[2];
 				}
+//console.log(output);
 // Invert Values to S-Log3 Gamma
 				var rb = Math.floor(ry*s);
 				var gb = Math.floor(gy*s);
 				var bb = Math.floor(by*s);
-				rRowR[a] = invGamma[rb] + (ry - (parseFloat(rb)/s));
-				rRowG[a] = invGamma[gb] + (gy - (parseFloat(gb)/s));
-				rRowB[a] = invGamma[bb] + (by - (parseFloat(bb)/s));
+//console.log('ry : ' + ry + ' , rb/s: ' + (rb/s) + ' , inv: ' + invGamma[rb]);
+				rRowR[a] = invGamma[rb] + (ry - (rb/s));
+				rRowG[a] = invGamma[gb] + (gy - (gb/s));
+				rRowB[a] = invGamma[bb] + (by - (bb/s));
 			}
 			gRowR[b] = rRowR.slice(0);
 			gRowG[b] = rRowG.slice(0);
@@ -233,7 +244,7 @@ LUTs.prototype.lumaLCub = function(L) {
 		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 		return this.L[0] + (L * dy);
 	} else if (L >= max) {
-		var dy = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
 		return this.L[max] + ((L - max) * dy);
 	} else {
 		var base = Math.floor(L);
@@ -265,7 +276,7 @@ LUTs.prototype.lumaLLin = function(L) {
 		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 		return this.L[0] + (L * dy);
 	} else if (L >= max) {
-		var dy = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
 		return this.L[max] + ((L - max) * dy);
 	} else {
 		var base = Math.floor(L);
@@ -283,7 +294,7 @@ LUTs.prototype.lumaRGBCub = function(L) {
 				var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 				out = this.L[0] + (L * dy);
 			} else if (L >= max) {
-				var dy = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+				var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
 				out = this.L[max] + ((L - max) * dy);
 			} else {
 				var base = Math.floor(L);
@@ -324,7 +335,7 @@ LUTs.prototype.lumaRGBCub = function(L) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (L * dy);
 				} else if (L >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((L - max) * dy);
 				} else {
 					var base = Math.floor(L);
@@ -367,7 +378,7 @@ LUTs.prototype.lumaRGBCub = function(L) {
 				var dy = ((4 * C[1][1][1]) - (3 * C[0][0][0]) - C[2][2][2])/2;
 				out[i] = C[0][0][0] + (L * dy);
 			} else if (L >= max) {
-				var dy = (2 * C[max - 2][max - 2][max - 2]) + ((C[max - 1][max - 1][max - 1] - C[max - 3][max - 3][max - 3])/2) - (4 * C[max - 1][max - 1][max - 1]) + (2 * C[max][max][max]);
+				var dy = (0.5 * C[max - 2][max - 2][max - 2]) - (2 * C[max - 1][max - 1][max - 1]) + (1.5 * C[max][max][max]);
 				out[i] = C[max][max][max] + ((L - max) * dy);
 			} else {
 				var base = Math.floor(L);
@@ -405,7 +416,7 @@ LUTs.prototype.lumaRGBLin = function(L) {
 				var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 				out = this.L[0] + (L * dy);
 			} else if (L >= max) {
-				var dy = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+				var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
 				out = this.L[max] + ((L - max) * dy);
 			} else {
 				var base = Math.floor(L);
@@ -429,12 +440,12 @@ LUTs.prototype.lumaRGBLin = function(L) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (L * dy);
 				} else if (L >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((L - max) * dy);
 				} else {
 					var base = Math.floor(L);
 					var dy = L - base;
-					out[i] = (this.C[base] * (1 - dy)) + (this.C[base + 1] * dy);
+					out[i] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
 				}
 			}
 			return out;
@@ -455,12 +466,12 @@ LUTs.prototype.lumaRGBLin = function(L) {
 				var dy = ((4 * C[1][1][1]) - (3 * C[0][0][0]) - C[2][2][2])/2;
 				out[i] = C[0][0][0] + (L * dy);
 			} else if (L >= max) {
-				var dy = (2 * C[max - 2][max - 2][max - 2]) + ((C[max - 1][max - 1][max - 1] - C[max - 3][max - 3][max - 3])/2) - (4 * C[max - 1][max - 1][max - 1]) + (2 * C[max][max][max]);
+				var dy = (0.5 * C[max - 2][max - 2][max - 2]) - (2 * C[max - 1][max - 1][max - 1]) + (1.5 * C[max][max][max]);
 				out[i] = C[max][max][max] + ((L - max) * dy);
 			} else {
 				var base = Math.floor(L);
 				var dy = L - base;
-				out[i] = (this.C[base][base][base] * (1 - dy)) + (this.C[base + 1][base + 1][base + 1] * dy);
+				out[i] = (C[base][base][base] * (1 - dy)) + (C[base + 1][base + 1][base + 1] * dy);
 			}
 		}
 		return out;
@@ -488,7 +499,7 @@ LUTs.prototype.rgbLCub = function(rgb) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (l * dy);
 				} else if (l >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((l - max) * dy);
 				} else {
 					var base = Math.floor(l);
@@ -602,12 +613,12 @@ LUTs.prototype.rgbLLin = function(rgb) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (l * dy);
 				} else if (l >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((l - max) * dy);
 				} else {
 					var base = Math.floor(l);
 					var dy = l - base;
-					out[i] = (this.C[base] * (1 - dy)) + (this.C[base + 1] * dy);
+					out[i] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
 				}
 			}
 			return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
@@ -699,7 +710,7 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (l * dy);
 				} else if (l >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((l - max) * dy);
 				} else {
 					var base = Math.floor(l);
@@ -828,7 +839,8 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 		}
 	}
 }
-LUTs.prototype.rgbRGBLin = function(rgb) {
+LUTs.prototype.rgbRGBLin = function(input) {
+	var rgb = input.slice(0);
 	if (this.d == 1 && this.R.length == 0) {
 		return [this.lumaLLin(rgb[0]),this.lumaLLin(rgb[1]),this.lumaLLin(rgb[2])];
 	} else {
@@ -850,42 +862,45 @@ LUTs.prototype.rgbRGBLin = function(rgb) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					out[i] = C[0] + (l * dy);
 				} else if (l >= max) {
-					var dy = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
 					out[i] = C[max] + ((l - max) * dy);
 				} else {
 					var base = Math.floor(l);
 					var dy = l - base;
-					out[i] = (this.C[base] * (1 - dy)) + (this.C[base + 1] * dy);
+					out[i] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
 				}
 			}
 			return out;
 		} else {
 			var out = [];
+			rgb[0] = rgb[0] * max;
+			rgb[1] = rgb[1] * max;
+			rgb[2] = rgb[2] * max;
 			var ord = rgb.slice(0).sort(function(a, b){return b-a});
-			var RGB = rgb.slice(0);
-			if (ord[0] >= 1) {
-				var m = ord[0] * 1.0000000000001;
-				RGB = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
+			var rgbIn = rgb.slice(0);
+			if (ord[0] >= max) {
+				var m = ord[0] * 1.0000000000001 / max;
+				rgbIn = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
 				var neg = [false,false,false];
 				if (rgb[0] < 0) {
-					RGB[0] = 0;
+					rgbIn[0] = 0;
 					neg[0] = true;
 				}
 				if (rgb[1] < 0) {
-					RGB[1] = 0;
+					rgbIn[1] = 0;
 					neg[1] = true;
 				}
 				if (rgb[2] < 0) {
-					RGB[2] = 0;
+					rgbIn[2] = 0;
 					neg[2] = true;
 				}
 // Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
-				var rR = RGB[0] - lR;
+				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
-				var rG = RGB[1] - lG;
+				var rG = rgbIn[1] - lG;
 				var lB = Math.floor(rgb[2]);
-				var rB = RGB[2] - lB;
+				var rB = rgbIn[2] - lB;
 				var OOO = [ this.R[ lB ][ lG ][ lR ],this.G[ lB ][ lG ][ lR ],this.B[ lB ][ lG ][ lR ] ];
 				var ROO = [ this.R[ lB ][ lG ][lR+1],this.G[ lB ][ lG ][lR+1],this.B[ lB ][ lG ][lR+1] ];
 				var OGO = [ this.R[ lB ][lG+1][ lR ],this.G[ lB ][lG+1][ lR ],this.B[ lB ][lG+1][ lR ] ];
@@ -899,42 +914,42 @@ LUTs.prototype.rgbRGBLin = function(rgb) {
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
 // End of interpolation code
 				if (neg[0]) {
-					out[0] = this.lumaLLin(rgb[0]);
+					out[0] = this.lumaLLin(input[0]);
 				} else {
-					out[0] = out[0] * this.lumaLLin(rgb[0])/this.lumaLLin(RGB[0]);
+					out[0] = out[0] * this.lumaLLin(input[0])/this.lumaLLin(rgbIn[0]/max);
 				}
 				if (neg[1]) {
-					out[1] = this.lumaLLin(rgb[1]);
+					out[1] = this.lumaLLin(input[1]);
 				} else {
-					out[1] = out[1] * this.lumaLLin(rgb[1])/this.lumaLLin(RGB[1]);
+					out[1] = out[1] * this.lumaLLin(input[1])/this.lumaLLin(rgbIn[1]/max);
 				}
 				if (neg[2]) {
-					out[2] = this.lumaLLin(rgb[2]);
+					out[2] = this.lumaLLin(input[2]);
 				} else {
-					out[2] = out[2] * this.lumaLLin(rgb[2])/this.lumaLLin(RGB[2]);
+					out[2] = out[2] * this.lumaLLin(input[2])/this.lumaLLin(rgbIn[2]/max);
 				}
 				return out;
 			} else {
 				var neg = [false,false,false];
 				if (rgb[0] < 0) {
-					RGB[0] = 0;
+					rgbIn[0] = 0;
 					neg[0] = true;
 				}
 				if (rgb[1] < 0) {
-					RGB[1] = 0;
+					rgbIn[1] = 0;
 					neg[1] = true;
 				}
 				if (rgb[2] < 0) {
-					RGB[2] = 0;
+					rgbIn[2] = 0;
 					neg[2] = true;
 				}
 // Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
-				var rR = RGB[0] - lR;
+				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
-				var rG = RGB[1] - lG;
+				var rG = rgbIn[1] - lG;
 				var lB = Math.floor(rgb[2]);
-				var rB = RGB[2] - lB;
+				var rB = rgbIn[2] - lB;
 				var OOO = [ this.R[ lB ][ lG ][ lR ],this.G[ lB ][ lG ][ lR ],this.B[ lB ][ lG ][ lR ] ];
 				var ROO = [ this.R[ lB ][ lG ][lR+1],this.G[ lB ][ lG ][lR+1],this.B[ lB ][ lG ][lR+1] ];
 				var OGO = [ this.R[ lB ][lG+1][ lR ],this.G[ lB ][lG+1][ lR ],this.B[ lB ][lG+1][ lR ] ];
@@ -948,13 +963,13 @@ LUTs.prototype.rgbRGBLin = function(rgb) {
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
 // End of interpolation code
 				if (neg[0]) {
-					out[0] = this.lumaLLin(rgb[0]);
+					out[0] = this.lumaLLin(input[0]);
 				}
 				if (neg[1]) {
-					out[1] = this.lumaLLin(rgb[1]);
+					out[1] = this.lumaLLin(input[1]);
 				}
 				if (neg[2]) {
-					out[2] = this.lumaLLin(rgb[2]);
+					out[2] = this.lumaLLin(input[2]);
 				}
 				return out;
 			}

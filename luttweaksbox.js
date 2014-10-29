@@ -560,13 +560,14 @@ LUTTweaksBox.prototype.lutAnalystDo = function() {
 		this.lutAnalystProgress.value = 0.66;
 		this.lutAnalystInfo.innerHTML = 'Calculating 3D Colour Space Conversion: S-Gamut3.cine → Test Gamut';
 		this.lutAnalystGamma.reset();
-		this.lutAnalystGamma.setInfo(this.lutAnalystTitle.value, 'la', 1, sl3ToGamma.length, [0,0,0], [1,1,1]);
+		this.lutAnalystGamma.setInfo(this.lutAnalystTitle.value, 'lacube', 1, sl3ToGamma.length, [0,0,0], [1,1,1]);
 		this.lutAnalystGamma.addLUT(sl3ToGamma.slice(),sl3ToGamma.slice(),sl3ToGamma.slice());
 		this.lutAnalystGamut.reset();
-		this.lutAnalystGamut.setInfo(this.lutAnalystTitle.value, 'la', 3, 33, [0,0,0], [1,1,1]);
+		this.lutAnalystGamut.setInfo(this.lutAnalystTitle.value, 'lacube', 3, 33, [0,0,0], [1,1,1]);
 		this.lutAnalystProgress.value = 0;
 		this.lutAnalystInfo.innerHTML = '';
 		this.lutAnalystInfoBox.style.display = 'none';
+console.log(lutGammaIn);
 		if (this.lutAnalystInLUT.calcSG3ToGamut(this.lutAnalystGamut,sl3ToGamma,this.gammas,lutGammaIn,legIn,legOut)) {
 			this.lutAnalystCheck.checked = true;
 			this.lutAnalystCheck.style.display = 'inline';
