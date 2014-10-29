@@ -89,9 +89,9 @@ LUTGenerateBox.prototype.prepVars = function() {
 LUTGenerateBox.prototype.generate = function() {
 	this.prepVars();
 	if (this.inputs.d[0].checked) {
-		this.file.save(this.header() + this.oneDLUT(), 'cube');
+		this.file.save(this.header() + this.oneDLUT(), this.inputs.name.value, 'cube');
 	} else {
-		this.file.save(this.header() + this.threeDLUT(), 'cube');
+		this.file.save(this.header() + this.threeDLUT(), this.inputs.name.value, 'cube');
 	}
 }
 LUTGenerateBox.prototype.oneDLUT = function() {

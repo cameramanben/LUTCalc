@@ -31,7 +31,7 @@ var left = fieldSet(lutCalcForm,false,'left');
 var lutCameraBox = new LUTCameraBox(fieldSet(left,true), lutInputs);
 lutGamma.defaultGamma();
 var lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut);
-var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut);
+var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut, lutFile);
 var right = fieldSet(lutCalcForm,false,'right');
 var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutGamma, lutGamut);
 var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutGamma, lutGamut, lutFile);
@@ -66,6 +66,14 @@ lutInputs.tweakBlk.onchange = function(){ lutTweaksBox.changeBlackLevel();lutInf
 lutInputs.tweakHiCheck.onchange = function(){ lutTweaksBox.toggleHighLevelCheck();lutInfoBox.updateGamma(); }
 lutInputs.tweakHiRef.onchange = function(){ lutTweaksBox.changeHighLevelRef();lutInfoBox.updateGamma(); }
 lutInputs.tweakHiMap.onchange = function(){ lutTweaksBox.changeHighLevelMap();lutInfoBox.updateGamma(); }
+//			LUT Analyst Tweak
+lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+lutInputs.laGammaSelect.onchange = function(){ lutTweaksBox.lutAnalystChangeGamma(); }
+lutInputs.laDoButton.onclick = function(){ lutTweaksBox.lutAnalystDo(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
+lutInputs.laTitle.onchange = function(){ lutTweaksBox.cleanLutAnalystTitle(); }
+lutInputs.laBackButton.onclick = function(){ lutTweaksBox.lutAnalystReset(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
+lutInputs.laStoreButton.onclick = function(){ lutTweaksBox.lutAnalystStore(); }
+lutInputs.laCheck.onclick = function(){ lutTweaksBox.lutAnalystToggleCheck(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
 //		LUT Box
 lutInputs.name.onchange = function(){ lutBox.cleanName(); lutFile.filename(); }
 lutInputs.mlutCheck.onchange = function(){ lutBox.toggleMLUT(); lutGammaBox.oneOrThree(); lutTweaksBox.toggleTweakCheck(); }

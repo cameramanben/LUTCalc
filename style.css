@@ -154,6 +154,7 @@ body {width:66em;text-align:center;}
 .ireinput {width:4em;line-height:0.8;}
 .textinput {line-height:0.8;margin-bottom:0.15em;}
 .infobox {height:21em;margin-top:0.15em;overflow:auto;}
+.buttons { text-align: center; }
 #tweakholder {margin:0;padding:0;overflow:auto;max-height:17.2em;}
 #chartcanvas {display:block;width:28em;height:15em; z-index: 1;}
 #reccanvas {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
