@@ -520,6 +520,7 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 	this.lutAnalystDLOpt.checked = true;
 	this.lutAnalystGammaSelect.options[0].selected = true;
 	this.lutAnalystLinGammaSelect.options[0].selected = true;
+	this.lutAnalystLinGammaBox.style.display = 'none';
 	this.lutAnalystLoadBox.style.display = 'block';
 	this.lutAnalystAnalyseBox.style.display = 'none';
 	this.lutAnalystBackButton.style.display = 'none';
