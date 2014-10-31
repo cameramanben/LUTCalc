@@ -18,11 +18,11 @@ function LUTFile(inputs) {
 		this.filesaver = false;
 	}
 }
-LUTFile.prototype.save = function(data, filename, extension) {
+LUTFile.prototype.save = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveLUT(data, this.filename(filename), extension);
+        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
-		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(filename) + '.' + extension);
+		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(fileName) + '.' + extension);
 		return true;
 	} else { // Fall back to opening LUT in a new tab for user to save with 'Save As...'
 		window.open("data:text/plain," + encodeURIComponent(data),"_blank");
@@ -103,7 +103,7 @@ LUTFile.prototype.parseCube = function(data, dest) {
 		if ((!isNaN(parseFloat(j)) && isFinite(j)) || j === '-') {
 			break;
 		} else if (lower.search('title') >= 0) {
-			title = line.substr(lower.search('title') + 5).trim();
+			title = line.substr(lower.search('title') + 5).trim().replace(/"/g, '');
 		} else if (lower.search('lut_3d_size') >= 0) {
 			var dim = line.substr(lower.search('lut_3d_size') + 11).trim();
 			if (!isNaN(dim)) {
@@ -208,6 +208,23 @@ LUTFile.prototype.parseCube = function(data, dest) {
 		lut.addLUT(R.slice(0),G.slice(0),B.slice(0));
 	}
 	return true;
+}
+LUTFile.prototype.parseLACube = function(data, gammaLUT, gamutLUT) {
+	var max = this.inputs[data].text.length;
+	for (var i = 0; i < max; i++) {
+		if (this.inputs[data].text[i].search('# -------------------------------------------------------------------------------') >= 0) {
+			this.inputs.laGammaLUT.text = this.inputs[data].text.slice(1,i);
+			this.inputs.laGamutLUT.text = this.inputs[data].text.slice(i+1,max);
+			break;
+		} else if (i == max - 1) {
+			return false;
+		}
+	}
+	if (this.parseCube('laGammaLUT', gammaLUT) && this.parseCube('laGamutLUT', gamutLUT)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 LUTFile.prototype.buildLALut = function(title,oneD,threeD) {
 	var oneDHead =  '# LUT Analyst LA LUT File -------------------------------------------------------' + "\n" +

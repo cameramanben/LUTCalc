@@ -102,14 +102,41 @@ LUTGamut.prototype.gamutList = function() {
 	this.outGamuts.push(new LUTGamutMatrix('S-Gamut3',[[0.8556915182,0.1624073699,-0.0180988882],[-0.0229408919,1.0671513074,-0.0442104155],[-0.0216418068,-0.0283288236,1.0499706304]]));
 	this.outGamuts.push(new LUTGamutMatrix('S-Gamut',[[0.8556915182,0.1624073699,-0.0180988882],[-0.0229408919,1.0671513074,-0.0442104155],[-0.0216418068,-0.0283288236,1.0499706304]]));
 	this.outGamuts.push(new LUTGamutMatrix('Rec709',[[1.6269474097,-0.5401385389,-0.0868088709],[-0.1785155271,1.4179409275,-0.2394254003],[-0.0444361150,-0.1959199662,1.2403560812]]));
-	this.outGamuts.push(new LUTGamutLut('LC709',this.paramsLC709Out()));
-	this.outGamuts.push(new LUTGamutLut('LC709A',this.paramsLC709AOut()));
+	this.outGamuts.push(new LUTGamutLUT(
+		'LC709',
+		{
+			format: 'cube',
+			size: 33,
+			min: [0,0,0],
+			max: [1,1,1],
+			lut: this.paramsLC709Out()
+		}));
+	this.outGamuts.push(new LUTGamutLUT(
+		'LC709A',
+		{
+			format: 'cube',
+			size: 33,
+			min: [0,0,0],
+			max: [1,1,1],
+			lut: this.paramsLC709AOut()
+		}));
+	this.outGamuts.push(new LUTGamutLUT(
+		'Sony Cine+709',
+		{
+			format: 'cube',
+			size: 33,
+			min: [0,0,0],
+			max: [1,1,1],
+			lut: this.paramsCine709Out()
+		}));
 	this.outGamuts.push(new LUTGamutMatrix('Luma B&W',[[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903]]));
 	this.outGamuts.push(new LUTGamutMatrix('ACES',[[0.6387886672,0.2723514337,0.0888598992],[-0.0039159061,1.0880732308,-0.0841573249],[-0.0299072021,-0.0264325799,1.0563397820]]));
 	this.outGamuts.push(new LUTGamutMatrix('XYZ',[[0.5990839208,0.2489255161,0.1024464902],[0.2150758201,0.8850685017,-0.1001443219],[-0.0320658495,-0.0276583907,1.1487819910]]));
 	this.outGamuts.push(new LUTGamutMatrix('Alexa Wide Gamut',[[0.974435,0.023802,0.001763],[-0.089226,1.071257,0.017968],[-0.035355,0.038226,0.997128]]));
 	this.outGamuts.push(new LUTGamutLut('Canon CP Lock Gamut',this.paramsCPOut()));
 	this.outGamuts.push(new LUTGamutMatrix('Canon Cinema Gamut',[[0.840981006,0.143882203,0.015137045],[-0.00825279,0.998163089,0.010090467],[-0.019382583,0.157113995,0.862268767]]));
+	this.LA = this.outGamuts.length;
+	this.outGamuts.push(new LUTGamutLA('LA'));
 	this.outGamuts.push(new LUTGamutMatrix('Passthrough',[[1,0,0],[0,1,0],[0,0,1]]));
 	var max = this.inGamuts.length;
 	for (var i = 0; i < max; i++) {
@@ -117,7 +144,9 @@ LUTGamut.prototype.gamutList = function() {
 	}
 	max = this.outGamuts.length;
 	for (var i = 0; i < max; i++) {
-		this.outList.push({name: this.outGamuts[i].name,idx: i});
+		if (i != this.LA) {
+			this.outList.push({name: this.outGamuts[i].name,idx: i});
+		}
 	}	
 }
 function LUTGamutMatrix(name,params) {
@@ -128,6 +157,59 @@ LUTGamutMatrix.prototype.calc = function(rgb) {
 	return [(this.matrix[0][0]*rgb[0])+(this.matrix[0][1]*rgb[1])+(this.matrix[0][2]*rgb[2]),
 			(this.matrix[1][0]*rgb[0])+(this.matrix[1][1]*rgb[1])+(this.matrix[1][2]*rgb[2]),
 			(this.matrix[2][0]*rgb[0])+(this.matrix[2][1]*rgb[1])+(this.matrix[2][2]*rgb[2])];
+}
+function LUTGamutLUT(name,params) {
+	this.name = name;
+	this.lut = new LUTs();
+	this.lut.setInfo(name, params.format, 3, params.size, params.min, params.max);
+	this.lut.addLUT(params.lut.R,params.lut.G,params.lut.B);
+}
+LUTGamutLUT.prototype.calc = function(rgb) {
+	var input = [];
+	for (var i = 0; i < 3; i++) {
+		if (rgb[i] >= 0.0125) {
+			input[i] = (0.2556207230 * Math.log((rgb[i] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+		} else {
+			input[i] = (rgb[i] + 0.0155818840)/0.1677922920;
+		}
+	}
+	var output = this.lut.rgbRGBCub(input);
+	for (var i = 0; i < 3; i++) {
+		if (output[i] >= 0.1673609920) {
+			output[i] = (Math.pow(10,(output[i] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+		} else {
+			output[i] = (0.1677922920 * output[i]) - 0.0155818840;
+		}
+	}
+	return output;
+}
+function LUTGamutLA(name) {
+	this.name = name;
+}
+LUTGamutLA.prototype.setLUT = function(lut) {
+	this.lut = lut;
+}
+LUTGamutLA.prototype.setTitle = function(name) {
+	this.name = name;
+}
+LUTGamutLA.prototype.calc = function(rgb) {
+	var input = [];
+	for (var i = 0; i < 3; i++) {
+		if (rgb[i] >= 0.0125) {
+			input[i] = (0.2556207230 * Math.log((rgb[i] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+		} else {
+			input[i] = (rgb[i] + 0.0155818840)/0.1677922920;
+		}
+	}
+	var output = this.lut.rgbRGBCub(input);
+	for (var i = 0; i < 3; i++) {
+		if (output[i] >= 0.1673609920) {
+			output[i] = (Math.pow(10,(output[i] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+		} else {
+			output[i] = (0.1677922920 * output[i]) - 0.0155818840;
+		}
+	}
+	return output;
 }
 function LUTGamutLut(name,params) {
 	this.name = name;

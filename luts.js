@@ -136,7 +136,39 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			if (gamma[low]*s == i) {
 				invGamma[i] = low/t;
 			} else {
-				invGamma[i] = (low + ( ((i/s) - gamma[low]) / (gamma[low+1] - gamma[low]) ))/t;
+// Newton Raphson to get better approximation
+				var aim = i/s;
+				var l = (aim - gamma[low])/(gamma[low+1] - gamma[low]); //First approximation
+				var p0 = gamma[low];
+				var p1 = gamma[low + 1];
+				var d0,d1;
+				if (low == 0) {
+					d0 = ((4 * gamma[1]) - (3 * gamma[0]) - gamma[2])/2;
+				} else {
+					d0 = (gamma[low + 1] - gamma[low - 1])/2;
+				}
+				if (low == t - 1) {
+					d1 = (2 * gamma[t - 2]) + ((gamma[t - 1] - gamma[t - 3])/2) - (4 * gamma[t - 1]) + (2 * gamma[t]);
+				} else {
+					d1 = (gamma[low + 2] - gamma[low])/2;
+				}
+				var na = (2 * p0) + d0 - (2 * p1) + d1;
+				var nb = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+				var nc = d0;
+				var nd = p0;
+				for (var w=0; w<5; w++) {
+					var f =  (na * l * l * l) + (nb * l * l) + (nc * l) + nd - aim;
+					if (Math.abs(f) < 0.0000000001) {
+						invGamma[i] = (l + low)/t;
+						break;
+					} else if (isNaN(f)) {
+						break;
+					} else {
+						invGamma[i] = (l + low)/t;
+						var df = (3 * na * l * l) + (3 * nb * l) + nc;
+						l = l - (f / df);
+					}
+				}
 			}
 		} else {
 			invGamma[i] = -999;
@@ -158,8 +190,6 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			invGamma[i] = maxX + (maxD * j);
 		}	
 	}
-console.log(gamma);
-console.log(invGamma);
 // Create S-Log3->S-Log3 S-Gamut3.cine->LUT Gamut 3D LUT by comparing test LUT with 1D data
 	var rOut = [];
 	var gOut = [];
@@ -205,7 +235,7 @@ console.log(invGamma);
 					input[2] = ((input[2]*1023)-64)/876;
 				}
 // Calculate 3D LUT Value
-				output = this.rgbRGBLin(input);
+				output = this.rgbRGBCub(input);
 				if (legOut) {
 					ry = ((output[0]*876)+64)/1023;
 					gy = ((output[1]*876)+64)/1023;
@@ -215,12 +245,10 @@ console.log(invGamma);
 					gy = output[1];
 					by = output[2];
 				}
-//console.log(output);
 // Invert Values to S-Log3 Gamma
 				var rb = Math.floor(ry*s);
 				var gb = Math.floor(gy*s);
 				var bb = Math.floor(by*s);
-//console.log('ry : ' + ry + ' , rb/s: ' + (rb/s) + ' , inv: ' + invGamma[rb]);
 				rRowR[a] = invGamma[rb] + (ry - (rb/s));
 				rRowG[a] = invGamma[gb] + (gy - (gb/s));
 				rRowB[a] = invGamma[bb] + (by - (bb/s));
@@ -738,31 +766,34 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 			return out;
 		} else {
 			var out = [];
+			rgb[0] = rgb[0] * max;
+			rgb[1] = rgb[1] * max;
+			rgb[2] = rgb[2] * max;
 			var ord = rgb.slice(0).sort(function(a, b){return b-a});
-			var RGB = rgb.slice(0);
-			if (ord[0] > 1) {
-				var m = ord[0] * 1.0000000000001;
-				RGB = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
+			var rgbIn = rgb.slice(0);
+			if (ord[0] >= max) {
+				var m = ord[0] * 1.0000000000001 / max;
+				rgbIn = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
 				var neg = [false,false,false];
 				if (rgb[0] < 0) {
-					RGB[0] = 0;
+					rgbIn[0] = 0;
 					neg[0] = true;
 				}
 				if (rgb[1] < 0) {
-					RGB[1] = 0;
+					rgbIn[1] = 0;
 					neg[1] = true;
 				}
 				if (rgb[2] < 0) {
-					RGB[2] = 0;
+					rgbIn[2] = 0;
 					neg[2] = true;
 				}
 // Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
-				var rR = RGB[0] - lR;
+				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
-				var rG = RGB[1] - lG;
+				var rG = rgbIn[1] - lG;
 				var lB = Math.floor(rgb[2]);
-				var rB = RGB[2] - lB;
+				var rB = rgbIn[2] - lB;
 				var OOO = [ this.R[ lB ][ lG ][ lR ],this.G[ lB ][ lG ][ lR ],this.B[ lB ][ lG ][ lR ] ];
 				var ROO = [ this.R[ lB ][ lG ][lR+1],this.G[ lB ][ lG ][lR+1],this.B[ lB ][ lG ][lR+1] ];
 				var OGO = [ this.R[ lB ][lG+1][ lR ],this.G[ lB ][lG+1][ lR ],this.B[ lB ][lG+1][ lR ] ];
@@ -776,43 +807,42 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
 // End of interpolation code
 				if (neg[0]) {
-					out[0] = this.lumaLCub(rgb[0]);
+					out[0] = this.lumaLCub(input[0]);
 				} else {
-					out[0] = out[0] * this.lumaLCub(rgb[0])/this.lumaLCub(RGB[0]);
+					out[0] = out[0] * this.lumaLCub(input[0])/this.lumaLCub(rgbIn[0]/max);
 				}
 				if (neg[1]) {
-					out[1] = this.lumaLCub(rgb[1]);
+					out[1] = this.lumaLCub(input[1]);
 				} else {
-					out[1] = out[1] * this.lumaLCub(rgb[1])/this.lumaLCub(RGB[1]);
+					out[1] = out[1] * this.lumaLCub(input[1])/this.lumaLCub(rgbIn[1]/max);
 				}
 				if (neg[2]) {
-					out[2] = this.lumaLCub(rgb[2]);
+					out[2] = this.lumaLCub(input[2]);
 				} else {
-					out[2] = out[2] * this.lumaLCub(rgb[2])/this.lumaLCub(RGB[2]);
+					out[2] = out[2] * this.lumaLCub(input[2])/this.lumaLCub(rgbIn[2]/max);
 				}
 				return out;
 			} else {
-				var RGB = rgb.slice(0);
 				var neg = [false,false,false];
 				if (rgb[0] < 0) {
-					RGB[0] = 0;
+					rgbIn[0] = 0;
 					neg[0] = true;
 				}
 				if (rgb[1] < 0) {
-					RGB[1] = 0;
+					rgbIn[1] = 0;
 					neg[1] = true;
 				}
 				if (rgb[2] < 0) {
-					RGB[2] = 0;
+					rgbIn[2] = 0;
 					neg[2] = true;
 				}
 // Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
-				var rR = RGB[0] - lR;
+				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
-				var rG = RGB[1] - lG;
+				var rG = rgbIn[1] - lG;
 				var lB = Math.floor(rgb[2]);
-				var rB = RGB[2] - lB;
+				var rB = rgbIn[2] - lB;
 				var OOO = [ this.R[ lB ][ lG ][ lR ],this.G[ lB ][ lG ][ lR ],this.B[ lB ][ lG ][ lR ] ];
 				var ROO = [ this.R[ lB ][ lG ][lR+1],this.G[ lB ][ lG ][lR+1],this.B[ lB ][ lG ][lR+1] ];
 				var OGO = [ this.R[ lB ][lG+1][ lR ],this.G[ lB ][lG+1][ lR ],this.B[ lB ][lG+1][ lR ] ];
@@ -826,13 +856,13 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
 // End of interpolation code
 				if (neg[0]) {
-					out[0] = this.lumaLCub(rgb[0]);
+					out[0] = this.lumaLCub(input[0]);
 				}
 				if (neg[1]) {
-					out[1] = this.lumaLCub(rgb[1]);
+					out[1] = this.lumaLCub(input[1]);
 				}
 				if (neg[2]) {
-					out[2] = this.lumaLCub(rgb[2]);
+					out[2] = this.lumaLCub(input[2]);
 				}
 				return out;
 			}
@@ -894,7 +924,6 @@ LUTs.prototype.rgbRGBLin = function(input) {
 					rgbIn[2] = 0;
 					neg[2] = true;
 				}
-// Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
 				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
@@ -912,7 +941,6 @@ LUTs.prototype.rgbRGBLin = function(input) {
 				out = [	(((((OOO[0]*(1-rR))+(ROO[0]*rR))*(1-rG))+(((OGO[0]*(1-rR))+(RGO[0]*rR))*rG))*(1-rB))+(((((OOB[0]*(1-rR))+(ROB[0]*rR))*(1-rG))+(((OGB[0]*(1-rR))+(RGB[0]*rR))*rG))*rB),
 						(((((OOO[1]*(1-rR))+(ROO[1]*rR))*(1-rG))+(((OGO[1]*(1-rR))+(RGO[1]*rR))*rG))*(1-rB))+(((((OOB[1]*(1-rR))+(ROB[1]*rR))*(1-rG))+(((OGB[1]*(1-rR))+(RGB[1]*rR))*rG))*rB),
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
-// End of interpolation code
 				if (neg[0]) {
 					out[0] = this.lumaLLin(input[0]);
 				} else {
@@ -943,7 +971,6 @@ LUTs.prototype.rgbRGBLin = function(input) {
 					rgbIn[2] = 0;
 					neg[2] = true;
 				}
-// Interpolation code goes here
 				var lR = Math.floor(rgb[0]);
 				var rR = rgbIn[0] - lR;
 				var lG = Math.floor(rgb[1]);
@@ -961,7 +988,6 @@ LUTs.prototype.rgbRGBLin = function(input) {
 				out = [	(((((OOO[0]*(1-rR))+(ROO[0]*rR))*(1-rG))+(((OGO[0]*(1-rR))+(RGO[0]*rR))*rG))*(1-rB))+(((((OOB[0]*(1-rR))+(ROB[0]*rR))*(1-rG))+(((OGB[0]*(1-rR))+(RGB[0]*rR))*rG))*rB),
 						(((((OOO[1]*(1-rR))+(ROO[1]*rR))*(1-rG))+(((OGO[1]*(1-rR))+(RGO[1]*rR))*rG))*(1-rB))+(((((OOB[1]*(1-rR))+(ROB[1]*rR))*(1-rG))+(((OGB[1]*(1-rR))+(RGB[1]*rR))*rG))*rB),
 						(((((OOO[2]*(1-rR))+(ROO[2]*rR))*(1-rG))+(((OGO[2]*(1-rR))+(RGO[2]*rR))*rG))*(1-rB))+(((((OOB[2]*(1-rR))+(ROB[2]*rR))*(1-rG))+(((OGB[2]*(1-rR))+(RGB[2]*rR))*rG))*rB)];
-// End of interpolation code
 				if (neg[0]) {
 					out[0] = this.lumaLLin(input[0]);
 				}

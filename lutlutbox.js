@@ -160,7 +160,8 @@ LUTLutBox.prototype.changeGamma = function() {
 				this.lutOutData.checked = true;
 				break;
 		case 1:
-		case 2:	this.lutInData.checked = true;
+		case 2:
+		case 4:	this.lutInData.checked = true;
 				this.lutOutLegal.checked = true;
 				break;
 	}

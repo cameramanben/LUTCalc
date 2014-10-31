@@ -55,11 +55,13 @@ function LUTTweaksBox(fieldset, inputs, gammas, gamuts, file) {
 	this.gammas.gammas[this.gammas.LA].setLUT(this.lutAnalystGamma);
 	this.lutAnalystGamut = new LUTs();
 	this.inputs.addInput('laGamut',this.lutAnalystGamut);
+	this.gamuts.outGamuts[this.gamuts.LA].setLUT(this.lutAnalystGamut);
+	this.inputs.addInput('laGammaLUT',{text:[]});
+	this.inputs.addInput('laGamutLUT',{text:[]});
 	this.lutAnalysed = document.createElement('input');
 	this.inputs.addInput('laAnalysed',this.lutAnalysed);
 	this.lutAnalystNewOpt = this.createRadioElement('lutAnalystNewOld',true);
 	this.lutAnalystOldOpt = this.createRadioElement('lutAnalystNewOld',false);
-	this.lutAnalystOldOpt.disabled = true;
 	this.inputs.addInput('laNewOld',[this.lutAnalystNewOpt,this.lutAnalystOldOpt]);
 	this.lutAnalystFileInput = document.createElement('input');
 	this.inputs.addInput('laFileInput',this.lutAnalystFileInput);
@@ -396,7 +398,6 @@ LUTTweaksBox.prototype.lutAnalyst = function() {
 	this.lutAnalystLinGammaBox.appendChild(this.lutAnalystLinGammaSelect);
 	this.lutAnalystLinGammaBox.style.display = 'none';
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystLinGammaBox);
-
 	this.lutAnalystGamutBox = document.createElement('div');
 	this.lutAnalystGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Gamut')));
 	var max = this.gamuts.inList.length;
@@ -456,13 +457,15 @@ LUTTweaksBox.prototype.lutAnalystGetFile = function() {
 	} else {
 		validExts = ['lacube'];
 	}
-	this.file.loadFromInput(this.lutAnalystFileInput, validExts, 'laFileData', this, 0);
+	if (this.lutAnalystFileInput.value != '') {
+		this.file.loadFromInput(this.lutAnalystFileInput, validExts, 'laFileData', this, 0);
+	}
 }
 LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 	this.lutAnalystLoadBox.style.display = 'none';
-	this.lutAnalystAnalyseBox.style.display = 'block';
 	this.lutAnalystBackButton.style.display = 'inline';
 	if (this.lutAnalystNewOpt.checked) {
+		this.lutAnalystAnalyseBox.style.display = 'block';
 		this.lutAnalystInLUT.reset();
 		var parsed = false;
 		switch (this.inputs.laFileData.format) {
@@ -482,6 +485,19 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 		}
 	} else {
 		this.lutAnalystDoButton.style.display = 'none';
+		this.lutAnalystInLUT.reset();
+		var parsed = false;
+		switch (this.inputs.laFileData.format) {
+			case 'lacube': parsed = this.file.parseLACube('laFileData', 'laGamma', 'laGamut');
+						break;
+		}
+		if (parsed) {
+			this.lutAnalystCheck.checked = true;
+			this.lutAnalystCheck.style.display = 'inline';
+			this.lutAnalystToggleCheck();
+		} else {
+			this.lutAnalystReset();
+		}
 	}
 }
 LUTTweaksBox.prototype.lutAnalystReset = function() {
@@ -490,6 +506,12 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 	this.lutAnalystCheck.style.display = 'none';
 	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
 		this.inputs.outGamma.options[0].selected = true;
+	}
+	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
+		this.inputs.outGamut.options[0].selected = true;
+	}
+	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
+		this.highGamutSelect.options[0].selected = true;
 	}
 	this.lutAnalystToggleCheck();
 	this.lutAnalystInLUT.reset();
@@ -518,12 +540,34 @@ LUTTweaksBox.prototype.lutAnalystToggleCheck = function() {
 		} else {
 			this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 		}
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value != this.gamuts.LA) {
+			var laOption = document.createElement('option');
+				laOption.value = this.gamuts.LA;
+				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+			this.inputs.outGamut.appendChild(laOption);
+		} else {
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+		}
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value != this.gamuts.LA) {
+			var laOption = document.createElement('option');
+				laOption.value = this.gamuts.LA;
+				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+			this.highGamutSelect.appendChild(laOption);
+		} else {
+			this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+		}
 	} else {
 		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
 			this.inputs.outGamma.remove(this.inputs.outGamma.options.length - 1);
-		}
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
 			this.inputs.outGamma.options[0].selected = true;
+		}
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
+			this.inputs.outGamut.remove(this.inputs.outGamut.options.length - 1);
+			this.inputs.outGamut.options[0].selected = true;
+		}
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
+			this.highGamutSelect.remove(this.highGamutSelect.options.length - 1);
+			this.highGamutSelect.options[0].selected = true;
 		}
 	}
 }
@@ -567,7 +611,6 @@ LUTTweaksBox.prototype.lutAnalystDo = function() {
 		this.lutAnalystProgress.value = 0;
 		this.lutAnalystInfo.innerHTML = '';
 		this.lutAnalystInfoBox.style.display = 'none';
-console.log(lutGammaIn);
 		if (this.lutAnalystInLUT.calcSG3ToGamut(this.lutAnalystGamut,sl3ToGamma,this.gammas,lutGammaIn,legIn,legOut)) {
 			this.lutAnalystCheck.checked = true;
 			this.lutAnalystCheck.style.display = 'inline';
@@ -584,8 +627,16 @@ LUTTweaksBox.prototype.cleanLutAnalystTitle = function() {
 	this.lutAnalystTitle.value = this.lutAnalystTitle.value.replace(/[/"/']/gi, '');
 	this.lutAnalystGamma.title = this.lutAnalystTitle.value;
 	this.lutAnalystGamut.title = this.lutAnalystTitle.value;
+	this.gammas.gammas[this.gammas.LA].setTitle(this.lutAnalystTitle.value);
+	this.gamuts.outGamuts[this.gamuts.LA].setTitle(this.lutAnalystTitle.value);
 	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
 		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+	}
+	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
+		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+	}
+	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
+		this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 	}
 }
 //
