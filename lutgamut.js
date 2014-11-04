@@ -137,6 +137,7 @@ LUTGamut.prototype.gamutList = function() {
 	this.outGamuts.push(new LUTGamutMatrix('Canon Cinema Gamut',[[0.840981006,0.143882203,0.015137045],[-0.00825279,0.998163089,0.010090467],[-0.019382583,0.157113995,0.862268767]]));
 	this.LA = this.outGamuts.length;
 	this.outGamuts.push(new LUTGamutLA('LA'));
+	this.pass = this.outGamuts.length;
 	this.outGamuts.push(new LUTGamutMatrix('Passthrough',[[1,0,0],[0,1,0],[0,0,1]]));
 	var max = this.inGamuts.length;
 	for (var i = 0; i < max; i++) {

@@ -136,13 +136,19 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 }
 LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
-		this.outGamutSelect.options[this.outGamutSelect.options.length - 1].selected = true;
-	} else if (this.outGamutSelect.options[this.outGamutSelect.options.length - 1].selected) {
+		var max = this.outGamutSelect.options.length;
+		for (var i=0; i<max; i++) {
+			if (this.outGamutSelect.options[i].value == this.gamuts.pass) {
+				this.outGamutSelect.options[i].selected = true;
+				break;
+			}
+		}
+	} else if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamuts.pass) {
 		this.outGamutSelect.options[0].selected = true;
 	}
 }
 LUTGammaBox.prototype.changeOutGamut = function() {
-	if (this.outGamutSelect.options[this.outGamutSelect.options.length - 1].selected) {
+	if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamuts.pass) {
 		this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected = true;
 	} else if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
 		max = this.gamuts.inList.length;
