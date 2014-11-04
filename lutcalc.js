@@ -92,6 +92,7 @@ lutInfoBox.gammaInfoBut.onclick = function(){ lutInfoBox.gammaInfoOpt(); }
 lutInfoBox.gammaChartBut.onclick = function(){ lutInfoBox.gammaChartOpt(); }
 // Functions available to native apps
 function loadLUTFromApp(format, text, destination, parentIdx, next) {
+    document.getElementById('testline').innerHTML = format;
 	lutInputs[destination].format = format;
 	lutInputs[destination].text = text.split(/[\n\u0085\u2028\u2029]|\r\n?/);
 	switch (parentIdx) {
