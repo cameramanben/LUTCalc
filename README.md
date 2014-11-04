@@ -5,6 +5,8 @@ Web App for generating 1D and 3D Lookup Tables (LUTs) for video cameras that sho
 
 LUTCalc generates 1D and 3D .cube format LUTs suitable for use in DaVinci Resolve, Adobe Speedgrade and as user 3D LUTs in Sony's log-recording video cameras. These include the PMW-F5, PMW-F55 and PXW-FS7.
 
+For Mac OSX users, the sister [LUTCalc For Mac](https://github.com/cameramanben/LUTCalc-For-Mac) project provides a native app version using a sandbox-friendly Objective-C Webkit wrapper around the LUTCalc Javascript.
+
 Instructions are included, just open 'index.html' in a web browser with Javascript enabled.
 
 Supported Browsers
