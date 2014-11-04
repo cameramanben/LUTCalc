@@ -70,7 +70,7 @@ lutInputs.tweakHiMap.onchange = function(){ lutTweaksBox.changeHighLevelMap();lu
 if (lutInputs.isApp) {
 	lutInputs.laFileInput.onclick = function(){ lutTweaksBox.lutAnalystGetFile(); }
 } else {
-	lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+    lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
 }
 lutInputs.laGammaSelect.onchange = function(){ lutTweaksBox.lutAnalystChangeGamma(); }
 lutInputs.laDoButton.onclick = function(){ lutTweaksBox.lutAnalystDo(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
