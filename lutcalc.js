@@ -67,7 +67,11 @@ lutInputs.tweakHiCheck.onchange = function(){ lutTweaksBox.toggleHighLevelCheck(
 lutInputs.tweakHiRef.onchange = function(){ lutTweaksBox.changeHighLevelRef();lutInfoBox.updateGamma(); }
 lutInputs.tweakHiMap.onchange = function(){ lutTweaksBox.changeHighLevelMap();lutInfoBox.updateGamma(); }
 //			LUT Analyst Tweak
-lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+if (lutInputs.isApp) {
+	lutInputs.laFileInput.onclick = function(){ lutTweaksBox.lutAnalystGetFile(); }
+} else {
+	lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+}
 lutInputs.laGammaSelect.onchange = function(){ lutTweaksBox.lutAnalystChangeGamma(); }
 lutInputs.laDoButton.onclick = function(){ lutTweaksBox.lutAnalystDo(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
 lutInputs.laTitle.onchange = function(){ lutTweaksBox.cleanLutAnalystTitle(); }
