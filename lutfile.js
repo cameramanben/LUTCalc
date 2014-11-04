@@ -31,15 +31,7 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 }
 LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
-		var fileContent = window.lutCalcApp.loadLUT(extensions.toString());
-		if (fileContent != '') {
-			contentArray = fileContent.text.split(/[\n\u0085\u2028\u2029]|\r\n?/);
-			destination.format = contentArray.shift();
-			destination.text = contentArray;
-			parentObject.followUp(next);
-		} else {
-			fileInput.value = '';
-		}
+		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.index, next);
 	} else {
 		var file = fileInput.files[0];
 		var valid = false;

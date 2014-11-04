@@ -11,6 +11,7 @@
 */
 function LUTTweaksBox(fieldset, inputs, gammas, gamuts, file) {
 	this.box = document.createElement('fieldset');
+	this.index = 7;
 	this.inputs = inputs;
 	this.gammas = gammas;
 	this.gamuts = gamuts;

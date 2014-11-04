@@ -70,7 +70,7 @@ lutInputs.tweakHiMap.onchange = function(){ lutTweaksBox.changeHighLevelMap();lu
 if (lutInputs.isApp) {
 	lutInputs.laFileInput.onclick = function(){ lutTweaksBox.lutAnalystGetFile(); }
 } else {
-    lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+	lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
 }
 lutInputs.laGammaSelect.onchange = function(){ lutTweaksBox.lutAnalystChangeGamma(); }
 lutInputs.laDoButton.onclick = function(){ lutTweaksBox.lutAnalystDo(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
@@ -90,6 +90,15 @@ lutInfoBox.instructionsBut.onclick = function(){ lutInfoBox.instructionsOpt(); }
 lutInfoBox.changelogBut.onclick = function(){ lutInfoBox.changelogOpt(); }
 lutInfoBox.gammaInfoBut.onclick = function(){ lutInfoBox.gammaInfoOpt(); }
 lutInfoBox.gammaChartBut.onclick = function(){ lutInfoBox.gammaChartOpt(); }
+// Functions available to native apps
+function loadLUTFromApp(format, text, destination, parentIdx, next) {
+	lutInputs[destination].format = format;
+	lutInputs[destination].text = text.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+	switch (parentIdx) {
+		case 7: lutTweaksBox.followUp(next);
+				break;
+	}
+}
 // Helper Functions
 function fieldSet(parentElement,shadow,id) {
 	var box = document.createElement('fieldset');
