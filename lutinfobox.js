@@ -55,6 +55,23 @@ LUTInfoBox.prototype.buildBox = function() {
 LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.setAttribute('class','graybox infobox');
 	this.addText(this.instructionsBox,'LUTCalc ' + this.inputs.version + ' by Ben Turley (cameramanben)',true);
+	this.addText(this.instructionsBox,'*** New option - LUTAnalyst ***',true);
+	this.addText(this.instructionsBox,"A note about the main new feature called 'LUTAnalyst'.");
+	this.addText(this.instructionsBox,'This is available as an option in the customisation box. With it you can import a LUT (currently in cube format) and LUTAnalyst will be able to analyse the transfer function (1D) and colour space conversion (3D) so that they can then be used in the same way as the built in options.');
+	this.addText(this.instructionsBox,'Additionally, if you have developed a custom look and LUT then LUTAnalyst would allow you to visualise the gamma curve, produce accurate exposure compensated versions for your choice of input gamma / gamut and get IRE values for various reflectances such that the underlying log recording will be correctly exposed.');
+	this.addText(this.instructionsBox,'Cubic (1D) and tricubic (3D) interpolation provides accurate conversions.');
+	this.addText(this.instructionsBox,'Analysis is a two-stage process. Initially there are two options - import new LUT and Load Existing Analysed LA LUT.');
+	this.addText(this.instructionsBox,'Select the import new LUT option, click on the file browser and select a cube LUT to be analysed.');
+	this.addText(this.instructionsBox,'If the LUTCalc is able to read the file the LUTAnalyst box should now change to show the Analysis options.');
+	this.addText(this.instructionsBox,"First is 'LUT Title'. If the cube file contains a title, this will show here. If not, it will show 'LUT Analyser'. You can change this to whatever you wish to see in the gamma and gamut options.");
+	this.addText(this.instructionsBox,'Next come the input gamma and - if the LUT is 3D - input gamut options. Select the ones appropriate to the loaded LUT. For example, Sony provides a set of Look Profiles designed for S-Log3/S-Gamut3.cine and another for S-Log2/S-Gamut.');
+	this.addText(this.instructionsBox,"The last, important option is to set the input and output scaling of the LUT to be analysed. LUTs which work on log INPUT gammas tend to be data in (D). This is the case with all of Sony's look profiles. For LUTs which OUTPUT LOG curves the output scaling will also tend to be data (D). For other types of output curve the scaling is generally legal levels.");
+	this.addText(this.instructionsBox,"With the F5/F55 and Sony's looks as examples, 3D monitor LUTs, LC709, LC709A and Cine+709 are all data to legal (D→L), whereas the S-Log3 to S-Log2 look profile is data to data (D→D). Custom and home-made LUTs may also be legal to legal (L→L) and legal to data (L→D) is included for completeness, though somewhat unusual!");
+	this.addText(this.instructionsBox,"Once the gamma, gamut and scaling have been established, click the 'Analyse' button. After a few seconds, the row of button should change to show 'Re-Analyse', 'Save LA LUT' and 'Change LUT' and your newly analysed LUT should now be available as output gamma and output gamut options in the main part of LUTCalc. They show up as 'LA - ' followed by the LUT title.");
+	this.addText(this.instructionsBox,"'Re-Analyse' is useful for changing the gamma, gamut and scaling options if they have been incorrectly chosen.");
+	this.addText(this.instructionsBox,"'Save LA LUT' will save a file ending .lacube which contains two conventional cube LUTs. The first is a 1D transfer function (gamma) LUT from S-Log3 to the analysed gamma, data levels to data levels. The second is a 3D pure colour space conversion LUT, S-Log3/S-Gamut3.cine to S-Log3/analysed gamut, data levels to data levels. This can be loaded back into LUTCalc with the 'Load Existing Analysed LA LUT', avoiding the analysis stage.");
+	this.addText(this.instructionsBox,"'Change LUT' returns LUTAnalyst to its initial condition.");
+	this.addText(this.instructionsBox,'Instructions',true);
 	this.addText(this.instructionsBox,"Having opened either the Mac App or the index.html file you should see a set of four options boxes on this page, plus the 'Generate LUT' button and this information window.");
 	this.addText(this.instructionsBox,'First is the camera options box. Here you select a camera model. This sets the native ISO and CineEI recording approach (Sony, Arri, Canon) so that the correct exposure shift is calculated if a different CineEI is set.');
 	this.addText(this.instructionsBox,'Next is the gamma box. This allows you to set the log gamma you intend to shoot with (Recorded Gamma) and the output gamma you would like the LUT to translate to. It also contains options for recorded and output gamuts which appear when the 3D LUTs option is selected.');
@@ -82,6 +99,11 @@ LUTInfoBox.prototype.changelog = function() {
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
 	this.addText(this.changelogBox,'Hypergammas and Rec709(800%) came from analysing 1D LUTs produced from the Sony CvpFileEditor example file.');
+	this.addText(this.changelogBox,'v1.0',true);
+	this.addText(this.changelogBox,"Introduced 'LUTAnalyst' - a tool to convert 1D and 3D LUTs (currently cubes) to 1D S-Log3 to new transfer gamma LUTs plus 3D S-Gamut3.cine to new colour space gamut LUTs. LUTCalc can then use these to use the new gamma and / or gamut as you can with any of the built in options.");
+	this.addText(this.changelogBox,'Totally recoded the handling of LUTs as data sources in LUTCalc.');
+	this.addText(this.changelogBox,'Substantially improved LC709 and LC709A colour transforms - added in Cine+Rec709.');
+	this.addText(this.changelogBox,'Added initial cubic interpolation for 1D and tricubic interpolation for 3D code.');
 	this.addText(this.changelogBox,'v0.9991',true);
 	this.addText(this.changelogBox,'Released code on Github under GPLv2.');
 	this.addText(this.changelogBox,'UI CSS tweaks and removal of Sentenza Desktop code for the time being as no binary release. Web App only again for now!');
