@@ -68,10 +68,13 @@ Calculation Files
 * lutgamut.js - contains the data for matrix-based colour spaces, plus the calculations for those, LUT-based spaces and compound combinations of the two.
 * lutgamut.lc709.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709 look profile colour. Effectively a LUT of a LUT.
 * lutgamut.lc709a.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709a look profile colour. Effectively a LUT of a LUT.
-* lutgamut.cpgamut.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on the Canon C300 and from the C300 to S-Gamut3.cine. Derived from test shot data with side-by-side cameras.
+* lutgamut.cine709.js - a pure colour space transform LUT from S-Gamut3.cine to the Cine+709 look profile colour. Effectively a LUT of a LUT.
+* lutgamut.cpoutdaylight.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on a daylight or mixed lighting balance. Derived from 3D Newton-Raphson on Canon's published daylight IDT matrices.
+* lutgamut.cpouttungsten.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on a tungsten or warmer balance. Derived from 3D Newton-Raphson on Canon's published tungsten IDT matrices.
 
 Helper Javascript
 -----------------
+* luts.js - LUT handling object. Will calculate interpolated values from LUTs using cubic and tricubic interpolation. Also includes code for breaking a 3D LUT into gamma and gamut component LUTs and changing the input gamma / gamut (as used by the LUTAnalyst tool).
 * lutfile.js - file handling object.
 * lutinputs.js - simple object into which the other objects can place their form input objects, to allow interaction without globals.
 
