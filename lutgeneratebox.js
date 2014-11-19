@@ -115,16 +115,33 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 	var input = parseFloat(i)/(dimension-1);
 		var output;
 		switch(range) {
-			case 0: output = this.gammas.dataOut(this.gammas.dataIn(input) * this.gammas.eiMult).toFixed(10).toString();
+			case 0: output = this.gammas.dataOut(this.gammas.dataIn(input) * this.gammas.eiMult);
+					if (output < 0) {
+						output = 0;
+					}
+					output = output.toFixed(8).toString();
 					break;
-			case 1: output = this.gammas.dataOut(this.gammas.legalIn(input) * this.gammas.eiMult).toFixed(10).toString();
+			case 1: output = this.gammas.dataOut(this.gammas.legalIn(input) * this.gammas.eiMult);
+					if (output < 0) {
+						output = 0;
+					}
+					output = output.toFixed(8).toString();
 					break;
-			case 2: output = this.gammas.legalOut(this.gammas.dataIn(input) * this.gammas.eiMult).toFixed(10).toString();
+			case 2: output = this.gammas.legalOut(this.gammas.dataIn(input) * this.gammas.eiMult).toFixed(10);
+					if (output < -0.06256109481916) {
+						output = -0.06256109481916;
+					}
+					output = output.toFixed(8).toString();
 					break;
-			case 3: output = this.gammas.legalOut(this.gammas.legalIn(input) * this.gammas.eiMult).toFixed(10).toString();
+			case 3: output = this.gammas.legalOut(this.gammas.legalIn(input) * this.gammas.eiMult).toFixed(10);
+					if (output < -0.06256109481916) {
+						output = -0.06256109481916;
+					}
+					output = output.toFixed(8).toString();
 					break;
 		}
-		out += output + ' ' + output + ' ' + output + "\n";
+out += output + "\n";
+//		out += output + ' ' + output + ' ' + output + "\n";
 	}
 	return out;
 }
@@ -153,16 +170,59 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 					 (parseInt(i/dim2) % dimension)/(dimension-1)];
 		var output;
 		switch(range) {
-			case 0: output = this.fixedString(this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input))))));
+			case 0: output = this.fixedString(this.clip(true,this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input)))))));
 					break;
-			case 1: output = this.fixedString(this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input))))));
+			case 1: output = this.fixedString(this.clip(true,this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input)))))));
 					break;
-			case 2: output = this.fixedString(this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input))))));
+			case 2: output = this.fixedString(this.clip(false,this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input)))))));
 					break;
-			case 3: output = this.fixedString(this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input))))));
+			case 3: output = this.fixedString(this.clip(false,this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input)))))));
 					break;
 		}
 		out += output[0] + ' ' + output[1] + ' ' + output[2] + "\n";
+	}
+	return out;
+}
+LUTGenerateBox.prototype.clip = function(data,rgb) {
+	var out = rgb.slice(0);
+	if (data) {
+		if (out[0] < 0) {
+			out[0] = 0;
+		}
+		if (out[1] < 0) {
+			out[1] = 0;
+		}
+		if (out[2] < 0) {
+			out[2] = 0;
+		}
+	} else {
+		if (this.mlut) {
+			if (out[0] < 0) {
+				out[0] = 0;
+			} else if (out[0] > 1.09474885844749) {
+				out[0] = 1.09474885844749;
+			}
+			if (out[1] < 0) {
+				out[1] = 0;
+			} else if (out[1] > 1.09474885844749) {
+				out[1] = 1.09474885844749;
+			}
+			if (out[2] < 0) {
+				out[2] = 0;
+			} else if (out[2] > 1.09474885844749) {
+				out[2] = 1.09474885844749;
+			}
+		} else {
+			if (out[0] < -0.06256109481916) {
+				out[0] = -0.06256109481916;
+			}
+			if (out[1] < -0.06256109481916) {
+				out[1] = -0.06256109481916;
+			}
+			if (out[2] < -0.06256109481916) {
+				out[2] = -0.06256109481916;
+			}
+		}
 	}
 	return out;
 }

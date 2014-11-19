@@ -154,15 +154,17 @@ LUTLutBox.prototype.toggleMLUT = function() {
 	}
 }
 LUTLutBox.prototype.changeGamma = function() {
-	switch (this.gammas.gammas[this.gammas.curOut].cat) {
-		case 0:
-		case 3:	this.lutInData.checked = true;
-				this.lutOutData.checked = true;
-				break;
-		case 1:
-		case 2:
-		case 4:	this.lutInData.checked = true;
-				this.lutOutLegal.checked = true;
-				break;
+	if (!this.lutMLUTCheck.checked) {
+		switch (this.gammas.gammas[this.gammas.curOut].cat) {
+			case 0:
+			case 3:	this.lutInData.checked = true;
+					this.lutOutData.checked = true;
+					break;
+			case 1:
+			case 2:
+			case 4:	this.lutInData.checked = true;
+					this.lutOutLegal.checked = true;
+					break;
+		}
 	}
 }
