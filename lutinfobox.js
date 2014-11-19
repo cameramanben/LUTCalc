@@ -99,7 +99,7 @@ LUTInfoBox.prototype.changelog = function() {
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
 	this.addText(this.changelogBox,'v1.1',true);
-	this.addText(this.changelogBox,'Canon CP Gamut In replaced by Canon CP IDT (Daylight) and Canon CP IDT (Tungsten). Beta testing. These use matrix coefficients from the ACES IDTs published by Canon for the C300, C500 and C300.Tungsten for 3200 or warmer, Daylight for 4300 and up.');
+	this.addText(this.changelogBox,'Canon CP Gamut In replaced by Canon CP IDT (Daylight) and Canon CP IDT (Tungsten). Beta testing. These use matrix coefficients from the ACES IDTs published by Canon for the C300, C500 and C100.Tungsten for 3200 or warmer, Daylight for 4300 and up.');
 	this.addText(this.changelogBox,'Canon CP Gamut Out replaced by LUTs derived from the IDTs using Newton-Raphson to invert. Alpha testing.');
 	this.addText(this.changelogBox,'CP Gamut In -> CP Gamut Out does not currently produce expected results. Possibly due to the reduced gamut of CP Rec709.');
 	this.addText(this.changelogBox,'Removed code duplication in the tricubic calculations, and bade out-of-bounds handling more sensible. This has slowed the tricubic somewhat. I will look to optimise.');
