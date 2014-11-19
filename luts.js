@@ -68,7 +68,6 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 		}
 	}
 }
-
 LUTs.prototype.calcTransferFromSL3 = function(gammas,gam,legIn,legOut) {
 	var s = this.s -1;
 	var sl3ToGam = [];
@@ -190,6 +189,7 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			invGamma[i] = maxX + (maxD * j);
 		}	
 	}
+	var invMax = invDim-1;
 // Create S-Log3->S-Log3 S-Gamut3.cine->LUT Gamut 3D LUT by comparing test LUT with 1D data
 	var rOut = [];
 	var gOut = [];
@@ -249,9 +249,31 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 				var rb = Math.floor(ry*s);
 				var gb = Math.floor(gy*s);
 				var bb = Math.floor(by*s);
-				rRowR[a] = invGamma[rb] + (ry - (rb/s));
-				rRowG[a] = invGamma[gb] + (gy - (gb/s));
-				rRowB[a] = invGamma[bb] + (by - (bb/s));
+				if (rb < 0) {
+					rRowR[a] = invGamma[0] + (minD * ry * s);
+				} else if (rb >= invDim) {
+					rRowR[a] = invGamma[invMax] + (maxD * ((ry * s) - invMax));
+				} else {
+					rRowR[a] = invGamma[rb] + (ry - (rb/s));
+				}
+				if (gb < 0) {
+					rRowG[a] = invGamma[0] + (minD * ry * s);
+				} else if (gb >= invDim) {
+					rRowG[a] = invGamma[invMax] + (maxD * ((gy * s) - invMax));
+				} else {
+					rRowG[a] = invGamma[gb] + (gy - (gb/s));
+				}
+				if (bb < 0) {
+					rRowB[a] = invGamma[0] + (minD * ry * s);
+				} else if (bb >= invDim) {
+					rRowB[a] = invGamma[invMax] + (maxD * ((by * s) - invMax));
+				} else {
+					rRowB[a] = invGamma[bb] + (by - (bb/s));
+				}
+if (isNaN(rRowR[a]) || isNaN(rRowG[a]) || isNaN(rRowB[a])) {
+	console.log('rb - ' + rb + ' , gb - ' + gb + ' , bb - ' + bb);
+	console.log('ry - ' + ry + ' , gy - ' + gy + ' , by - ' + by);
+} 
 			}
 			gRowR[b] = rRowR.slice(0);
 			gRowG[b] = rRowG.slice(0);
@@ -505,118 +527,10 @@ LUTs.prototype.lumaRGBLin = function(L) {
 	}
 }
 LUTs.prototype.rgbLCub = function(rgb) {
-	if (this.d == 1 && this.R.length == 0) {
-		return this.lumaLCub((0.2126*rgb[0]) + (0.7152*rgb[1]) + (0.0722*rgb[2]));
-	} else {
-		var max = this.s - 1;
-		if (this.d == 1) {
-			var out = [];
-			for (var i = 0; i < 3; i++) {
-				var C = [];
-				switch (i) {
-					case 0: C = this.R;
-							break;
-					case 1: C = this.G;
-							break;
-					case 2: C = this.B;
-							break;
-				}
-				var l = rgb[i] * max;
-				if (l < 0) {
-					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					out[i] = C[0] + (l * dy);
-				} else if (l >= max) {
-					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					out[i] = C[max] + ((l - max) * dy);
-				} else {
-					var base = Math.floor(l);
-					var p0 = C[base];
-					var p1 = C[base + 1];
-					var d0,d1;
-					if (base == 0) {
-						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					} else {
-						d0 = (C[base + 1] - C[base - 1])/2;
-					}
-					if (base == max - 1) {
-						d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
-					} else {
-						d1 = (C[base + 2] - C[base])/2;
-					}
-					var a = (2 * p0) + d0 - (2 * p1) + d1;
-					var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-					var c = d0;
-					var d = p0;
-					l = l - base;
-					out[i] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
-				}
-			}
-			return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
-		} else {
-			var out = [];
-			var ord = rgb.slice(0).sort(function(a, b){return b-a});
-			if (ord[0] > 1) {
-				var m = ord[0];
-				var RGB = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
-				var neg = [false,false,false];
-				if (rgb[0] < 0) {
-					RGB[0] = 0;
-					neg[0] = true;
-				}
-				if (rgb[1] < 0) {
-					RGB[1] = 0;
-					neg[1] = true;
-				}
-				if (rgb[2] < 0) {
-					RGB[2] = 0;
-					neg[2] = true;
-				}
-				out = this.rgbRGBCub(RGB);
-				if (neg[0]) {
-					out[0] = this.lumaLCub(rgb[0]);
-				} else {
-					out[0] = out[0] * this.lumaLCub(rgb[0])/this.lumaLCub(RGB[0]);
-				}
-				if (neg[1]) {
-					out[1] = this.lumaLCub(rgb[1]);
-				} else {
-					out[1] = out[1] * this.lumaLCub(rgb[1])/this.lumaLCub(RGB[1]);
-				}
-				if (neg[2]) {
-					out[2] = this.lumaLCub(rgb[2]);
-				} else {
-					out[2] = out[2] * this.lumaLCub(rgb[2])/this.lumaLCub(RGB[2]);
-				}
-				return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
-			} else {
-				var RGB = rgb.slice(0);
-				var neg = [false,false,false];
-				if (rgb[0] < 0) {
-					RGB[0] = 0;
-					neg[0] = true;
-				}
-				if (rgb[1] < 0) {
-					RGB[1] = 0;
-					neg[1] = true;
-				}
-				if (rgb[2] < 0) {
-					RGB[2] = 0;
-					neg[2] = true;
-				}
-				out = this.rgbRGBCub(RGB);
-				if (neg[0]) {
-					out[0] = this.lumaLCub(rgb[0]);
-				}
-				if (neg[1]) {
-					out[1] = this.lumaLCub(rgb[1]);
-				}
-				if (neg[2]) {
-					out[2] = this.lumaLCub(rgb[2]);
-				}
-				return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
-			}
-		}
-	}
+	var out = [];
+	// Let rgbRGBCub sort things out then just calculate Lout using Rec709 coefficients
+	out = this.rgbRGBCub(rgb);
+	return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
 }
 LUTs.prototype.rgbLLin = function(rgb) {
 	if (this.d == 1 && this.R.length == 0) {
@@ -716,133 +630,149 @@ LUTs.prototype.rgbLLin = function(rgb) {
 	}
 }
 LUTs.prototype.rgbRGBCub = function(rgb) {
+	// 1D case where R,G & B have the same gammas
 	if (this.d == 1 && this.R.length == 0) {
 		return [this.lumaLCub(rgb[0]),this.lumaLCub(rgb[1]),this.lumaLCub(rgb[2])];
-	} else {
+	// Generalised 1D case (R, G & B can have differing gammas
+	} else if (this.d == 1) {
 		var max = this.s - 1;
-		if (this.d == 1) {
-			var out = [];
-			for (var i = 0; i < 3; i++) {
-				var C = [];
-				switch (i) {
-					case 0: C = this.R;
-							break;
-					case 1: C = this.G;
-							break;
-					case 2: C = this.B;
-							break;
-				}
-				var l = rgb[i] * max;
-				if (l < 0) {
-					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					out[i] = C[0] + (l * dy);
-				} else if (l >= max) {
-					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					out[i] = C[max] + ((l - max) * dy);
-				} else {
-					var base = Math.floor(l);
-					var p0 = C[base];
-					var p1 = C[base + 1];
-					var d0,d1;
-					if (base == 0) {
-						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					} else {
-						d0 = (C[base + 1] - C[base - 1])/2;
-					}
-					if (base == max - 1) {
-						d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
-					} else {
-						d1 = (C[base + 2] - C[base])/2;
-					}
-					var a = (2 * p0) + d0 - (2 * p1) + d1;
-					var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-					var c = d0;
-					var d = p0;
-					l = l - base;
-					out[i] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
-				}
+		var out = [];
+		// Loop through each ouput colour channel in turn
+		for (var i = 0; i < 3; i++) {
+			var C = [];
+			switch (i) {
+				case 0: C = this.R;
+						break;
+				case 1: C = this.G;
+						break;
+				case 2: C = this.B;
+						break;
 			}
-			return out;
-		} else {
-			var out = [];
-			var input = rgb.slice(0);
-			rgb[0] = rgb[0] * max;
-			rgb[1] = rgb[1] * max;
-			rgb[2] = rgb[2] * max;
-			var ord = rgb.slice(0).sort(function(a, b){return b-a});
-			var rgbIn = rgb.slice(0);
-			if (ord[0] >= max) {
-				var m = ord[0] * 1.0000000000001 / max;
-				rgbIn = [rgb[0]/m,rgb[1]/m,rgb[2]/m];
-				var neg = [false,false,false];
-				if (rgb[0] < 0) {
-					rgbIn[0] = 0;
-					neg[0] = true;
-				}
-				if (rgb[1] < 0) {
-					rgbIn[1] = 0;
-					neg[1] = true;
-				}
-				if (rgb[2] < 0) {
-					rgbIn[2] = 0;
-					neg[2] = true;
-				}
-// Interpolation code goes here
-				out = [
-					this.triCubic(this.R, max, rgbIn),
-					this.triCubic(this.G, max, rgbIn),
-					this.triCubic(this.B, max, rgbIn)
-				];
-// End of interpolation code
-				if (neg[0]) {
-					out[0] = this.lumaLCub(input[0]);
-				} else {
-					out[0] = out[0] * this.lumaLCub(input[0])/this.lumaLCub(rgbIn[0]/max);
-				}
-				if (neg[1]) {
-					out[1] = this.lumaLCub(input[1]);
-				} else {
-					out[1] = out[1] * this.lumaLCub(input[1])/this.lumaLCub(rgbIn[1]/max);
-				}
-				if (neg[2]) {
-					out[2] = this.lumaLCub(input[2]);
-				} else {
-					out[2] = out[2] * this.lumaLCub(input[2])/this.lumaLCub(rgbIn[2]/max);
-				}
-				return out;
+			// Scale basic luma (0-1.0) range to array dimension
+			var l = rgb[i] * max;
+			// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
+			// Then linearly scale from the array's 0 value
+			if (l < 0) {
+				var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+				out[i] = C[0] + (l * dy);
+			// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
+			// Then linearly scale from the array's last value
+			} else if (l >= max) {
+				var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
+				out[i] = C[max] + ((l - max) * dy);
+			// Otherwise, cubic interpolate the output value from the LUT array
 			} else {
-				var neg = [false,false,false];
-				if (rgb[0] < 0) {
-					rgbIn[0] = 0;
-					neg[0] = true;
+				var base = Math.floor(l);
+				var p0 = C[base];
+				var p1 = C[base + 1];
+				var d0,d1;
+				// First and last gradients calculated fitting three points to quadratics
+				if (base == 0) {
+					d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+				} else {
+					d0 = (C[base + 1] - C[base - 1])/2;
 				}
-				if (rgb[1] < 0) {
-					rgbIn[1] = 0;
-					neg[1] = true;
+				if (base == max - 1) {
+					d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+				} else {
+					d1 = (C[base + 2] - C[base])/2;
 				}
-				if (rgb[2] < 0) {
-					rgbIn[2] = 0;
-					neg[2] = true;
-				}
-// Interpolation code goes here
-				out = [
-					this.triCubic(this.R, max, rgbIn),
-					this.triCubic(this.G, max, rgbIn),
-					this.triCubic(this.B, max, rgbIn)
-				];
-// End of interpolation code
-				if (neg[0]) {
-					out[0] = this.lumaLCub(input[0]);
-				}
-				if (neg[1]) {
-					out[1] = this.lumaLCub(input[1]);
-				}
-				if (neg[2]) {
-					out[2] = this.lumaLCub(input[2]);
-				}
-				return out;
+				// Cubic polynomial - f(x) - parameters from known f(0), f'(0), f(1), f'(1)
+				var a = (2 * p0) + d0 - (2 * p1) + d1;
+				var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+				var c = d0;
+				var d = p0;
+				l = l - base;
+				// Basic cubic polynomial calculation
+				out[i] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
 			}
 		}
+		return out;
+	} else {
+		var max = this.s - 1;
+		var out = [];
+		var input = [];
+		var clip = max * 0.999999999999;
+		var rL = false;
+		var gL = false;
+		var bL = false;
+		var rH = false;
+		var gH = false;
+		var bH = false;
+		// Scale basic RGB (0-1.0) range to array dimension
+		input[0] = rgb[0] * max;
+		input[1] = rgb[1] * max;
+		input[2] = rgb[2] * max;
+		// If 0 > input >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
+		if (input[0] < 0) {
+			input[0] = 0;
+			rL = true;
+		} else if (input [0] >= max) {
+			input[0] = clip;
+			rH = true;
+		}
+		if (input[1] < 0) {
+			input[1] = 0;
+			gL = true;
+		} else if (input [1] >= max) {
+			input[1] = clip;
+			gH = true;
+		}
+		if (input[2] < 0) {
+			input[2] = 0;
+			bL = true;
+		} else if (input [2] >= max) {
+			input[2] = clip;
+			bH = true;
+		}
+		// Now get tricubic interpolated value from prepared input values
+		out = [
+			this.triCubic(this.R, max, input),
+			this.triCubic(this.G, max, input),
+			this.triCubic(this.B, max, input)
+			];
+		// If any of the input channels were clipped, replace their output value with linear extrapolation from the edge point
+		if (rL) {
+			var p0 = this.triCubic(this.R, max, [0,input[1],input[2]]);
+			var p1 = this.triCubic(this.R, max, [1,input[1],input[2]]);
+			var p2 = this.triCubic(this.R, max, [2,input[1],input[2]]);
+			var dy = ((4 * p1) - (3 * p0) - p2)/2;
+			out[0] = p0 + (rgb[0] * max * dy);
+		} else if (rH) {
+			var p0 = this.triCubic(this.R, max, [clip - 2,input[1],input[2]]);
+			var p1 = this.triCubic(this.R, max, [clip - 1,input[1],input[2]]);
+			var p2 = this.triCubic(this.R, max, [clip,input[1],input[2]]);
+			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+			out[0] = p2 + ((rgb[0] - 1) * max * dy);
+		}
+		if (gL) {
+			var p0 = this.triCubic(this.G, max, [input[0],0,input[2]]);
+			var p1 = this.triCubic(this.G, max, [input[0],1,input[2]]);
+			var p2 = this.triCubic(this.G, max, [input[0],2,input[2]]);
+			var dy = ((4 * p1) - (3 * p0) - p2)/2;
+			out[1] = p0 + (rgb[1] * max * dy);
+		} else if (gH) {
+			var p0 = this.triCubic(this.G, max, [input[0],clip - 2,input[2]]);
+			var p1 = this.triCubic(this.G, max, [input[0],clip - 1,input[2]]);
+			var p2 = this.triCubic(this.G, max, [input[0],clip,input[2]]);
+			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+			out[1] = p2 + ((rgb[1] - 1) * max * dy);
+		}
+		if (bL) {
+			var p0 = this.triCubic(this.B, max, [input[0],input[1],0]);
+			var p1 = this.triCubic(this.B, max, [input[0],input[1],1]);
+			var p2 = this.triCubic(this.B, max, [input[0],input[1],2]);
+			var dy = ((4 * p1) - (3 * p0) - p2)/2;
+			out[2] = p0 + (rgb[2] * max * dy);
+		} else if (bH) {
+			var p0 = this.triCubic(this.B, max, [input[0],input[1],clip - 2]);
+			var p1 = this.triCubic(this.B, max, [input[0],input[1],clip - 1]);
+			var p2 = this.triCubic(this.B, max, [input[0],input[1],clip]);
+			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+			out[2] = p2 + ((rgb[2] - 1) * max * dy);
+		}
+		// Return the calculated value
+		return out;
 	}
 }
 LUTs.prototype.triCubic = function(C, max, RGB) {
