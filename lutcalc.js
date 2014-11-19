@@ -13,8 +13,8 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.0');
-lutInputs.addInput('date','October 2014');
+lutInputs.addInput('version','v1.1');
+lutInputs.addInput('date','November 2014');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
     lutInputs.addInput('isApp',true);

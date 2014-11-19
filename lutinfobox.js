@@ -98,7 +98,13 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
-	this.addText(this.changelogBox,'Hypergammas and Rec709(800%) came from analysing 1D LUTs produced from the Sony CvpFileEditor example file.');
+	this.addText(this.changelogBox,'v1.1',true);
+	this.addText(this.changelogBox,'Canon CP Gamut In replaced by Canon CP IDT (Daylight) and Canon CP IDT (Tungsten). Beta testing. These use matrix coefficients from the ACES IDTs published by Canon for the C300, C500 and C300.Tungsten for 3200 or warmer, Daylight for 4300 and up.');
+	this.addText(this.changelogBox,'Canon CP Gamut Out replaced by LUTs derived from the IDTs using Newton-Raphson to invert. Alpha testing.');
+	this.addText(this.changelogBox,'CP Gamut In -> CP Gamut Out does not currently produce expected results. Possibly due to the reduced gamut of CP Rec709.');
+	this.addText(this.changelogBox,'Removed code duplication in the tricubic calculations, and bade out-of-bounds handling more sensible. This has slowed the tricubic somewhat. I will look to optimise.');
+	this.addText(this.changelogBox,'Fixed MLUT bugs which meant that the appropriate clipping was not happening, and that changing to a log output gamma with MLUT checked would lead to the wrong output scaling.');
+	this.addText(this.changelogBox,'Provisional fix for an out-of-bounds (NaN) bug in LUTAnalyst with gammas of less dynamic range than S-Log3, ie Canon C-Log.');
 	this.addText(this.changelogBox,'v1.0',true);
 	this.addText(this.changelogBox,"Introduced 'LUTAnalyst' - a tool to convert 1D and 3D LUTs (currently cubes) to 1D S-Log3 to new transfer gamma LUTs plus 3D S-Gamut3.cine to new colour space gamut LUTs. LUTCalc can then use these to use the new gamma and / or gamut as you can with any of the built in options.");
 	this.addText(this.changelogBox,'Totally recoded the handling of LUTs as data sources in LUTCalc.');
