@@ -37,6 +37,8 @@ Canon C-Log - [Canon-Log Cine Optoelectronic Transfer Function](http://learn.usa
 
 Canon LUTs and Gamut Information - [Canon C500 Support Site](http://www.canon-europe.com/Support/Consumer_Products/products/digital_cinema/digital_cinema_camera/EOS_C500.aspx?type=download)
 
+Canon C300 Input Device Transform (IDT) - [Canon C300 Support Site](http://www.usa.canon.com/cusa/professional/products/professional_cameras/cinema_eos_cameras/eos_c300#DriversAndSoftware) - under 'Software'. You have to specify 'Mountain Lion' on a Mac or 'Windows XP' on a PC for it to be displayed. C500 and C100 have the same IDTs for CP Lock, though the C500 also offers 'Cinema Gamut' (see above link).
+
 Cineon - [Understanding Cineon](http://www.digital-intermediate.co.uk/film/pdf/Cineon.pdf)
 
 Rec709 - [ITU BT.709-5](http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-5-200204-I!!PDF-E.pdf)
