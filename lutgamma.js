@@ -230,6 +230,30 @@ LUTGamma.prototype.legalOutRGB = function(rgb) {
 				(this.gammas[this.curOut].linToLegal(rgb[2]) * this.al) + this.bl];
 	}
 }
+LUTGamma.prototype.inRefData = function(ref) {
+	var input = ref / 0.9;
+	return this.gammas[this.curIn].linToData(input);
+}
+LUTGamma.prototype.inRefLegal = function(ref) {
+	var input = ref / 0.9;
+	return this.gammas[this.curIn].linToLegal(input);
+}
+LUTGamma.prototype.outRefData = function(ref) {
+	var input = ref / 0.9;
+	if (this.nul) {
+		return this.gammas[this.curIn].linToData(input);
+	} else {
+		return (this.gammas[this.curOut].linToData(input * this.eiMult) * this.ad) + this.bd;
+	}
+}
+LUTGamma.prototype.outRefLegal = function(ref) {
+	var input = ref / 0.9;
+	if (this.nul) {
+		return this.gammas[this.curIn].linToLegal(input);
+	} else {
+		return (this.gammas[this.curOut].linToLegal(input * this.eiMult) * this.al) + this.bl;
+	}
+}
 LUTGamma.prototype.inStopData = function(stop) {
 	var input = Math.pow(2,stop) / 5;
 	return this.gammas[this.curIn].linToData(input);
@@ -405,7 +429,7 @@ LUTGammaArri.prototype.linToLegal = function(input) {
 LUTGammaArri.prototype.linFromData = function(input) {
 	var out;
 	if (input > ((this.e * this.cut) + this.f)) {
-		out = ((Math.pow(10, (input - this.d) / this.c) - this.b)/0.9);
+		out = (Math.pow(10, (input - this.d) / this.c) - this.b)/(this.a*0.9);
 	} else {
 		out = ((input - this.f) / (this.e*0.9));
 	}
