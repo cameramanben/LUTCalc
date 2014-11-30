@@ -119,29 +119,25 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 					if (output < 0) {
 						output = 0;
 					}
-					output = output.toFixed(8).toString();
 					break;
 			case 1: output = this.gammas.dataOut(this.gammas.legalIn(input) * this.gammas.eiMult);
 					if (output < 0) {
 						output = 0;
 					}
-					output = output.toFixed(8).toString();
 					break;
-			case 2: output = this.gammas.legalOut(this.gammas.dataIn(input) * this.gammas.eiMult).toFixed(10);
+			case 2: output = this.gammas.legalOut(this.gammas.dataIn(input) * this.gammas.eiMult);
 					if (output < -0.06256109481916) {
 						output = -0.06256109481916;
 					}
-					output = output.toFixed(8).toString();
 					break;
-			case 3: output = this.gammas.legalOut(this.gammas.legalIn(input) * this.gammas.eiMult).toFixed(10);
+			case 3: output = this.gammas.legalOut(this.gammas.legalIn(input) * this.gammas.eiMult);
 					if (output < -0.06256109481916) {
 						output = -0.06256109481916;
 					}
-					output = output.toFixed(8).toString();
 					break;
 		}
-out += output + "\n";
-//		out += output + ' ' + output + ' ' + output + "\n";
+		output = parseFloat(output).toFixed(8).toString();
+		out += output + ' ' + output + ' ' + output + "\n";
 	}
 	return out;
 }
@@ -187,13 +183,13 @@ LUTGenerateBox.prototype.clip = function(data,rgb) {
 	var out = rgb.slice(0);
 	if (data) {
 		if (out[0] < 0) {
-			out[0] = 0;
+//			out[0] = 0;
 		}
 		if (out[1] < 0) {
-			out[1] = 0;
+//			out[1] = 0;
 		}
 		if (out[2] < 0) {
-			out[2] = 0;
+//			out[2] = 0;
 		}
 	} else {
 		if (this.mlut) {
@@ -227,9 +223,9 @@ LUTGenerateBox.prototype.clip = function(data,rgb) {
 	return out;
 }
 LUTGenerateBox.prototype.fixedString = function(rgb) {
-	return [rgb[0].toFixed(10).toString(),
-			rgb[1].toFixed(10).toString(),
-			rgb[2].toFixed(10).toString()];
+	return [parseFloat(rgb[0]).toFixed(10).toString(),
+			parseFloat(rgb[1]).toFixed(10).toString(),
+			parseFloat(rgb[2]).toFixed(10).toString()];
 }
 LUTGenerateBox.prototype.eiMult = function(rgb) {
 	return [rgb[0] * this.gammas.eiMult,
