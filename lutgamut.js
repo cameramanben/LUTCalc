@@ -319,12 +319,15 @@ LUTGamutCanonIDT.prototype.calc = function(rgb) {
 	} else {
 		B = (0.529136*Math.log(offsetB)/Math.LN10) + 0.0730597;
 	}
+	var R2 = R*R;
+	var G2 = G*G;
+	var B2 = B*B;
 	var vec = [ R,		G,		B,
 				R*G,	G*B,	B*R,
-				R*R,	G*G,	B*B,
-				R*R*G,	R*R*B,	R*G*G,
-				R*G*B,	R*B*B,	G*G*B,	G*B*B,
-				R*R*R,	G*G*G,	B*B*B ];
+				R2,		G2,		B2,
+				R2*G,	R2*B,	R*G2,
+				R*G*B,	R*B2,	G2*B,	G*B2,
+				R*R2,	G*G2,	B*B2 ];
 	// ACES conversion stage 1 (C-Log space)
 	var mid = [];
 	mid[0] =	(this.cR[0]  * vec[0] ) + (this.cR[1]  * vec[1] ) + (this.cR[2]  * vec[2] ) +
