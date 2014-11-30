@@ -156,9 +156,15 @@ body {width:66em;text-align:center;}
 .infobox {height:21em;margin-top:0.15em;overflow:auto;}
 .buttons { text-align: center; }
 #tweakholder {margin:0;padding:0;overflow:auto;max-height:17.2em;}
-#chartcanvas {display:block;width:28em;height:15em; z-index: 1;}
-#reccanvas {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
-#outcanvas {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#chartcanvas1 {display:block;width:28em;height:15em; z-index: 1;}
+#chartcanvas2 {display:block;width:28em;height:15em; z-index: 1;}
+#chartcanvas3 {display:block;width:28em;height:15em; z-index: 1;}
+#reccanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#reccanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#reccanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
 #chartreclabel {color:red; margin-right:10px;}
 #chartoutlabel {color:blue; margin-left:10px;}
 #genbutton { text-align:center; }

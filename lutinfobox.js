@@ -98,6 +98,9 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
+	this.addText(this.changelogBox,'v1.2',true);
+	this.addText(this.changelogBox,'Added charts for % Reflectance against LUT % IRE and LUT % IRE in against LUT % IRE out.');
+	this.addText(this.changelogBox,'Fixed missing term in Arri LogC input equation.');
 	this.addText(this.changelogBox,'v1.1',true);
 	this.addText(this.changelogBox,'Canon CP Gamut In replaced by Canon CP IDT (Daylight) and Canon CP IDT (Tungsten). Beta testing. These use matrix coefficients from the ACES IDTs published by Canon for the C300, C500 and C100.Tungsten for 3200 or warmer, Daylight for 4300 and up.');
 	this.addText(this.changelogBox,'Canon CP Gamut Out replaced by LUTs derived from the IDTs using Newton-Raphson to invert. Alpha testing.');
@@ -254,16 +257,18 @@ LUTInfoBox.prototype.gammaInfo = function() {
 }
 LUTInfoBox.prototype.gammaChart = function() {
 	this.gammaChartBox.setAttribute('class','graybox infobox');
-	this.buildChart();
-	var chartRecLabel = document.createElement('span');
-	chartRecLabel.id = 'chartreclabel';
-	chartRecLabel.appendChild(document.createTextNode('-Recorded Gamma-'));
-	var chartOutLabel = document.createElement('span');
-	chartOutLabel.appendChild(document.createTextNode('-Output Gamma-'));
-	chartOutLabel.id = 'chartoutlabel';
-	this.gammaChartBox.appendChild(chartRecLabel);
-	this.gammaChartBox.appendChild(chartOutLabel);
+	this.chartType = [];
+	this.chartType[0] = this.createRadioElement('charttype', false);
+	this.gammaChartBox.appendChild(this.chartType[0]);
+	this.gammaChartBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Reflected/IRE')));
+	this.chartType[1] = this.createRadioElement('charttype', true);
+	this.gammaChartBox.appendChild(this.chartType[1]);
+	this.gammaChartBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop/IRE')));
+	this.chartType[2] = this.createRadioElement('charttype', false);
+	this.gammaChartBox.appendChild(this.chartType[2]);
+	this.gammaChartBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT In/LUT Out')));
 	this.gammaChartBox.appendChild(document.createElement('br'));
+	this.buildChart();
 	this.gammaChartBox.appendChild(document.createTextNode('Output gamma including any customisations:'));
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
@@ -280,13 +285,11 @@ LUTInfoBox.prototype.gammaChart = function() {
 	this.gammaChartBox.appendChild(curires);
 }
 LUTInfoBox.prototype.buildChart = function() {
-	var canvas = document.createElement('canvas');
-	canvas.id = 'chartcanvas';
-	var ctx = canvas.getContext('2d');
-	canvas.width = 560;
-	canvas.height = 300;
-	w = canvas.width * 0.98;
-	h = canvas.height;
+	var point = '18';
+	var cwidth = 1120;
+	var cheight = 600;
+	var w = cwidth * 0.98;
+	var h = cheight;
 	var yMin = h / 15;
 	var yMax = yMin*0.5;
 	var dY = (h - (1.5*yMin))/1023;
@@ -295,67 +298,228 @@ LUTInfoBox.prototype.buildChart = function() {
 	var y0 = h - yMin - yB;
 	var x0 = w / 10;
 	var dX = (w - x0)/16;
-	ctx.fillStyle = 'black';
-	ctx.font = '8pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
-	ctx.textBaseline = 'middle';
-	ctx.textAlign = 'right';
-	ctx.strokeStyle='black';
-	ctx.beginPath();
-	ctx.lineWidth = 1;
-	ctx.fillText('109.5%', x0 * 0.9,yMax);
-	ctx.fillText('100%', x0 * 0.9,y0 - yA);
-	ctx.fillText('0%', x0 * 0.9,h - yB - yMin);
-	ctx.fillText('-7.3%', x0 * 0.9,h - yMin);
-	ctx.moveTo(x0,y0);
-	ctx.lineTo(w,y0);
-	ctx.moveTo(x0 + (dX*8),yMax);
-	ctx.lineTo(x0 + (dX*8),h - yMin);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.strokeStyle='rgba(240, 176, 176, 0.5)';
-	ctx.moveTo(x0,h - yMin);
-	ctx.lineTo(w,h - yMin);
-	ctx.moveTo(x0,y0 - yA);
-	ctx.lineTo(w,y0 - yA);
-	ctx.moveTo(x0,yMax);
-	ctx.lineTo(w,yMax);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.strokeStyle='rgba(176, 176, 240, 0.5)';
+	// Reflected Against IRE
+	var canvas1 = document.createElement('canvas');
+	canvas1.id = 'chartcanvas1';
+	var ctx1 = canvas1.getContext('2d');
+	canvas1.width = cwidth;
+	canvas1.height = cheight;
+	dX = (w - x0)/14;
+	ctx1.fillStyle = 'black';
+	ctx1.font = point + 'pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	ctx1.textBaseline = 'middle';
+	ctx1.textAlign = 'right';
+	ctx1.strokeStyle='black';
+	ctx1.beginPath();
+	ctx1.lineWidth = 2;
+	ctx1.fillText('109.5%', x0 * 0.9,yMax);
+	ctx1.fillText('100%', x0 * 0.9,y0 - yA);
+	ctx1.fillText('0%', x0 * 0.9,h - yB - yMin);
+	ctx1.fillText('-7.3%', x0 * 0.9,h - yMin);
+	ctx1.moveTo(x0,y0);
+	ctx1.lineTo(w,y0);
+	ctx1.moveTo(x0,yMax);
+	ctx1.lineTo(x0,h - yMin);
+	ctx1.stroke();
+	ctx1.beginPath();
+	ctx1.strokeStyle='rgba(240, 176, 176, 0.5)';
+	ctx1.moveTo(x0,h - yMin);
+	ctx1.lineTo(w,h - yMin);
+	ctx1.moveTo(x0,y0 - yA);
+	ctx1.lineTo(w,y0 - yA);
+	ctx1.moveTo(x0,yMax);
+	ctx1.lineTo(w,yMax);
+	ctx1.stroke();
+	ctx1.beginPath();
+	ctx1.strokeStyle='rgba(176, 176, 240, 0.5)';
 	for (var i=1; i<10; i++){
-		ctx.fillText(parseInt(i*10).toString() + '%', x0 * 0.9,y0 - (yA*i/10));
-		ctx.moveTo(x0,y0 - (yA*i/10));
-		ctx.lineTo(w,y0 - (yA*i/10));
+		ctx1.fillText(parseInt(i*10).toString() + '%', x0 * 0.9,y0 - (yA*i/10));
+		ctx1.moveTo(x0,y0 - (yA*i/10));
+		ctx1.lineTo(w,y0 - (yA*i/10));
+	}
+	for (var i=0; i<15; i++){
+		ctx1.translate(x0 + (i*dX) + (w/150) + 10,y0 + (1.75*yB) + 10);
+		ctx1.rotate(1);
+		ctx1.fillText(parseInt(i*100).toString() + '%', 0, 0);
+		ctx1.rotate(-1);
+		ctx1.translate(-x0 - (i*dX) - (w/150) - 10,-y0 - (1.75*yB) - 10);
+		ctx1.moveTo(x0 + (dX*i),yMax);
+		ctx1.lineTo(x0 + (dX*i),h - yMin);
+	}
+	ctx1.stroke();
+	var recCanvas1 = document.createElement('canvas');
+	recCanvas1.id = 'reccanvas1';
+	recCanvas1.width = canvas1.width;
+	recCanvas1.height = canvas1.height;
+	var outCanvas1 = document.createElement('canvas');
+	outCanvas1.id = 'outcanvas1';
+	outCanvas1.width = canvas1.width;
+	outCanvas1.height = canvas1.height;
+	this.refChart = {};
+	this.refChart.rec = recCanvas1.getContext('2d');
+	this.refChart.out = outCanvas1.getContext('2d');
+	this.refChart.width = canvas1.width;
+	this.refChart.w = w;
+	this.refChart.x0 = x0;
+	this.refChart.dX = dX;
+	this.refChart.height = canvas1.height;
+	this.refChart.h = h;
+	this.refChart.y0 = y0;
+	this.refChart.yMax = yMax;
+	this.refChart.dY = yA;
+	this.gammaChartBox.appendChild(canvas1);
+	this.gammaChartBox.appendChild(recCanvas1);
+	this.gammaChartBox.appendChild(outCanvas1);
+	canvas1.style.display = 'none';
+	recCanvas1.style.display = 'none';
+	outCanvas1.style.display = 'none';
+	// Stop Against IRE
+	var canvas2 = document.createElement('canvas');
+	canvas2.id = 'chartcanvas2';
+	var ctx2 = canvas2.getContext('2d');
+	canvas2.width = cwidth;
+	canvas2.height = cheight;
+	dX = (w - x0)/16;
+	ctx2.fillStyle = 'black';
+	ctx2.font = point + 'pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	ctx2.textBaseline = 'middle';
+	ctx2.textAlign = 'right';
+	ctx2.strokeStyle='black';
+	ctx2.beginPath();
+	ctx2.lineWidth = 2;
+	ctx2.fillText('109.5%', x0 * 0.9,yMax);
+	ctx2.fillText('100%', x0 * 0.9,y0 - yA);
+	ctx2.fillText('0%', x0 * 0.9,h - yB - yMin);
+	ctx2.fillText('-7.3%', x0 * 0.9,h - yMin);
+	ctx2.moveTo(x0,y0);
+	ctx2.lineTo(w,y0);
+	ctx2.moveTo(x0 + (dX*8),yMax);
+	ctx2.lineTo(x0 + (dX*8),h - yMin);
+	ctx2.stroke();
+	ctx2.beginPath();
+	ctx2.strokeStyle='rgba(240, 176, 176, 0.5)';
+	ctx2.moveTo(x0,h - yMin);
+	ctx2.lineTo(w,h - yMin);
+	ctx2.moveTo(x0,y0 - yA);
+	ctx2.lineTo(w,y0 - yA);
+	ctx2.moveTo(x0,yMax);
+	ctx2.lineTo(w,yMax);
+	ctx2.stroke();
+	ctx2.beginPath();
+	ctx2.strokeStyle='rgba(176, 176, 240, 0.5)';
+	for (var i=1; i<10; i++){
+		ctx2.fillText(parseInt(i*10).toString() + '%', x0 * 0.9,y0 - (yA*i/10));
+		ctx2.moveTo(x0,y0 - (yA*i/10));
+		ctx2.lineTo(w,y0 - (yA*i/10));
 	}
 	for (var i=0; i<17; i++){
-		ctx.fillText(parseInt(i-8).toString(), x0 + (i*dX) + (w/150),y0 + (1.75*yB));
-		ctx.moveTo(x0 + (dX*i),yMax);
-		ctx.lineTo(x0 + (dX*i),h - yMin);
+		ctx2.fillText(parseInt(i-8).toString(), x0 + (i*dX) + (w/150),y0 + (1.75*yB));
+		ctx2.moveTo(x0 + (dX*i),yMax);
+		ctx2.lineTo(x0 + (dX*i),h - yMin);
 	}
-	ctx.stroke();
-	var recCanvas = document.createElement('canvas');
-	recCanvas.id = 'reccanvas';
-	recCanvas.width = canvas.width;
-	recCanvas.height = canvas.height;
-	var outCanvas = document.createElement('canvas');
-	outCanvas.id = 'outcanvas';
-	outCanvas.width = canvas.width;
-	outCanvas.height = canvas.height;
+	ctx2.stroke();
+	var recCanvas2 = document.createElement('canvas');
+	recCanvas2.id = 'reccanvas2';
+	recCanvas2.width = canvas2.width;
+	recCanvas2.height = canvas2.height;
+	var outCanvas2 = document.createElement('canvas');
+	outCanvas2.id = 'outcanvas2';
+	outCanvas2.width = canvas2.width;
+	outCanvas2.height = canvas2.height;
 	this.stopChart = {};
-	this.stopChart.rec = recCanvas.getContext('2d');
-	this.stopChart.out = outCanvas.getContext('2d');
-	this.stopChart.width = canvas.width;
+	this.stopChart.rec = recCanvas2.getContext('2d');
+	this.stopChart.out = outCanvas2.getContext('2d');
+	this.stopChart.width = canvas2.width;
 	this.stopChart.w = w;
 	this.stopChart.x0 = x0;
 	this.stopChart.dX = dX;
-	this.stopChart.height = canvas.height;
+	this.stopChart.height = canvas2.height;
 	this.stopChart.h = h;
 	this.stopChart.y0 = y0;
 	this.stopChart.yMax = yMax;
 	this.stopChart.dY = yA;
-	this.gammaChartBox.appendChild(canvas);
-	this.gammaChartBox.appendChild(recCanvas);
-	this.gammaChartBox.appendChild(outCanvas);
+	this.gammaChartBox.appendChild(canvas2);
+	this.gammaChartBox.appendChild(recCanvas2);
+	this.gammaChartBox.appendChild(outCanvas2);
+	canvas2.style.display = 'block';
+	recCanvas2.style.display = 'block';
+	outCanvas2.style.display = 'block';
+	// LUT In Against LUT Out
+	var canvas3 = document.createElement('canvas');
+	canvas3.id = 'chartcanvas3';
+	var ctx3 = canvas3.getContext('2d');
+	canvas3.width = cwidth;
+	canvas3.height = cheight;
+	dX = (w - x0)*876/1023;
+	var xMin = x0 + (64*876/1023);
+	ctx3.fillStyle = 'black';
+	ctx3.font = point + 'pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	ctx3.textBaseline = 'middle';
+	ctx3.textAlign = 'right';
+	ctx3.strokeStyle='black';
+	ctx3.beginPath();
+	ctx3.lineWidth = 2;
+	ctx3.fillText('109.5%', x0 * 0.9,yMax);
+	ctx3.fillText('100%', x0 * 0.9,y0 - yA);
+	ctx3.fillText('0%', x0 * 0.9,h - yB - yMin);
+	ctx3.fillText('-7.3%', x0 * 0.9,h - yMin);
+	ctx3.fillText('-7.3%', x0+ (w/50),y0 + (1.75*yB));
+	ctx3.fillText('0%', xMin + (w/50),y0 + (1.75*yB));
+	ctx3.fillText('100%', xMin + dX + (w/50),y0 + (1.75*yB));
+	ctx3.fillText('109.5%', w + (w/50),y0 + (1.75*yB));
+	ctx3.moveTo(x0,y0);
+	ctx3.lineTo(w,y0);
+	ctx3.moveTo(xMin,yMax);
+	ctx3.lineTo(xMin,h - yMin);
+	ctx3.stroke();
+	ctx3.beginPath();
+	ctx3.strokeStyle='rgba(240, 176, 176, 1)';
+	ctx3.moveTo(x0,yMax);
+	ctx3.lineTo(x0,h - yMin);
+	ctx3.moveTo(w,yMax);
+	ctx3.lineTo(w,h - yMin);
+	ctx3.moveTo(xMin + dX,yMax);
+	ctx3.lineTo(xMin + dX,h - yMin);
+	ctx3.moveTo(x0,h - yMin);
+	ctx3.lineTo(w,h - yMin);
+	ctx3.moveTo(x0,y0 - yA);
+	ctx3.lineTo(w,y0 - yA);
+	ctx3.moveTo(x0,yMax);
+	ctx3.lineTo(w,yMax);
+	ctx3.stroke();
+	ctx3.beginPath();
+	ctx3.strokeStyle='rgba(176, 176, 240, 0.5)';
+	for (var i=1; i<10; i++){
+		ctx3.fillText(parseInt(i*10).toString() + '%', x0 * 0.9,y0 - (yA*i/10));
+		ctx3.moveTo(x0,y0 - (yA*i/10));
+		ctx3.lineTo(w,y0 - (yA*i/10));
+	}
+	for (var i=1; i<10; i++){
+		ctx3.fillText(parseInt(i*10).toString()+'%', xMin + (i*dX/10) + (w/50),y0 + (1.75*yB));
+		ctx3.moveTo(xMin + (dX*i/10),yMax);
+		ctx3.lineTo(xMin + (dX*i/10),h - yMin);
+	}
+	ctx3.stroke();
+	var outCanvas3 = document.createElement('canvas');
+	outCanvas3.id = 'outcanvas3';
+	outCanvas3.width = canvas3.width;
+	outCanvas3.height = canvas3.height;
+	this.lutChart = {};
+	this.lutChart.out = outCanvas3.getContext('2d');
+	this.lutChart.width = canvas3.width;
+	this.lutChart.w = w;
+	this.lutChart.x0 = x0;
+	this.lutChart.dX = dX;
+	this.lutChart.height = canvas3.height;
+	this.lutChart.h = h;
+	this.lutChart.y0 = y0;
+	this.lutChart.yMax = yMax;
+	this.lutChart.dY = yA;
+	this.gammaChartBox.appendChild(canvas3);
+	this.gammaChartBox.appendChild(outCanvas3);
+	canvas3.style.display = 'none';
+	outCanvas3.style.display = 'none';
+	// Draw The Lines
 	this.updateChart();
 }
 LUTInfoBox.prototype.addText = function(infoBox,text,bold) {
@@ -375,6 +539,25 @@ LUTInfoBox.prototype.addRow = function(data,section) {
 		row.appendChild(col);
 	}
 	return row;
+}
+LUTInfoBox.prototype.createRadioElement = function(name, checked) {
+    var radioInput;
+    try {
+        var radioHtml = '<input type="radio" name="' + name + '"';
+        if ( checked ) {
+            radioHtml += ' checked="checked"';
+        }
+        radioHtml += '/>';
+        radioInput = document.createElement(radioHtml);
+    } catch( err ) {
+        radioInput = document.createElement('input');
+        radioInput.setAttribute('type', 'radio');
+        radioInput.setAttribute('name', name);
+        if ( checked ) {
+            radioInput.setAttribute('checked', 'checked');
+        }
+    }
+    return radioInput;
 }
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {
@@ -440,20 +623,100 @@ LUTInfoBox.prototype.updateGamma = function() {
 	}
 	this.updateChart();
 }
+LUTInfoBox.prototype.changeChart = function() {
+	if (this.chartType[0].checked) {
+		document.getElementById('chartcanvas1').style.display = 'block';
+		document.getElementById('reccanvas1').style.display = 'block';
+		document.getElementById('outcanvas1').style.display = 'block';
+		document.getElementById('chartcanvas2').style.display = 'none';
+		document.getElementById('reccanvas2').style.display = 'none';
+		document.getElementById('outcanvas2').style.display = 'none';
+		document.getElementById('chartcanvas3').style.display = 'none';
+		document.getElementById('outcanvas3').style.display = 'none';
+	} else if (this.chartType[1].checked) {
+		document.getElementById('chartcanvas1').style.display = 'none';
+		document.getElementById('reccanvas1').style.display = 'none';
+		document.getElementById('outcanvas1').style.display = 'none';
+		document.getElementById('chartcanvas2').style.display = 'block';
+		document.getElementById('reccanvas2').style.display = 'block';
+		document.getElementById('outcanvas2').style.display = 'block';
+		document.getElementById('chartcanvas3').style.display = 'none';
+		document.getElementById('outcanvas3').style.display = 'none';
+	} else{
+		document.getElementById('chartcanvas1').style.display = 'none';
+		document.getElementById('reccanvas1').style.display = 'none';
+		document.getElementById('outcanvas1').style.display = 'none';
+		document.getElementById('chartcanvas2').style.display = 'none';
+		document.getElementById('reccanvas2').style.display = 'none';
+		document.getElementById('outcanvas2').style.display = 'none';
+		document.getElementById('chartcanvas3').style.display = 'block';
+		document.getElementById('outcanvas3').style.display = 'block';
+	}
+}
 LUTInfoBox.prototype.updateChart = function() {
+	var gammaInName = this.gammas.gammas[this.gammas.curIn].name;
+	if (this.gammas.gammas[this.gammas.curIn].cat === 1) {
+		gammaInName += ' - ' + this.gammas.gammas[this.gammas.curIn].gamma;
+	}
+	var gammaOutName = this.gammas.gammas[this.gammas.curOut].name;
+	if (this.gammas.gammas[this.gammas.curOut].cat === 1) {
+		gammaOutName += ' - ' + this.gammas.gammas[this.gammas.curOut].gamma;
+	}
+	// Ref Against IRE
+	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.height);
+	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.height);
+	this.refChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.refChart.rec.textBaseline = 'middle';
+	this.refChart.rec.textAlign = 'left';
+	this.refChart.rec.beginPath();
+	this.refChart.rec.strokeStyle='rgba(240, 0, 0, 0.75)';	
+	this.refChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
+	this.refChart.rec.fillText('In: ' + gammaInName, 200,365);
+	this.refChart.rec.lineWidth = 4;
+	this.refChart.rec.moveTo(this.refChart.x0,this.refChart.y0 - (this.gammas.inRefLegal(0) * this.stopChart.dY));
+	for (var i=1; i<65; i++) {
+		this.refChart.rec.lineTo(this.refChart.x0 + (14*(parseFloat(i)/64) * this.refChart.dX),this.refChart.y0 - (this.gammas.inRefLegal(14*parseFloat(i)/64) * this.refChart.dY));
+	}
+	this.refChart.rec.stroke();
+	this.refChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.refChart.out.textBaseline = 'middle';
+	this.refChart.out.textAlign = 'left';
+	this.refChart.out.beginPath();
+	this.refChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
+	this.refChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
+	this.refChart.out.fillText('Out: ' + gammaOutName, 200,415);
+	this.refChart.out.lineWidth = 4;
+	this.refChart.out.moveTo(this.refChart.x0,this.refChart.y0 - (this.gammas.outRefLegal(0) * this.stopChart.dY));
+	for (var i=1; i<65; i++) {
+		this.refChart.out.lineTo(this.refChart.x0 + (14*(parseFloat(i)/64) * this.refChart.dX),this.refChart.y0 - (this.gammas.outRefLegal(14*parseFloat(i)/64) * this.refChart.dY));
+	}
+	this.refChart.out.stroke();
+	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
+	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
+	// Stop Against IRE
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.stopChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.stopChart.rec.textBaseline = 'middle';
+	this.stopChart.rec.textAlign = 'left';
 	this.stopChart.rec.beginPath();
 	this.stopChart.rec.strokeStyle='rgba(240, 0, 0, 0.75)';	
-	this.stopChart.rec.lineWidth = 1;
+	this.stopChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
+	this.stopChart.rec.fillText('In: ' + gammaInName, 140,85);
+	this.stopChart.rec.lineWidth = 4;
 	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.gammas.inStopLegal(-8) * this.stopChart.dY));
 	for (var i=1; i<65; i++) {
 		this.stopChart.rec.lineTo(this.stopChart.x0 + ((parseFloat(i)/4) * this.stopChart.dX),this.stopChart.y0 - (this.gammas.inStopLegal((parseFloat(i)/4)-8) * this.stopChart.dY));
 	}
 	this.stopChart.rec.stroke();
+	this.stopChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.stopChart.out.textBaseline = 'middle';
+	this.stopChart.out.textAlign = 'left';
 	this.stopChart.out.beginPath();
 	this.stopChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
-	this.stopChart.out.lineWidth = 1;
+	this.stopChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
+	this.stopChart.out.fillText('Out: ' + gammaOutName, 140,135);
+	this.stopChart.out.lineWidth = 4;
 	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.gammas.outStopLegal(-8) * this.stopChart.dY));
 	for (var i=1; i<65; i++) {
 		this.stopChart.out.lineTo(this.stopChart.x0 + ((parseFloat(i)/4) * this.stopChart.dX),this.stopChart.y0 - (this.gammas.outStopLegal((parseFloat(i)/4)-8) * this.stopChart.dY));
@@ -461,4 +724,23 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.stopChart.out.stroke();
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
+	// Gamma In Against Gamma Out
+	var xMin = this.lutChart.x0 + (64*876/1023);
+	this.lutChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.lutChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.lutChart.out.textBaseline = 'middle';
+	this.lutChart.out.textAlign = 'left';
+	this.lutChart.out.beginPath();
+	this.lutChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
+	this.lutChart.out.fillStyle = 'rgba(0, 0, 0, 1)';
+	this.lutChart.out.fillText(gammaInName + ' -> ' + gammaOutName, 220,90);
+	this.lutChart.out.lineWidth = 4;
+	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.gammas.legalOut(this.gammas.dataIn(0) * this.gammas.eiMult) * this.lutChart.dY));
+	for (var i=1; i<65; i++) {
+		this.lutChart.out.lineTo( this.lutChart.x0 + ((i*this.lutChart.dX/64)*1023/876),this.stopChart.y0 - (this.gammas.legalOut(this.gammas.dataIn(i/64) * this.gammas.eiMult) * this.lutChart.dY));
+	}
+	this.lutChart.out.stroke();
+	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
+	var yMin = this.lutChart.h / 15;
+	this.lutChart.out.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
 }

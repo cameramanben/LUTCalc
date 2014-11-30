@@ -13,7 +13,7 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.1');
+lutInputs.addInput('version','v1.2');
 lutInputs.addInput('date','November 2014');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
@@ -87,6 +87,9 @@ lutInputs.d[1].onchange = function(){ lutBox.oneOrThree(); lutGammaBox.oneOrThre
 lutGenerate.genButton.onclick = function(){ lutGenerate.generate(); }
 //		Info Box
 lutInfoBox.instructionsBut.onclick = function(){ lutInfoBox.instructionsOpt(); }
+lutInfoBox.chartType[0].onchange = function(){ lutInfoBox.changeChart(); }
+lutInfoBox.chartType[1].onchange = function(){ lutInfoBox.changeChart(); }
+lutInfoBox.chartType[2].onchange = function(){ lutInfoBox.changeChart(); }
 lutInfoBox.changelogBut.onclick = function(){ lutInfoBox.changelogOpt(); }
 lutInfoBox.gammaInfoBut.onclick = function(){ lutInfoBox.gammaInfoOpt(); }
 lutInfoBox.gammaChartBut.onclick = function(){ lutInfoBox.gammaChartOpt(); }
