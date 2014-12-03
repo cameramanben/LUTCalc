@@ -493,6 +493,7 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 						break;
 		}
 		if (parsed) {
+			this.gammas.updateLA();
 			this.lutAnalystCheck.checked = true;
 			this.lutAnalystCheck.style.display = 'inline';
 			this.lutAnalystToggleCheck();

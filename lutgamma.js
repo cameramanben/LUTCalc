@@ -166,6 +166,9 @@ LUTGamma.prototype.gammaList = function() {
 	this.outList = this.outList.concat(genList);
 	this.outList.push({name: this.gammas[max-1].name, idx: (max-1)});
 }
+LUTGamma.prototype.updateLA = function() {
+	this.gammas[this.LA].updateName();
+}
 LUTGamma.prototype.dataIn = function(input) {
 	return this.gammas[this.curIn].linFromData(input);
 }
@@ -530,6 +533,9 @@ function LUTGammaLA(name) {
 }
 LUTGammaLA.prototype.setLUT = function(lut) {
 	this.lut = lut;
+}
+LUTGammaLA.prototype.updateName = function() {
+	this.name = this.lut.title;
 }
 LUTGammaLA.prototype.setTitle = function(name) {
 	this.name = name;
