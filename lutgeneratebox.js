@@ -55,6 +55,11 @@ LUTGenerateBox.prototype.prepVars = function() {
 	} else {
 		this.mlut = false;
 	}
+	if (this.inputs.clipCheck.checked) {
+		this.hardClip = true;
+	} else {
+		this.hardClip = false;
+	}
 	this.gamuts.updateCur();
 	this.gamutInName = this.gamuts.inGamuts[this.gamuts.curIn].name;
 	this.gamutOutName = this.gamuts.outGamuts[this.gamuts.curOut].name;
@@ -136,6 +141,13 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 					}
 					break;
 		}
+		if (this.hardClip) {
+			if (output > 1) {
+				output = 1;
+			} else if (output < 0) {
+				output = 0;
+			}
+		}
 		output = parseFloat(output).toFixed(8).toString();
 		out += output + ' ' + output + ' ' + output + "\n";
 	}
@@ -181,44 +193,49 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 }
 LUTGenerateBox.prototype.clip = function(data,rgb) {
 	var out = rgb.slice(0);
-	if (data) {
+	if (this.mlut) {
 		if (out[0] < 0) {
-//			out[0] = 0;
+			out[0] = 0;
+		} else if (out[0] > 1.09474885844749) {
+			out[0] = 1.09474885844749;
 		}
 		if (out[1] < 0) {
-//			out[1] = 0;
+			out[1] = 0;
+		} else if (out[1] > 1.09474885844749) {
+			out[1] = 1.09474885844749;
 		}
 		if (out[2] < 0) {
-//			out[2] = 0;
+			out[2] = 0;
+		} else if (out[2] > 1.09474885844749) {
+			out[2] = 1.09474885844749;
 		}
 	} else {
-		if (this.mlut) {
-			if (out[0] < 0) {
-				out[0] = 0;
-			} else if (out[0] > 1.09474885844749) {
-				out[0] = 1.09474885844749;
-			}
-			if (out[1] < 0) {
-				out[1] = 0;
-			} else if (out[1] > 1.09474885844749) {
-				out[1] = 1.09474885844749;
-			}
-			if (out[2] < 0) {
-				out[2] = 0;
-			} else if (out[2] > 1.09474885844749) {
-				out[2] = 1.09474885844749;
-			}
-		} else {
-			if (out[0] < -0.06256109481916) {
-				out[0] = -0.06256109481916;
-			}
-			if (out[1] < -0.06256109481916) {
-				out[1] = -0.06256109481916;
-			}
-			if (out[2] < -0.06256109481916) {
-				out[2] = -0.06256109481916;
-			}
+		if (out[0] < -0.06256109481916) {
+			out[0] = -0.06256109481916;
 		}
+		if (out[1] < -0.06256109481916) {
+			out[1] = -0.06256109481916;
+		}
+		if (out[2] < -0.06256109481916) {
+			out[2] = -0.06256109481916;
+		}
+	}
+	if (this.hardClip) {
+			if (out[0] > 1) {
+				out[0] = 1;
+			} else if (out[0] < 0) {
+				out[0] = 0;
+			}
+			if (out[1] > 1) {
+				out[1] = 1;
+			} else if (out[1] < 0) {
+				out[1] = 0;
+			}
+			if (out[2] > 1) {
+				out[2] = 1;
+			} else if (out[2] < 0) {
+				out[2] = 0;
+			}
 	}
 	return out;
 }

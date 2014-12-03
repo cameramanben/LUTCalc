@@ -38,6 +38,8 @@ function LUTLutBox(fieldset, inputs, gammas, gamuts) {
 	this.inputs.addInput('outRange',[this.lutOutLegal,this.lutOutData]);	
 	this.lutMLUTCheck = document.createElement('input');
 	this.inputs.addInput('mlutCheck',this.lutMLUTCheck);
+	this.lutClipCheck = document.createElement('input');
+	this.inputs.addInput('clipCheck',this.lutClipCheck);
 	this.buildBox();
 	fieldset.appendChild(this.box);
 }
@@ -87,13 +89,21 @@ LUTLutBox.prototype.buildBox = function() {
 	this.lutRange.appendChild(this.lutOutData);
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
 	this.box.appendChild(this.lutRange);
+	this.box.appendChild(document.createElement('br'));
 	this.lutMLUT = document.createElement('div');
 	this.lutMLUT.setAttribute('class','graybox');
-	this.lutMLUT.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera MLUT (3D Only, Clip To 0-1.0)')));
+	this.lutMLUT.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera MLUT (3D, Clip To 0-1.09)')));
 	this.lutMLUTCheck.setAttribute('type','checkbox');
 	this.lutMLUTCheck.checked = false;
 	this.lutMLUT.appendChild(this.lutMLUTCheck);
 	this.box.appendChild(this.lutMLUT);
+	this.lutClip = document.createElement('div');
+	this.lutClip.setAttribute('class','graybox');
+	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Clip To 0-1.0')));
+	this.lutClipCheck.setAttribute('type','checkbox');
+	this.lutClipCheck.checked = false;
+	this.lutClip.appendChild(this.lutClipCheck);
+	this.box.appendChild(this.lutClip);
 	this.oneOrThree();
 }
 // Set Up Data
