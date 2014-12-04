@@ -137,7 +137,11 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			} else {
 // Newton Raphson to get better approximation
 				var aim = i/s;
-				var l = (aim - gamma[low])/(gamma[low+1] - gamma[low]); //First approximation
+				var den = (gamma[low+1] - gamma[low]);
+				var l = 0.5;
+				if (den != 0) {
+					l = (aim - gamma[low])/den; //First approximation
+				}
 				var p0 = gamma[low];
 				var p1 = gamma[low + 1];
 				var d0,d1;
@@ -161,6 +165,7 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 						invGamma[i] = (l + low)/t;
 						break;
 					} else if (isNaN(f)) {
+						invGamma[i] = NaN;
 						break;
 					} else {
 						invGamma[i] = (l + low)/t;
@@ -173,10 +178,28 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 			invGamma[i] = -999;
 		} 
 	}
-	var minD = ((4 * invGamma[minY+1]) - (3 * invGamma[minY]) - invGamma[minY+2])/2;
-	var maxD = (0.5 * invGamma[maxY - 2]) - (2 * invGamma[maxY - 1]) + (1.5 * invGamma[maxY]);
 	var minX = invGamma[minY];
 	var maxX = invGamma[maxY];
+	if (isNaN(minX)) {
+		for (i=minY; i<invDim; i++) {
+			if (!isNaN(invGamma[i])) {
+				minY = i;
+				minX = invGamma[minY];
+				break;
+			}
+		}
+	}
+	if (isNaN(maxX)) {
+		for (i=maxY; i>0; i--) {
+			if (!isNaN(invGamma[i])) {
+				maxY = i;
+				maxX = invGamma[maxY];
+				break;
+			}
+		}
+	}
+	var minD = ((4 * invGamma[minY+1]) - (3 * invGamma[minY]) - invGamma[minY+2])/2;
+	var maxD = (0.5 * invGamma[maxY - 2]) - (2 * invGamma[maxY - 1]) + (1.5 * invGamma[maxY]);
 	if (minY > 0) {
 		for (var i=minY - 1; i >= 0 ; i--) {
 			var j = minY - i;
@@ -269,6 +292,21 @@ LUTs.prototype.calcSG3ToGamut = function(outLut, gamma, gammas, gam, legIn, legO
 					rRowB[a] = invGamma[invMax] + (maxD * ((by * s) - invMax));
 				} else {
 					rRowB[a] = invGamma[bb] + (by - (bb/s));
+				}
+				if (rRowR[a] < -65535) {
+					rRowR[a] = -65535;
+				} else if (rRowR[a] > 65535) {
+					rRowR[a] = 65535;
+				}
+				if (rRowG[a] < -65535) {
+					rRowG[a] = -65535;
+				} else if (rRowG[a] > 65535) {
+					rRowG[a] = 65535;
+				}
+				if (rRowB[a] < -65535) {
+					rRowB[a] = -65535;
+				} else if (rRowB[a] > 65535) {
+					rRowB[a] = 65535;
 				}
 if (isNaN(rRowR[a]) || isNaN(rRowG[a]) || isNaN(rRowB[a])) {
 	console.log('rb - ' + rb + ' , gb - ' + gb + ' , bb - ' + bb);
