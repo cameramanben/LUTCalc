@@ -236,12 +236,6 @@ function LUTGamutCanonIDT(name, params) {
 	if (typeof params.day !== 'undefined') {
 		this.day = params.day;
 	}
-	this.cR = [];
-	this.cG = [];
-	this.cB = [];
-	this.aR = [];
-	this.aG = [];
-	this.aB = [];
 	this.setParams();
 }
 LUTGamutCanonIDT.prototype.setParams = function() {
@@ -303,22 +297,19 @@ LUTGamutCanonIDT.prototype.calc = function(rgb) {
 	var R, G, B;
 	var offsetR = (10.1596*rgb[0])+1;
 	if (offsetR <= 0 ) {
-		R = -64/876;
-	} else {
-		R = (0.529136*Math.log(offsetR)/Math.LN10) + 0.0730597;
+		offsetR = 0.00000000001;
 	}
+	R = (0.529136*Math.log(offsetR)/Math.LN10) + 0.0730597;
 	var offsetG = (10.1596*rgb[1])+1;
 	if (offsetG <= 0 ) {
-		G = -64/876;
-	} else {
-		G = (0.529136*Math.log(offsetG)/Math.LN10) + 0.0730597;
+		offsetG = 0.00000000001;
 	}
+	G = (0.529136*Math.log(offsetG)/Math.LN10) + 0.0730597;
 	var offsetB = (10.1596*rgb[2])+1;
 	if (offsetB <= 0 ) {
-		B = -64/876;
-	} else {
-		B = (0.529136*Math.log(offsetB)/Math.LN10) + 0.0730597;
+		offsetB = 0.00000000001;
 	}
+	B = (0.529136*Math.log(offsetB)/Math.LN10) + 0.0730597;
 	var R2 = R*R;
 	var G2 = G*G;
 	var B2 = B*B;
@@ -334,19 +325,19 @@ LUTGamutCanonIDT.prototype.calc = function(rgb) {
 		  		(this.cR[3]  * vec[3] ) + (this.cR[4]  * vec[4] ) + (this.cR[5]  * vec[5] ) +
 		  		(this.cR[6]  * vec[6] ) + (this.cR[7]  * vec[7] ) + (this.cR[8]  * vec[8] ) +
 		  		(this.cR[9]  * vec[9] ) + (this.cR[10] * vec[10]) + (this.cR[11] * vec[11]) +
-		  		(this.cR[12] * vec[12]) + (this.cR[13] * vec[13]) + (this.cR[14] * vec[14]) + (this.cR[15] * vec[0]) +
+		  		(this.cR[12] * vec[12]) + (this.cR[13] * vec[13]) + (this.cR[14] * vec[14]) + (this.cR[15] * vec[15]) +
 		  		(this.cR[16] * vec[16]) + (this.cR[17] * vec[17]) + (this.cR[18] * vec[18]);
 	mid[1] =	(this.cG[0]  * vec[0] ) + (this.cG[1]  * vec[1] ) + (this.cG[2]  * vec[2] ) +
 		  		(this.cG[3]  * vec[3] ) + (this.cG[4]  * vec[4] ) + (this.cG[5]  * vec[5] ) +
 		  		(this.cG[6]  * vec[6] ) + (this.cG[7]  * vec[7] ) + (this.cG[8]  * vec[8] ) +
 		  		(this.cG[9]  * vec[9] ) + (this.cG[10] * vec[10]) + (this.cG[11] * vec[11]) +
-		  		(this.cG[12] * vec[12]) + (this.cG[13] * vec[13]) + (this.cG[14] * vec[14]) + (this.cG[15] * vec[0]) +
+		  		(this.cG[12] * vec[12]) + (this.cG[13] * vec[13]) + (this.cG[14] * vec[14]) + (this.cG[15] * vec[15]) +
 		  		(this.cG[16] * vec[16]) + (this.cG[17] * vec[17]) + (this.cG[18] * vec[18]);
 	mid[2] =	(this.cB[0]  * vec[0] ) + (this.cB[1]  * vec[1] ) + (this.cB[2]  * vec[2] ) +
 		  		(this.cB[3]  * vec[3] ) + (this.cB[4]  * vec[4] ) + (this.cB[5]  * vec[5] ) +
 		  		(this.cB[6]  * vec[6] ) + (this.cB[7]  * vec[7] ) + (this.cB[8]  * vec[8] ) +
 		  		(this.cB[9]  * vec[9] ) + (this.cB[10] * vec[10]) + (this.cB[11] * vec[11]) +
-		  		(this.cB[12] * vec[12]) + (this.cB[13] * vec[13]) + (this.cB[14] * vec[14]) + (this.cB[15] * vec[0]) +
+		  		(this.cB[12] * vec[12]) + (this.cB[13] * vec[13]) + (this.cB[14] * vec[14]) + (this.cB[15] * vec[15]) +
 		  		(this.cB[16] * vec[16]) + (this.cB[17] * vec[17]) + (this.cB[18] * vec[18]);
 	// C-Log back to linear
 	var lin = [];
