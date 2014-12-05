@@ -98,6 +98,8 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
+	this.addText(this.changelogBox,'v1.21',true);
+	this.addText(this.changelogBox,'Log gamma and LUTAnalyst range checking bugfixes.');
 	this.addText(this.changelogBox,'v1.2',true);
 	this.addText(this.changelogBox,'Added charts for % Reflectance against LUT % IRE and LUT % IRE in against LUT % IRE out.');
 	this.addText(this.changelogBox,'Fixed missing term in Arri LogC input equation.');
