@@ -39,6 +39,8 @@ Canon LUTs and Gamut Information - [Canon C500 Support Site](http://www.canon-eu
 
 Canon C300 Input Device Transform (IDT) - [Canon C300 Support Site](http://www.usa.canon.com/cusa/professional/products/professional_cameras/cinema_eos_cameras/eos_c300#DriversAndSoftware) - under 'Software'. You have to specify 'Mountain Lion' on a Mac or 'Windows XP' on a PC for it to be displayed. C500 and C100 have the same IDTs for CP Lock, though the C500 also offers 'Cinema Gamut' (see above link).
 
+Panasonic Varicam V-Log and V-Gamut - [V-Log/V-Gamut Reference Manual](http://pro-av.panasonic.net/en/varicam/common/pdf/VARICAM_V-Log_V-Gamut.pdf)
+
 Cineon - [Understanding Cineon](http://www.digital-intermediate.co.uk/film/pdf/Cineon.pdf)
 
 Rec709 - [ITU BT.709-5](http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-5-200204-I!!PDF-E.pdf)
