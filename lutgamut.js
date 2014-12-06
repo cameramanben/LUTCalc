@@ -97,6 +97,7 @@ LUTGamut.prototype.gamutList = function() {
 	this.inGamuts.push(new LUTGamutMatrix('Alexa Wide Gamut',[[1.024107,-0.022704,-0.001402],[0.084744,0.932204,-0.016948],[0.033062,-0.036542,1.003480]]));
 	this.inGamuts.push(new LUTGamutCanonIDT('Canon CP IDT (Daylight)',{ camera: 0, day: true }));
 	this.inGamuts.push(new LUTGamutCanonIDT('Canon CP IDT (Tungsten)',{ camera: 0, day: false }));
+	this.inGamuts.push(new LUTGamutMatrix('Panasonic V-Gamut',[[1.3316572111,-0.1875611006,-0.1440961107],[-0.0280131243,0.9887375645,0.0392755599],[0.0125574527,-0.0050679052,0.9925104526]]));
 	this.inGamuts.push(new LUTGamutMatrix('Canon Cinema Gamut',[[1.187002652,-0.168132631,-0.018870191],[0.009561993,1.002334649,-0.01189741],[0.024939851,-0.186414783,1.161474861]]));
 	this.inGamuts.push(new LUTGamutMatrix('Passthrough',[[1,0,0],[0,1,0],[0,0,1]]));
 	this.outGamuts.push(new LUTGamutMatrix('S-Gamut3.cine',[[1,0,0],[0,1,0],[0,0,1]]));
@@ -153,6 +154,7 @@ LUTGamut.prototype.gamutList = function() {
 			lut: this.paramsCPTungstenOut()
 		}));
 	this.outGamuts.push(new LUTGamutMatrix('Canon Cinema Gamut',[[0.840981006,0.143882203,0.015137045],[-0.00825279,0.998163089,0.010090467],[-0.019382583,0.157113995,0.862268767]]));
+	this.outGamuts.push(new LUTGamutMatrix('Panasonic V-Gamut',[[0.752982595,0.143370216,0.103647188],[0.021707697,1.015318836,-0.037026533],[-0.009416053,0.003370418,1.006045635]]));
 	this.LA = this.outGamuts.length;
 	this.outGamuts.push(new LUTGamutLA('LA'));
 	this.pass = this.outGamuts.length;
