@@ -229,6 +229,7 @@ LUTFile.prototype.buildLALut = function(title,oneD,threeD) {
 					'LUT_3D_SIZE ' + threeD.s.toString() + "\n" +
 					'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
 	return oneDHead + this.buildLA1DData(oneD) + separator + threeDHead + this.buildLA3DData(threeD);
+//	return '# S-Gamut3.cine->' + title + ' 3D LUT array for LUTCalc' + "\n" + this.buildLA3DAsArray(threeD);
 }
 LUTFile.prototype.buildLA1DData = function(lut) {
 	var dim = lut.s;
@@ -251,4 +252,69 @@ LUTFile.prototype.buildLA3DData = function(lut) {
 		}
 	}
 	return out
+}
+LUTFile.prototype.buildLA3DAsArray = function(lut) {
+	var redText,greenText,blueText;
+	redText = "\t" + 'out.R =' + "\n";
+	greenText = "\t" + 'out.G =' + "\n";
+	blueText = "\t" + 'out.B =' + "\n";
+	redText += "\t\t" + '[';
+	greenText += "\t\t" + '[';
+	blueText += "\t\t" + '[';
+	for (var b=0; b<33; b++) {
+		if (b>0) {
+			redText += "\t\t" + ' ';
+			greenText += "\t\t" + ' ';
+			blueText += "\t\t" + ' ';
+		}
+		redText += '[';
+		greenText += '[';
+		blueText += '[';
+		for (var g=0; g<33; g++) {
+			if (g>0) {
+				redText += "\t\t" + '  ';
+				greenText += "\t\t" + '  ';
+				blueText += "\t\t" + '  ';
+			}
+			redText += '[';
+			greenText += '[';
+			blueText += '[';
+			for (var r=0; r<33; r++) {
+				var R = lut.R[b][g][r];
+				var G = lut.G[b][g][r];
+				var B = lut.B[b][g][r];
+				if (isNaN(R)) {
+					redText += '        NaN,';
+				} else if (R>=0) {
+					redText += ' ' + R.toFixed(8).toString() + ',';
+				} else {
+					redText += R.toFixed(8).toString() + ',';
+				}
+				if (isNaN(G)) {
+					greenText += '        NaN,';
+				} else if (G>=0) {
+					greenText += ' ' + G.toFixed(8).toString() + ',';
+				} else {
+					greenText += G.toFixed(8).toString() + ',';
+				}
+				if (isNaN(B)) {
+					blueText += '        NaN,';
+				} else if (B>=0) {
+					blueText += ' ' + B.toFixed(8).toString() + ',';
+				} else {
+					blueText += B.toFixed(8).toString() + ',';
+				}
+			}
+			redText = redText.substring(0, redText.length - 1) + '],' + "\n";
+			greenText = greenText.substring(0, greenText.length - 1) + '],' + "\n";
+			blueText = blueText.substring(0, blueText.length - 1) + '],' + "\n";
+		}
+		redText = redText.substring(0, redText.length - 2) + '],' + "\n";
+		greenText = greenText.substring(0, greenText.length - 2) + '],' + "\n";
+		blueText = blueText.substring(0, blueText.length - 2) + '],' + "\n";
+	}
+	redText = redText.substring(0, redText.length - 2) + '];' + "\n";
+	greenText = greenText.substring(0, greenText.length - 2) + '];' + "\n";
+	blueText = blueText.substring(0, blueText.length - 2) + '];' + "\n";
+	return (redText+greenText+blueText);
 }
