@@ -312,7 +312,7 @@ function LUTGamutLUT(name,params) {
 	this.name = name;
 	this.lut = new LUTs();
 	this.lut.setInfo(name, params.format, 3, params.size, params.min, params.max);
-	this.lut.addLUT(params.lut.R,params.lut.G,params.lut.B);
+	this.lut.addLUT(params.lut[0],params.lut[1],params.lut[2]);
 }
 LUTGamutLUT.prototype.calc = function(rgb) {
 	var input = [];

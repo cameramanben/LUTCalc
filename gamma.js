@@ -346,7 +346,7 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, start: i.start, vals: i.vals, dim: i.dim};
 	var s = i.start;
 	var max = i.vals;
-	var o = new Float64Array(max*3);
+	var o = new Float32Array(max*3);
 	var d = i.dim -1;
 	var cMin;
 	if (this.outL && !this.clip) {
@@ -520,7 +520,7 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim, eiMult: this.eiMult};
 	var B = i.B;
 	var max = i.dim;
-	var o = new Float64Array(i.vals*3);
+	var o = new Float32Array(i.vals*3);
 	var d = i.dim -1;
 	if (this.nul) {
 		if (this.inL) {

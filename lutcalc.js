@@ -23,8 +23,6 @@ if (typeof window.lutCalcApp != 'undefined') {
 }
 // Build UI
 var lutMessage = new LUTMessage(lutInputs);
-var lutGamut = new LUTGamut(lutInputs);
-var lutGamma = new LUTGamma();
 var lutFile = new LUTFile(lutInputs);
 document.getElementById('version').appendChild(document.createTextNode(lutInputs.version));
 // Create HTML Structure

@@ -649,10 +649,10 @@ LUTs.prototype.triCubic = function(C, max, RGB) {
 		gDonb = gDoob;
 		gDrnb = gDrob;
 		if (gB === 1) {
-			gDono = ((4*C[o])		- (3*C[o-s1])		- C[ bB ][2][ rB ])/2;
-			gDrno = ((4*C[o+1])		- (3*C[o+1-s1])		- C[ bB ][2][rB+1])/2;
-			gDonb = ((4*C[o+s2])	- (3*C[o-s1+s2])	- C[bB+1][2][ rB ])/2;
-			gDrnb = ((4*C[o+1+s2])	- (3*C[o+1-s1+s2])	- C[bB+1][2][rB+1])/2;
+			gDono = ((4*C[o])		- (3*C[o-s1])		- C[o+s1])/2;
+			gDrno = ((4*C[o+1])		- (3*C[o+1-s1])		- C[o+1+s1])/2;
+			gDonb = ((4*C[o+s2])	- (3*C[o-s1+s2])	- C[o+s1+s2])/2;
+			gDrnb = ((4*C[o+1+s2])	- (3*C[o+1-s1+s2])	- C[o+1+s1+s2])/2;
 		} else {
 			gDono = (Pooo - C[o-s1])/2;
 			gDrno = (Proo - C[o+1-s1])/2;
