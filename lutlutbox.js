@@ -9,11 +9,13 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTLutBox(fieldset, inputs, gammas, gamuts) {
+function LUTLutBox(fieldset, inputs, message) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.gammas = gammas;
-	this.gamuts = gamuts;
+	this.catList = [];
+	this.message = message;
+	this.p = 4;
+	this.message.addUI(this.p,this);
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
 	this.lutOneD = this.createRadioElement('dims', true);
@@ -165,7 +167,11 @@ LUTLutBox.prototype.toggleMLUT = function() {
 }
 LUTLutBox.prototype.changeGamma = function() {
 	if (!this.lutMLUTCheck.checked) {
-		switch (this.gammas.gammas[this.gammas.curOut].cat) {
+		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
+		if (curOut === 9999) {
+			curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
+		}
+		switch (this.catList[curOut]) {
 			case 0:
 			case 3:	this.lutInData.checked = true;
 					this.lutOutData.checked = true;
@@ -177,4 +183,7 @@ LUTLutBox.prototype.changeGamma = function() {
 					break;
 		}
 	}
+}
+LUTLutBox.prototype.gotGammaLists = function(catList) {
+	this.catList = catList;
 }

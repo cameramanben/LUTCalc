@@ -9,10 +9,12 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTInfoBox(fieldset,inputs,gammas) {
+function LUTInfoBox(fieldset,inputs,message) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.gammas = gammas;
+	this.message = message;
+	this.p = 6;
+	this.message.addUI(this.p,this);
 	this.instructionsBut = document.createElement('input');
 	this.changelogBut = document.createElement('input');
 	this.gammaInfoBut = document.createElement('input');
@@ -41,7 +43,6 @@ LUTInfoBox.prototype.buildBox = function() {
 	this.gammaChartBut.value = 'Gamma Chart';
 	this.gammaChartBox = document.createElement('div');
 	this.gammaChart();
-	this.updateGamma();
 	this.gammaChartBox.style.display = 'block';
 	this.box.appendChild(this.instructionsBut);
 	this.box.appendChild(this.changelogBut);
@@ -206,6 +207,8 @@ LUTInfoBox.prototype.changelog = function() {
 	this.addText(this.changelogBox,'First Release.');
 }
 LUTInfoBox.prototype.gammaInfo = function() {
+	this.tableRefVals = [0,0.18,0.38,0.44,0.9,7.2,13.5];
+	this.tableIREVals = [];
 	this.gammaInfoBox.setAttribute('class','graybox infobox');
 	this.addText(this.gammaInfoBox,'Output gamma including any customisations:');
 	var curires = document.createElement('table');
@@ -262,6 +265,25 @@ LUTInfoBox.prototype.gammaInfo = function() {
 	this.gammaInfoBox.appendChild(gamires);
 }
 LUTInfoBox.prototype.gammaChart = function() {
+	this.gammaInName = '';
+	this.gammaOutName = '';
+	this.chartRefXs = [];
+	this.chartRefIns = [];
+	this.chartRefOuts = [];
+	for (var i=0; i<65; i++) {
+		this.chartRefXs[i] = 14*parseFloat(i)/64;
+	}
+	this.chartStopXs = [];
+	this.chartStopIns = [];
+	this.chartStopOuts = [];
+	for (var i=0; i<65; i++) {
+		this.chartStopXs[i] = (parseFloat(i)/4)-8;
+	}
+	this.chartLutXs = [];
+	this.chartLutOuts = [];
+	for (var i=0; i<65; i++) {
+		this.chartLutXs[i] = parseFloat(i)/64;
+	}
 	this.gammaChartBox.setAttribute('class','graybox infobox');
 	this.chartType = [];
 	this.chartType[0] = this.createRadioElement('charttype', false);
@@ -526,7 +548,7 @@ LUTInfoBox.prototype.buildChart = function() {
 	canvas3.style.display = 'none';
 	outCanvas3.style.display = 'none';
 	// Draw The Lines
-	this.updateChart();
+//	this.updateGamma();
 }
 LUTInfoBox.prototype.addText = function(infoBox,text,bold) {
 	var para = document.createElement('p');
@@ -590,44 +612,19 @@ LUTInfoBox.prototype.gammaChartOpt = function() {
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'block';
 }
-LUTInfoBox.prototype.updateGamma = function() {
-	this.lutOutIREs[1].innerHTML = Math.round(this.gammas.ireOut(0)).toString();
-	this.lutOutIREs[2].innerHTML = Math.round(this.gammas.ireOut(18 / 90)).toString();
-	this.lutOutIREs[3].innerHTML = Math.round(this.gammas.ireOut(38 / 90)).toString();
-	this.lutOutIREs[4].innerHTML = Math.round(this.gammas.ireOut(44 / 90)).toString();
-	this.lutOutIREs[5].innerHTML = Math.round(this.gammas.ireOut(90 / 90)).toString();
-	this.lutOutIREs[6].innerHTML = Math.round(this.gammas.ireOut(720 / 90)).toString();
-	this.lutOutIREs[7].innerHTML = Math.round(this.gammas.ireOut(1350 / 90)).toString();
-	this.lutOutVals[1].innerHTML = this.gammas.tenBitOut(0).toString();
-	this.lutOutVals[2].innerHTML = this.gammas.tenBitOut(18 / 90).toString();
-	this.lutOutVals[3].innerHTML = this.gammas.tenBitOut(38 / 90).toString();
-	this.lutOutVals[4].innerHTML = this.gammas.tenBitOut(44 / 90).toString();
-	this.lutOutVals[5].innerHTML = this.gammas.tenBitOut(90 / 90).toString();
-	this.lutOutVals[6].innerHTML = this.gammas.tenBitOut(720 / 90).toString();
-	this.lutOutVals[7].innerHTML = this.gammas.tenBitOut(1350 / 90).toString();
-	this.lutOutIREsChart[1].innerHTML = Math.round(this.gammas.ireOut(0)).toString();
-	this.lutOutIREsChart[2].innerHTML = Math.round(this.gammas.ireOut(18 / 90)).toString();
-	this.lutOutIREsChart[3].innerHTML = Math.round(this.gammas.ireOut(38 / 90)).toString();
-	this.lutOutIREsChart[4].innerHTML = Math.round(this.gammas.ireOut(44 / 90)).toString();
-	this.lutOutIREsChart[5].innerHTML = Math.round(this.gammas.ireOut(90 / 90)).toString();
-	this.lutOutIREsChart[6].innerHTML = Math.round(this.gammas.ireOut(720 / 90)).toString();
-	this.lutOutIREsChart[7].innerHTML = Math.round(this.gammas.ireOut(1350 / 90)).toString();
-	this.lutOutValsChart[1].innerHTML = this.gammas.tenBitOut(0).toString();
-	this.lutOutValsChart[2].innerHTML = this.gammas.tenBitOut(18 / 90).toString();
-	this.lutOutValsChart[3].innerHTML = this.gammas.tenBitOut(38 / 90).toString();
-	this.lutOutValsChart[4].innerHTML = this.gammas.tenBitOut(44 / 90).toString();
-	this.lutOutValsChart[5].innerHTML = this.gammas.tenBitOut(90 / 90).toString();
-	this.lutOutValsChart[6].innerHTML = this.gammas.tenBitOut(720 / 90).toString();
-	this.lutOutValsChart[7].innerHTML = this.gammas.tenBitOut(1350 / 90).toString();
-	for (var i=1; i<8; i++) {
-		if (parseInt(this.lutOutVals[i].innerHTML) > 1023) {
-			this.lutOutVals[i].innerHTML = '-';
-			this.lutOutIREs[i].innerHTML = '-';
-			this.lutOutValsChart[i].innerHTML = '-';
-			this.lutOutIREsChart[i].innerHTML = '-';
+LUTInfoBox.prototype.updateTables = function() {
+	for (var j=0; j<7; j++) {
+		this.lutOutIREs[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
+		this.lutOutVals[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
+		this.lutOutIREsChart[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
+		this.lutOutValsChart[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
+		if (parseInt(this.lutOutVals[j+1].innerHTML) > 1023) {
+			this.lutOutVals[j+1].innerHTML = '-';
+			this.lutOutIREs[j+1].innerHTML = '-';
+			this.lutOutValsChart[j+1].innerHTML = '-';
+			this.lutOutIREsChart[j+1].innerHTML = '-';
 		}
 	}
-	this.updateChart();
 }
 LUTInfoBox.prototype.changeChart = function() {
 	if (this.chartType[0].checked) {
@@ -659,16 +656,20 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('outcanvas3').style.display = 'block';
 	}
 }
-LUTInfoBox.prototype.updateChart = function() {
-	var gammaInName = this.gammas.gammas[this.gammas.curIn].name;
-	if (this.gammas.gammas[this.gammas.curIn].cat === 1) {
-		gammaInName += ' - ' + this.gammas.gammas[this.gammas.curIn].gamma;
+LUTInfoBox.prototype.gotIOGammaNames = function(d) {
+	this.gammaInName = d.inName;
+	if (typeof d.inG !== 'undefined') {
+		this.gammaInName += ' - ' + d.inG;
 	}
-	var gammaOutName = this.gammas.gammas[this.gammas.curOut].name;
-	if (this.gammas.gammas[this.gammas.curOut].cat === 1) {
-		gammaOutName += ' - ' + this.gammas.gammas[this.gammas.curOut].gamma;
+	this.gammaOutName = d.outName;
+	if (typeof d.outG !== 'undefined') {
+		this.gammaOutName += ' - ' + d.outG;
 	}
-	// Ref Against IRE
+	this.updateRefChart();
+	this.updateStopChart();
+	this.updateLutChart();
+}
+LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.height);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.height);
 	this.refChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -677,11 +678,12 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.refChart.rec.beginPath();
 	this.refChart.rec.strokeStyle='rgba(240, 0, 0, 0.75)';	
 	this.refChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
-	this.refChart.rec.fillText('In: ' + gammaInName, 200,365);
+	this.refChart.rec.fillText('In: ' + this.gammaInName, 200,365);
 	this.refChart.rec.lineWidth = 4;
-	this.refChart.rec.moveTo(this.refChart.x0,this.refChart.y0 - (this.gammas.inRefLegal(0) * this.stopChart.dY));
-	for (var i=1; i<65; i++) {
-		this.refChart.rec.lineTo(this.refChart.x0 + (14*(parseFloat(i)/64) * this.refChart.dX),this.refChart.y0 - (this.gammas.inRefLegal(14*parseFloat(i)/64) * this.refChart.dY));
+	this.refChart.rec.moveTo(this.refChart.x0,this.refChart.y0 - (this.chartRefIns[0] * this.stopChart.dY));
+	var max = this.chartRefXs.length;
+	for (var i=1; i<max; i++) {
+		this.refChart.rec.lineTo(this.refChart.x0 + (this.chartRefXs[i] * this.refChart.dX),this.refChart.y0 - (this.chartRefIns[i] * this.refChart.dY));
 	}
 	this.refChart.rec.stroke();
 	this.refChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -690,16 +692,17 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.refChart.out.beginPath();
 	this.refChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
 	this.refChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
-	this.refChart.out.fillText('Out: ' + gammaOutName, 200,415);
+	this.refChart.out.fillText('Out: ' + this.gammaOutName, 200,415);
 	this.refChart.out.lineWidth = 4;
-	this.refChart.out.moveTo(this.refChart.x0,this.refChart.y0 - (this.gammas.outRefLegal(0) * this.stopChart.dY));
-	for (var i=1; i<65; i++) {
-		this.refChart.out.lineTo(this.refChart.x0 + (14*(parseFloat(i)/64) * this.refChart.dX),this.refChart.y0 - (this.gammas.outRefLegal(14*parseFloat(i)/64) * this.refChart.dY));
+	this.refChart.out.moveTo(this.refChart.x0,this.refChart.y0 - (this.chartRefOuts[0] * this.stopChart.dY));
+	for (var i=1; i<max; i++) {
+		this.refChart.out.lineTo(this.refChart.x0 + (this.chartRefXs[i] * this.refChart.dX),this.refChart.y0 - (this.chartRefOuts[i] * this.refChart.dY));
 	}
 	this.refChart.out.stroke();
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
-	// Stop Against IRE
+}
+LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -708,11 +711,12 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.stopChart.rec.beginPath();
 	this.stopChart.rec.strokeStyle='rgba(240, 0, 0, 0.75)';	
 	this.stopChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
-	this.stopChart.rec.fillText('In: ' + gammaInName, 140,85);
+	this.stopChart.rec.fillText('In: ' + this.gammaInName, 140,85);
 	this.stopChart.rec.lineWidth = 4;
-	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.gammas.inStopLegal(-8) * this.stopChart.dY));
-	for (var i=1; i<65; i++) {
-		this.stopChart.rec.lineTo(this.stopChart.x0 + ((parseFloat(i)/4) * this.stopChart.dX),this.stopChart.y0 - (this.gammas.inStopLegal((parseFloat(i)/4)-8) * this.stopChart.dY));
+	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.chartStopIns[0] * this.stopChart.dY));
+	var max = this.chartStopXs.length;
+	for (var i=1; i<max; i++) {
+		this.stopChart.rec.lineTo(this.stopChart.x0 + ((this.chartStopXs[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.chartStopIns[i] * this.stopChart.dY));
 	}
 	this.stopChart.rec.stroke();
 	this.stopChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -721,16 +725,17 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.stopChart.out.beginPath();
 	this.stopChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
 	this.stopChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
-	this.stopChart.out.fillText('Out: ' + gammaOutName, 140,135);
+	this.stopChart.out.fillText('Out: ' + this.gammaOutName, 140,135);
 	this.stopChart.out.lineWidth = 4;
-	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.gammas.outStopLegal(-8) * this.stopChart.dY));
-	for (var i=1; i<65; i++) {
-		this.stopChart.out.lineTo(this.stopChart.x0 + ((parseFloat(i)/4) * this.stopChart.dX),this.stopChart.y0 - (this.gammas.outStopLegal((parseFloat(i)/4)-8) * this.stopChart.dY));
+	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.chartStopOuts[0] * this.stopChart.dY));
+	for (var i=1; i<max; i++) {
+		this.stopChart.out.lineTo(this.stopChart.x0 + ((this.chartStopXs[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.chartStopOuts[i] * this.stopChart.dY));
 	}
 	this.stopChart.out.stroke();
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
-	// Gamma In Against Gamma Out
+}
+LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	var xMin = this.lutChart.x0 + (64*876/1023);
 	this.lutChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.lutChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -739,14 +744,36 @@ LUTInfoBox.prototype.updateChart = function() {
 	this.lutChart.out.beginPath();
 	this.lutChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
 	this.lutChart.out.fillStyle = 'rgba(0, 0, 0, 1)';
-	this.lutChart.out.fillText(gammaInName + ' -> ' + gammaOutName, 220,90);
+	this.lutChart.out.fillText(this.gammaInName + ' -> ' + this.gammaOutName, 220,90);
 	this.lutChart.out.lineWidth = 4;
-	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.gammas.legalOut(this.gammas.dataIn(0) * this.gammas.eiMult) * this.lutChart.dY));
-	for (var i=1; i<65; i++) {
-		this.lutChart.out.lineTo( this.lutChart.x0 + ((i*this.lutChart.dX/64)*1023/876),this.stopChart.y0 - (this.gammas.legalOut(this.gammas.dataIn(i/64) * this.gammas.eiMult) * this.lutChart.dY));
+	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.chartLutOuts[0] * this.lutChart.dY));
+	var max = this.chartLutXs.length;
+	for (var i=1; i<max; i++) {
+		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.chartLutXs[i]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (this.chartLutOuts[i] * this.lutChart.dY));
 	}
 	this.lutChart.out.stroke();
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
 	var yMin = this.lutChart.h / 15;
 	this.lutChart.out.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
+}
+LUTInfoBox.prototype.updateGamma = function() {
+	this.message.gaTx(this.p,10,null);
+	this.message.gaTx(this.p,11,{
+		refX: this.chartRefXs,
+		stopX: this.chartStopXs,
+		lutX: this.chartLutXs,
+		tableX: this.tableRefVals
+	});
+}
+LUTInfoBox.prototype.gotChartVals = function(d) {
+	this.chartRefIns = d.chartRefIns;
+	this.chartRefOuts = d.chartRefOuts;
+	this.chartStopIns = d.chartStopIns;
+	this.chartStopOuts = d.chartStopOuts;
+	this.chartLutOuts = d.chartLutOuts;
+	this.tableIREVals = d.tableIREVals;
+	this.updateRefChart();
+	this.updateStopChart();
+	this.updateLutChart();
+	this.updateTables();
 }

@@ -9,15 +9,26 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTTweaksBox(fieldset, inputs, gammas, gamuts, file) {
+function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.box = document.createElement('fieldset');
 	this.index = 7;
+	this.message = message;
+	this.p = 3;
+	this.message.addUI(this.p,this);
 	this.inputs = inputs;
-	this.gammas = gammas;
-	this.gamuts = gamuts;
+	this.gamutLA = null;
+	this.gammaLA = null;
+	this.blackDefault = null;
+	this.highDefault = null;
+	this.highMap = null;
+	this.catList = [];
 	this.file = file;
 	this.tweakCheck = document.createElement('input');
 	this.inputs.addInput('tweaks',this.tweakCheck);
+	this.inputs.addInput('al',1);
+	this.inputs.addInput('bl',0);
+	this.inputs.addInput('ad',1);
+	this.inputs.addInput('bd',0);
 	this.highGamutBox = document.createElement('div');
 	this.highGamutCheck = document.createElement('input');
 	this.inputs.addInput('tweakHGCheck',this.highGamutCheck);
@@ -53,10 +64,8 @@ function LUTTweaksBox(fieldset, inputs, gammas, gamuts, file) {
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
 	this.lutAnalystGamma = new LUTs();
 	this.inputs.addInput('laGamma',this.lutAnalystGamma);
-	this.gammas.gammas[this.gammas.LA].setLUT(this.lutAnalystGamma);
 	this.lutAnalystGamut = new LUTs();
 	this.inputs.addInput('laGamut',this.lutAnalystGamut);
-	this.gamuts.outGamuts[this.gamuts.LA].setLUT(this.lutAnalystGamut);
 	this.inputs.addInput('laGammaLUT',{text:[]});
 	this.inputs.addInput('laGamutLUT',{text:[]});
 	this.lutAnalysed = document.createElement('input');
@@ -110,6 +119,95 @@ LUTTweaksBox.prototype.buildBox = function() {
 	this.box.appendChild(tweakHolder);
 	this.tweakCheck.checked = true;
 }
+//	Set Up Data
+LUTTweaksBox.prototype.blackHigh = function(blackDef,blackLevel,highRef,highDef,highMap,high709,changedGamma) {
+	if (changedGamma) {
+		this.blackLevelInput.value = (blackDef*100).toFixed(2).toString();
+		this.highLevelRef.value = (highRef*100).toFixed(2).toString();
+		this.highLevelMap.value = (highDef*100).toFixed(2).toString();
+		this.highLevelRec.innerHTML = (high709*100).toFixed(2).toString();
+	} else {
+		this.blackLevelInput.value = (blackLevel*100).toFixed(2).toString();
+		this.highLevelRef.value = (highRef*100).toFixed(2).toString();
+		this.highLevelMap.value = (highMap*100).toFixed(2).toString();
+		this.highLevelRec.innerHTML = (high709*100).toFixed(2).toString();
+	}
+	this.toggleTweakCheck();
+}
+//	Event Responses
+LUTTweaksBox.prototype.toggleTweakCheck = function() {
+	if (this.tweakCheck.checked) {
+		if (this.inputs.d[1].checked) {
+			this.highGamutBox.style.display = 'block';
+		} else {
+			this.highGamutBox.style.display = 'none';
+			this.highGamutCheck.checked = false;
+		}
+		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
+		if (curOut === 9999) {
+			curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
+		}
+		if (this.catList[curOut] != 0 && this.catList[curOut] != 3) {
+			this.blackLevelBox.style.display = 'block';
+			this.highLevelBox.style.display = 'block';
+		} else {
+			this.blackLevelBox.style.display = 'none';
+			this.highLevelBox.style.display = 'none';
+			this.blackLevelCheck.checked = false;
+			this.highLevelCheck.checked = false;
+		}
+		this.lutAnalystBox.style.display = 'block';
+	} else {
+		this.highGamutBox.style.display = 'none';
+		this.blackLevelBox.style.display = 'none';
+		this.highLevelBox.style.display = 'none';
+		this.lutAnalystBox.style.display = 'none';
+		this.highGamutCheck.checked = false;
+		this.blackLevelCheck.checked = false;
+		this.highLevelCheck.checked = false;
+		this.lutAnalystCheck.checked = false;
+	}
+	if (this.inputs.outGamma.options.length > 0 && this.inputs.outGamut.options.length > 0 && this.highGamutSelect.options.length > 0) {
+		this.lutAnalystToggleCheck();
+	}
+}
+LUTTweaksBox.prototype.gotGammaLists = function(inList,outList,linList,catList,LA) {
+	this.lutAnalystGammaSelect.length = 0;
+	this.lutAnalystLinGammaSelect.length = 0;
+	var max = inList.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		option.value = inList[i].idx;
+		option.appendChild(document.createTextNode(inList[i].name));
+		this.lutAnalystGammaSelect.appendChild(option);
+	}
+	max = linList.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		option.value = linList[i].idx;
+		option.appendChild(document.createTextNode(linList[i].name));
+		this.lutAnalystLinGammaSelect.appendChild(option);
+	}
+	this.catList = catList;
+	this.gammaLA = LA;
+}
+LUTTweaksBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
+	var max = inList.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		option.value = inList[i].idx;
+		option.appendChild(document.createTextNode(inList[i].name));
+		this.lutAnalystGamutSelect.appendChild(option);
+	}
+	max = outList.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		option.value = outList[i].idx;
+		option.appendChild(document.createTextNode(outList[i].name));
+		this.highGamutSelect.appendChild(option);
+	}
+	this.gamutLA = LA;
+}
 //
 // *** Highlight Gamut Tweak ***
 //		Build UI
@@ -120,13 +218,6 @@ LUTTweaksBox.prototype.highGamut = function() {
 	this.highGamutBox.appendChild(this.highGamutCheck);
 	this.highGamutBox.appendChild(document.createElement('br'));
 	this.highGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Gamut')));
-	var max = this.gamuts.outList.length;
-	for (var i=0; i < max; i++) {
-		var option = document.createElement('option');
-		option.value = this.gamuts.outList[i].idx;
-		option.appendChild(document.createTextNode(this.gamuts.outList[i].name));
-		this.highGamutSelect.appendChild(option);
-	}
 	this.highGamutBox.appendChild(this.highGamutSelect);
 	this.highGamutBox.appendChild(document.createElement('br'));
 	this.highGamutLinOpt.value = '0';
@@ -257,13 +348,9 @@ LUTTweaksBox.prototype.blackLevel = function() {
 	this.blackLevelInput.setAttribute('class','ireinput');
 	this.blackLevelBox.appendChild(this.blackLevelInput);
 	this.blackLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
-	this.blackLevelDefault();
 	this.toggleBlackLevelCheck();
 }
 //		Set Up Data
-LUTTweaksBox.prototype.blackLevelDefault = function() {
-	this.blackLevelInput.value = this.gammas.baseIreOut(0).toFixed(2).toString();
-}
 //		Event Responses
 LUTTweaksBox.prototype.toggleBlackLevelCheck = function() {
 	if (this.blackLevelCheck.checked) {
@@ -271,14 +358,12 @@ LUTTweaksBox.prototype.toggleBlackLevelCheck = function() {
 	} else {
 		this.blackLevelInput.disabled = true;
 	}
-	this.updateScaling();
 }
 LUTTweaksBox.prototype.changeBlackLevel = function() {
 	if (!isNaN(parseFloat(this.blackLevelInput.value)) && isFinite(this.blackLevelInput.value) && (parseFloat(this.blackLevelInput.value)>-7.3)) {
 	} else {
-			this.blackLevelDefault();
+			this.blackLevelInput.value = null;
 	}
-	this.updateScaling();
 }
 //
 // *** Highlight Level Tweak ***
@@ -306,16 +391,12 @@ LUTTweaksBox.prototype.highlightLevel = function() {
 	this.highLevelMap.setAttribute('type','number');
 	this.highLevelMap.setAttribute('step','any');
 	this.highLevelMap.setAttribute('class','ireinput');
-	this.highLevelDefault();
+//	this.highLevelDefault();
 	this.highLevelBox.appendChild(this.highLevelMap);
 	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
 	this.toggleHighLevelCheck();
 }
 //		Set Up Data
-LUTTweaksBox.prototype.highLevelDefault = function() {
-	this.highLevelRec.innerHTML = this.gammas.rec709IreOut(parseFloat(this.highLevelRef.value)/90).toFixed(2).toString();
-	this.highLevelMap.value = this.gammas.baseIreOut(parseFloat(this.highLevelRef.value)/90).toFixed(2).toString();
-}
 //		Event Responses
 LUTTweaksBox.prototype.toggleHighLevelCheck = function() {
 	if (this.highLevelCheck.checked) {
@@ -325,22 +406,19 @@ LUTTweaksBox.prototype.toggleHighLevelCheck = function() {
 		this.highLevelRef.disabled = true;
 		this.highLevelMap.disabled = true;
 	}
-	this.updateScaling();
 }
 LUTTweaksBox.prototype.changeHighLevelRef = function() {
 	if (!isNaN(parseFloat(this.highLevelRef.value)) && isFinite(this.highLevelRef.value) && (parseFloat(this.highLevelRef.value)>0)) {
 	} else {
 		this.highLevelRef.value = '90';
+		this.highLevelMap.value = null;
 	}
-	this.highLevelDefault();
-	this.updateScaling();
 }
 LUTTweaksBox.prototype.changeHighLevelMap = function() {
 	if (!isNaN(parseFloat(this.highLevelMap.value)) && isFinite(this.highLevelMap.value) && (parseFloat(this.highLevelMap.value)>-7.3)) {
 	} else {
-		this.highLevelDefault();
+		this.highLevelMap.value = null;
 	}
-	this.updateScaling();
 }
 //
 // *** LUT Analyst ***
@@ -378,36 +456,15 @@ LUTTweaksBox.prototype.lutAnalyst = function() {
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystTitle);
 	this.lutAnalystAnalyseBox.appendChild(document.createElement('br'));
 	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Gamma')));
-	var max = this.gammas.inList.length;
-	for (var i=0; i < max; i++) {
-		var option = document.createElement('option');
-		option.value = this.gammas.inList[i].idx;
-		option.appendChild(document.createTextNode(this.gammas.inList[i].name));
-		this.lutAnalystGammaSelect.appendChild(option);
-	}
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystGammaSelect);
 	this.lutAnalystAnalyseBox.appendChild(document.createElement('br'));
 	this.lutAnalystLinGammaBox = document.createElement('div');
 	this.lutAnalystLinGammaBox.appendChild(document.createElement('label').appendChild(document.createTextNode('γ Correction')));
-	var max = this.gammas.linList.length;
-	for (var i=0; i < max; i++) {
-		var option = document.createElement('option');
-		option.value = this.gammas.linList[i].idx;
-		option.appendChild(document.createTextNode(this.gammas.linList[i].name));
-		this.lutAnalystLinGammaSelect.appendChild(option);
-	}
 	this.lutAnalystLinGammaBox.appendChild(this.lutAnalystLinGammaSelect);
 	this.lutAnalystLinGammaBox.style.display = 'none';
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystLinGammaBox);
 	this.lutAnalystGamutBox = document.createElement('div');
 	this.lutAnalystGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Gamut')));
-	var max = this.gamuts.inList.length;
-	for (var i=0; i < max; i++) {
-		var option = document.createElement('option');
-		option.value = this.gamuts.inList[i].idx;
-		option.appendChild(document.createTextNode(this.gamuts.inList[i].name));
-		this.lutAnalystGamutSelect.appendChild(option);
-	}
 	this.lutAnalystGamutBox.appendChild(this.lutAnalystGamutSelect);
 	this.lutAnalystGamutBox.appendChild(document.createElement('br'));
 	this.lutAnalystGamutBox.style.display = 'none';
@@ -493,7 +550,7 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 						break;
 		}
 		if (parsed) {
-			this.gammas.updateLA();
+//			this.gammas.updateLA();
 			this.lutAnalystCheck.checked = true;
 			this.lutAnalystCheck.style.display = 'inline';
 			this.lutAnalystToggleCheck();
@@ -506,16 +563,18 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 	this.lutAnalysed.value = '0';
 	this.lutAnalystCheck.checked = false;
 	this.lutAnalystCheck.style.display = 'none';
-	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
-		this.inputs.outGamma.options[0].selected = true;
+	if (this.inputs.outGamma.options.length > 0 && this.inputs.outGamut.options.length > 0 && this.highGamutSelect.options.length > 0) {
+		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
+			this.inputs.outGamma.options[0].selected = true;
+		}
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamutLA) {
+			this.inputs.outGamut.options[0].selected = true;
+		}
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamutLA) {
+			this.highGamutSelect.options[0].selected = true;
+		}
+		this.lutAnalystToggleCheck();
 	}
-	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
-		this.inputs.outGamut.options[0].selected = true;
-	}
-	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
-		this.highGamutSelect.options[0].selected = true;
-	}
-	this.lutAnalystToggleCheck();
 	this.lutAnalystInLUT.reset();
 	this.inputs.laFileData = {};
 	this.lutAnalystFileInput.value = '';
@@ -535,40 +594,40 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 }
 LUTTweaksBox.prototype.lutAnalystToggleCheck = function() {
 	if (this.lutAnalystCheck.checked) {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value != this.gammas.LA) {
+		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value != this.gammaLA) {
 			var laOption = document.createElement('option');
-				laOption.value = this.gammas.LA;
+				laOption.value = this.gammaLA;
 				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 			this.inputs.outGamma.appendChild(laOption);
 		} else {
 			this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value != this.gamuts.LA) {
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value != this.gamutLA) {
 			var laOption = document.createElement('option');
-				laOption.value = this.gamuts.LA;
+				laOption.value = this.gamutLA;
 				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 			this.inputs.outGamut.appendChild(laOption);
 		} else {
 			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 		}
-		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value != this.gamuts.LA) {
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value != this.gamutLA) {
 			var laOption = document.createElement('option');
-				laOption.value = this.gamuts.LA;
+				laOption.value = this.gamutLA;
 				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 			this.highGamutSelect.appendChild(laOption);
 		} else {
 			this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 		}
 	} else {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
+		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
 			this.inputs.outGamma.remove(this.inputs.outGamma.options.length - 1);
 			this.inputs.outGamma.options[0].selected = true;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamutLA) {
 			this.inputs.outGamut.remove(this.inputs.outGamut.options.length - 1);
 			this.inputs.outGamut.options[0].selected = true;
 		}
-		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamutLA) {
 			this.highGamutSelect.remove(this.highGamutSelect.options.length - 1);
 			this.highGamutSelect.options[0].selected = true;
 		}
@@ -602,7 +661,7 @@ LUTTweaksBox.prototype.lutAnalystDo = function() {
 	this.lutAnalystProgress.value = 0.33;
 	this.lutAnalystInfo.innerHTML = 'Calculating 1D Curve: S-Log3 → Test Gamma';
 	this.lutAnalystInfoBox.style.display = 'block';
-	var sl3ToGamma = this.lutAnalystInLUT.calcTransferFromSL3(this.gammas,lutGammaIn,legIn,legOut);
+//	var sl3ToGamma = this.lutAnalystInLUT.calcTransferFromSL3(this.gammas,lutGammaIn,legIn,legOut);
 	if (sl3ToGamma) {
 		this.lutAnalystProgress.value = 0.66;
 		this.lutAnalystInfo.innerHTML = 'Calculating 3D Colour Space Conversion: S-Gamut3.cine → Test Gamut';
@@ -614,39 +673,46 @@ LUTTweaksBox.prototype.lutAnalystDo = function() {
 		this.lutAnalystProgress.value = 0;
 		this.lutAnalystInfo.innerHTML = '';
 		this.lutAnalystInfoBox.style.display = 'none';
-		if (this.lutAnalystInLUT.calcSG3ToGamut(this.lutAnalystGamut,sl3ToGamma,this.gammas,lutGammaIn,legIn,legOut)) {
-			this.lutAnalystCheck.checked = true;
-			this.lutAnalystCheck.style.display = 'inline';
-			this.lutAnalystToggleCheck();
-			this.lutAnalystDoButton.value = 'Re-Analyse';
-			this.lutAnalystStoreButton.style.display = 'inline';
-		}
+//		if (this.lutAnalystInLUT.calcSG3ToGamut(this.lutAnalystGamut,sl3ToGamma,this.gammas,lutGammaIn,legIn,legOut)) {
+//			this.lutAnalystCheck.checked = true;
+//			this.lutAnalystCheck.style.display = 'inline';
+//			this.lutAnalystToggleCheck();
+//			this.lutAnalystDoButton.value = 'Re-Analyse';
+//			this.lutAnalystStoreButton.style.display = 'inline';
+//		}
 	}
 }
 LUTTweaksBox.prototype.lutAnalystStore = function() {
 	this.file.save(this.file.buildLALut(this.lutAnalystGamma.title,this.lutAnalystGamma,this.lutAnalystGamut),this.lutAnalystGamma.title,'lacube');
 }
+LUTTweaksBox.prototype.lutAnalystUpdateTitle = function() {
+	this.message.gaTx(this.p,7,this.lutAnalystTitle.value);
+	this.message.gtTx(this.p,7,this.lutAnalystTitle.value);	
+}
 LUTTweaksBox.prototype.cleanLutAnalystTitle = function() {
 	this.lutAnalystTitle.value = this.lutAnalystTitle.value.replace(/[/"/']/gi, '');
 	this.lutAnalystGamma.title = this.lutAnalystTitle.value;
 	this.lutAnalystGamut.title = this.lutAnalystTitle.value;
-	this.gammas.gammas[this.gammas.LA].setTitle(this.lutAnalystTitle.value);
-	this.gamuts.outGamuts[this.gamuts.LA].setTitle(this.lutAnalystTitle.value);
-	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammas.LA) {
+	this.lutAnalystUpdateTitle();
+	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
 		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 	}
-	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamuts.LA) {
+	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamutLA) {
 		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 	}
-	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamuts.LA) {
+	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamutLA) {
 		this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+	}
+}
+LUTTweaksBox.prototype.followUp = function(input) {
+	switch (input) {
+		case 0:	this.lutAnalystGotFile();
+				break;
+		default:break;
 	}
 }
 //
 // General Helper Functions
-LUTTweaksBox.prototype.legToDat = function(input) {
-	return ((input * 876) + 64)/1023;
-}
 LUTTweaksBox.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -667,79 +733,3 @@ LUTTweaksBox.prototype.createRadioElement = function(name, checked) {
     return radioInput;
 }
 // General Event Responses
-LUTTweaksBox.prototype.toggleTweakCheck = function() {
-	if (this.tweakCheck.checked) {
-		if (this.inputs.d[1].checked) {
-			this.highGamutBox.style.display = 'block';
-		} else {
-			this.highGamutBox.style.display = 'none';
-			this.highGamutCheck.checked = false;
-		}
-		if (this.gammas.gammas[this.gammas.curOut].cat != 0 && this.gammas.gammas[this.gammas.curOut].cat != 3) {
-			this.blackLevelBox.style.display = 'block';
-			this.highLevelBox.style.display = 'block';
-		} else {
-			this.blackLevelBox.style.display = 'none';
-			this.highLevelBox.style.display = 'none';
-			this.blackLevelCheck.checked = false;
-			this.highLevelCheck.checked = false;
-		}
-		this.lutAnalystBox.style.display = 'block';
-	} else {
-		this.highGamutBox.style.display = 'none';
-		this.blackLevelBox.style.display = 'none';
-		this.highLevelBox.style.display = 'none';
-		this.lutAnalystBox.style.display = 'none';
-		this.highGamutCheck.checked = false;
-		this.blackLevelCheck.checked = false;
-		this.highLevelCheck.checked = false;
-		this.lutAnalystCheck.checked = false;
-	}
-	this.lutAnalystToggleCheck();
-	this.updateScaling();
-}
-LUTTweaksBox.prototype.updateScaling = function() {
-	if (this.tweakCheck.checked) {
-		var blackDef = this.gammas.baseIreOut(0) / 100;
-		var blackNew = blackDef;
-		if (this.blackLevelCheck.checked) {
-			blackNew = parseFloat(this.blackLevelInput.value) / 100;
-			if (Math.abs(blackNew-blackDef)<0.0001) {
-				blackNew = blackDef;
-			}
-		}
-		var highRef = 1;
-		var highDefMap = 1;
-		var highNewMap = 1;
-		if (this.highLevelCheck.checked) {
-			highRef = parseFloat(this.highLevelRef.value)/90;
-			highDefMap = parseFloat(this.gammas.baseIreOut(highRef))/100;
-			highNewMap = parseFloat(this.highLevelMap.value)/100;
-			if (Math.abs(highNewMap-highDefMap)<0.0001) {
-				highNewMap = highDefMap;
-			}
-		}
-		this.gammas.al = (highNewMap - blackNew)/(highDefMap - blackDef);
-		this.gammas.bl = blackNew - (blackDef * this.gammas.al);
-		this.gammas.ad = this.gammas.al;
-		this.gammas.bd = this.legToDat(blackNew) - (this.legToDat(blackDef) * this.gammas.ad);
-	} else {
-		this.gammas.al = 1;
-		this.gammas.bl = 0;
-		this.gammas.ad = 1;
-		this.gammas.bd = 0;
-	}
-}
-LUTTweaksBox.prototype.changeGamma = function() {
-	this.blackLevelDefault();
-	this.highLevelRef.value='90';
-	this.highLevelDefault();
-	this.toggleTweakCheck();
-}
-LUTTweaksBox.prototype.followUp = function(input) {
-	switch (input) {
-		case 0:	this.lutAnalystGotFile();
-				break;
-		default:break;
-	}
-}

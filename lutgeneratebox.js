@@ -9,18 +9,53 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTGenerateBox(fieldset, inputs, gammas, gamuts, file) {
+function LUTGenerateBox(fieldset, inputs, message, file) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.gammas = gammas;
-	this.gamuts = gamuts;
+	this.message = message;
+	this.p = 5;
+	this.message.addUI(this.p,this);
+	this.lT = 0;
+	this.dimension = 0;
+	this.lut;
 	this.file = file;
+	this.gamutInName = '';
+	this.gamutOutName = '';
+	this.gamutHGName = '';
+	this.baseIRE = 0;
 	this.genButton = document.createElement('input');
 	this.genButton.setAttribute('type','button');
 	this.genButton.value = 'Generate LUT';
 	this.box.appendChild(this.genButton);
 	fieldset.id = 'genbutton';
 	fieldset.appendChild(this.box);
+}
+LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
+	this.baseIRE = baseIRE;
+}
+LUTGenerateBox.prototype.got1D = function(d) {
+	this.lut.set(d.o, d.start*3);
+	this.lT += d.vals;
+	if (this.lT === this.dimension) {
+		this.lT = 0;
+		this.output();
+	}
+}
+LUTGenerateBox.prototype.got3D = function(d) {
+	this.lut.set(d.o, d.vals*d.B*3);
+	this.lT++;
+	if (this.lT === this.dimension) {
+		this.lT = 0;
+		this.output();
+	}
+}
+LUTGenerateBox.prototype.output = function() {
+		var max = this.lut.length / 3;
+		var d = '';
+		for (var j=0; j<max; j++) {
+			d += this.lut[(j*3)].toFixed(6).toString() + ' ' + this.lut[(j*3)+1].toFixed(6).toString() + ' ' + this.lut[(j*3)+2].toFixed(6).toString() + "\n";
+		}
+		this.file.save(this.header() + d, this.inputs.name.value, 'cube');
 }
 LUTGenerateBox.prototype.prepVars = function() {
 	this.name = this.inputs.name.value;
@@ -37,15 +72,17 @@ LUTGenerateBox.prototype.prepVars = function() {
 		}
 	}
 	this.cineEI = parseFloat(this.inputs.stopShift.value);
-	this.gammaInName = this.gammas.gammas[this.gammas.curIn].name;
-	if (this.gammas.gammas[this.gammas.curIn].cat === 1) {
-		this.gammaInName += ' - ' + this.gammas.gammas[this.gammas.curIn].gamma;
+	if (this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value !== '9999') {
+		this.gammaInName = this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].lastChild.nodeValue;
+	} else {
+		this.gammaInName = this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].lastChild.nodeValue;
 	}
-	this.gammaOutName = this.gammas.gammas[this.gammas.curOut].name;
-	if (this.gammas.gammas[this.gammas.curOut].cat === 1) {
-		this.gammaOutName += ' - ' + this.gammas.gammas[this.gammas.curOut].gamma;
+	if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value !== '9999') {
+		this.gammaOutName = this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue;
+	} else {
+		this.gammaOutName = this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].lastChild.nodeValue;
 	}
-	if (this.gammas.gammas[this.gammas.curOut].cat === 3) {
+	if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue === 'Null') {
 		this.nul = true;
 	} else {
 		this.nul = false;
@@ -60,24 +97,23 @@ LUTGenerateBox.prototype.prepVars = function() {
 	} else {
 		this.hardClip = false;
 	}
-	this.gamuts.updateCur();
-	this.gamutInName = this.gamuts.inGamuts[this.gamuts.curIn].name;
-	this.gamutOutName = this.gamuts.outGamuts[this.gamuts.curOut].name;
 	if (this.inputs.tweaks.checked) {
 		this.doTweaks = true;
 	} else {
 		this.doTweaks = false;
 	}
+	this.gamutInName = this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].lastChild.nodeValue;
+	this.gamutOutName = this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue;
+	this.gamutHGName = this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].lastChild.nodeValue;;
 	if (this.doTweaks && this.inputs.tweakHGCheck.checked) {
 		this.doHG = true;
-		this.gamutHGName = this.gamuts.outGamuts[this.gamuts.curHG].name;
 	} else {
 		this.doHG = false;
 	}
 	if (this.doTweaks && this.inputs.tweakBlkCheck.checked) {
 		this.blackLevel = parseFloat(this.inputs.tweakBlk.value);
 	} else {
-		this.blackLevel = this.gammas.baseIreOut(0);
+		this.blackLevel = this.baseIRE;
 	}
 	if (this.inputs.inRange[0].checked) {
 		this.legalIn = true;
@@ -94,102 +130,50 @@ LUTGenerateBox.prototype.prepVars = function() {
 LUTGenerateBox.prototype.generate = function() {
 	this.prepVars();
 	if (this.inputs.d[0].checked) {
-		this.file.save(this.header() + this.oneDLUT(), this.inputs.name.value, 'cube');
+		this.oneDLUT();
 	} else {
-		this.file.save(this.header() + this.threeDLUT(), this.inputs.name.value, 'cube');
+		this.threeDLUT();
 	}
 }
 LUTGenerateBox.prototype.oneDLUT = function() {
-	var dimension = 1024;
+	this.dimension = 1024;
 	var max = this.inputs.dimension.length;
 	for (var i=0; i<max; i++) {
 		if (this.inputs.dimension[i].checked) {
-			dimension = parseInt(this.inputs.dimension[i].value);
+			this.dimension = parseInt(this.inputs.dimension[i].value);
 			break;
 		}
 	}
-	var out = '';
-	var range = 0;
-	if (this.inputs.inRange[0].checked) {
-		range += 1;
-	}
-	if (this.inputs.outRange[0].checked) {
-		range += 2;
-	}
-	for (var i=0; i<dimension; i++) {
-	var input = parseFloat(i)/(dimension-1);
-		var output;
-		switch(range) {
-			case 0: output = this.gammas.dataOut(this.gammas.dataIn(input) * this.gammas.eiMult);
-					if (output < 0) {
-						output = 0;
-					}
-					break;
-			case 1: output = this.gammas.dataOut(this.gammas.legalIn(input) * this.gammas.eiMult);
-					if (output < 0) {
-						output = 0;
-					}
-					break;
-			case 2: output = this.gammas.legalOut(this.gammas.dataIn(input) * this.gammas.eiMult);
-					if (output < -0.06256109481916) {
-						output = -0.06256109481916;
-					}
-					break;
-			case 3: output = this.gammas.legalOut(this.gammas.legalIn(input) * this.gammas.eiMult);
-					if (output < -0.06256109481916) {
-						output = -0.06256109481916;
-					}
-					break;
+	this.lut = new Float32Array(((this.dimension)*3));
+	var chunks = 2;
+	var chunk = parseInt(this.dimension / chunks);
+	for (var j=0; j<chunks; j++) {
+		var start = chunk*j;
+		if ((start + chunk) > this.dimension) {
+			this.message.gaTx(this.p,1,{start: start,vals: (this.dimension-start),dim: this.dimension});
+		} else {
+			this.message.gaTx(this.p,1,{start: start,vals: chunk,dim: this.dimension});
 		}
-		if (this.hardClip) {
-			if (output > 1) {
-				output = 1;
-			} else if (output < 0) {
-				output = 0;
-			}
-		}
-		output = parseFloat(output).toFixed(8).toString();
-		out += output + ' ' + output + ' ' + output + "\n";
 	}
-	return out;
 }
 LUTGenerateBox.prototype.threeDLUT = function() {
-	var dimension = 33;
+	this.dimension = 33;
 	var max = this.inputs.dimension.length;
 	for (var i=0; i<max; i++) {
 		if (this.inputs.dimension[i].checked) {
-			dimension = parseFloat(this.inputs.dimension[i].value);
+			this.dimension = parseInt(this.inputs.dimension[i].value);
 			break;
 		}
 	}
-	var out = '';
-	var range = 0;
-	if (this.inputs.inRange[0].checked) {
-		range += 1;
+	var chunks = this.dimension;
+	var chunk = this.dimension * this.dimension;
+	this.lut = new Float32Array(chunk*chunks*3);
+	for (var j=0; j<chunks; j++) {
+		var R = 0;
+		var G = 0;
+		var B = j;
+		this.message.gaTx(this.p,3,{R:R, G:G, B:B, vals:chunk, dim:this.dimension});
 	}
-	if (this.inputs.outRange[0].checked) {
-		range += 2;
-	}
-	var max = Math.pow(dimension,3);
-	var dim2 = Math.pow(dimension,2);
-	for (var i=0; i<max; i++) {
-		var input = [(i % dimension)/(dimension-1),
-					 (parseInt(i/dimension) % dimension)/(dimension-1),
-					 (parseInt(i/dim2) % dimension)/(dimension-1)];
-		var output;
-		switch(range) {
-			case 0: output = this.fixedString(this.clip(true,this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input)))))));
-					break;
-			case 1: output = this.fixedString(this.clip(true,this.gammas.dataOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input)))))));
-					break;
-			case 2: output = this.fixedString(this.clip(false,this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.dataInRGB(input)))))));
-					break;
-			case 3: output = this.fixedString(this.clip(false,this.gammas.legalOutRGB(this.gamuts.outCalc(this.eiMult(this.gamuts.inCalc(this.gammas.legalInRGB(input)))))));
-					break;
-		}
-		out += output[0] + ' ' + output[1] + ' ' + output[2] + "\n";
-	}
-	return out;
 }
 LUTGenerateBox.prototype.clip = function(data,rgb) {
 	var out = rgb.slice(0);
@@ -243,11 +227,6 @@ LUTGenerateBox.prototype.fixedString = function(rgb) {
 	return [parseFloat(rgb[0]).toFixed(10).toString(),
 			parseFloat(rgb[1]).toFixed(10).toString(),
 			parseFloat(rgb[2]).toFixed(10).toString()];
-}
-LUTGenerateBox.prototype.eiMult = function(rgb) {
-	return [rgb[0] * this.gammas.eiMult,
-			rgb[1] * this.gammas.eiMult,
-			rgb[2] * this.gammas.eiMult];
 }
 LUTGenerateBox.prototype.header = function() {
 	var out = 'TITLE "' + this.name + '"' + "\n";

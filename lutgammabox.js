@@ -1,6 +1,6 @@
 /* lutgammabox.js
 * Transfer curve and colour space conversion (Gamma and Gamut) options UI object for the LUTCalc Web App.
-* 7th October 2014
+* 9th January 2015
 *
 * LUTCalc generates 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, 
 * principally the Sony CineAlta line.
@@ -9,11 +9,14 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTGammaBox(fieldset,inputs,gammas,gamuts) {
+function LUTGammaBox(fieldset,inputs,message) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.gammas = gammas;
-	this.gamuts = gamuts;
+	this.message = message;
+	this.p = 2;
+	this.message.addUI(this.p,this);
+	this.gamutPass = 0;
+	this.gamutLA = 0;
 	this.inGammaSelect = document.createElement('select');
 	this.inputs.addInput('inGamma',this.inGammaSelect);
 	this.inLinSelect = document.createElement('select');
@@ -26,7 +29,6 @@ function LUTGammaBox(fieldset,inputs,gammas,gamuts) {
 	this.inputs.addInput('outLinGamma',this.outLinSelect);
 	this.outGamutSelect = document.createElement('select');
 	this.inputs.addInput('outGamut',this.outGamutSelect);
-	this.options();
 	this.buildBox();
 	fieldset.appendChild(this.box);
 }
@@ -60,60 +62,68 @@ LUTGammaBox.prototype.buildBox = function() {
 	this.outGamutBox.style.display = 'none';
 }
 // Set Up Data
-LUTGammaBox.prototype.options = function() {
-	var max = this.gammas.inList.length;
+LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {
+	this.inGammaSelect.length = 0;
+	this.outGammaSelect.length = 0;
+	this.inLinSelect.length = 0;
+	this.outLinSelect.length = 0;
+	var max = inList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
-		option.value = this.gammas.inList[i].idx;
-		option.appendChild(document.createTextNode(this.gammas.inList[i].name));
+		option.value = inList[i].idx;
+		option.appendChild(document.createTextNode(inList[i].name));
 		this.inGammaSelect.appendChild(option);
 	}
-	max = this.gammas.outList.length;
+	max = outList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
-		option.value = this.gammas.outList[i].idx;
-		option.appendChild(document.createTextNode(this.gammas.outList[i].name));
+		option.value = outList[i].idx;
+		option.appendChild(document.createTextNode(outList[i].name));
 		this.outGammaSelect.appendChild(option);
 	}
-	max = this.gammas.linList.length;
+	max = linList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
 		var option2 = document.createElement('option');
-		option.value = this.gammas.linList[i].idx;
-		option2.value = this.gammas.linList[i].idx;
-		option.appendChild(document.createTextNode(this.gammas.linList[i].name));
-		option2.appendChild(document.createTextNode(this.gammas.linList[i].name));
+		option.value = linList[i].idx;
+		option2.value = linList[i].idx;
+		option.appendChild(document.createTextNode(linList[i].name));
+		option2.appendChild(document.createTextNode(linList[i].name));
 		this.inLinSelect.appendChild(option);
 		this.outLinSelect.appendChild(option2);
 	}
-	max = this.gamuts.inList.length;
+}
+LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
+	max = inList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
-		option.value = this.gamuts.inList[i].idx;
-		option.appendChild(document.createTextNode(this.gamuts.inList[i].name));
+		option.value = inList[i].idx;
+		option.appendChild(document.createTextNode(inList[i].name));
 		this.inGamutSelect.appendChild(option);
 	}
-	max = this.gamuts.outList.length;
+	max = outList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
-		option.value = this.gamuts.outList[i].idx;
-		option.appendChild(document.createTextNode(this.gamuts.outList[i].name));
+		option.value = outList[i].idx;
+		option.appendChild(document.createTextNode(outList[i].name));
 		this.outGamutSelect.appendChild(option);
 	}
+	this.gamutPass = pass;
+	this.gamutLA = LA;
 }
 LUTGammaBox.prototype.defaultGam = function() {
-	var max = this.gammas.inList.length;
+	var max = this.inGammaSelect.length;
 	var defGamma = this.inputs.defGammaIn;
 	for (var i = 0; i < max; i++) {
-		if (defGamma == this.gammas.inList[i].name) {
+		if (defGamma == this.inGammaSelect.options[i].lastChild.nodeValue) {
 			this.inGammaSelect.options[i].selected = true;
 			break;
 		}
 	}
-	max = this.gamuts.inList.length;
+	max = this.inGamutSelect.length;
 	var defGamut = this.inputs.defGamutIn;
 	for (var i = 0; i < max; i++) {
-		if (defGamut == this.gamuts.inList[i].name) {
+		if (defGamut == this.inGamutSelect.options[i].lastChild.nodeValue) {
 			this.inGamutSelect.options[i].selected = true;
 			break;
 		}
@@ -138,23 +148,23 @@ LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
 		var max = this.outGamutSelect.options.length;
 		for (var i=0; i<max; i++) {
-			if (this.outGamutSelect.options[i].value == this.gamuts.pass) {
+			if (this.outGamutSelect.options[i].value == this.gamutPass) {
 				this.outGamutSelect.options[i].selected = true;
 				break;
 			}
 		}
-	} else if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamuts.pass) {
+	} else if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamutPass) {
 		this.outGamutSelect.options[0].selected = true;
 	}
 }
 LUTGammaBox.prototype.changeOutGamut = function() {
-	if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamuts.pass) {
+	if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamutPass) {
 		this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected = true;
 	} else if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
-		max = this.gamuts.inList.length;
+		var max = this.inGamutSelect.length;
 		var defGamut = this.inputs.defGamutIn;
 		for (var i = 0; i < max; i++) {
-			if (defGamut == this.gamuts.inList[i].name) {
+			if (defGamut == this.inGamutSelect.options[i].lastChild.nodeValue) {
 				this.inGamutSelect.options[i].selected = true;
 				break;
 			}
