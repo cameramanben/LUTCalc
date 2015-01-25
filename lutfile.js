@@ -60,7 +60,7 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 						parentObject.followUp(next);
     				};
     			})(file);
-				reader.onerror = function(thFile) { return function() {
+				reader.onerror = function(theFile) { return function() {
 					alert("Error reading file.");
 					inputBox.value = '';
 				}; }(file);

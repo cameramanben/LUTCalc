@@ -13,8 +13,8 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.3');
-lutInputs.addInput('date','November 2014');
+lutInputs.addInput('version','v1.4');
+lutInputs.addInput('date','December 2014');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
     lutInputs.addInput('isApp',true);
@@ -22,77 +22,219 @@ if (typeof window.lutCalcApp != 'undefined') {
     lutInputs.addInput('isApp',false);
 }
 // Build UI
+var lutMessage = new LUTMessage(lutInputs);
 var lutGamut = new LUTGamut(lutInputs);
-var lutGamma = new LUTGamma(lutInputs);
+var lutGamma = new LUTGamma();
 var lutFile = new LUTFile(lutInputs);
 document.getElementById('version').appendChild(document.createTextNode(lutInputs.version));
 // Create HTML Structure
 var left = fieldSet(lutCalcForm,false,'left');
-var lutCameraBox = new LUTCameraBox(fieldSet(left,true), lutInputs);
-lutGamma.defaultGamma();
-var lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut);
-var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutGamma, lutGamut, lutFile);
+var lutCameraBox = new LUTCameraBox(fieldSet(left,true), lutInputs, lutMessage);
+var lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutMessage);
+var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, lutFile);
 var right = fieldSet(lutCalcForm,false,'right');
-var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutGamma, lutGamut);
-var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutGamma, lutGamut, lutFile);
-var lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutGamma);
-lutTweaksBox.toggleTweakCheck();
-//	Set Up Form Input Events
+var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage);
+var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile);
+var lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
+// Set Up Data
+lutMessage.gaTx(0,5,{});
+lutMessage.gtTx(0,5,{});
+// Set Up Form Input Events
 //		Camera Box
-lutInputs.camera.onchange = function(){lutCameraBox.changeCamera(); lutGamma.defaultGamma(); lutGamma.changeISO(); lutGammaBox.defaultGam();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.cineEI.onchange = function(){lutCameraBox.changeCineEI(); lutGamma.changeISO();lutInfoBox.updateGamma();}
-lutInputs.stopShift.onchange = function(){lutCameraBox.changeShift(); lutGamma.changeShift(); lutGamma.changeISO();lutInfoBox.updateGamma();}
+lutInputs.camera.onchange = function(){
+	lutCameraBox.changeCamera();
+	lutGammaBox.defaultGam();
+	lutMessage.gaSetParams();
+	lutBox.changeGamma();
+}
+lutInputs.cineEI.onchange = function(){
+	lutCameraBox.changeCineEI();
+	lutMessage.gaSetParams();
+}
+lutInputs.stopShift.onchange = function(){
+	lutCameraBox.changeShift();
+	lutMessage.gaSetParams();
+}
 //		Gamma Box
-lutInputs.inGamma.onchange = function(){lutGammaBox.changeGammaIn(); lutGamma.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.inLinGamma.onchange = function(){lutGammaBox.changeGammaIn(); lutGamma.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.outGamma.onchange = function(){lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.outLinGamma.onchange = function(){lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.inGamut.onchange = function(){lutGammaBox.changeInGamut();}
-lutInputs.outGamut.onchange = function(){lutGammaBox.changeOutGamut();}
+lutInputs.inGamma.onchange = function(){
+	lutGammaBox.changeGammaIn();
+	lutMessage.gaSetParams();
+}
+lutInputs.inLinGamma.onchange = function(){
+	lutGammaBox.changeGammaIn();
+	lutMessage.gaSetParams();
+}
+lutInputs.outGamma.onchange = function(){
+	lutGammaBox.changeGammaOut();
+	lutBox.changeGamma();
+	lutMessage.gaSetParams();
+}
+lutInputs.outLinGamma.onchange = function(){
+	lutGammaBox.changeGammaOut();
+	lutBox.changeGamma();
+	lutMessage.gaSetParams();
+}
+lutInputs.inGamut.onchange = function(){
+	lutGammaBox.changeInGamut();
+	lutMessage.gtSetParams();
+}
+lutInputs.outGamut.onchange = function(){
+	lutGammaBox.changeOutGamut();
+	lutMessage.gtSetParams();
+}
 //		Tweaks Box
-lutInputs.tweaks.onchange = function(){ lutTweaksBox.toggleTweakCheck(); }
+lutInputs.tweaks.onchange = function(){
+	lutTweaksBox.toggleTweakCheck();
+	lutMessage.gaSetParams();
+}
 //			Highlight Gamut Tweak
-lutInputs.tweakHGCheck.onchange = function(){ lutTweaksBox.toggleHighGamutCheck(); }
-lutInputs.tweakHGLinLog[0].onchange = function(){ lutTweaksBox.toggleHighGamutLinLog(); }
-lutInputs.tweakHGLinLog[1].onchange = function(){ lutTweaksBox.toggleHighGamutLinLog(); }
-lutInputs.tweakHGLinLow.onchange = function(){ lutTweaksBox.changeHighGamutLinLow(); }
-lutInputs.tweakHGLinHigh.onchange = function(){ lutTweaksBox.changeHighGamutLinHigh(); }
-lutInputs.tweakHGLow.onchange = function(){ lutTweaksBox.changeHighGamutLogLow(); }
-lutInputs.tweakHGHigh.onchange = function(){ lutTweaksBox.changeHighGamutLogHigh(); }
+lutInputs.tweakHGCheck.onchange = function(){
+	lutTweaksBox.toggleHighGamutCheck();
+}
+lutInputs.tweakHGSelect.onchange = function(){
+	lutMessage.gtSetParams();
+}
+lutInputs.tweakHGLinLog[0].onchange = function(){
+	lutTweaksBox.toggleHighGamutLinLog();
+}
+lutInputs.tweakHGLinLog[1].onchange = function(){
+	lutTweaksBox.toggleHighGamutLinLog();
+}
+lutInputs.tweakHGLinLow.onchange = function(){
+	lutTweaksBox.changeHighGamutLinLow();
+}
+lutInputs.tweakHGLinHigh.onchange = function(){
+	lutTweaksBox.changeHighGamutLinHigh();
+}
+lutInputs.tweakHGLow.onchange = function(){
+	lutTweaksBox.changeHighGamutLogLow();
+}
+lutInputs.tweakHGHigh.onchange = function(){
+	lutTweaksBox.changeHighGamutLogHigh();
+}
 //			Black Level Tweak
-lutInputs.tweakBlkCheck.onchange = function(){ lutTweaksBox.toggleBlackLevelCheck();lutInfoBox.updateGamma(); }
-lutInputs.tweakBlk.onchange = function(){ lutTweaksBox.changeBlackLevel();lutInfoBox.updateGamma(); }
+lutInputs.tweakBlkCheck.onchange = function(){
+	lutTweaksBox.toggleBlackLevelCheck();
+	lutMessage.gaSetParams();
+}
+lutInputs.tweakBlk.onchange = function(){
+	lutTweaksBox.changeBlackLevel();
+	lutMessage.gaSetParams();
+}
 //			Highlight Level Tweak
-lutInputs.tweakHiCheck.onchange = function(){ lutTweaksBox.toggleHighLevelCheck();lutInfoBox.updateGamma(); }
-lutInputs.tweakHiRef.onchange = function(){ lutTweaksBox.changeHighLevelRef();lutInfoBox.updateGamma(); }
-lutInputs.tweakHiMap.onchange = function(){ lutTweaksBox.changeHighLevelMap();lutInfoBox.updateGamma(); }
+lutInputs.tweakHiCheck.onchange = function(){
+	lutTweaksBox.toggleHighLevelCheck();
+	lutMessage.gaSetParams();
+}
+lutInputs.tweakHiRef.onchange = function(){
+	lutTweaksBox.changeHighLevelRef();
+	lutMessage.gaSetParams();
+}
+lutInputs.tweakHiMap.onchange = function(){
+	lutTweaksBox.changeHighLevelMap();
+	lutMessage.gaSetParams();
+}
 //			LUT Analyst Tweak
 if (lutInputs.isApp) {
-	lutInputs.laFileInput.onclick = function(){ lutTweaksBox.lutAnalystGetFile(); }
+	lutInputs.laFileInput.onclick = function(){
+		lutTweaksBox.lutAnalystGetFile();
+	}
 } else {
-	lutInputs.laFileInput.onchange = function(){ lutTweaksBox.lutAnalystGetFile(); }
+	lutInputs.laFileInput.onchange = function(){
+		lutTweaksBox.lutAnalystGetFile();
+	}
 }
-lutInputs.laGammaSelect.onchange = function(){ lutTweaksBox.lutAnalystChangeGamma(); }
-lutInputs.laDoButton.onclick = function(){ lutTweaksBox.lutAnalystDo(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.laTitle.onchange = function(){ lutTweaksBox.cleanLutAnalystTitle(); }
-lutInputs.laBackButton.onclick = function(){ lutTweaksBox.lutAnalystReset(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
-lutInputs.laStoreButton.onclick = function(){ lutTweaksBox.lutAnalystStore(); }
-lutInputs.laCheck.onclick = function(){ lutTweaksBox.lutAnalystToggleCheck(); lutGammaBox.changeGammaOut(); lutGamma.changeGamma();lutTweaksBox.changeGamma();lutBox.changeGamma();lutInfoBox.updateGamma();}
+lutInputs.laGammaSelect.onchange = function(){
+	lutTweaksBox.lutAnalystChangeGamma();
+}
+lutInputs.laDoButton.onclick = function(){ 
+	lutTweaksBox.lutAnalystDo();
+	lutGammaBox.changeGammaOut();
+	lutMessage.gaSetParams();
+//	lutTweaksBox.changeGamma();
+	lutBox.changeGamma();
+//	lutInfoBox.updateGamma();
+}
+lutInputs.laTitle.onchange = function(){
+	lutTweaksBox.cleanLutAnalystTitle();
+}
+lutInputs.laBackButton.onclick = function(){
+	lutTweaksBox.lutAnalystReset();
+	lutGammaBox.changeGammaOut();
+	lutMessage.gaSetParams();
+//	lutTweaksBox.changeGamma();
+	lutBox.changeGamma();
+//	lutInfoBox.updateGamma();
+}
+lutInputs.laStoreButton.onclick = function(){
+	lutTweaksBox.lutAnalystStore();
+}
+lutInputs.laCheck.onclick = function(){
+	lutTweaksBox.lutAnalystToggleCheck();
+	lutGammaBox.changeGammaOut();
+	lutMessage.gaSetParams();
+//	lutTweaksBox.changeGamma();
+	lutBox.changeGamma();
+//	lutInfoBox.updateGamma();
+}
 //		LUT Box
-lutInputs.name.onchange = function(){ lutBox.cleanName(); lutFile.filename(); }
-lutInputs.mlutCheck.onchange = function(){ lutBox.toggleMLUT(); lutGammaBox.oneOrThree(); lutTweaksBox.toggleTweakCheck(); }
-lutInputs.d[0].onchange = function(){ lutBox.oneOrThree(); lutGammaBox.oneOrThree(); lutTweaksBox.toggleTweakCheck(); }
-lutInputs.d[1].onchange = function(){ lutBox.oneOrThree(); lutGammaBox.oneOrThree(); lutTweaksBox.toggleTweakCheck(); }
+lutInputs.name.onchange = function(){
+	lutBox.cleanName();
+	lutFile.filename();
+}
+lutInputs.mlutCheck.onchange = function(){
+	lutBox.toggleMLUT();
+	lutGammaBox.oneOrThree();
+	lutTweaksBox.toggleTweakCheck();
+}
+lutInputs.d[0].onchange = function(){
+	lutBox.oneOrThree();
+	lutGammaBox.oneOrThree();
+	lutTweaksBox.toggleTweakCheck();
+}
+lutInputs.d[1].onchange = function(){
+	lutBox.oneOrThree();
+	lutGammaBox.oneOrThree();
+	lutTweaksBox.toggleTweakCheck();
+}
+lutInputs.inRange[0].onchange = function(){
+	lutMessage.gaSetParams();
+}
+lutInputs.inRange[1].onchange = function(){
+	lutMessage.gaSetParams();
+}
+lutInputs.outRange[0].onchange = function(){
+	lutMessage.gaSetParams();
+}
+lutInputs.outRange[1].onchange = function(){
+	lutMessage.gaSetParams();
+}
 //		Generate Button
-lutGenerate.genButton.onclick = function(){ lutGenerate.generate(); }
+lutGenerate.genButton.onclick = function(){
+	lutGenerate.generate();
+}
 //		Info Box
-lutInfoBox.instructionsBut.onclick = function(){ lutInfoBox.instructionsOpt(); }
-lutInfoBox.chartType[0].onchange = function(){ lutInfoBox.changeChart(); }
-lutInfoBox.chartType[1].onchange = function(){ lutInfoBox.changeChart(); }
-lutInfoBox.chartType[2].onchange = function(){ lutInfoBox.changeChart(); }
-lutInfoBox.changelogBut.onclick = function(){ lutInfoBox.changelogOpt(); }
-lutInfoBox.gammaInfoBut.onclick = function(){ lutInfoBox.gammaInfoOpt(); }
-lutInfoBox.gammaChartBut.onclick = function(){ lutInfoBox.gammaChartOpt(); }
+lutInfoBox.instructionsBut.onclick = function(){
+	lutInfoBox.instructionsOpt();
+}
+lutInfoBox.chartType[0].onchange = function(){
+	lutInfoBox.changeChart();
+}
+lutInfoBox.chartType[1].onchange = function(){
+	lutInfoBox.changeChart();
+}
+lutInfoBox.chartType[2].onchange = function(){
+	lutInfoBox.changeChart();
+}
+lutInfoBox.changelogBut.onclick = function(){
+	lutInfoBox.changelogOpt();
+}
+lutInfoBox.gammaInfoBut.onclick = function(){
+	lutInfoBox.gammaInfoOpt();
+}
+lutInfoBox.gammaChartBut.onclick = function(){
+	lutInfoBox.gammaChartOpt();
+}
 // Functions available to native apps
 function loadLUTFromApp(format, text, destination, parentIdx, next) {
 	lutInputs[destination].format = format;

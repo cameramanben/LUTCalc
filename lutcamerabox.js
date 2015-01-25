@@ -9,8 +9,10 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTCameraBox(fieldset, inputs) {
+function LUTCameraBox(fieldset, inputs, message) {
 	this.inputs = inputs;
+	this.message = message;
+	this.message.addUI(1,this);
 	this.box = document.createElement('fieldset');
 	this.cameras = [];
 	this.cameraList();
