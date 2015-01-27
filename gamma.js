@@ -52,11 +52,23 @@ LUTGamma.prototype.gammaList = function() {
 		'Cineon', [ 0.0000000000, 0.0000000000, 0.1260649940,22.2791018600, 2.6907845340, 0.2595160220, 0.2702335160, 0.0000000000, 0 ]));
 	this.rec709 = this.gammas.length;
 	this.gammas.push(new LUTGammaLin(
-		'Rec709', [ 2.22222222, 4.50000000, 0.09900000, 0.01800000, 0.08100000 ]));
+		'Rec709', [ 1/0.45, 4.50000000, 0.09900000, 0.01800000, 0.08100000 ]));
+	this.gammas.push(new LUTGammaLin(
+		'Rec2020 12-bit', [ 1/0.45, 4.50000000, 0.09930000, 0.01810000, 0.08145000 ]));
 	this.gammas.push(new LUTGammaLin(
 		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966 ]));
 	this.gammas.push(new LUTGammaLin(
 		'Linear', [ 1.00000000, 1.00000000, 0.00000000,999.0000000,999.0000000 ]));
+	this.gammas.push(new LUTGammaPQ(
+		'Dolby PQ (4300%)', {Lmax: 43}));
+	this.gammas.push(new LUTGammaITUProp(
+		'ITU Proposal (400%)', {m: 0.12314858 }));
+	this.gammas.push(new LUTGammaITUProp(
+		'ITU Proposal (800%)', {m: 0.083822216783 }));
+	this.gammas.push(new LUTGammaBBC283(
+		'BBC WHP283 (400%)', {m: 0.139401137752}));
+	this.gammas.push(new LUTGammaBBC283(
+		'BBC WHP283 (800%)', {m: 0.097401889128}));
 	this.gammas.push(new LUTGammaLUT(
 		'Rec709 (800%)',
 		{
@@ -157,7 +169,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaNull(
 		'Null'));
 	var max = this.gammas.length;
-	var logList = [], linList = [], genList = [];
+	var logList = [], linList = [], genList = [], hdrList = [];
 	for (var i=0; i < max; i++) {
 		this.catList[i] = this.gammas[i].cat;
 		switch(this.gammas[i].cat) {
@@ -167,13 +179,17 @@ LUTGamma.prototype.gammaList = function() {
 					break;
 			case 2: genList.push({name: this.gammas[i].name, idx: i});
 					break;
+			case 4: hdrList.push({name: this.gammas[i].name, idx: i});
+					break;
 			default: break;
 		}
 	}
 	this.inList = logList.slice();
 	this.inList.push({name: 'Linear / Rec709', idx: 9999});
+	this.inList = this.inList.concat(hdrList);
 	this.outList = logList.slice();
 	this.outList.push({name: 'Linear / Rec709', idx: 9999});
+	this.outList = this.outList.concat(hdrList);
 	this.outList = this.outList.concat(genList);
 	this.outList.push({name: this.gammas[max-1].name, idx: (max-1)});
 }
@@ -476,46 +492,6 @@ LUTGamma.prototype.inCalc = function(p,t,i) {
 	}
 	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
 }
-/*
-LUTGamma.prototype.outCalc = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		if (this.outL) {
-			for (var j=0; j<max; j++) {
-				o[j] = this.gammas[this.curIn].linToLegal(i[j]);
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = this.gammas[this.curIn].linToData(i[j]);
-			}
-		}
-	} else {
-		if (this.scale) {
-			if (this.outL) {
-				for (var j=0; j<max; j++) {
-					o[j] = ((this.gammas[this.curOut].linToLegal(this.eiMult * i[j]) * this.al) + this.bl);
-				}
-			} else {
-				for (var j=0; j<max; j++) {
-					o[j] = ((this.gammas[this.curOut].linToData(this.eiMult * i[j]) * this.ad) + this.bd);
-				}
-			}
-		} else {
-			if (this.outL) {
-				for (var j=0; j<max; j++) {
-					o[j] = this.gammas[this.curOut].linToLegal(this.eiMult * i[j]);
-				}
-			} else {
-				for (var j=0; j<max; j++) {
-					o[j] = this.gammas[this.curOut].linToData(this.eiMult * i[j]);
-				}
-			}
-		}
-	}
-	return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
 LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim, eiMult: this.eiMult};
 	var B = i.B;
@@ -661,152 +637,6 @@ LUTGamma.prototype.setLATitle = function(p,t,i) {
 	this.gammas[this.LA].setTitle(i);
 	return { p: p, t:t+20, v: this.ver, i: i };
 }
-/*
-LUTGamma.prototype.inValStops = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	for (var j=0; j<max; j++) {
-		o[j] = this.gammas[this.curIn].linToLegal(Math.pow(2,i[j]) / 5);
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.outValStops = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		for (var j=0; j<max; j++) {
-			o[j] = this.gammas[this.curIn].linToLegal(Math.pow(2,i[j]) / 5);
-		}
-	} else {
-		if (this.scale) {
-			for (var j=0; j<max; j++) {
-				o[j] = (this.gammas[this.curOut].linToLegal(this.eiMult * Math.pow(2,i[j]) / 5) * this.al) + this.bl;
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = this.gammas[this.curOut].linToLegal(this.eiMult * Math.pow(2,i[j]) / 5);
-			}
-		}
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.inValRefs = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	for (var j=0; j<max; j++) {
-		o[j] = this.gammas[this.curIn].linToLegal(i[j] / 0.9);
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.outValRefs = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		for (var j=0; j<max; j++) {
-			o[j] = this.gammas[this.curIn].linToLegal(i[j] / 0.9);
-		}
-	} else {
-		if (this.scale) {
-			for (var j=0; j<max; j++) {
-				o[j] = (this.gammas[this.curOut].linToLegal(this.eiMult * i[j] / 0.9) * this.al) + this.bl;
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = this.gammas[this.curOut].linToLegal(this.eiMult * i[j] / 0.9);
-			}
-		}
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.out10BitVal = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		for (var j=0; j<max; j++) {
-			o[j] = Math.round(this.gammas[this.curIn].linToData(i[j]) * 1023);
-		}
-	} else {
-		if (this.scale) {
-			for (var j=0; j<max; j++) {
-				o[j] = Math.round(((this.gammas[this.curOut].linToData(i[j]) * this.ad) + this.bd) * 1023);
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = Math.round(this.gammas[this.curOut].linToData(i[j]) * 1023);
-			}
-		}
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.out8BitVal = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		for (var j=0; j<max; j++) {
-			o[j] = Math.round(this.gammas[this.curIn].linToData(i[j]) * 255);
-		}
-	} else {
-		if (this.scale) {
-			for (var j=0; j<max; j++) {
-				o[j] = Math.round(((this.gammas[this.curOut].linToData(i[j]) * this.ad) + this.bd) * 255);
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = Math.round(this.gammas[this.curOut].linToData(i[j]) * 255);
-			}
-		}
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.outBlackVal = function(p,t) {
-	var o;
-	if (this.nul) {
-		o = (this.gammas[this.curIn].linToLegal(0) * 100);
-	} else {
-		o = (this.gammas[this.curOut].linToLegal(0) * 100);
-	}
-	return { p: p, t: t+20, v: this.ver, o: o };
-}
-*/
-/*
-LUTGamma.prototype.outIREVal = function(p,t,i) {
-	var o = [];
-	var max = i.length;
-	if (this.nul) {
-		for (var j=0; j<max; j++) {
-			o[j] = (this.gammas[this.curIn].linToLegal(i[j]) * 100);
-		}
-	} else {
-		if (this.scale) {
-			for (var j=0; j<max; j++) {
-				o[j] = (((this.gammas[this.curOut].linToLegal(i[j]) * this.al) + this.bl) * 100);
-			}
-		} else {
-			for (var j=0; j<max; j++) {
-				o[j] = this.gammas[this.curOut].linToLegal(i[j]) * 100;
-			}
-		}
-	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
-}
-*/
-/*
-LUTGamma.prototype.outRec709IREVal = function(p,t,i) {
-	return { p: p, t: t+20, v: this.ver, i: i, o: this.gammas[this.rec709].linToLegal(i) * 100 };
-}
-*/
 LUTGamma.prototype.ioNames = function(p,t) {
 	var out = {};
 	out.inName = this.gammas[this.curIn].name;
@@ -879,14 +709,6 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	}	
 	return out;
 }
-/*
-LUTGamma.prototype.highDefault = function(p,t,i) {
-	var out = {p: p, t: t+20, v: this.ver};
-	out.rec = this.gammas[this.rec709].linToLegal(i/90) * 100;
-	out.map = this.gammas[this.curOut].linToLegal(i/90) * 100;
-	return out;
-}
-*/
 // Gamma calculation objects
 function LUTGammaLog(name,params) {
 	this.name = name;
@@ -1035,6 +857,125 @@ LUTGammaLin.prototype.linFromLegal = function(input) {
 		return Math.pow((input + this.params[2])/(1 + this.params[2]),this.params[0]);		
 	} else {
 		return (input / this.params[1]);
+	}
+}
+function LUTGammaPQ(name,params) {
+	this.name = name;
+	this.params = params.nits;
+	this.cat = 4;
+	this.Lmax = params.Lmax;
+	this.n = (2610/4096)*(1/4);
+	this.m = (2523/4096)*128;
+	this.c1 = (3424/4096);
+	this.c2 = (2413/4096)*32;
+	this.c3 = (2392/4096)*32;
+	this.changeISO(800);
+}
+LUTGammaPQ.prototype.changeISO = function(iso) {
+	this.iso = iso;
+	this.L = this.Lmax;
+	this.e = this.linToLegal(0);
+}
+LUTGammaPQ.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+}
+LUTGammaPQ.prototype.linToLegal = function(input) {
+	if (input < 0) {
+		return this.e;
+	} else {
+		var r = Math.pow(input/this.L,this.n);
+		return Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m);
+	}
+}
+LUTGammaPQ.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+}
+LUTGammaPQ.prototype.linFromLegal = function(input) {
+	if (input <= this.e) {
+		return 0;
+	} else {
+		var r = Math.pow(input,1/this.m);
+		return this.L*Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.n);
+	}
+}
+function LUTGammaITUProp(name,params) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 4;
+	this.setM(params.m);
+}
+LUTGammaITUProp.prototype.setM = function(m) {
+	this.m = m;
+	this.n = 0.45*1.09930000*Math.pow(m,0.45);
+	this.r = (1.09930000*Math.pow(m,0.45)*(1-(0.45*Math.log(m)))) - 0.09930000;
+	this.e = this.linToLegal(m);
+}
+LUTGammaITUProp.prototype.changeISO = function(iso) {
+	this.iso = iso;
+}
+LUTGammaITUProp.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+}
+LUTGammaITUProp.prototype.linToLegal = function(input) {
+	if (input > this.m) {
+		return ((this.n*Math.log(input)) + this.r);
+	} else if (input >= 0.01810000) {
+		return (1.09930000 * Math.pow(input,0.45)) - 0.09930000;
+	} else {
+		return 4.5 * input;
+	}
+}
+LUTGammaITUProp.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+}
+LUTGammaITUProp.prototype.linFromLegal = function(input) {
+	if (input > this.e) {
+		return Math.exp((input-this.r)/this.n);
+	} else if (input >= 0.08145000) {
+		return Math.pow((input + 0.09930000)/(1.09930000),1/0.45);		
+	} else {
+		return (input / 4.5);
+	}
+}
+function LUTGammaBBC283(name,params) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 4;
+	this.setM(params.m);
+	this.setS(1);
+}
+LUTGammaBBC283.prototype.setM = function(m) {
+	this.m = m;
+	this.n = Math.sqrt(m)/2
+	this.r = Math.sqrt(m)*(1-Math.log(Math.sqrt(m)));
+	this.e = this.linToLegal(m);
+}
+LUTGammaBBC283.prototype.setS = function(s) { // System Gamma
+	this.s = s;
+}
+LUTGammaBBC283.prototype.changeISO = function(iso) {
+	this.iso = iso;
+}
+LUTGammaBBC283.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+}
+LUTGammaBBC283.prototype.linToLegal = function(input) {
+	if (input > this.m) {
+		return ((this.n*Math.log(input)) + this.r);
+	} else if (input>0) {
+		return Math.sqrt(input);
+	} else {
+		return 0;
+	}
+}
+LUTGammaBBC283.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+}
+LUTGammaBBC283.prototype.linFromLegal = function(input) {
+	if (input >this.e) {
+		return Math.exp(this.s*(input-this.r)/this.n);
+	} else {
+		return Math.pow(input,2*this.s);
 	}
 }
 function LUTGammaGen(name,params) {
