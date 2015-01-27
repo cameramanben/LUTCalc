@@ -49,6 +49,8 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLog(
 		'V-Log', [ 0.198412698,-0.024801587, 0.241514, 0.9, 10, 0.598206, 0.00873, 0.181, 0.009 ]));
 	this.gammas.push(new LUTGammaLog(
+		'Panalog', [ 0.324196014, -0.022, 0.434198361, 0.956463747, 10, 0.665276427, 0.040913561, 0.088290045, -0.012075981 ]));
+	this.gammas.push(new LUTGammaLog(
 		'Cineon', [ 0.0000000000, 0.0000000000, 0.1260649940,22.2791018600, 2.6907845340, 0.2595160220, 0.2702335160, 0.0000000000, 0 ]));
 	this.rec709 = this.gammas.length;
 	this.gammas.push(new LUTGammaLin(
