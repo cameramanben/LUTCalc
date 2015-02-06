@@ -14,7 +14,7 @@ document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
 lutInputs.addInput('version','v1.5 beta');
-lutInputs.addInput('date','December 2014');
+lutInputs.addInput('date','February 2015');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
     lutInputs.addInput('isApp',true);
