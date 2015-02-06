@@ -13,7 +13,7 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.4');
+lutInputs.addInput('version','v1.5 beta');
 lutInputs.addInput('date','December 2014');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
@@ -30,6 +30,8 @@ var left = fieldSet(lutCalcForm,false,'left');
 var lutCameraBox = new LUTCameraBox(fieldSet(left,true), lutInputs, lutMessage);
 var lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutMessage);
 var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, lutFile);
+var lutAnalyst = new LUTAnalyst(lutInputs, lutMessage);
+lutInputs.addInput('lutAnalyst',lutAnalyst);
 var right = fieldSet(lutCalcForm,false,'right');
 var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage);
 var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile);
@@ -147,10 +149,10 @@ lutInputs.laGammaSelect.onchange = function(){
 }
 lutInputs.laDoButton.onclick = function(){ 
 	lutTweaksBox.lutAnalystDo();
-	lutGammaBox.changeGammaOut();
-	lutMessage.gaSetParams();
+//	lutGammaBox.changeGammaOut();
+//	lutMessage.gaSetParams();
 //	lutTweaksBox.changeGamma();
-	lutBox.changeGamma();
+//	lutBox.changeGamma();
 //	lutInfoBox.updateGamma();
 }
 lutInputs.laTitle.onchange = function(){

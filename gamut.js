@@ -30,6 +30,7 @@ function LUTGamut() {
 	this.gamutList();
 }
 LUTGamut.prototype.gamutList = function() {
+	this.SG3C = 0;
 	this.inGamuts.push(new LUTGamutMatrix('S-Gamut3.cine',[[1,0,0],[0,1,0],[0,0,1]]));
 	this.inGamuts.push(new LUTGamutMatrix('S-Gamut3',[[1.1642234944,-0.1768455024,0.0126220080],[0.0260509511,0.9341657009,0.0397833480],[0.0246996363,0.0215592308,0.9537411328]]));
 	this.inGamuts.push(new LUTGamutMatrix('S-Gamut',[[1.1642234944,-0.1768455024,0.0126220080],[0.0260509511,0.9341657009,0.0397833480],[0.0246996363,0.0215592308,0.9537411328]]));
@@ -73,6 +74,17 @@ LUTGamut.prototype.gamutList = function() {
 			max: [1,1,1],
 			lut: this.paramsCine709Out()
 		}));
+/*
+	this.outGamuts.push(new LUTGamutLUT(
+		'V709',
+		{
+			format: 'cube',
+			size: 33,
+			min: [0,0,0],
+			max: [1,1,1],
+			lut: this.paramsV709Out()
+		}));
+*/
 	this.outGamuts.push(new LUTGamutMatrix('Luma B&W',[[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903]]));
 	this.outGamuts.push(new LUTGamutMatrix('ACES',[[0.6387886672,0.2723514337,0.0888598992],[-0.0039159061,1.0880732308,-0.0841573249],[-0.0299072021,-0.0264325799,1.0563397820]]));
 	this.outGamuts.push(new LUTGamutMatrix('XYZ',[[0.5990839208,0.2489255161,0.1024464902],[0.2150758201,0.8850685017,-0.1001443219],[-0.0320658495,-0.0276583907,1.1487819910]]));
@@ -112,30 +124,6 @@ LUTGamut.prototype.gamutList = function() {
 		}
 	}	
 }
-/*
-LUTGamut.prototype.compound = function(rgb) {
-	var luma = ((0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]));
-	if (luma <= this.hgLow) {
-		return this.outGamuts[this.curOut].calc(rgb);
-	} else if (luma >= this.hgHigh) {
-		return this.outGamuts[this.curHG].calc(rgb);
-	} else if (this.hgLin) {
-		var prop = (this.hgHigh - luma)/(this.hgHigh - this.hgLow);
-		var low = this.outGamuts[this.curOut].calc(rgb);
-		var high = this.outGamuts[this.curOut].calc(rgb);
-		return [(low[0] * (1-prop)) + (high[0] * prop),
-				(low[1] * (1-prop)) + (high[1] * prop),
-				(low[2] * (1-prop)) + (high[2] * prop)];
-	} else {
-		var prop = (this.hgHighStop - (Math.log(luma * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
-		var low = this.outGamuts[this.curOut].calc(rgb);
-		var high = this.outGamuts[this.curOut].calc(rgb);
-		return [(low[0] * (1-prop)) + (high[0] * prop),
-				(low[1] * (1-prop)) + (high[1] * prop),
-				(low[2] * (1-prop)) + (high[2] * prop)];
-	}
-}
-*/
 // I/O functions
 LUTGamut.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
@@ -240,38 +228,24 @@ LUTGamut.prototype.calc = function(p,t,i) {
 	}
 	return out;
 }
-/*
-LUTGamut.prototype.inCalc = function(p,t,i) {
-	if (this.nul) {
-		return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: i.slice(0) };
-	} else {
-		var o = [];
+LUTGamut.prototype.laCalc = function(p,t,i) {
+		var o = new Float64Array(i.o);
+		var dim = i.dim;
+		var max = dim*dim*dim;
 		for (var j=0; j<max; j++) {
-			o[j] = this.inGamuts[this.curIn].calc(i[j]);
+			var k = j*3;
+			var g = this.outGamuts[i.gamut].calc([o[k],o[k+1],o[k+2]]);
+			o[ k ] = g[0];
+			o[k+1] = g[1];
+			o[k+2] = g[2];
 		}
-		return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: o };
-	}
+	var out = { p: p, t: t+20, v: this.ver, o: o.buffer };
+	out.dim = i.dim;
+	out.legIn = i.legIn;
+	out.gamma = i.gamma;
+	out.gamut = i.gamut;
+	return out;
 }
-*/
-/*
-LUTGamut.prototype.outCalc = function(p,t,i) {
-	if (this.nul) {
-		return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: i.slice(0) };
-	} else if (this.doHG) {
-		var o = [];
-		for (var j=0; j<max; j++) {
-			o[j] = this.compound(i[j]);
-		}
-		return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: o };
-	} else {
-		var o = [];
-		for (var j=0; j<max; j++) {
-			o[j] = this.outGamuts[this.curOut].calc(i[j]);
-		}
-		return { p: p, t:t+20, v: this.ver, i: i.slice(0), o: o };
-	}
-}
-*/
 LUTGamut.prototype.getLists = function(p,t) {
 	return {
 		p: p,
@@ -337,7 +311,8 @@ function LUTGamutLA(name) {
 	this.name = name;
 }
 LUTGamutLA.prototype.setLUT = function(lut) {
-	this.lut = lut;
+	this.lut = new LUTs();
+	this.lut.setDetails(lut);
 }
 LUTGamutLA.prototype.setTitle = function(name) {
 	this.name = name;
@@ -489,6 +464,7 @@ importScripts(	'lut.js',
 				'lutgamut.cine709.js',
 				'lutgamut.cpoutdaylight.js',
 				'lutgamut.cpouttungsten.js'
+//				'lutgamut.v709.js'
 				);
 var gamuts = new LUTGamut();
 this.addEventListener('message', function(e) {
@@ -501,8 +477,8 @@ this.addEventListener('message', function(e) {
 					break;
 			case 1: this.postMessage(gamuts.calc(d.p,d.t,d.d)); 
 					break;
-//			case 2: this.postMessage(gamuts.outCalc(d.p,d.t,d.d)); 
-//					break;
+			case 2: this.postMessage(gamuts.laCalc(d.p,d.t,d.d)); 
+					break;
 			case 5: this.postMessage(gamuts.getLists(d.p,d.t)); 
 					break;
 			case 6: this.postMessage(gamuts.setLA(d.p,d.t,d.d)); 

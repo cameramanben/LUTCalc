@@ -99,6 +99,16 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
+	this.addText(this.changelogBox,'v1.5 Beta',true);
+	this.addText(this.changelogBox,'Major rewrite of the transfer function (gamma), colour space (gamut), LUT and LUTAnalyst code bases.');
+	this.addText(this.changelogBox,'Web workers are now used extensively for multithreading speed.');
+	this.addText(this.changelogBox,'Strided 1D typed arrays are gradually replacing multidimensional arrays for basic speed and for efficiency in passing to web workers.');
+	this.addText(this.changelogBox,'Linear interpolation code has been tidied up. Cubic is generally used, but with multithreading linear should be fast enough to allow real-time previews in a future version.');
+	this.addText(this.changelogBox,'Fixed a LUTAnalyst bug which could cause the wrong input gamut option to be used giving faulty results.');
+	this.addText(this.changelogBox,'Added a basic implementation of the Dolby PQ transfer function for high dynamic range displays. As it stands, rather than a nits scale, it is set to place 18% gray at the same 10-bit value as for Rec709.');
+	this.addText(this.changelogBox,'Added two alternative HDR transfer function proposals based on extending Rec709/Rec2020 with log highlights region. Both have 400% and 800% options.');
+	this.addText(this.changelogBox,'Added Panalog.');
+	this.addText(this.changelogBox,'Other small bugfixes.');
 	this.addText(this.changelogBox,'v1.3',true);
 	this.addText(this.changelogBox,'New Canon CP Lock output gamuts. Should be more reliable across the gamut for dropping in with Canon CP lock material.');
 	this.addText(this.changelogBox,'v1.22',true);

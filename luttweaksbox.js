@@ -83,7 +83,7 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.lutAnalystLinGammaSelect = document.createElement('select');
 	this.inputs.addInput('laLinGammaSelect',this.lutAnalystLinGammaSelect);
 	this.lutAnalystGamutSelect = document.createElement('select');
-	this.inputs.addInput('laGamutSelect',this.lutAnalystLinGammaSelect);
+	this.inputs.addInput('laGamutSelect',this.lutAnalystGamutSelect);
 	this.lutAnalystDLOpt = this.createRadioElement('lutAnalystRange',true);
 	this.lutAnalystDDOpt = this.createRadioElement('lutAnalystRange',false);
 	this.lutAnalystLLOpt = this.createRadioElement('lutAnalystRange',false);
@@ -524,16 +524,16 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 	this.lutAnalystBackButton.style.display = 'inline';
 	if (this.lutAnalystNewOpt.checked) {
 		this.lutAnalystAnalyseBox.style.display = 'block';
-		this.lutAnalystInLUT.reset();
+		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		switch (this.inputs.laFileData.format) {
-			case 'cube': parsed = this.file.parseCube('laFileData', 'laInLUT');
+			case 'cube': parsed = this.file.parseCubeLA('laFileData', 'in');
 						break;
 		}
 		if (parsed) {
-			this.lutAnalystTitle.value = this.lutAnalystInLUT.title;
+			this.lutAnalystTitle.value = this.inputs.lutAnalyst.getTitle();
 			this.lutAnalystDoButton.style.display = 'inline';
-			if (this.lutAnalystInLUT.d == 3) {
+			if (this.inputs.lutAnalyst.is3D()) {
 				this.lutAnalystGamutBox.style.display = 'inline';
 			} else {
 				this.lutAnalystGamutBox.style.display = 'none';
@@ -543,14 +543,15 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 		}
 	} else {
 		this.lutAnalystDoButton.style.display = 'none';
-		this.lutAnalystInLUT.reset();
+		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		switch (this.inputs.laFileData.format) {
-			case 'lacube': parsed = this.file.parseLACube('laFileData', 'laGamma', 'laGamut');
+			case 'lacube': parsed = this.file.parseLACube('laFileData');
 						break;
 		}
 		if (parsed) {
-//			this.gammas.updateLA();
+			this.inputs.lutAnalyst.updateLATF();
+			this.inputs.lutAnalyst.updateLACS();
 			this.lutAnalystCheck.checked = true;
 			this.lutAnalystCheck.style.display = 'inline';
 			this.lutAnalystToggleCheck();
@@ -564,18 +565,18 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 	this.lutAnalystCheck.checked = false;
 	this.lutAnalystCheck.style.display = 'none';
 	if (this.inputs.outGamma.options.length > 0 && this.inputs.outGamut.options.length > 0 && this.highGamutSelect.options.length > 0) {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
+		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value === this.gammaLA) {
 			this.inputs.outGamma.options[0].selected = true;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamutLA) {
+		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value === this.gamutLA) {
 			this.inputs.outGamut.options[0].selected = true;
 		}
-		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamutLA) {
+		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value === this.gamutLA) {
 			this.highGamutSelect.options[0].selected = true;
 		}
 		this.lutAnalystToggleCheck();
 	}
-	this.lutAnalystInLUT.reset();
+	this.inputs.lutAnalyst.reset();
 	this.inputs.laFileData = {};
 	this.lutAnalystFileInput.value = '';
 	this.lutAnalystDLOpt.checked = true;
@@ -642,58 +643,24 @@ LUTTweaksBox.prototype.lutAnalystChangeGamma = function() {
 }
 LUTTweaksBox.prototype.lutAnalystDo = function() {
 	this.cleanLutAnalystTitle();
-	var	legIn;
-	var legOut;
-	if (this.lutAnalystLDOpt.checked || this.lutAnalystLLOpt.checked) {
-		legIn = true;
-	} else {
-		legIn = false;
-	}
-	if (this.lutAnalystDLOpt.checked || this.lutAnalystLLOpt.checked) {
-		legOut = true;
-	} else {
-		legOut = false;
-	}
-	var lutGammaIn = parseInt(this.lutAnalystGammaSelect.options[this.lutAnalystGammaSelect.selectedIndex].value);
-	if (lutGammaIn == 9999) {
-		lutGammaIn = parseInt(this.lutAnalystLinGammaSelect.options[this.lutAnalystLinGammaSelect.selectedIndex].value);
-	}
-	this.lutAnalystProgress.value = 0.33;
-	this.lutAnalystInfo.innerHTML = 'Calculating 1D Curve: S-Log3 → Test Gamma';
-	this.lutAnalystInfoBox.style.display = 'block';
-//	var sl3ToGamma = this.lutAnalystInLUT.calcTransferFromSL3(this.gammas,lutGammaIn,legIn,legOut);
-	if (sl3ToGamma) {
-		this.lutAnalystProgress.value = 0.66;
-		this.lutAnalystInfo.innerHTML = 'Calculating 3D Colour Space Conversion: S-Gamut3.cine → Test Gamut';
-		this.lutAnalystGamma.reset();
-		this.lutAnalystGamma.setInfo(this.lutAnalystTitle.value, 'lacube', 1, sl3ToGamma.length, [0,0,0], [1,1,1]);
-		this.lutAnalystGamma.addLUT(sl3ToGamma.slice(),sl3ToGamma.slice(),sl3ToGamma.slice());
-		this.lutAnalystGamut.reset();
-		this.lutAnalystGamut.setInfo(this.lutAnalystTitle.value, 'lacube', 3, 33, [0,0,0], [1,1,1]);
-		this.lutAnalystProgress.value = 0;
-		this.lutAnalystInfo.innerHTML = '';
-		this.lutAnalystInfoBox.style.display = 'none';
-//		if (this.lutAnalystInLUT.calcSG3ToGamut(this.lutAnalystGamut,sl3ToGamma,this.gammas,lutGammaIn,legIn,legOut)) {
-//			this.lutAnalystCheck.checked = true;
-//			this.lutAnalystCheck.style.display = 'inline';
-//			this.lutAnalystToggleCheck();
-//			this.lutAnalystDoButton.value = 'Re-Analyse';
-//			this.lutAnalystStoreButton.style.display = 'inline';
-//		}
-	}
+	this.inputs.lutAnalyst.getTF();
+}
+LUTTweaksBox.prototype.lutAnalystDone = function() {
+	this.lutAnalystInfo.innerHTML = '';
+	this.lutAnalystInfoBox.style.display = 'none';	
+	this.lutAnalystCheck.checked = true;
+	this.lutAnalystCheck.style.display = 'inline';
+	this.lutAnalystToggleCheck();
+	this.lutAnalystDoButton.value = 'Re-Analyse';
+	this.lutAnalystStoreButton.style.display = 'inline';
 }
 LUTTweaksBox.prototype.lutAnalystStore = function() {
 	this.file.save(this.file.buildLALut(this.lutAnalystGamma.title,this.lutAnalystGamma,this.lutAnalystGamut),this.lutAnalystGamma.title,'lacube');
-}
-LUTTweaksBox.prototype.lutAnalystUpdateTitle = function() {
-	this.message.gaTx(this.p,7,this.lutAnalystTitle.value);
-	this.message.gtTx(this.p,7,this.lutAnalystTitle.value);	
 }
 LUTTweaksBox.prototype.cleanLutAnalystTitle = function() {
 	this.lutAnalystTitle.value = this.lutAnalystTitle.value.replace(/[/"/']/gi, '');
 	this.lutAnalystGamma.title = this.lutAnalystTitle.value;
 	this.lutAnalystGamut.title = this.lutAnalystTitle.value;
-	this.lutAnalystUpdateTitle();
 	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
 		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
 	}

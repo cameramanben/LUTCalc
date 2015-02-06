@@ -12,12 +12,51 @@
 function LUTs() {
 	this.title = '';
 	this.format = ''; // Currently just 'cube'
-	this.d = 1; // 1D or 3D
+	this.d = 0; // 1D or 3D
 	this.s = 1024; // Dimension - eg 1024 or 4096 for 1D, 17, 33 or 65 for 3D
 	this.min = [0,0,0]; // Lowest input value
 	this.max = [1,1,1]; // Highest input value
 	this.C = [];
 	this.rgbl = false;
+}
+LUTs.prototype.getSize = function() {
+	return this.s;
+}
+LUTs.prototype.is1D = function() {
+	if (this.d === 1) {
+		return true;
+	} else {
+		return false;
+	}
+}
+LUTs.prototype.is3D = function() {
+	if (this.d === 3) {
+		return true;
+	} else {
+		return false;
+	}
+}
+LUTs.prototype.getDetails = function() {
+	var out = {
+			title: this.title,
+			format: this.format,
+			dims: this.d,
+			s: this.s,
+			min: this.min,
+			max: this.max,
+			C: [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer],
+			rgbl: this.rgbl
+		}
+	return out;
+}
+LUTs.prototype.setDetails = function(d) {
+	title: this.title = d.title;
+	format: this.format = d.format;
+	this.d = d.dims;
+	this.s = d.s;
+	this.min = d.min;
+	this.max = d.max;
+	this.addLUT(d.C[0],d.C[1],d.C[2]);
 }
 LUTs.prototype.setInfo = function(title, format, dimensions, size, min, max) {
 	this.title = title;
@@ -43,31 +82,34 @@ LUTs.prototype.reset = function() {
 }
 LUTs.prototype.addLUT = function(bufR,bufG,bufB) {
 	if (this.d === 3 || ((typeof bufG !== 'undefined') && (typeof bufB !== 'undefined'))) {
-		this.C = [	new Float32Array(bufR),
-					new Float32Array(bufG),
-					new Float32Array(bufB)];
+		this.C = [	new Float64Array(bufR),
+					new Float64Array(bufG),
+					new Float64Array(bufB)];
 		this.rgbl = true;
 		this.buildL();
 	} else {
 		this.rgbl = false;
-		this.L = new Float32Array(bufR);
+		this.L = new Float64Array(bufR);
 	}
 }
 LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each channel, but don't need to be. one time luma calculation to speed things up later
-	this.L = new Float32Array(this.s);
+	this.L = new Float64Array(this.s);
 	if (this.d === 3) {
 		var k;
 		for (var j=0; j<this.s; j++) {
-			k = k + (this.s* (k + (this.s*k)));
+			k = j + (this.s* (j + (this.s*j)));
 			this.L[j] = (0.2126 * this.C[0][k]) + (0.7152 * this.C[1][k]) + (0.0722 * this.C[2][k]);
 		}
 	} else {
-		for (var j=0; i<this.s; j++) {
+		for (var j=0; j<this.s; j++) {
 			this.L[j] = (0.2126 * this.C[0][j]) + (0.7152 * this.C[1][j]) + (0.0722 * this.C[2][j]);
 		}
 	}
 }
 
+LUTs.prototype.f = function(L) {
+	return this.lumaLCub(L);
+}
 LUTs.prototype.lumaLCub = function(L) {
 	var max = this.s - 1;
 	L = L * max;
@@ -119,7 +161,7 @@ LUTs.prototype.lumaLLin = function(L) {
 LUTs.prototype.lumaRGBCub = function(L) {
 	var max = this.s - 1;
 	L = L * max;
-	var out = new Float32Array(3);
+	var out = new Float64Array(3);
 	if (this.d === 1) {
 		if (!this.rgbl) {
 			if (L < 0) {
@@ -229,7 +271,7 @@ LUTs.prototype.lumaRGBCub = function(L) {
 LUTs.prototype.lumaRGBLin = function(L) {
 	var max = this.s - 1;
 	L = L * max;
-	var out = new Float32Array(3);
+	var out = new Float64Array(3);
 	if (this.d === 1) {
 		if (!this.rgbl) {
 			if (L < 0) {
@@ -296,7 +338,7 @@ LUTs.prototype.rgbLLin = function(rgb) {
 }
 
 LUTs.prototype.rgbRGBCub = function(rgb) {
-	var out = new Float32Array(3);
+	var out = new Float64Array(3);
 	// 1D case where R,G & B have the same gammas
 	if (this.d === 1 && !this.rgbl) {
 		out[0] = this.lumaLCub(rgb[0]);
@@ -435,7 +477,7 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 	}
 }
 LUTs.prototype.rgbRGBLin = function(input) {
-	var out = new Float32Array(3);
+	var out = new Float64Array(3);
 	// 1D case where R,G & B have the same gammas
 	if (this.d === 1 && !this.rgbl) {
 		out[0] = this.lumaLLin(rgb[0]);

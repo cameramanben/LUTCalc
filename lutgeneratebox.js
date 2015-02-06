@@ -144,7 +144,7 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 			break;
 		}
 	}
-	this.lut = new Float32Array(((this.dimension)*3));
+	this.lut = new Float64Array(((this.dimension)*3));
 	var chunks = 2;
 	var chunk = parseInt(this.dimension / chunks);
 	for (var j=0; j<chunks; j++) {
@@ -167,7 +167,7 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 	}
 	var chunks = this.dimension;
 	var chunk = this.dimension * this.dimension;
-	this.lut = new Float32Array(chunk*chunks*3);
+	this.lut = new Float64Array(chunk*chunks*3);
 	for (var j=0; j<chunks; j++) {
 		var R = 0;
 		var G = 0;

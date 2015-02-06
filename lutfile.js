@@ -78,11 +78,9 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 LUTFile.prototype.filename = function(filename) {
 	return filename.replace(/[^a-z0-9_\-\ ]/gi, '').replace(/[^a-z0-9_\-]/gi, '_');
 }
-LUTFile.prototype.parseCube = function(data, dest) {
+LUTFile.prototype.parseCubeLA = function(data, dest) {
 	var text = this.inputs[data].text;
-	var lut = this.inputs[dest];
 	var title = 'LUTAnalyst';
-	var format = 'cube';
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
@@ -146,45 +144,14 @@ LUTFile.prototype.parseCube = function(data, dest) {
 		}
 	}
 	if (dimensions && size) {
-		lut.setInfo(title, format, dimensions, size, minimum, maximum);
-	} else {
-		return false;
-	}
-	if (dimensions == 3) {
-		var R=[],R2=[],R3=[];
-		var G=[],G2=[],G3=[];
-		var B=[],B2=[],B3=[];
-		var s=0,t=0,u=0;
-		for (var k=i; k<max; k++) {
-			var line = text[k].trim();
-			var j = line.charAt(0);
-			if ((!isNaN(parseFloat(j)) && isFinite(j)) || j === '-') {
-				var vals = line.split(/\s+/g);
-				if (!isNaN(vals[0]) && !isNaN(vals[1]) && !isNaN(vals[1])) {
-					R3[u] = parseFloat(vals[0]);
-					G3[u] = parseFloat(vals[1]);
-					B3[u] = parseFloat(vals[2]);
-					u++;
-					if (u == size) {
-						u=0;
-						R2[t] = R3.slice(0);
-						G2[t] = G3.slice(0);
-						B2[t] = B3.slice(0);
-						t++;
-						if (t == size) {
-							t=0;
-							R[s] = R2.slice(0);
-							G[s] = G2.slice(0);
-							B[s] = B2.slice(0);
-							s++;
-						}
-					}
-				}
-			}
+		var arraySize = size;
+		if (dimensions === 3) {
+			arraySize = size*size*size;
 		}
-		lut.addLUT(R.slice(0),G.slice(0),B.slice(0));
-	} else {
-		var R=[], G=[], B=[], s=0;
+		var R = new Float64Array(arraySize);
+		var G = new Float64Array(arraySize);
+		var B = new Float64Array(arraySize);
+		var s=0;
 		for (var k=i; k<max; k++) {
 			var line = text[k].trim();
 			var j = line.charAt(0);
@@ -198,23 +165,42 @@ LUTFile.prototype.parseCube = function(data, dest) {
 				}
 			}
 		}
-		lut.addLUT(R.slice(0),G.slice(0),B.slice(0));
+		var out = {
+				title: title,
+				format: 'cube',
+				dims: dimensions,
+				s: size,
+				min: minimum,
+				max: maximum,
+				C: [R.buffer,G.buffer,B.buffer],
+				dest: dest
+			};
+		
+		this.inputs.lutAnalyst.setLUT(out);
+		return true;
+	} else {
+		return false;
 	}
-	return true;
 }
-LUTFile.prototype.parseLACube = function(data, gammaLUT, gamutLUT) {
+LUTFile.prototype.parseLACube = function(data) {
 	var max = this.inputs[data].text.length;
+	var both = true;
 	for (var i = 0; i < max; i++) {
 		if (this.inputs[data].text[i].search('# -------------------------------------------------------------------------------') >= 0) {
 			this.inputs.laGammaLUT.text = this.inputs[data].text.slice(1,i);
 			this.inputs.laGamutLUT.text = this.inputs[data].text.slice(i+1,max);
 			break;
-		} else if (i == max - 1) {
-			return false;
+		} else if (i === max - 1) {
+			this.inputs.laGammaLUT.text = this.inputs[data].text.slice(0);
+			both = false;
 		}
 	}
-	if (this.parseCube('laGammaLUT', gammaLUT) && this.parseCube('laGamutLUT', gamutLUT)) {
-		return true;
+	if (this.parseCubeLA('laGammaLUT', 'tf')) {
+		if (both && !this.parseCubeLA('laGamutLUT', 'cs')) {
+			return false;
+		} else {
+			return true;
+		}
 	} else {
 		return false;
 	}

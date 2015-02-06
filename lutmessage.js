@@ -19,20 +19,29 @@ function LUTMessage(inputs) {
 	// 4 - lutbox
 	// 5 - generatebox
 	// 6 - infobox
+	// 7 - LUTAnalyst
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
 	this.gaV = 0; // Counter keeping tabs on 'freshness' of returned data
 	this.gaU = 0; // Counter keeping tabs on how many of the threads are up-to-date
+	this.gaL = 0;
 	this.startGaThreads();
 	this.gts = []; // Array of gamma web workers
 	this.gtT = 2; // Gamma threads
 	this.gtN = 0; // Next web worker to send data to
 	this.gtV = 0; // Counter keeping tabs on 'freshness' of returned data
+	this.gtL = 0;
 	this.startGtThreads();
 }
 LUTMessage.prototype.addUI = function(code,ui) {
 	this.ui[code] = ui;
+}
+LUTMessage.prototype.getGammaThreads = function() {
+	return this.gaT;
+}
+LUTMessage.prototype.getGamutThreads = function() {
+	return this.gtT;
 }
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
@@ -135,6 +144,12 @@ LUTMessage.prototype.gaTx = function(p,t,d) { // parent (sender), type, data
 	this.gas[this.gaN].postMessage({p: p, t: t, v: this.gaV, d: d});
 	this.gaN = (this.gaN + 1) % this.gaT;
 }
+LUTMessage.prototype.gaTxAll = function(p,t,d) { // parent (sender), type, data
+	var max = this.gas.length;
+	for (var j=0; j<max; j++) {
+		this.gas[j].postMessage({p: p, t: t, v: this.gaV, d: d});
+	}
+}
 LUTMessage.prototype.gaRx = function(d) {
 	if (d.err) {
 		console.log(d.details);
@@ -144,15 +159,16 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 	} else if (d.v === this.gaV) {
 		switch(d.t) {
 			case 20: // Set Parameters
-				this.paramsSet(d);
+					this.paramsSet(d);
 					break;
 			case 21: // 1D input to output
 					this.ui[5].got1D(d);
 					break;
-//			case 22: // 1D linear to output
-//					break;
+			case 22: // LUTAnalyst SL3 input to linear
+					this.gtTx(d.p,2,d)
+					break;
 			case 23: // RGB input to linear
-					this.gtTx(5,1,d)
+					this.gtTx(d.p,1,d)
 					break;
 			case 24: // RGB linear to output
 					this.ui[5].got3D(d);
@@ -161,15 +177,21 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					this.gotGammaLists(d);
 					break;
 			case 26: // Set LA LUT
+					this.gaL++;
+					if (this.gaL === this.gaT) {
+						this.gaL = 0;
+						this.ui[3].lutAnalystDone();
+						this.ui[6].updateGamma();
+					}
 					break;
 			case 27: // Set LA Title
 					break;
-//			case 28: // Get base (black) IRE value for output
-//					this.gotBaseIRE(d);
-//					break;
-//			case 29: // Get IRE values for output from a list of linear values
-//					this.gotIREs(d);
-//					break;
+			case 28: // LUTAnalyst SLog3 data value from given transfer function
+					this.ui[d.p].gotInputVals(d.o,d.dim);
+					break;
+			case 29: // LUTAnalyst Slog3/S-Gamut3.cine values to LUT input colourspace
+					this.ui[d.p].gotInputVals(d.o,d.dim);
+					break;
 			case 30: // Get IRE values for output from a list of linear values
 					this.gotIOGammaNames(d);
 					break;
@@ -181,9 +203,25 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 //					break;
 		}
 	} else {
- console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
+		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
 		this.gaTx(d.p,d.t - 20,d);
 	}
+}
+LUTMessage.prototype.showArray = function(o,dim) {
+	var temp = new Float64Array(o);
+	var max = Math.round(temp.length/3);
+	var R = new Float64Array(max);
+	var G = new Float64Array(max);
+	var B = new Float64Array(max);
+	for (var j=0; j<max; j++) {
+		R[j] = temp[j*3];
+		G[j] = temp[(j*3)+1];
+		B[j] = temp[(j*3)+2];
+	}
+	console.log(max);
+	console.log(R);
+	console.log(G);
+	console.log(B);
 }
 LUTMessage.prototype.paramsSet = function(d) {
 	this.gaU++;
@@ -288,6 +326,12 @@ LUTMessage.prototype.gtTx = function(p,t,d) { // parent (sender), type, data
 	this.gts[this.gtN].postMessage({p: p, t: t, v: this.gtV, d: d});
 	this.gtN = (this.gtN + 1) % this.gtT;
 }
+LUTMessage.prototype.gtTxAll = function(p,t,d) { // parent (sender), type, data
+	var max = this.gts.length;
+	for (var j=0; j<max; j++) {
+		this.gts[j].postMessage({p: p, t: t, v: this.gtV, d: d});
+	}
+}
 LUTMessage.prototype.gtRx = function(d) {
 	if (d.err) {
 		console.log(d.details);
@@ -305,12 +349,17 @@ console.log('Resending - ' + d.t);
 			case 21: // RGB input to output
 					this.gaTx(5,4,d)
 					break;
-//			case 22: // RGB internal to output
-//					break;
+			case 22: // RGB S-Gamut3.cine to LA input gamut
+					this.gaTx(d.p,9,d)
+					break;
 			case 25: // Get lists of gamuts
 					this.gotGamutLists(d);
 					break;
 			case 26: // Set LA LUT
+					this.gtL++;
+					if (this.gtL === this.gtT) {
+						this.gtL = 0;
+					}
 					break;
 			case 27: // Set LA Title
 					break;
