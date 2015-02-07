@@ -218,8 +218,9 @@ LUTFile.prototype.buildLALut = function(title,oneD,threeD) {
 	var threeDHead =  'TITLE "' + title + '"' + "\n" +
 					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
 					'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
+//	this.buildLA1DMethod(tf);
+//	this.buildLA3DMethod(cs);
 	return oneDHead + this.buildLA1DData(tf) + separator + threeDHead + this.buildLA3DData(cs);
-//	return '# S-Gamut3.cine->' + title + ' 3D LUT array for LUTCalc' + "\n" + this.buildLA3DAsArray(threeD);
 }
 LUTFile.prototype.buildLA1DData = function(L) {
 	var dim = L.length;
@@ -237,68 +238,50 @@ LUTFile.prototype.buildLA3DData = function(RGB) {
 	}
 	return out
 }
-LUTFile.prototype.buildLA3DAsArray = function(RGB) {
-	var redText,greenText,blueText;
-	redText = "\t" + 'out.R =' + "\n";
-	greenText = "\t" + 'out.G =' + "\n";
-	blueText = "\t" + 'out.B =' + "\n";
-	redText += "\t\t" + '[';
-	greenText += "\t\t" + '[';
-	blueText += "\t\t" + '[';
-	for (var b=0; b<33; b++) {
-		if (b>0) {
-			redText += "\t\t" + ' ';
-			greenText += "\t\t" + ' ';
-			blueText += "\t\t" + ' ';
+LUTFile.prototype.buildLA1DMethod = function(L) {
+	var dim = L.length;
+	var out = "\t\t" + '{' + "\n";
+	out += "\t\t\t" + "format: 'cube'," + "\n";
+	out += "\t\t\t" + 'size: ' + dim.toString() + ',' + "\n";
+	out += "\t\t\t" + 'min: [0,0,0],' + "\n";
+	out += "\t\t\t" + 'max: [1,1,1],' + "\n";
+	out += "\t\t\t" + 'lut: new Float64Array(' + "\n";
+	out += "\t\t\t\t" + '[ ';
+	var lineTot = 0;
+	for (var j=0; j<dim; j++) {
+		out += L[j].toFixed(8).toString() + ',';
+		lineTot = (lineTot+1)%8;
+		if (lineTot === 0) {
+			out += "\n\t\t\t\t  ";
 		}
-		redText += '[';
-		greenText += '[';
-		blueText += '[';
-		for (var g=0; g<33; g++) {
-			if (g>0) {
-				redText += "\t\t" + '  ';
-				greenText += "\t\t" + '  ';
-				blueText += "\t\t" + '  ';
-			}
-			redText += '[';
-			greenText += '[';
-			blueText += '[';
-			for (var r=0; r<33; r++) {
-				var R = lut.R[b][g][r];
-				var G = lut.G[b][g][r];
-				var B = lut.B[b][g][r];
-				if (isNaN(R)) {
-					redText += '        NaN,';
-				} else if (R>=0) {
-					redText += ' ' + R.toFixed(8).toString() + ',';
-				} else {
-					redText += R.toFixed(8).toString() + ',';
-				}
-				if (isNaN(G)) {
-					greenText += '        NaN,';
-				} else if (G>=0) {
-					greenText += ' ' + G.toFixed(8).toString() + ',';
-				} else {
-					greenText += G.toFixed(8).toString() + ',';
-				}
-				if (isNaN(B)) {
-					blueText += '        NaN,';
-				} else if (B>=0) {
-					blueText += ' ' + B.toFixed(8).toString() + ',';
-				} else {
-					blueText += B.toFixed(8).toString() + ',';
-				}
-			}
-			redText = redText.substring(0, redText.length - 1) + '],' + "\n";
-			greenText = greenText.substring(0, greenText.length - 1) + '],' + "\n";
-			blueText = blueText.substring(0, blueText.length - 1) + '],' + "\n";
-		}
-		redText = redText.substring(0, redText.length - 2) + '],' + "\n";
-		greenText = greenText.substring(0, greenText.length - 2) + '],' + "\n";
-		blueText = blueText.substring(0, blueText.length - 2) + '],' + "\n";
 	}
-	redText = redText.substring(0, redText.length - 2) + '];' + "\n";
-	greenText = greenText.substring(0, greenText.length - 2) + '];' + "\n";
-	blueText = blueText.substring(0, blueText.length - 2) + '];' + "\n";
-	return (redText+greenText+blueText);
+	out = out.substring(0, out.length - 2) + ' ]' + "\n\t\t\t" + ')' + "\n\t\t" + '}));' + "\n";
+	window.open("data:text/plain," + encodeURIComponent(out),"_blank");
+}
+LUTFile.prototype.buildLA3DMethod = function(RGB) {
+	var dim = RGB[0].length;
+	var out = 'LUTGamut.prototype.params = function() {' + "\n\t" + 'var out = [];' + "\n";
+	var redText= "\t" + 'out[0] = new Float64Array(' + "\n\t\t" + '[ ';
+	var greenText= "\t" + 'out[1] = new Float64Array(' + "\n\t\t" + '[ ';
+	var blueText= "\t" + 'out[2] = new Float64Array(' + "\n\t\t" + '[ ';
+	var lineTot = 0;
+	for (var j=0; j<dim; j++) {
+		redText += RGB[0][j].toFixed(8).toString() + ',';
+		greenText += RGB[1][j].toFixed(8).toString() + ',';
+		blueText += RGB[2][j].toFixed(8).toString() + ',';
+		lineTot = (lineTot+1)%33;
+		if (lineTot === 0) {
+			redText += "\n\t\t  ";
+			greenText += "\n\t\t  ";
+			blueText += "\n\t\t  ";
+		}
+	}
+	redText = redText.substring(0, redText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
+	greenText = greenText.substring(0, greenText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
+	blueText = blueText.substring(0, blueText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
+	out += redText;
+	out += greenText;
+	out += blueText;
+	out += "\t" + 'return out;' + "\n" + '}' + "\n";
+	window.open("data:text/plain," + encodeURIComponent(out),"_blank");
 }

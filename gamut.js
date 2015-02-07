@@ -74,7 +74,6 @@ LUTGamut.prototype.gamutList = function() {
 			max: [1,1,1],
 			lut: this.paramsCine709Out()
 		}));
-/*
 	this.outGamuts.push(new LUTGamutLUT(
 		'V709',
 		{
@@ -84,7 +83,6 @@ LUTGamut.prototype.gamutList = function() {
 			max: [1,1,1],
 			lut: this.paramsV709Out()
 		}));
-*/
 	this.outGamuts.push(new LUTGamutMatrix('Luma B&W',[[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903]]));
 	this.outGamuts.push(new LUTGamutMatrix('ACES',[[0.6387886672,0.2723514337,0.0888598992],[-0.0039159061,1.0880732308,-0.0841573249],[-0.0299072021,-0.0264325799,1.0563397820]]));
 	this.outGamuts.push(new LUTGamutMatrix('XYZ',[[0.5990839208,0.2489255161,0.1024464902],[0.2150758201,0.8850685017,-0.1001443219],[-0.0320658495,-0.0276583907,1.1487819910]]));
@@ -463,8 +461,8 @@ importScripts(	'lut.js',
 				'lutgamut.lc709a.js',
 				'lutgamut.cine709.js',
 				'lutgamut.cpoutdaylight.js',
-				'lutgamut.cpouttungsten.js'
-//				'lutgamut.v709.js'
+				'lutgamut.cpouttungsten.js',
+				'lutgamut.v709.js'
 				);
 var gamuts = new LUTGamut();
 this.addEventListener('message', function(e) {
