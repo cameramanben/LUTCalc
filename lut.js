@@ -106,6 +106,14 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 		}
 	}
 }
+LUTs.prototype.getL = function() {
+	return this.L.buffer;
+}
+LUTs.prototype.getRGB = function() {
+	return [this.C[0].buffer,
+			this.C[1].buffer,
+			this.C[2].buffer];
+}
 
 LUTs.prototype.f = function(L) {
 	return this.lumaLCub(L);

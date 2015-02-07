@@ -206,40 +206,38 @@ LUTFile.prototype.parseLACube = function(data) {
 	}
 }
 LUTFile.prototype.buildLALut = function(title,oneD,threeD) {
+	var tf = new Float64Array(oneD);
+	var cs = [	new Float64Array(threeD[0]),
+				new Float64Array(threeD[1]),
+				new Float64Array(threeD[2])];
 	var oneDHead =  '# LUT Analyst LA LUT File -------------------------------------------------------' + "\n" +
 					'TITLE "' + title + '"' + "\n" +
-					'LUT_1D_SIZE ' + oneD.s.toString() + "\n" +
+					'LUT_1D_SIZE ' + tf.length.toString() + "\n" +
 					'# LUT Analyst - 1D Transfer Function Shaper - S-Log3->' + title + ' Gamma' + "\n";
 	var separator = '# -------------------------------------------------------------------------------' + "\n";
 	var threeDHead =  'TITLE "' + title + '"' + "\n" +
-					'LUT_3D_SIZE ' + threeD.s.toString() + "\n" +
+					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
 					'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
-	return oneDHead + this.buildLA1DData(oneD) + separator + threeDHead + this.buildLA3DData(threeD);
+	return oneDHead + this.buildLA1DData(tf) + separator + threeDHead + this.buildLA3DData(cs);
 //	return '# S-Gamut3.cine->' + title + ' 3D LUT array for LUTCalc' + "\n" + this.buildLA3DAsArray(threeD);
 }
-LUTFile.prototype.buildLA1DData = function(lut) {
-	var dim = lut.s;
+LUTFile.prototype.buildLA1DData = function(L) {
+	var dim = L.length;
 	var out = '';
 	for (var i=0; i<dim; i++) {
-		out += lut.L[i].toFixed(8).toString() + "\t" + lut.L[i].toFixed(8).toString() + "\t" + lut.L[i].toFixed(8).toString() + "\n";
+		out += L[i].toFixed(8).toString() + "\t" + L[i].toFixed(8).toString() + "\t" + L[i].toFixed(8).toString() + "\n";
 	}
 	return out;
 }
-LUTFile.prototype.buildLA3DData = function(lut) {
-	var dim = lut.s;
+LUTFile.prototype.buildLA3DData = function(RGB) {
+	var dim = RGB[0].length;
 	var out = '';
-	for (var b=0; b<dim; b++) {
-		for (var g=0; g<dim; g++) {
-			for (var r=0; r<dim; r++) {
-				out +=	lut.R[b][g][r].toFixed(8).toString() + "\t" +
-						lut.G[b][g][r].toFixed(8).toString() + "\t" +
-						lut.B[b][g][r].toFixed(8).toString() + "\n";
-			}
-		}
+	for (var i=0; i<dim; i++) {
+		out += RGB[0][i].toFixed(8).toString() + "\t" + RGB[1][i].toFixed(8).toString() + "\t" + RGB[2][i].toFixed(8).toString() + "\n";
 	}
 	return out
 }
-LUTFile.prototype.buildLA3DAsArray = function(lut) {
+LUTFile.prototype.buildLA3DAsArray = function(RGB) {
 	var redText,greenText,blueText;
 	redText = "\t" + 'out.R =' + "\n";
 	greenText = "\t" + 'out.G =' + "\n";
