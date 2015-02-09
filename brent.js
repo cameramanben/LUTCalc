@@ -5,7 +5,8 @@
 *
 * The 'findRoot' method tries to find the tightest bracket (sign change) to one side or the other of an initial guess 'I'
 * and then performs Brent's method. If a given bracket distance suggests roots on either side of 'I', both brackets are
-* evaluated and then the root closest to 'I' is returned.
+* evaluated and then the root closest to 'I' is returned. If no root is found, extremes are returned which can then be
+* replaced with minimum and maximum values found across the set.
 *
 * Sources of information:
 *	Wikipedia: http://en.wikipedia.org/wiki/Brent%27s_method
@@ -24,10 +25,26 @@ function Brent(func, a, b) {
 }
 Brent.prototype.setRange = function(a,b) {
 	this.a = a;			// For f(x), minimum value of x
+	this.fMin = this.func.f(a);
 	this.b = b;			// For f(x), maximum value of x
+	this.fMax = this.func.f(b);
+	this.mid = this.func.f((a+b)/2);
+console.log(this.mid);
+}
+Brent.prototype.minMax = function(x) {
+	if (x < this.a) {
+		this.a = x;
+		this.fMin = this.o;
+	} else if (x > this.b) {
+		this.b = x;
+		this.fMax = this.o;
+	}
+}
+Brent.prototype.getMinMax = function() {
+	return { a: this.a, fMin: this.fMin, b: this.b, fMax: this.fMax };
 }
 Brent.prototype.findRoot = function(I,O) { // Public single root method, O is the f(x) to match to if not zero (root), finds closest root to I
-	var tol = 0.0000001; // tolerence
+	var tol = 0.00000001; // tolerence - OK for Float64s, too small for Float32s
 	if (typeof O === 'number') {
 		this.o = O;
 	} else {
@@ -35,6 +52,7 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 	}
 	var y0 = this.func.f(I) - this.o;
 	if (Math.abs(y0)<tol) {
+		this.minMax(I);
 		return I;
 	}
 	var dx;
@@ -45,9 +63,11 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 		yl = this.func.f(I-dx) - this.o;
 		yh = this.func.f(I+dx) - this.o;
 		if (Math.abs(yl)<tol) {
-			return yl;
+			this.minMax(I-dx);
+			return I-dx;
 		} else if (Math.abs(yh)<tol) {
-			return yh;
+			this.minMax(I+dx);
+			return I+dx;
 		} else {
 			dl = yl*y0;
 			dh = yh*y0;
@@ -55,30 +75,39 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 				var rl = this.brent(I, y0, I-dx, yl, tol);
 				var rh = this.brent(I, y0, I+dx, yh, tol);
 				if (Math.abs(rl - I) < Math.abs(rh - I)) {
+					this.minMax(rl);
 					return rl;
 				} else {
+					this.minMax(rh);
 					return rh;
 				}
 			} else if (dl<0) { // Bracket below first guess
-				return this.brent(I, y0, I-dx, yl, tol);
+				var r = this.brent(I, y0, I-dx, yl, tol);
+				this.minMax(r);
+				return r;
 			} else if (dh<0) { // Bracket above first guess
-				return this.brent(I, y0, I+dx, yh, tol);
+				var r = this.brent(I, y0, I+dx, yh, tol);
+				this.minMax(r);
+				return r;
 			}
 		}
 	}
-	if (I<0.5) {
-		return 0;
+// If a bracket can't be found, set to an extreme based on the f(x) value halfway within a<x<b,
+// then when finished, iterate through the arrays swapping the extremes for the min and max
+// values of x calculated.
+	if (O<this.mid) {
+		return -65536;
 	} else {
-		return 1;
+		return 65536;
 	}
 }
 Brent.prototype.brent = function(a,fa,b,fb,rtol) {
-	var eps = 2.22e-16;
+	var eps = 2.22e-16; // Machine epsilon for Float64Arrays
 	var e = 0;
 	var tol1, xm, min, tmp;
 	var p, q, r, s;
 	var fc = fb;
-	for (var j=0; j<60; j++) {
+	for (var j=0; j<80; j++) {
 		if (fb * fc > 0) {
     		c = a;
     		fc = fa;
@@ -142,5 +171,6 @@ Brent.prototype.brent = function(a,fa,b,fb,rtol) {
     	}
     	fb = this.func.f(b) - this.o;
     }
+console.log('none');
     return b;
 }

@@ -29,6 +29,17 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 		return true;
 	}
 }
+LUTFile.prototype.saveBinary = function(data, fileName, extension) {
+    if (this.inputs.isApp) { // From native app detection in lutcalc.js
+        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension);
+    } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
+		saveAs(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName) + '.' + extension);
+		return true;
+	} else { 
+		console.log('Browser does not support file saving.');
+		return false;
+	}
+}
 LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.index, next);
@@ -218,9 +229,10 @@ LUTFile.prototype.buildLALut = function(title,oneD,threeD) {
 	var threeDHead =  'TITLE "' + title + '"' + "\n" +
 					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
 					'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
-//	this.buildLA1DMethod(tf);
-//	this.buildLA3DMethod(cs);
-	return oneDHead + this.buildLA1DData(tf) + separator + threeDHead + this.buildLA3DData(cs);
+	this.save(	oneDHead + this.buildLA1DData(tf) + separator + threeDHead + this.buildLA3DData(cs),
+				title,
+				'lacube'
+	);
 }
 LUTFile.prototype.buildLA1DData = function(L) {
 	var dim = L.length;
@@ -238,9 +250,11 @@ LUTFile.prototype.buildLA3DData = function(RGB) {
 	}
 	return out
 }
-LUTFile.prototype.buildLA1DMethod = function(L) {
+LUTFile.prototype.buildLA1DMethod = function(title,oneD) {
+	var L = new Float64Array(oneD);
 	var dim = L.length;
-	var out = "\t\t" + '{' + "\n";
+	var out = '// ' + title + "\n";
+	out += "\t\t" + '{' + "\n";
 	out += "\t\t\t" + "format: 'cube'," + "\n";
 	out += "\t\t\t" + 'size: ' + dim.toString() + ',' + "\n";
 	out += "\t\t\t" + 'min: [0,0,0],' + "\n";
@@ -249,39 +263,58 @@ LUTFile.prototype.buildLA1DMethod = function(L) {
 	out += "\t\t\t\t" + '[ ';
 	var lineTot = 0;
 	for (var j=0; j<dim; j++) {
-		out += L[j].toFixed(8).toString() + ',';
+		out += L[j].toFixed(16).toString() + ',';
 		lineTot = (lineTot+1)%8;
 		if (lineTot === 0) {
 			out += "\n\t\t\t\t  ";
 		}
 	}
-	out = out.substring(0, out.length - 2) + ' ]' + "\n\t\t\t" + ')' + "\n\t\t" + '}));' + "\n";
+	out = out.substring(0, out.length - 1) + ' ]' + "\n\t\t\t" + ')' + "\n\t\t" + '}));' + "\n";
 	window.open("data:text/plain," + encodeURIComponent(out),"_blank");
 }
-LUTFile.prototype.buildLA3DMethod = function(RGB) {
-	var dim = RGB[0].length;
-	var out = 'LUTGamut.prototype.params = function() {' + "\n\t" + 'var out = [];' + "\n";
-	var redText= "\t" + 'out[0] = new Float64Array(' + "\n\t\t" + '[ ';
-	var greenText= "\t" + 'out[1] = new Float64Array(' + "\n\t\t" + '[ ';
-	var blueText= "\t" + 'out[2] = new Float64Array(' + "\n\t\t" + '[ ';
-	var lineTot = 0;
-	for (var j=0; j<dim; j++) {
-		redText += RGB[0][j].toFixed(8).toString() + ',';
-		greenText += RGB[1][j].toFixed(8).toString() + ',';
-		blueText += RGB[2][j].toFixed(8).toString() + ',';
-		lineTot = (lineTot+1)%33;
-		if (lineTot === 0) {
-			redText += "\n\t\t  ";
-			greenText += "\n\t\t  ";
-			blueText += "\n\t\t  ";
+LUTFile.prototype.buildLABinary = function(title,L,RGB) {
+	var tf = new Float64Array(L);
+	var cs = [	new Float64Array(RGB[0]),
+				new Float64Array(RGB[1]),
+				new Float64Array(RGB[2]) ];
+	var tfSize = tf.length;
+	var csSize = cs[0].length;
+	var out64 = new Float64Array(2 + tfSize + (3*csSize));
+	out64.set(tf,2);
+	out64.set(cs[0], 2 + tfSize);
+	out64.set(cs[1], 2 + tfSize + csSize);
+	out64.set(cs[2], 2 + tfSize + (2*csSize));
+	var dim = out64.length;
+	var out = new Int32Array(dim); // internal processing is done on Float64s, files are scaled Int32s for same precision / smaller size
+	out[0] = tfSize;
+	out[1] = Math.round(Math.pow(csSize,1/3));
+	for (var j=2; j<dim; j++) {
+		if (out64[j] > 1.99) {
+			out[j] = 2136746230;
+			// maximum value for a signed 32-bit int is 2147483647, so leaves a bit of room
+			// - and nine digits precision - roughly two more than Float32 within -2<x<2.
+		} else if (out64[j] < -1.99) {
+			out[j] = -2136746230;
+		} else {
+			out[j] = Math.round(out64[j]*1073741824);
 		}
 	}
-	redText = redText.substring(0, redText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
-	greenText = greenText.substring(0, greenText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
-	blueText = blueText.substring(0, blueText.length - 2) + ' ]' + "\n\t" + ').buffer' + "\n";
-	out += redText;
-	out += greenText;
-	out += blueText;
-	out += "\t" + 'return out;' + "\n" + '}' + "\n";
-	window.open("data:text/plain," + encodeURIComponent(out),"_blank");
+  	if (!this.inputs.isLE) { // files are little endian, swap if system is big endian
+console.log('Big Endian System');
+  		var lutArr = new Uint8Array(out.buffer);
+  		var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
+  		var i,b0,b1,b2,b3;
+  		for (var j=0; j<max; j++) {
+  			i = j*4;
+  			b0=lutArr[ i ];
+  			b1=lutArr[i+1];
+  			b2=lutArr[i+2];
+  			b3=lutArr[i+3];
+  			lutArr[ i ] = b3;
+  			lutArr[i+1] = b2;
+  			lutArr[i+2] = b1;
+  			lutArr[i+3] = b0;
+  		}
+  	}
+  	this.saveBinary(out.buffer,title,'labin');
 }

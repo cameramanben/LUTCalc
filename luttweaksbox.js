@@ -655,7 +655,23 @@ LUTTweaksBox.prototype.lutAnalystDone = function() {
 	this.lutAnalystStoreButton.style.display = 'inline';
 }
 LUTTweaksBox.prototype.lutAnalystStore = function() {
-	this.file.save(this.file.buildLALut(this.lutAnalystGamma.title,this.inputs.lutAnalyst.getL(),this.inputs.lutAnalyst.getRGB()),this.lutAnalystGamma.title,'lacube');
+	this.file.buildLALut(
+		this.lutAnalystGamma.title,
+		this.inputs.lutAnalyst.getL(),
+		this.inputs.lutAnalyst.getRGB()
+	);
+/*
+	this.file.buildLA1DMethod(
+		this.lutAnalystGamma.title,
+		this.inputs.lutAnalyst.getL()
+	);
+*/
+/*	this.file.buildLABinary(
+		this.lutAnalystGamma.title,
+		this.inputs.lutAnalyst.getL(),
+		this.inputs.lutAnalyst.getRGB()
+	);
+*/
 }
 LUTTweaksBox.prototype.cleanLutAnalystTitle = function() {
 	this.lutAnalystTitle.value = this.lutAnalystTitle.value.replace(/[/"/']/gi, '');

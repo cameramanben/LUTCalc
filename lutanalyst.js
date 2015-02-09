@@ -68,8 +68,8 @@ LUTAnalyst.prototype.getTF = function() {
 		this.gammaIn = parseInt(this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].value);
 	}
 	var dim = this.inLUT.getSize();
-	if (dim < 256) {
-		dim = 256;
+	if (dim < 65) {
+		dim = 65;
 	}
 	this.message.gaTx(this.p,8,{
 		dim: dim,
@@ -138,6 +138,27 @@ LUTAnalyst.prototype.gotInputVals = function(values,dim) {
 			G[j] = this.revTF(((j/dim)%dim) / (max-1)		, rgb[1]);
 			B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, rgb[2]);
 		}
+		var minMax = this.brent.getMinMax();
+		var a = minMax.a;
+		var b = minMax.b;
+		for (var j=0; j<max; j++) {
+			if (R[j] < -65535) {
+				R[j] = a;
+			} else if (R[j] > 65535) {
+				R[j] = b;
+			}
+			if (G[j] < -65535) {
+				G[j] = a;
+			} else if (B[j] > 65535) {
+				G[j] = b;
+			}
+			if (B[j] < -65535) {
+				B[j] = a;
+			} else if (B[j] > 65535) {
+				B[j] = b;
+			}
+		}		
+//console.log(minMax);
 		this.cs.setDetails({
 			title: 'Colour Space',
 			format: 'cube',

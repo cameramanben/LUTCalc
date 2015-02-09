@@ -27,6 +27,11 @@ function LUTGamut() {
 	this.pass = 0;
 	this.inList = [];
 	this.outList = [];
+	if ((new Int8Array(new Int16Array([1]).buffer)[0]) > 0) {
+		this.isLE = true;
+	} else {
+		this.isLE = false;
+	}
 	this.gamutList();
 }
 LUTGamut.prototype.gamutList = function() {
@@ -51,37 +56,28 @@ LUTGamut.prototype.gamutList = function() {
 		'LC709',
 		{
 			format: 'cube',
-			size: 33,
 			min: [0,0,0],
 			max: [1,1,1],
-			lut: this.paramsLC709Out()
+			filename: 'LC709.labin',
+			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutLUT(
 		'LC709A',
 		{
 			format: 'cube',
-			size: 33,
 			min: [0,0,0],
 			max: [1,1,1],
-			lut: this.paramsLC709AOut()
+			filename: 'LC709A.labin',
+			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutLUT(
-		'Sony Cine+709',
+		'Varicam V709',
 		{
 			format: 'cube',
-			size: 33,
 			min: [0,0,0],
 			max: [1,1,1],
-			lut: this.paramsCine709Out()
-		}));
-	this.outGamuts.push(new LUTGamutLUT(
-		'V709',
-		{
-			format: 'cube',
-			size: 33,
-			min: [0,0,0],
-			max: [1,1,1],
-			lut: this.paramsV709Out()
+			filename: 'V709.labin',
+			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutMatrix('Luma B&W',[[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903],[0.215006427,0.885132476,-0.100138903]]));
 	this.outGamuts.push(new LUTGamutMatrix('ACES',[[0.6387886672,0.2723514337,0.0888598992],[-0.0039159061,1.0880732308,-0.0841573249],[-0.0299072021,-0.0264325799,1.0563397820]]));
@@ -91,19 +87,19 @@ LUTGamut.prototype.gamutList = function() {
 		'Canon CP Lock (Daylight)',
 		{
 			format: 'cube',
-			size: 33,
 			min: [0,0,0],
 			max: [1,1,1],
-			lut: this.paramsCPDaylightOut()
+			filename: 'cpouttungsten.labin',
+			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutLUT(
 		'Canon CP Lock (Tungsten)',
 		{
 			format: 'cube',
-			size: 33,
 			min: [0,0,0],
 			max: [1,1,1],
-			lut: this.paramsCPTungstenOut()
+			filename: 'cpoutdaylight.labin',
+			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutMatrix('Canon Cinema Gamut',[[0.840981006,0.143882203,0.015137045],[-0.00825279,0.998163089,0.010090467],[-0.019382583,0.157113995,0.862268767]]));
 	this.outGamuts.push(new LUTGamutMatrix('Panasonic V-Gamut',[[0.752982595,0.143370216,0.103647188],[0.021707697,1.015318836,-0.037026533],[-0.009416053,0.003370418,1.006045635]]));
@@ -283,8 +279,66 @@ LUTGamutMatrix.prototype.calc = function(rgb) {
 function LUTGamutLUT(name,params) {
 	this.name = name;
 	this.lut = new LUTs();
-	this.lut.setInfo(name, params.format, 3, params.size, params.min, params.max);
-	this.lut.addLUT(params.lut[0],params.lut[1],params.lut[2]);
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', params.filename, true);
+	xhr.responseType = 'arraybuffer';
+	xhr.onload = (function(lut) {
+		var lut = lut;
+		return function(e) {
+			var lutBuf = this.response;
+  			if (!lut.le) { // files are little endian, swap if system is big endian
+self.postMessage({msg:true,details:'Gamut LUTs: Big Endian System'});
+  				var lutArr = new Uint8Array(lutBuf);
+  				var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
+  				var i,b0,b1,b2,b3;
+  				for (var j=0; j<max; j++) {
+  					i = j*4;
+  					b0=lutArr[ i ];
+  					b1=lutArr[i+1];
+  					b2=lutArr[i+2];
+  					b3=lutArr[i+3];
+  					lutArr[ i ] = b3;
+  					lutArr[i+1] = b2;
+  					lutArr[i+2] = b1;
+  					lutArr[i+3] = b0;
+  				}
+  			}
+  			var in32 = new Int32Array(lutBuf);
+  			var tfS = in32[0];
+	  		var dim = in32[1];
+ 			var csS = dim*dim*dim;
+// Internal processing is Float64, files are scaled Int32
+ 			var C = [	new Float64Array(csS),
+ 						new Float64Array(csS),
+ 						new Float64Array(csS) ];
+ 			for (var j=0; j<csS; j++){
+ 				C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
+ 				C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
+ 				C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
+ 			}
+  			lut.lut.setDetails({
+				title: lut.name,
+				format: lut.format,
+				dims: 3,
+				s: dim,
+				min: lut.min,
+				max: lut.max,
+				C: [	C[0].buffer,
+ 						C[1].buffer,
+ 						C[2].buffer ]
+			});
+		};
+	})({
+		name: name,
+		lut: this.lut,
+		format: params.format,
+		min: params.min,
+		max: params.max,
+		le: params.le
+	});
+	xhr.send();
+//	this.lut.setInfo(name, params.format, 3, params.size, params.min, params.max);
+//	this.lut.addLUT(params.lut[0],params.lut[1],params.lut[2]);
 }
 LUTGamutLUT.prototype.calc = function(rgb) {
 	var input = [];
@@ -456,14 +510,7 @@ LUTGamutCanonIDT.prototype.calc = function(rgb) {
 	return output;
 }
 // Web worker code
-importScripts(	'lut.js',
-				'lutgamut.lc709.js',
-				'lutgamut.lc709a.js',
-				'lutgamut.cine709.js',
-				'lutgamut.cpoutdaylight.js',
-				'lutgamut.cpouttungsten.js',
-				'lutgamut.v709.js'
-				);
+importScripts('lut.js');
 var gamuts = new LUTGamut();
 this.addEventListener('message', function(e) {
 	var d = e.data;

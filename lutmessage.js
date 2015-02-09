@@ -95,7 +95,7 @@ LUTMessage.prototype.gaSetParams = function() {
 		camType: parseInt(this.inputs.cameraType.value),
 		stopShift: parseFloat(this.inputs.stopShift.value),
 		clip: this.inputs.clipCheck.checked,
-		mlut: this.inputs.mlutCheck.checked,
+		mlut: this.inputs.mlutCheck.checked
 	};
 	if (this.inputs.tweaks.checked) {
 		d.tweaks = true;
@@ -151,7 +151,9 @@ LUTMessage.prototype.gaTxAll = function(p,t,d) { // parent (sender), type, data
 	}
 }
 LUTMessage.prototype.gaRx = function(d) {
-	if (d.err) {
+	if (d.msg) {
+		console.log(d.details);
+	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
 console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
@@ -333,7 +335,9 @@ LUTMessage.prototype.gtTxAll = function(p,t,d) { // parent (sender), type, data
 	}
 }
 LUTMessage.prototype.gtRx = function(d) {
-	if (d.err) {
+	if (d.msg) {
+		console.log(d.details);
+	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
 console.log('Resending - ' + d.t);

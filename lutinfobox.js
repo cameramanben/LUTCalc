@@ -99,6 +99,13 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
+	this.addText(this.changelogBox,'v1.5 Beta 2',true);
+	this.addText(this.changelogBox,'Built-in colour-spaces based on LUTs now have their data stored in binary versions of LUTAnalyst files. Previously they were human-readable javascript variable declarations.');
+	this.addText(this.changelogBox,'The format now is Int32Array blobs stored in files ending '+"'labin'"+'. LUTCalc uses Float64s internally (Javascript treats standard floats as 64-bit). Scaling 32-bit integers maintains much more precision than Float32s considering that the actual range is not generally more than 0-1 (the format allows -2 - +2).');
+	this.addText(this.changelogBox,'The format is little endian, first value the length of the transfer function (gamma) array, second value the length of the colour space array, then gamma and colour space data.');
+	this.addText(this.changelogBox,'This is a much more compact way to store the data, so 65x65x65 colour spaces are a little over twice the size of the previous 33x33x33 ones. Consequently LC709 and LC709A now produce SL3/SG3.cine to LC709(A) 3D LUTs numerically identical to the Sony look profiles.');
+	this.addText(this.changelogBox,'LC709 and LC709A colour spaces have been recalculated, Cine709 has been dropped (the transfer function is still available, and it is easy to import it with LUTAnalyst if needed).');
+	this.addText(this.changelogBox,'Tweaked the Brent method root finding code to be more robust.');
 	this.addText(this.changelogBox,'v1.5 Beta',true);
 	this.addText(this.changelogBox,'Major rewrite of the transfer function (gamma), colour space (gamut), LUT and LUTAnalyst code bases.');
 	this.addText(this.changelogBox,'Web workers are now used extensively for multithreading speed.');

@@ -13,13 +13,19 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.5 beta');
+lutInputs.addInput('version','v1.5 beta 2');
 lutInputs.addInput('date','February 2015');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
     lutInputs.addInput('isApp',true);
 } else {
     lutInputs.addInput('isApp',false);
+}
+// Test Endianness for arraybuffer data to and from files
+if ((new Int8Array(new Int16Array([1]).buffer)[0]) > 0) {
+	lutInputs.addInput('isLE', true);
+} else {
+	lutInputs.addInput('isLE', false);
 }
 // Build UI
 var lutMessage = new LUTMessage(lutInputs);
@@ -186,6 +192,10 @@ lutInputs.mlutCheck.onchange = function(){
 	lutBox.toggleMLUT();
 	lutGammaBox.oneOrThree();
 	lutTweaksBox.toggleTweakCheck();
+	lutMessage.gaSetParams();
+}
+lutInputs.clipCheck.onchange = function(){
+	lutMessage.gaSetParams();
 }
 lutInputs.d[0].onchange = function(){
 	lutBox.oneOrThree();

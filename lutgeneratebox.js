@@ -33,30 +33,6 @@ function LUTGenerateBox(fieldset, inputs, message, file) {
 LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
 	this.baseIRE = baseIRE;
 }
-LUTGenerateBox.prototype.got1D = function(d) {
-	this.lut.set(d.o, d.start*3);
-	this.lT += d.vals;
-	if (this.lT === this.dimension) {
-		this.lT = 0;
-		this.output();
-	}
-}
-LUTGenerateBox.prototype.got3D = function(d) {
-	this.lut.set(d.o, d.vals*d.B*3);
-	this.lT++;
-	if (this.lT === this.dimension) {
-		this.lT = 0;
-		this.output();
-	}
-}
-LUTGenerateBox.prototype.output = function() {
-		var max = this.lut.length / 3;
-		var d = '';
-		for (var j=0; j<max; j++) {
-			d += this.lut[(j*3)].toFixed(6).toString() + ' ' + this.lut[(j*3)+1].toFixed(6).toString() + ' ' + this.lut[(j*3)+2].toFixed(6).toString() + "\n";
-		}
-		this.file.save(this.header() + d, this.inputs.name.value, 'cube');
-}
 LUTGenerateBox.prototype.prepVars = function() {
 	this.name = this.inputs.name.value;
 	if (this.inputs.d[0].checked) {
@@ -175,6 +151,31 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 		this.message.gaTx(this.p,3,{R:R, G:G, B:B, vals:chunk, dim:this.dimension});
 	}
 }
+LUTGenerateBox.prototype.got1D = function(d) {
+	this.lut.set(d.o, d.start*3);
+	this.lT += d.vals;
+	if (this.lT === this.dimension) {
+		this.lT = 0;
+		this.output();
+	}
+}
+LUTGenerateBox.prototype.got3D = function(d) {
+	this.lut.set(d.o, d.vals*d.B*3);
+	this.lT++;
+	if (this.lT === this.dimension) {
+		this.lT = 0;
+		this.output();
+	}
+}
+LUTGenerateBox.prototype.output = function() {
+		var max = this.lut.length / 3;
+		var d = '';
+		for (var j=0; j<max; j++) {
+			d += this.lut[(j*3)].toFixed(6).toString() + ' ' + this.lut[(j*3)+1].toFixed(6).toString() + ' ' + this.lut[(j*3)+2].toFixed(6).toString() + "\n";
+		}
+		this.file.save(this.header() + d, this.inputs.name.value, 'cube');
+}
+/*
 LUTGenerateBox.prototype.clip = function(data,rgb) {
 	var out = rgb.slice(0);
 	if (this.mlut) {
@@ -223,6 +224,7 @@ LUTGenerateBox.prototype.clip = function(data,rgb) {
 	}
 	return out;
 }
+*/
 LUTGenerateBox.prototype.fixedString = function(rgb) {
 	return [parseFloat(rgb[0]).toFixed(10).toString(),
 			parseFloat(rgb[1]).toFixed(10).toString(),
