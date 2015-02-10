@@ -99,6 +99,8 @@ LUTInfoBox.prototype.changelog = function() {
 	this.changelogBox.setAttribute('class','graybox infobox');
 	this.addText(this.changelogBox,'Credits / References',true);
 	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
+	this.addText(this.changelogBox,'v1.5 Beta 3',true);
+	this.addText(this.changelogBox,'Fixed a LUTAnalyst input gamut bug. Recalculated V709.');
 	this.addText(this.changelogBox,'v1.5 Beta 2',true);
 	this.addText(this.changelogBox,'Built-in colour-spaces based on LUTs now have their data stored in binary versions of LUTAnalyst files. Previously they were human-readable javascript variable declarations.');
 	this.addText(this.changelogBox,'The format now is Int32Array blobs stored in files ending '+"'labin'"+'. LUTCalc uses Float64s internally (Javascript treats standard floats as 64-bit). Scaling 32-bit integers maintains much more precision than Float32s considering that the actual range is not generally more than 0-1 (the format allows -2 - +2).');
