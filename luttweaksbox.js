@@ -191,12 +191,12 @@ LUTTweaksBox.prototype.gotGammaLists = function(inList,outList,linList,catList,L
 	this.catList = catList;
 	this.gammaLA = LA;
 }
-LUTTweaksBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
-	var max = inList.length;
+LUTTweaksBox.prototype.gotGamutLists = function(laList,outList,pass,LA) {
+	var max = laList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
-		option.value = inList[i].idx;
-		option.appendChild(document.createTextNode(inList[i].name));
+		option.value = laList[i].idx;
+		option.appendChild(document.createTextNode(laList[i].name));
 		this.lutAnalystGamutSelect.appendChild(option);
 	}
 	max = outList.length;
@@ -666,7 +666,8 @@ LUTTweaksBox.prototype.lutAnalystStore = function() {
 		this.inputs.lutAnalyst.getL()
 	);
 */
-/*	this.file.buildLABinary(
+/*
+	this.file.buildLABinary(
 		this.lutAnalystGamma.title,
 		this.inputs.lutAnalyst.getL(),
 		this.inputs.lutAnalyst.getRGB()

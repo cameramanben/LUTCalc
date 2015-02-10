@@ -378,7 +378,7 @@ console.log('Resending - ' + (d.t-20));
 }
 LUTMessage.prototype.gotGamutLists = function(d) {
 	this.ui[2].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Gamma Box
-	this.ui[3].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Tweaks Box
+	this.ui[3].gotGamutLists(d.laList,d.outList,d.pass,d.LA); // Tweaks Box
 	this.gtSetParams();
 }
 LUTMessage.prototype.gotIOGamutNames = function(d) {

@@ -27,6 +27,7 @@ function LUTGamut() {
 	this.pass = 0;
 	this.inList = [];
 	this.outList = [];
+	this.laList = [];
 	if ((new Int8Array(new Int16Array([1]).buffer)[0]) > 0) {
 		this.isLE = true;
 	} else {
@@ -111,12 +112,23 @@ LUTGamut.prototype.gamutList = function() {
 	for (var i = 0; i < max; i++) {
 		this.inList.push({name: this.inGamuts[i].name,idx: i});
 	}
-	max = this.outGamuts.length;
-	for (var i = 0; i < max; i++) {
+	var max2 = this.outGamuts.length;
+	for (var i = 0; i < max2; i++) {
 		if (i != this.LA) {
 			this.outList.push({name: this.outGamuts[i].name,idx: i});
 		}
-	}	
+	}
+	max = this.inList.length;
+	max2 = this.outList.length
+	for (var i=0; i<max; i++) {
+		this.laList.push({name: this.inList[i].name});
+		for (var j=0; j<max2; j++) {
+			if (this.laList[i].name === this.outList[j].name) {
+				this.laList[i].idx = this.outList[j].idx;
+				break;
+			}
+		}
+	}
 }
 // I/O functions
 LUTGamut.prototype.setParams = function(params) {
@@ -247,6 +259,7 @@ LUTGamut.prototype.getLists = function(p,t) {
 		v: this.ver,
 		inList: this.inList,
 		outList: this.outList,
+		laList: this.laList,
 		pass: this.pass,
 		LA: this.LA
 	};
