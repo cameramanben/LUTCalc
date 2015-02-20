@@ -215,9 +215,12 @@ lutInputs.outRange[0].onchange = function(){
 lutInputs.outRange[1].onchange = function(){
 	lutMessage.gaSetParams();
 }
-//		Generate Button
+//		Preview Box
 lutPreview.preButton.onclick = function(){
 	lutPreview.toggle();
+}
+lutPreview.drButton.onclick = function(){
+	lutPreview.toggleDefault();
 }
 //		Generate Button
 lutGenerate.genButton.onclick = function(){

@@ -21,6 +21,10 @@ function LUTPreview(fieldset,inputs,message) {
 	this.preButton = document.createElement('input');
 	this.preButton.setAttribute('type','button');
 	this.preButton.value = 'Preview';
+	this.drButton = document.createElement('input');
+	this.drButton.setAttribute('type','button');
+	this.drButton.value = 'To Low Contrast Image';
+	this.hdrDefault = true;
 	this.width = 960;
 	this.height = 540;
 	this.rastSize = this.width*8*3;
@@ -37,6 +41,8 @@ LUTPreview.prototype.setUIs = function(generateBox,lutbox) {
 	this.lutbox = lutbox;
 	this.generateButton = generateBox.button;
 	generateBox.box.insertBefore(this.preButton,generateBox.button);
+	generateBox.box.insertBefore(this.drButton,generateBox.button);
+	this.drButton.style.display = 'none';
 }
 LUTPreview.prototype.toggle = function() {
 	if (this.show) {
@@ -45,6 +51,7 @@ LUTPreview.prototype.toggle = function() {
 		this.fieldSet.style.display = 'none';
 		this.lutbox.style.display = 'block';
 		this.generateButton.style.display = 'inline';
+		this.drButton.style.display = 'none';
 		this.show = false;
 		this.preButton.value = 'Preview';
 	} else {
@@ -53,9 +60,23 @@ LUTPreview.prototype.toggle = function() {
 		this.fieldSet.style.display = 'block';
 		this.lutbox.style.display = 'none';
 		this.generateButton.style.display = 'none';
+		this.drButton.style.display = 'inline';
 		this.show = true;
 		this.preButton.value = 'Hide Preview';
 		this.refresh();
+	}
+}
+LUTPreview.prototype.toggleDefault = function() {
+	if (this.hdrDefault) {
+		this.changed = true;
+		this.drButton.value = 'To High Contrast Image';
+		this.hdrDefault = false;
+		this.loadDefault(false);
+	} else {
+		this.changed = true;
+		this.drButton.value = 'To Low Contrast Image';
+		this.hdrDefault = true;
+		this.loadDefault(true);
 	}
 }
 LUTPreview.prototype.buildBox = function() {
@@ -75,9 +96,9 @@ LUTPreview.prototype.buildBox = function() {
 	this.lCan.style.display = 'none';
 	this.lCtx = this.lCan.getContext('2d');
 	this.box.appendChild(this.lCan);
-	this.loadDefault();
+	this.loadDefault(true);
 }
-LUTPreview.prototype.loadDefault = function() {
+LUTPreview.prototype.loadDefault = function(hdr) {
 	this.gotMSB = false;
 	this.gotLSB = false;
 	var msb = new Image();
@@ -106,8 +127,13 @@ LUTPreview.prototype.loadDefault = function() {
 		box: this,
 		lsb: lsb
 	});
-	msb.src = "sl3previewMSB.png";
-	lsb.src = "sl3previewLSB.png";
+	if (hdr) {
+		msb.src = "HDRPreviewMSB.png";
+		lsb.src = "HDRPreviewLSB.png";
+	} else {
+		msb.src = "LDRPreviewMSB.png";
+		lsb.src = "LDRPreviewLSB.png";
+	}
 }
 LUTPreview.prototype.loadedDefault = function() {
 	if (this.gotLSB && this.gotMSB) {
@@ -122,6 +148,9 @@ LUTPreview.prototype.loadedDefault = function() {
 			this.pre[(j*3)+1] = this.sl3ToLin(parseFloat((msb.data[(j*4)+1]*256)+lsb.data[(j*4)+1])/65535);
 			this.pre[(j*3)+2] = this.sl3ToLin(parseFloat((msb.data[(j*4)+2]*256)+lsb.data[(j*4)+2])/65535);
 		}
+	}
+	if (this.changed) {
+		this.refresh();
 	}
 }
 LUTPreview.prototype.sl3ToLin = function(input) {
