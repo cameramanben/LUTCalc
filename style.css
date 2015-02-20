@@ -126,7 +126,7 @@ body {text-align:center;margin: 0px auto;}
 #javascriptwarning { margin-top:1em; }
 #main { padding-right:0.2em; width:69em;margin: 0px auto;}
 #left { float:left;}
-#right {float:right;overflow:auto;width:35em;max-height:38em;padding-right:1em;}
+#right {float:right;overflow:auto;width:35em;max-height:38.5em;padding-right:1em;}
 #lutcalcform {margin: 0px auto;}
 .shadowbox	{	
 	box-shadow:0.05em 0.05em 0.2em #808080;
