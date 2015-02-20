@@ -61,21 +61,44 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 		}
 		if (valid) {
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
-				var reader = new FileReader();
-				var localDestination = this.inputs[destination];
-				localDestination.format = ext;
-				reader.onload = (function(theFile){
-					var theDestination = localDestination;
-    				return function(e){
-    					theDestination.text = e.target.result.split(/[\n\u0085\u2028\u2029]|\r\n?/);
-						parentObject.followUp(next);
-    				};
-    			})(file);
-				reader.onerror = function(theFile) { return function() {
-					alert("Error reading file.");
-					inputBox.value = '';
-				}; }(file);
-				reader.readAsText(file);
+				if (ext === 'labin') {
+					this.inputs.laTitle.value = file;
+					var localDestination = this.inputs[destination];
+					localDestination.format = ext;
+					localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
+					var xhr = new XMLHttpRequest();
+					xhr.open('GET', file.name, true);
+					xhr.responseType = 'arraybuffer';
+					xhr.onload = (function(lut) {
+						var lut = lut;
+						return function(e) {
+							lut.theDestination.buff = this.response;
+							lut.parentObject.followUp(lut.next);
+						};
+					})({
+						theDestination: localDestination,
+						parentObject: parentObject,
+						next: next
+					});
+					xhr.send();
+				} else {
+					var reader = new FileReader();
+					var localDestination = this.inputs[destination];
+					localDestination.format = ext;
+					localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
+					reader.onload = (function(theFile){
+						var theDestination = localDestination;
+    					return function(e){
+    						theDestination.text = e.target.result.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+							parentObject.followUp(next);
+    					};
+    				})(file);
+					reader.onerror = function(theFile) { return function() {
+						alert("Error reading file.");
+						inputBox.value = '';
+					}; }(file);
+					reader.readAsText(file);
+				}
 			} else {
 				alert("Can't load LUT - your browser is not set to support Javascript File APIs.");
 				fileInput.value = '';
@@ -89,9 +112,72 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 LUTFile.prototype.filename = function(filename) {
 	return filename.replace(/[^a-z0-9_\-\ ]/gi, '').replace(/[^a-z0-9_\-]/gi, '_');
 }
+LUTFile.prototype.parseLABin = function(data) {
+	var buffer = this.inputs[data].buff;
+	var title = this.inputs[data].title;
+	if (!this.inputs.isLE) { // files are little endian, swap if system is big endian
+		console.log('Gamut LUTs: Big Endian System');
+		var lutArr = new Uint8Array(buffer);
+		var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
+		var i,b0,b1,b2,b3;
+		for (var j=0; j<max; j++) {
+			i = j*4;
+			b0=lutArr[ i ];
+			b1=lutArr[i+1];
+			b2=lutArr[i+2];
+			b3=lutArr[i+3];
+			lutArr[ i ] = b3;
+			lutArr[i+1] = b2;
+			lutArr[i+2] = b1;
+			lutArr[i+3] = b0;
+		}
+	}
+	var in32 = new Int32Array(buffer);
+	var tfS = in32[0];
+	var dim = in32[1];
+	var csS = dim*dim*dim;
+	// Internal processing is Float64, files are scaled Int32
+	var T = new Float64Array(tfS);
+	for (var j=0; j<tfS; j++){
+		T[j] = parseFloat(in32[2 + j])/1073741824;
+	}
+	var C = [	new Float64Array(csS),
+				new Float64Array(csS),
+				new Float64Array(csS) ];
+	for (var j=0; j<csS; j++){
+		C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
+		C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
+		C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
+	}
+	var tfOut = {
+		title: title,
+		format: 'cube',
+		dims: 1,
+		s: tfS,
+		min: [0,0,0],
+		max: [1,1,1],
+		C: [T.buffer],
+		dest: 'tf'
+	};
+	this.inputs.lutAnalyst.setLUT(tfOut);
+	var csOut = {
+		title: 'cs',
+		format: 'cube',
+		dims: 3,
+		s: dim,
+		min: [0,0,0],
+		max: [1,1,1],
+		C: [	C[0].buffer,
+				C[1].buffer,
+				C[2].buffer],
+		dest: 'cs'
+	};
+	this.inputs.lutAnalyst.setLUT(csOut);
+	return true;
+}
 LUTFile.prototype.parseCubeLA = function(data, dest) {
 	var text = this.inputs[data].text;
-	var title = 'LUTAnalyst';
+	var title = this.inputs[data].title;
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
@@ -186,7 +272,6 @@ LUTFile.prototype.parseCubeLA = function(data, dest) {
 				C: [R.buffer,G.buffer,B.buffer],
 				dest: dest
 			};
-		
 		this.inputs.lutAnalyst.setLUT(out);
 		return true;
 	} else {
@@ -300,7 +385,7 @@ LUTFile.prototype.buildLABinary = function(title,L,RGB) {
 		}
 	}
   	if (!this.inputs.isLE) { // files are little endian, swap if system is big endian
-console.log('Big Endian System');
+		console.log('Big Endian System');
   		var lutArr = new Uint8Array(out.buffer);
   		var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
   		var i,b0,b1,b2,b3;

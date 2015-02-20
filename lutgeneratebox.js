@@ -30,6 +30,9 @@ function LUTGenerateBox(fieldset, inputs, message, file) {
 	fieldset.id = 'genbutton';
 	fieldset.appendChild(this.box);
 }
+LUTGenerateBox.prototype.getBox = function() {
+	return { box: this.box, button: this.genButton };
+}
 LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
 	this.baseIRE = baseIRE;
 }

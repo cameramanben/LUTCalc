@@ -16,7 +16,6 @@ function LUTInfoBox(fieldset,inputs,message) {
 	this.p = 6;
 	this.message.addUI(this.p,this);
 	this.instructionsBut = document.createElement('input');
-	this.changelogBut = document.createElement('input');
 	this.gammaInfoBut = document.createElement('input');
 	this.gammaChartBut = document.createElement('input');
 	this.buildBox();
@@ -29,11 +28,6 @@ LUTInfoBox.prototype.buildBox = function() {
 	this.instructionsBox = document.createElement('div');
 	this.instructions();
 	this.instructionsBox.style.display = 'none';
-	this.changelogBut.setAttribute('type','button');
-	this.changelogBut.value = 'Changelog';
-	this.changelogBox = document.createElement('div');
-	this.changelog();
-	this.changelogBox.style.display = 'none';
 	this.gammaInfoBut.setAttribute('type','button');
 	this.gammaInfoBut.value = 'Gamma Info';
 	this.gammaInfoBox = document.createElement('div');
@@ -45,11 +39,9 @@ LUTInfoBox.prototype.buildBox = function() {
 	this.gammaChart();
 	this.gammaChartBox.style.display = 'block';
 	this.box.appendChild(this.instructionsBut);
-	this.box.appendChild(this.changelogBut);
 	this.box.appendChild(this.gammaInfoBut);
 	this.box.appendChild(this.gammaChartBut);
 	this.box.appendChild(this.instructionsBox);
-	this.box.appendChild(this.changelogBox);
 	this.box.appendChild(this.gammaInfoBox);
 	this.box.appendChild(this.gammaChartBox);
 }
@@ -94,136 +86,6 @@ LUTInfoBox.prototype.instructions = function() {
 	this.addText(this.instructionsBox,"The 'Highlight Level' allows you to set a reflected value (such as 18% gray or 90% white) and see what level that gets displayed at in your chosen gamma. you can then set a level that you would like it to display at and LUTCalc will scale the curve, keeping the black level unchanged.");
 	this.addText(this.instructionsBox,'The idea of this is that it allows people who favour setting their exposures by IRE levels that can vary significantly from gamma to gamma (eg 90% IRE) to expose to the LUT but have correctly exposed underlying log material.');
 	this.addText(this.instructionsBox,'Setting the LUT type to 3D will bring up a third box. Highlight gamut allows you to chose a second colour transform for the highlights, plus the start and end of the transition and how abruptly it happens. It is rather suck it and see, but allows for some fairly interesting and complex effects such as differing saturation in the highlights and shadows.');
-}
-LUTInfoBox.prototype.changelog = function() {
-	this.changelogBox.setAttribute('class','graybox infobox');
-	this.addText(this.changelogBox,'Credits / References',true);
-	this.addText(this.changelogBox,"A full list of standards and white papers used is given in the README.md file.");
-	this.addText(this.changelogBox,'v1.5 Beta 3',true);
-	this.addText(this.changelogBox,'Fixed a LUTAnalyst input gamut bug. Recalculated V709.');
-	this.addText(this.changelogBox,'v1.5 Beta 2',true);
-	this.addText(this.changelogBox,'Built-in colour-spaces based on LUTs now have their data stored in binary versions of LUTAnalyst files. Previously they were human-readable javascript variable declarations.');
-	this.addText(this.changelogBox,'The format now is Int32Array blobs stored in files ending '+"'labin'"+'. LUTCalc uses Float64s internally (Javascript treats standard floats as 64-bit). Scaling 32-bit integers maintains much more precision than Float32s considering that the actual range is not generally more than 0-1 (the format allows -2 - +2).');
-	this.addText(this.changelogBox,'The format is little endian, first value the length of the transfer function (gamma) array, second value the length of the colour space array, then gamma and colour space data.');
-	this.addText(this.changelogBox,'This is a much more compact way to store the data, so 65x65x65 colour spaces are a little over twice the size of the previous 33x33x33 ones. Consequently LC709 and LC709A now produce SL3/SG3.cine to LC709(A) 3D LUTs numerically identical to the Sony look profiles.');
-	this.addText(this.changelogBox,'LC709 and LC709A colour spaces have been recalculated, Cine709 has been dropped (the transfer function is still available, and it is easy to import it with LUTAnalyst if needed).');
-	this.addText(this.changelogBox,'Tweaked the Brent method root finding code to be more robust.');
-	this.addText(this.changelogBox,'v1.5 Beta',true);
-	this.addText(this.changelogBox,'Major rewrite of the transfer function (gamma), colour space (gamut), LUT and LUTAnalyst code bases.');
-	this.addText(this.changelogBox,'Web workers are now used extensively for multithreading speed.');
-	this.addText(this.changelogBox,'Strided 1D typed arrays are gradually replacing multidimensional arrays for basic speed and for efficiency in passing to web workers.');
-	this.addText(this.changelogBox,'Linear interpolation code has been tidied up. Cubic is generally used, but with multithreading linear should be fast enough to allow real-time previews in a future version.');
-	this.addText(this.changelogBox,'Fixed a LUTAnalyst bug which could cause the wrong input gamut option to be used giving faulty results.');
-	this.addText(this.changelogBox,'Added a basic implementation of the Dolby PQ transfer function for high dynamic range displays. As it stands, rather than a nits scale, it is set to place 18% gray at the same 10-bit value as for Rec709.');
-	this.addText(this.changelogBox,'Added two alternative HDR transfer function proposals based on extending Rec709/Rec2020 with log highlights region. Both have 400% and 800% options.');
-	this.addText(this.changelogBox,'Added Panalog.');
-	this.addText(this.changelogBox,'Other small bugfixes.');
-	this.addText(this.changelogBox,'v1.3',true);
-	this.addText(this.changelogBox,'New Canon CP Lock output gamuts. Should be more reliable across the gamut for dropping in with Canon CP lock material.');
-	this.addText(this.changelogBox,'v1.22',true);
-	this.addText(this.changelogBox,'Added Panasonic Varicam V-Log and V-Gamut.');
-	this.addText(this.changelogBox,'v1.21',true);
-	this.addText(this.changelogBox,'Log gamma and LUTAnalyst range checking bugfixes.');
-	this.addText(this.changelogBox,'v1.2',true);
-	this.addText(this.changelogBox,'Added charts for % Reflectance against LUT % IRE and LUT % IRE in against LUT % IRE out.');
-	this.addText(this.changelogBox,'Fixed missing term in Arri LogC input equation.');
-	this.addText(this.changelogBox,'v1.1',true);
-	this.addText(this.changelogBox,'Canon CP Gamut In replaced by Canon CP IDT (Daylight) and Canon CP IDT (Tungsten). Beta testing. These use matrix coefficients from the ACES IDTs published by Canon for the C300, C500 and C100.Tungsten for 3200 or warmer, Daylight for 4300 and up.');
-	this.addText(this.changelogBox,'Canon CP Gamut Out replaced by LUTs derived from the IDTs using Newton-Raphson to invert. Alpha testing.');
-	this.addText(this.changelogBox,'CP Gamut In -> CP Gamut Out does not currently produce expected results. Possibly due to the reduced gamut of CP Rec709.');
-	this.addText(this.changelogBox,'Removed code duplication in the tricubic calculations, and bade out-of-bounds handling more sensible. This has slowed the tricubic somewhat. I will look to optimise.');
-	this.addText(this.changelogBox,'Fixed MLUT bugs which meant that the appropriate clipping was not happening, and that changing to a log output gamma with MLUT checked would lead to the wrong output scaling.');
-	this.addText(this.changelogBox,'Provisional fix for an out-of-bounds (NaN) bug in LUTAnalyst with gammas of less dynamic range than S-Log3, ie Canon C-Log.');
-	this.addText(this.changelogBox,'v1.0',true);
-	this.addText(this.changelogBox,"Introduced 'LUTAnalyst' - a tool to convert 1D and 3D LUTs (currently cubes) to 1D S-Log3 to new transfer gamma LUTs plus 3D S-Gamut3.cine to new colour space gamut LUTs. LUTCalc can then use these to use the new gamma and / or gamut as you can with any of the built in options.");
-	this.addText(this.changelogBox,'Totally recoded the handling of LUTs as data sources in LUTCalc.');
-	this.addText(this.changelogBox,'Substantially improved LC709 and LC709A colour transforms - added in Cine+Rec709.');
-	this.addText(this.changelogBox,'Added initial cubic interpolation for 1D and tricubic interpolation for 3D code.');
-	this.addText(this.changelogBox,'v0.9991',true);
-	this.addText(this.changelogBox,'Released code on Github under GPLv2.');
-	this.addText(this.changelogBox,'UI CSS tweaks and removal of Sentenza Desktop code for the time being as no binary release. Web App only again for now!');
-	this.addText(this.changelogBox,'v0.999',true);
-	this.addText(this.changelogBox,'Total rewrite of the code base to be modular and object oriented. Simplifies altering and adding features.');
-	this.addText(this.changelogBox,'Shifted UI to match between the Mac app and web app versions and hopefully make options as clear as possible.');
-	this.addText(this.changelogBox,'Added LUT-based Canon CP Lock Gamut in and out derived from analysing numerous side-by-side test images. Far from perfect and consider experimental, but seems to give a good match going from Sony to Canon and a really good match going from Canon to Sony. Definitely shows the advantage of the 10-bit, 14-stop Sony cameras! The main caveats are that limitations on the free Excel solver make the saturated blue and cyan trickier to optimize and I do not have a C300 to check against, just the (numerous) test images I took to build the gamut.');
-	this.addText(this.changelogBox,"Added Arri LogC gamma options along with Arri Wide Gamut. Arri's approach to log does odd things from ISO 1600 and up, feathering the highlight to avoid clipping. I have tried to factor in the shoulder point by comparing Arri LUT Generator LUTs with the stock equation. As such, this option is somewhere between experimental and more useful for comparing charts than producing LUTs :-).");
-	this.addText(this.changelogBox,'v0.991',true);
-	this.addText(this.changelogBox,'Fixed bug with customising Canon WideDR.');
-	this.addText(this.changelogBox,'Cleaned up layout.');
-	this.addText(this.changelogBox,'v0.99',true);
-	this.addText(this.changelogBox,'First version of Mac App.');
-	this.addText(this.changelogBox,'Total overhaul of colour transforms and recalculation of all estimated gammas.');
-	this.addText(this.changelogBox,'Colour transforms are now done either by conventional matrices, using colour LUTs or combinations of both.');
-	this.addText(this.changelogBox,'Calculated LC709 and LC709A colour LUTs from the Sony looks. This required an improved mapping of the gamma curves.');
-	this.addText(this.changelogBox,'Tweaks to the S-Log2 gamma calculation should mean better high ISO CineEI shifts. It has now been finessed using the Sony S-Log2 to Rec709 ilut in Resolve.');
-	this.addText(this.changelogBox,'Canon C-Log is now directly from an equation published by Canon.');
-	this.addText(this.changelogBox,"Added a table of IRE and 10-bit values for the current output gamma to the 'Gamma Info' tab. This includes any customisations so will give a good guide to appropriate recording levels.");
-	this.addText(this.changelogBox,'v0.981',true);
-	this.addText(this.changelogBox,'Housekeeping Release.');
-	this.addText(this.changelogBox,'Added fileSaver.js and Blob.js by Eli Grey (eligrey.com) to allow saving directly to .cube files rather than the new tab Kludge. Not only a lot easier and neater, by just saving to file the LUT process is MUCH quicker.');
-	this.addText(this.changelogBox,"To go with the file saving, the 'LUT Title' option has now become 'LUT Title / Filename', and will now be used as the filename for the .cube.");
-	this.addText(this.changelogBox,"When a log gamma is selected for output, the range defaults to 'data'. Other curves (and with MLUT selected) default to 'legal' range. This is more appropriate for further processing of log curves.");
-	this.addText(this.changelogBox,"3D Gamuts default to 'Passthrough' (gamma only), pending colour overhaul.");
-	this.addText(this.changelogBox,'LUT values are fixed length at 10 decimal places (that ought to do for now ;-) ).');
-	this.addText(this.changelogBox,'v0.98',true);
-	this.addText(this.changelogBox,"Added 'Rec709 Like' as options for both recorded and output gamma. This really means 'Gamma Corrected Linear', but to avoid confusion over the two meanings of gamma and to keep consistency with the 'Rec709 (No Knee) option of previous versions it's 'Rec709 Like' for now :-).");
-	this.addText(this.changelogBox,"Rec709 Like brings up an additional option box for selecting the gamma correction. The choices are currently 'Rec709', 'sRGB' and 'Linear'. The first two use the gammas specified in their respective standards and 'Linear' means a gamma of 1 (this doubles up on the output option of 'Linear', but allows for linear input and again maintains consistency with previous versions).");
-	this.addText(this.changelogBox,'v0.97',true);
-	this.addText(this.changelogBox,"Added 'Gamma Chart' button that displays the input and output gammas plotted data range value against stop (IE 9+, Safari 5.1+, Chrome, Firefox, Opera).");
-	this.addText(this.changelogBox,'Added S-Log as a gamma option (along with PMW-F3 and F35 as camera options).');
-	this.addText(this.changelogBox,'v0.96',true);
-	this.addText(this.changelogBox,'Added highlight scaling as an option for remapping preferred IRE values without affecting black. Also improved black scaling code to work with it.');
-	this.addText(this.changelogBox,'Started code cleanup.');
-	this.addText(this.changelogBox,"'Passthrough' is now a functional option for gamuts. It means that the colour gamut is unprocessed, ie a 3D LUT behaves like a 1D gamma only LUT. Use it for making an MLUT version of a 1D LUT.");
-	this.addText(this.changelogBox,"Added reflected value mapping IREs for various gammas to the 'Gamma Info' tab.");
-	this.addText(this.changelogBox,'v0.95',true);
-	this.addText(this.changelogBox,'Differently calculated, more precise LC709 / LC709A curves.');
-	this.addText(this.changelogBox,'v0.94',true);
-	this.addText(this.changelogBox,'Further range bugfix to LC709 / LC709A.');
-	this.addText(this.changelogBox,'Added separate input range and output range options. Sony Look Profiles are data input / legal output.');
-	this.addText(this.changelogBox,'v0.93',true);
-	this.addText(this.changelogBox,'Fixed errors in LC709 and LC709A from treating the Look Profiles as data (extended) range rather than legal range. Black level was set too low and white too high.');
-	this.addText(this.changelogBox,'Added options for creating either legal level (64-940, 0%-100% IRE) LUTs or data level (0-1023, -7%-109% IRE). Previously the LUTs were generated to work with a data levels workflow only.');
-	this.addText(this.changelogBox,'Added a check to the MLUT option to ensure the correct (legal) range.');
-	this.addText(this.changelogBox,'v0.92',true);
-	this.addText(this.changelogBox,"Gets named 'LUTCalc'");
-	this.addText(this.changelogBox,'Improved 709 matrix from profiling F55 in Custom Mode, rather than Sony published matrix.');
-	this.addText(this.changelogBox,'Added Canon Cinema Gamut from Canon published matrix.');
-	this.addText(this.changelogBox,'Added Canon WideDR Gamma out.');
-	this.addText(this.changelogBox,'Added info page about the log gammas.');
-	this.addText(this.changelogBox,'v0.91',true);
-	this.addText(this.changelogBox,'Improved Canon CP Lock matrix.');
-	this.addText(this.changelogBox,'v0.9',true);
-	this.addText(this.changelogBox,"Added 'Black Level' adjustment to customisation options for non-log output gammas.");
-	this.addText(this.changelogBox,'v0.8',true);
-	this.addText(this.changelogBox,"Added 'Camera MLUT' option to keep things in range for use in the camera (tested on v4.1).");
-	this.addText(this.changelogBox,'v0.7',true);
-	this.addText(this.changelogBox,"Added 'Canon CP Lock Gamut' as an input/output Gamut option. Combine with the C-Log Gamma option for quick matching of C300 material with F5/55.");
-	this.addText(this.changelogBox,"The gamma is accurate and from the official Canon LUT, but the gamut conversion is estimated from test shots");
-	this.addText(this.changelogBox,"Consider it experimental and test!");
-	this.addText(this.changelogBox,"I don't have a C300 available for further testing, so feedback would be great.");
-	this.addText(this.changelogBox,"Added 'Customisation' box, with 'Highlight Gamut' option.");
-	this.addText(this.changelogBox,'Highlight gamut is only available with 3D LUTs, and allows a transition to a second gamut/matrix in the highlights. This should allow more complex colour handling, as with the Type A Sony Look.');
-	this.addText(this.changelogBox,"Added 'B&W (Rec709 Luma)' as an output Gamut option.");
-	this.addText(this.changelogBox,"Fixed an IRE scaling bug on the 'Linear' output Gamma option.");
-	this.addText(this.changelogBox,'Fixed a silly bug with some input Gamut options which meant that S-Log2 and C-Log material were being treated as S-Gamut3.cine regardless of input Gamut choice.');
-	this.addText(this.changelogBox,'v0.6',true);
-	this.addText(this.changelogBox,'First release as Javascript web app.');
-	this.addText(this.changelogBox,'Initial inclusion of colour space matrices to 3D LUTs.');
-	this.addText(this.changelogBox,'v0.5',true);
-	this.addText(this.changelogBox,'Fixed incorrect LUT_3D_SIZE in 65x65x65 version.');
-	this.addText(this.changelogBox,'v0.4',true);
-	this.addText(this.changelogBox,'Added Cineon.');
-	this.addText(this.changelogBox,'Fixed stupid error on S-Log2 input for 1D LUTs.');
-	this.addText(this.changelogBox,'v0.3',true);
-	this.addText(this.changelogBox,'Separate 33x33x33 and 65x65x65 versions. Added 1024-point 1D version.');
-	this.addText(this.changelogBox,"Cleaned up 'Calc' sheet for clarity and to allow 1D LUTs.");
-	this.addText(this.changelogBox,'Corrected curves against stop chart for clarity.');
-	this.addText(this.changelogBox,"Added 'Exposure Only' option that just shifts the input curve.");
-	this.addText(this.changelogBox,'v0.2',true);
-	this.addText(this.changelogBox,'65x65x65 LUTs.');
-	this.addText(this.changelogBox,'v0.1',true);
-	this.addText(this.changelogBox,'First Release.');
 }
 LUTInfoBox.prototype.gammaInfo = function() {
 	this.tableRefVals = [0,0.18,0.38,0.44,0.9,7.2,13.5];
@@ -609,25 +471,16 @@ LUTInfoBox.prototype.createRadioElement = function(name, checked) {
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {
 	this.instructionsBox.style.display = 'block';
-	this.changelogBox.style.display = 'none';
-	this.gammaInfoBox.style.display = 'none';
-	this.gammaChartBox.style.display = 'none';
-}
-LUTInfoBox.prototype.changelogOpt = function() {
-	this.instructionsBox.style.display = 'none';
-	this.changelogBox.style.display = 'block';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'none';
 }
 LUTInfoBox.prototype.gammaInfoOpt = function() {
 	this.instructionsBox.style.display = 'none';
-	this.changelogBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'block';
 	this.gammaChartBox.style.display = 'none';
 }
 LUTInfoBox.prototype.gammaChartOpt = function() {
 	this.instructionsBox.style.display = 'none';
-	this.changelogBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'block';
 }
@@ -683,6 +536,9 @@ LUTInfoBox.prototype.gotIOGammaNames = function(d) {
 	this.gammaOutName = d.outName;
 	if (typeof d.outG !== 'undefined') {
 		this.gammaOutName += ' - ' + d.outG;
+	}
+	if (d.outName === 'LA' ) {
+		this.gammaOutName += ' - ' + this.inputs.laTitle.value;
 	}
 	this.updateRefChart();
 	this.updateStopChart();

@@ -16,6 +16,7 @@ function LUTLutBox(fieldset, inputs, message) {
 	this.message = message;
 	this.p = 4;
 	this.message.addUI(this.p,this);
+	this.fieldSet = fieldset;
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
 	this.lutOneD = this.createRadioElement('dims', true);
@@ -44,6 +45,9 @@ function LUTLutBox(fieldset, inputs, message) {
 	this.inputs.addInput('clipCheck',this.lutClipCheck);
 	this.buildBox();
 	fieldset.appendChild(this.box);
+}
+LUTLutBox.prototype.getFieldSet = function() {
+	return this.fieldSet;
 }
 // Construct the UI Box
 LUTLutBox.prototype.buildBox = function() {

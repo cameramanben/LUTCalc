@@ -13,7 +13,7 @@
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.5 beta 3');
+lutInputs.addInput('version','v1.5 beta 4');
 lutInputs.addInput('date','February 2015');
 // Test for native app bridges
 if (typeof window.lutCalcApp != 'undefined') {
@@ -39,8 +39,10 @@ var lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, 
 var lutAnalyst = new LUTAnalyst(lutInputs, lutMessage);
 lutInputs.addInput('lutAnalyst',lutAnalyst);
 var right = fieldSet(lutCalcForm,false,'right');
+var lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage);
 var lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage);
 var lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile);
+lutPreview.setUIs(lutGenerate.getBox(),lutBox.getFieldSet());
 var lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
 // Set Up Data
 lutMessage.gaTx(0,5,{});
@@ -155,11 +157,6 @@ lutInputs.laGammaSelect.onchange = function(){
 }
 lutInputs.laDoButton.onclick = function(){ 
 	lutTweaksBox.lutAnalystDo();
-//	lutGammaBox.changeGammaOut();
-//	lutMessage.gaSetParams();
-//	lutTweaksBox.changeGamma();
-//	lutBox.changeGamma();
-//	lutInfoBox.updateGamma();
 }
 lutInputs.laTitle.onchange = function(){
 	lutTweaksBox.cleanLutAnalystTitle();
@@ -168,20 +165,19 @@ lutInputs.laBackButton.onclick = function(){
 	lutTweaksBox.lutAnalystReset();
 	lutGammaBox.changeGammaOut();
 	lutMessage.gaSetParams();
-//	lutTweaksBox.changeGamma();
 	lutBox.changeGamma();
-//	lutInfoBox.updateGamma();
 }
 lutInputs.laStoreButton.onclick = function(){
-	lutTweaksBox.lutAnalystStore();
+	lutTweaksBox.lutAnalystStore(true);
+}
+lutInputs.laStoreBinButton.onclick = function(){
+	lutTweaksBox.lutAnalystStore(false);
 }
 lutInputs.laCheck.onclick = function(){
 	lutTweaksBox.lutAnalystToggleCheck();
 	lutGammaBox.changeGammaOut();
 	lutMessage.gaSetParams();
-//	lutTweaksBox.changeGamma();
 	lutBox.changeGamma();
-//	lutInfoBox.updateGamma();
 }
 //		LUT Box
 lutInputs.name.onchange = function(){
@@ -220,6 +216,10 @@ lutInputs.outRange[1].onchange = function(){
 	lutMessage.gaSetParams();
 }
 //		Generate Button
+lutPreview.preButton.onclick = function(){
+	lutPreview.toggle();
+}
+//		Generate Button
 lutGenerate.genButton.onclick = function(){
 	lutGenerate.generate();
 }
@@ -236,9 +236,6 @@ lutInfoBox.chartType[1].onchange = function(){
 lutInfoBox.chartType[2].onchange = function(){
 	lutInfoBox.changeChart();
 }
-lutInfoBox.changelogBut.onclick = function(){
-	lutInfoBox.changelogOpt();
-}
 lutInfoBox.gammaInfoBut.onclick = function(){
 	lutInfoBox.gammaInfoOpt();
 }
@@ -246,9 +243,13 @@ lutInfoBox.gammaChartBut.onclick = function(){
 	lutInfoBox.gammaChartOpt();
 }
 // Functions available to native apps
-function loadLUTFromApp(format, text, destination, parentIdx, next) {
+function loadLUTFromApp(format, content, destination, parentIdx, next) {
 	lutInputs[destination].format = format;
-	lutInputs[destination].text = text.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+	if (format.toLowerCase() === 'labin') {
+		lutInputs[destination].buff = content;
+	} else {
+		lutInputs[destination].text = content.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+	}
 	switch (parseInt(parentIdx)) {
 		case 7: lutTweaksBox.followUp(parseInt(next));
 				break;

@@ -20,6 +20,7 @@ function LUTMessage(inputs) {
 	// 5 - generatebox
 	// 6 - infobox
 	// 7 - LUTAnalyst
+	// 8 - preview
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -200,9 +201,9 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 			case 31: // Get IRE values for output from a list of linear values
 					this.gotChartVals(d);
 					break;
-//			case 32: // Get highlight level for 90% reflectance for tweaks
-//					this.gotHighLevelDefault(d);
-//					break;
+			case 32: // Get 8-bit corrected values for preview image
+					this.ui[d.p].gotLine(d);
+					break;
 		}
 	} else {
 		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
@@ -231,6 +232,7 @@ LUTMessage.prototype.paramsSet = function(d) {
 		this.gaU = 0;
 		this.ui[3].blackHigh(d.blackDef,d.blackLevel,d.highRef,d.highDef,d.highMap,d.high709,d.changedGamma);
 		this.ui[6].updateGamma();
+		this.ui[8].isChanged(d.eiMult);
 	}
 }
 LUTMessage.prototype.gotGammaLists = function(d) {
@@ -349,6 +351,7 @@ console.log('Resending - ' + d.t);
 	} else if (d.v === this.gtV) {
 		switch(d.t) {
 			case 20: // Set params
+					this.ui[8].isChanged();
 					break;
 			case 21: // RGB input to output
 					this.gaTx(5,4,d)
@@ -369,6 +372,9 @@ console.log('Resending - ' + d.t);
 					break;
 			case 30: // Get IRE values for output from a list of linear values
 					this.gotIOGamutNames(d);
+					break;
+			case 32: // Get preview colour correction
+					this.gaTx(d.p,12,d)
 					break;
 		}
 	} else {

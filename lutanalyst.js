@@ -87,8 +87,14 @@ LUTAnalyst.prototype.getL = function() {
 
 LUTAnalyst.prototype.getCS = function() {
 	this.gamutIn = parseInt(this.inputs.laGamutSelect.options[this.inputs.laGamutSelect.selectedIndex].value);
+	var dim;
+	if (this.inputs.laDim[0].checked) {
+		dim = 33;
+	} else {
+		dim = 65
+	}
 	this.message.gaTx(this.p,2,{
-		dim: 33,
+		dim: dim,
 		legIn: this.legIn,
 		gamma: this.gammaIn,
 		gamut: this.gamutIn
@@ -158,7 +164,6 @@ LUTAnalyst.prototype.gotInputVals = function(values,dim) {
 				B[j] = b;
 			}
 		}		
-//console.log(minMax);
 		this.cs.setDetails({
 			title: 'Colour Space',
 			format: 'cube',

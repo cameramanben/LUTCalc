@@ -30,6 +30,7 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.inputs.addInput('ad',1);
 	this.inputs.addInput('bd',0);
 	this.highGamutBox = document.createElement('div');
+	this.highGamutWindow = document.createElement('div');
 	this.highGamutCheck = document.createElement('input');
 	this.inputs.addInput('tweakHGCheck',this.highGamutCheck);
 	this.highGamutLinOpt = this.createRadioElement('highGamutLinLog',true);
@@ -46,11 +47,13 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.highGamutLogHigh = document.createElement('input');
 	this.inputs.addInput('tweakHGHigh',this.highGamutLogHigh);
 	this.blackLevelBox = document.createElement('div');
+	this.blackLevelWindow = document.createElement('div');
 	this.blackLevelCheck = document.createElement('input');
 	this.inputs.addInput('tweakBlkCheck',this.blackLevelCheck);
 	this.blackLevelInput = document.createElement('input');
 	this.inputs.addInput('tweakBlk',this.blackLevelInput);
 	this.highLevelBox = document.createElement('div');
+	this.highLevelWindow = document.createElement('div');
 	this.highLevelCheck = document.createElement('input');
 	this.inputs.addInput('tweakHiCheck',this.highLevelCheck);
 	this.highLevelRef = document.createElement('input');
@@ -62,10 +65,6 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
-	this.lutAnalystGamma = new LUTs();
-	this.inputs.addInput('laGamma',this.lutAnalystGamma);
-	this.lutAnalystGamut = new LUTs();
-	this.inputs.addInput('laGamut',this.lutAnalystGamut);
 	this.inputs.addInput('laGammaLUT',{text:[]});
 	this.inputs.addInput('laGamutLUT',{text:[]});
 	this.lutAnalysed = document.createElement('input');
@@ -90,9 +89,14 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.lutAnalystLDOpt = this.createRadioElement('lutAnalystRange',false);
 	this.inputs.addInput('laRange',[this.lutAnalystDLOpt,this.lutAnalystDDOpt,this.lutAnalystLLOpt,this.lutAnalystLDOpt]);
 	this.lutAnalystDoButton = document.createElement('input');
+	this.lutAnalystDim33 = this.createRadioElement('lutAnalystDim',false);
+	this.lutAnalystDim65 = this.createRadioElement('lutAnalystDim',true);
+	this.inputs.addInput('laDim',[this.lutAnalystDim33,this.lutAnalystDim65]);
 	this.inputs.addInput('laDoButton',this.lutAnalystDoButton);
 	this.lutAnalystStoreButton = document.createElement('input');
 	this.inputs.addInput('laStoreButton',this.lutAnalystStoreButton);
+	this.lutAnalystStoreBinButton = document.createElement('input');
+	this.inputs.addInput('laStoreBinButton',this.lutAnalystStoreBinButton);
 	this.lutAnalystBackButton = document.createElement('input');
 	this.inputs.addInput('laBackButton',this.lutAnalystBackButton);
 	this.lutAnalystInfo = document.createElement('div');
@@ -167,6 +171,21 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		this.highLevelCheck.checked = false;
 		this.lutAnalystCheck.checked = false;
 	}
+	if (this.highGamutCheck.checked) {
+		this.highGamutWindow.style.display = 'inline';
+	} else {
+		this.highGamutWindow.style.display = 'none';
+	}
+	if (this.blackLevelCheck.checked) {
+		this.blackLevelWindow.style.display = 'inline';
+	} else {
+		this.blackLevelWindow.style.display = 'none';
+	}
+	if (this.highLevelCheck.checked) {
+		this.highLevelWindow.style.display = 'inline';
+	} else {
+		this.highLevelWindow.style.display = 'none';
+	}
 	if (this.inputs.outGamma.options.length > 0 && this.inputs.outGamut.options.length > 0 && this.highGamutSelect.options.length > 0) {
 		this.lutAnalystToggleCheck();
 	}
@@ -216,16 +235,16 @@ LUTTweaksBox.prototype.highGamut = function() {
 	this.highGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Highlight Gamut')));
 	this.highGamutCheck.setAttribute('type','checkbox');
 	this.highGamutBox.appendChild(this.highGamutCheck);
-	this.highGamutBox.appendChild(document.createElement('br'));
-	this.highGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Gamut')));
-	this.highGamutBox.appendChild(this.highGamutSelect);
-	this.highGamutBox.appendChild(document.createElement('br'));
+	this.highGamutWindow.appendChild(document.createElement('br'));
+	this.highGamutWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Gamut')));
+	this.highGamutWindow.appendChild(this.highGamutSelect);
+	this.highGamutWindow.appendChild(document.createElement('br'));
 	this.highGamutLinOpt.value = '0';
-	this.highGamutBox.appendChild(this.highGamutLinOpt);
-	this.highGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Linear')));
+	this.highGamutWindow.appendChild(this.highGamutLinOpt);
+	this.highGamutWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Linear')));
 	this.highGamutLogOpt.value = '1';
-	this.highGamutBox.appendChild(this.highGamutLogOpt);
-	this.highGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Log')));
+	this.highGamutWindow.appendChild(this.highGamutLogOpt);
+	this.highGamutWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Log')));
 	this.highGamutLin = document.createElement('div');
 	this.highGamutLin.appendChild(document.createElement('label').appendChild(document.createTextNode('Crossover Low % Reflected')));
 	this.highGamutLin.appendChild(document.createElement('br'));
@@ -241,7 +260,7 @@ LUTTweaksBox.prototype.highGamut = function() {
 	this.highGamutLinHigh.setAttribute('class','ireinput');
 	this.highGamutLinHigh.value = '90';
 	this.highGamutLin.appendChild(this.highGamutLinHigh);
-	this.highGamutBox.appendChild(this.highGamutLin);
+	this.highGamutWindow.appendChild(this.highGamutLin);
 	this.highGamutLin.appendChild(document.createElement('label').appendChild(document.createTextNode('%')));
 	this.highGamutLog = document.createElement('div');
 	this.highGamutLog.appendChild(document.createElement('label').appendChild(document.createTextNode('Crossover Low Stops From 18% Grey')));
@@ -255,7 +274,8 @@ LUTTweaksBox.prototype.highGamut = function() {
 	this.highGamutLogHigh.setAttribute('type','text');
 	this.highGamutLogHigh.value = (Math.log(5)/Math.LN2).toFixed(4).toString();
 	this.highGamutLog.appendChild(this.highGamutLogHigh);
-	this.highGamutBox.appendChild(this.highGamutLog);
+	this.highGamutWindow.appendChild(this.highGamutLog);
+	this.highGamutBox.appendChild(this.highGamutWindow);
 	this.toggleHighGamutLinLog();
 	this.toggleHighGamutCheck();
 }
@@ -266,11 +286,13 @@ LUTTweaksBox.prototype.toggleHighGamutCheck = function() {
 		this.highGamutSelect.disabled = false;
 		this.highGamutLinOpt.disabled = false;
 		this.highGamutLogOpt.disabled = false;
+		this.highGamutWindow.style.display = 'inline';
 		this.toggleHighGamutLinLog();
 	} else {
 		this.highGamutSelect.disabled = true;
 		this.highGamutLinOpt.disabled = true;
 		this.highGamutLogOpt.disabled = true;
+		this.highGamutWindow.style.display = 'none';
 		this.highGamutLin.style.display = 'none';
 		this.highGamutLog.style.display = 'none';
 	}
@@ -342,12 +364,13 @@ LUTTweaksBox.prototype.blackLevel = function() {
 	this.blackLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Black Level')));
 	this.blackLevelCheck.setAttribute('type','checkbox');
 	this.blackLevelBox.appendChild(this.blackLevelCheck);
-	this.blackLevelBox.appendChild(document.createElement('br'));
+	this.blackLevelWindow.appendChild(document.createElement('br'));
 	this.blackLevelInput.setAttribute('type','number');
 	this.blackLevelInput.setAttribute('step','any');
 	this.blackLevelInput.setAttribute('class','ireinput');
-	this.blackLevelBox.appendChild(this.blackLevelInput);
-	this.blackLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.blackLevelWindow.appendChild(this.blackLevelInput);
+	this.blackLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.blackLevelBox.appendChild(this.blackLevelWindow);
 	this.toggleBlackLevelCheck();
 }
 //		Set Up Data
@@ -355,8 +378,10 @@ LUTTweaksBox.prototype.blackLevel = function() {
 LUTTweaksBox.prototype.toggleBlackLevelCheck = function() {
 	if (this.blackLevelCheck.checked) {
 		this.blackLevelInput.disabled = false;
+		this.blackLevelWindow.style.display = 'inline';
 	} else {
 		this.blackLevelInput.disabled = true;
+		this.blackLevelWindow.style.display = 'none';
 	}
 }
 LUTTweaksBox.prototype.changeBlackLevel = function() {
@@ -373,27 +398,27 @@ LUTTweaksBox.prototype.highlightLevel = function() {
 	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Highlight Level')));
 	this.highLevelCheck.setAttribute('type','checkbox');
 	this.highLevelBox.appendChild(this.highLevelCheck);
-	this.highLevelBox.appendChild(document.createElement('br'));
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Reflected')));
+	this.highLevelWindow.appendChild(document.createElement('br'));
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Reflected')));
 	this.highLevelRef.setAttribute('type','number');
 	this.highLevelRef.setAttribute('step','any');
 	this.highLevelRef.setAttribute('class','ireinput');
 	this.highLevelRef.value='90';
-	this.highLevelBox.appendChild(this.highLevelRef);
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('%')));
-	this.highLevelBox.appendChild(document.createElement('br'));
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Maps To')));
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('(')));
+	this.highLevelWindow.appendChild(this.highLevelRef);
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('%')));
+	this.highLevelWindow.appendChild(document.createElement('br'));
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Maps To')));
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('(')));
 	this.highLevelRec = document.createElement('span');
-	this.highLevelBox.appendChild(this.highLevelRec);
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE In Rec709)')));
-	this.highLevelBox.appendChild(document.createElement('br'));
+	this.highLevelWindow.appendChild(this.highLevelRec);
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE In Rec709)')));
+	this.highLevelWindow.appendChild(document.createElement('br'));
 	this.highLevelMap.setAttribute('type','number');
 	this.highLevelMap.setAttribute('step','any');
 	this.highLevelMap.setAttribute('class','ireinput');
-//	this.highLevelDefault();
-	this.highLevelBox.appendChild(this.highLevelMap);
-	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.highLevelWindow.appendChild(this.highLevelMap);
+	this.highLevelWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.highLevelBox.appendChild(this.highLevelWindow);
 	this.toggleHighLevelCheck();
 }
 //		Set Up Data
@@ -402,9 +427,11 @@ LUTTweaksBox.prototype.toggleHighLevelCheck = function() {
 	if (this.highLevelCheck.checked) {
 		this.highLevelRef.disabled = false;
 		this.highLevelMap.disabled = false;
+		this.highLevelWindow.style.display = 'inline';
 	} else {
 		this.highLevelRef.disabled = true;
 		this.highLevelMap.disabled = true;
+		this.highLevelWindow.style.display = 'none';
 	}
 }
 LUTTweaksBox.prototype.changeHighLevelRef = function() {
@@ -469,6 +496,12 @@ LUTTweaksBox.prototype.lutAnalyst = function() {
 	this.lutAnalystGamutBox.appendChild(document.createElement('br'));
 	this.lutAnalystGamutBox.style.display = 'none';
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystGamutBox);
+	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Analysis Dimension:')));
+	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystDim33);
+	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('33x33x33')));
+	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystDim65);
+	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('65x65x65')));
+	this.lutAnalystAnalyseBox.appendChild(document.createElement('br'));
 	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Scaling  ')));
 	this.lutAnalystAnalyseBox.appendChild(this.lutAnalystDLOpt);
 	this.lutAnalystAnalyseBox.appendChild(document.createElement('label').appendChild(document.createTextNode('D→L')));
@@ -488,13 +521,21 @@ LUTTweaksBox.prototype.lutAnalyst = function() {
 	this.lutAnalystBox.appendChild(this.lutAnalystDoButton);
 	this.lutAnalystStoreButton.setAttribute('type','button');
 	this.lutAnalystStoreButton.setAttribute('class','buttons');
-	this.lutAnalystStoreButton.value = 'Save LA LUT';
+	this.lutAnalystStoreButton.value = 'Save Cube';
 	this.lutAnalystStoreButton.disabled = false;
 	this.lutAnalystStoreButton.style.display = 'none';
 	this.lutAnalystBox.appendChild(this.lutAnalystStoreButton);
+
+	this.lutAnalystStoreBinButton.setAttribute('type','button');
+	this.lutAnalystStoreBinButton.setAttribute('class','buttons');
+	this.lutAnalystStoreBinButton.value = 'Save Binary';
+	this.lutAnalystStoreBinButton.disabled = false;
+	this.lutAnalystStoreBinButton.style.display = 'none';
+	this.lutAnalystBox.appendChild(this.lutAnalystStoreBinButton);
+
 	this.lutAnalystBackButton.setAttribute('type','button');
 	this.lutAnalystBackButton.setAttribute('class','buttons');
-	this.lutAnalystBackButton.value = 'Change LUT';
+	this.lutAnalystBackButton.value = 'New LUT';
 	this.lutAnalystBackButton.disabled = false;
 	this.lutAnalystBackButton.style.display = 'none';
 	this.lutAnalystBox.appendChild(this.lutAnalystBackButton);
@@ -513,9 +554,9 @@ LUTTweaksBox.prototype.lutAnalystGetFile = function() {
 	if (this.lutAnalystNewOpt.checked) {
 		validExts = ['cube'];
 	} else {
-		validExts = ['lacube'];
+		validExts = ['lacube','labin'];
 	}
-	if (this.inputs.isApp || this.lutAnalystFileInput.value != '') {
+	if (this.inputs.isApp || this.lutAnalystFileInput.value !== '') {
 		this.file.loadFromInput(this.lutAnalystFileInput, validExts, 'laFileData', this, 0);
 	}
 }
@@ -548,8 +589,11 @@ LUTTweaksBox.prototype.lutAnalystGotFile = function() {
 		switch (this.inputs.laFileData.format) {
 			case 'lacube': parsed = this.file.parseLACube('laFileData');
 						break;
+			case 'labin': parsed = this.file.parseLABin('laFileData');
+						break;
 		}
 		if (parsed) {
+			this.lutAnalystTitle.value = this.inputs.lutAnalyst.getTitle();
 			this.inputs.lutAnalyst.updateLATF();
 			this.inputs.lutAnalyst.updateLACS();
 			this.lutAnalystCheck.checked = true;
@@ -588,6 +632,7 @@ LUTTweaksBox.prototype.lutAnalystReset = function() {
 	this.lutAnalystBackButton.style.display = 'none';
 	this.lutAnalystDoButton.value = 'Analyse';
 	this.lutAnalystStoreButton.style.display = 'none';
+	this.lutAnalystStoreBinButton.style.display = 'none';
 	this.lutAnalystDoButton.style.display = 'none';
 	this.lutAnalystInfo.innerHTML = '';
 	this.lutAnalystProgress.style.display = 'inline';
@@ -598,26 +643,26 @@ LUTTweaksBox.prototype.lutAnalystToggleCheck = function() {
 		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value != this.gammaLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.gammaLA;
-				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+				laOption.innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 			this.inputs.outGamma.appendChild(laOption);
 		} else {
-			this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+			this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 		}
 		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value != this.gamutLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.gamutLA;
-				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+				laOption.innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 			this.inputs.outGamut.appendChild(laOption);
 		} else {
-			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 		}
 		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value != this.gamutLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.gamutLA;
-				laOption.innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+				laOption.innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 			this.highGamutSelect.appendChild(laOption);
 		} else {
-			this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+			this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 		}
 	} else {
 		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
@@ -653,39 +698,39 @@ LUTTweaksBox.prototype.lutAnalystDone = function() {
 	this.lutAnalystToggleCheck();
 	this.lutAnalystDoButton.value = 'Re-Analyse';
 	this.lutAnalystStoreButton.style.display = 'inline';
+	this.lutAnalystStoreBinButton.style.display = 'inline';
 }
-LUTTweaksBox.prototype.lutAnalystStore = function() {
-	this.file.buildLALut(
-		this.lutAnalystGamma.title,
-		this.inputs.lutAnalyst.getL(),
-		this.inputs.lutAnalyst.getRGB()
-	);
+LUTTweaksBox.prototype.lutAnalystStore = function(cube) {
+	if (cube) {
+		this.file.buildLALut(
+			this.lutAnalystTitle.value,
+			this.inputs.lutAnalyst.getL(),
+			this.inputs.lutAnalyst.getRGB()
+		);
+	} else {
+		this.file.buildLABinary(
+			this.lutAnalystTitle.value,
+			this.inputs.lutAnalyst.getL(),
+			this.inputs.lutAnalyst.getRGB()
+		);
+	}
 /*
 	this.file.buildLA1DMethod(
-		this.lutAnalystGamma.title,
+		this.lutAnalystTitle.value,
 		this.inputs.lutAnalyst.getL()
-	);
-*/
-/*
-	this.file.buildLABinary(
-		this.lutAnalystGamma.title,
-		this.inputs.lutAnalyst.getL(),
-		this.inputs.lutAnalyst.getRGB()
 	);
 */
 }
 LUTTweaksBox.prototype.cleanLutAnalystTitle = function() {
 	this.lutAnalystTitle.value = this.lutAnalystTitle.value.replace(/[/"/']/gi, '');
-	this.lutAnalystGamma.title = this.lutAnalystTitle.value;
-	this.lutAnalystGamut.title = this.lutAnalystTitle.value;
 	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.gammaLA) {
-		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 	}
 	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.gamutLA) {
-		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 	}
 	if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value == this.gamutLA) {
-		this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystGamma.title;
+		this.highGamutSelect.options[this.highGamutSelect.options.length - 1].innerHTML = 'LA - ' + this.lutAnalystTitle.value;
 	}
 }
 LUTTweaksBox.prototype.followUp = function(input) {

@@ -44,9 +44,13 @@ LUTs.prototype.getDetails = function() {
 			s: this.s,
 			min: this.min,
 			max: this.max,
-			C: [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer],
 			rgbl: this.rgbl
 		}
+	if (this.d === 3 || this.C.length === 3) {
+		out.C = [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer];
+	} else {
+		out.C = [this.L];
+	}
 	return out;
 }
 LUTs.prototype.setDetails = function(d) {
@@ -56,7 +60,11 @@ LUTs.prototype.setDetails = function(d) {
 	this.s = d.s;
 	this.min = d.min;
 	this.max = d.max;
-	this.addLUT(d.C[0],d.C[1],d.C[2]);
+	if (d.C.length === 3) {
+		this.addLUT(d.C[0],d.C[1],d.C[2]);
+	} else {
+		this.addLUT(d.C[0]);
+	}
 }
 LUTs.prototype.setInfo = function(title, format, dimensions, size, min, max) {
 	this.title = title;

@@ -311,20 +311,13 @@ LUTGamma.prototype.setParams = function(params) {
 	if (typeof params.stopShift === 'number') {
 		this.eiMult = Math.pow(2,params.stopShift);
 	}
+	out.eiMult = this.eiMult;
 	if (typeof params.inL === 'boolean') {
 		this.inL = params.inL;
 	}
 	if (typeof params.outL === 'boolean') {
 		this.outL = params.outL;
 	}
-//	if (typeof params.al === 'number' && typeof params.bl === 'number') {
-//		this.al = params.al;
-//		this.bl = params.bl;
-//	}
-//	if (typeof params.ad === 'number' && typeof params.bd === 'number') {
-//		this.ad = params.ad;
-//		this.bd = params.bd;
-//	}
 	if (typeof params.clip === 'boolean') {
 		this.clip = params.clip;
 		out.clip = this.clip;
@@ -719,6 +712,46 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 		}
 	}
 	out.o = o;
+	return out;
+}
+LUTGamma.prototype.preview = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver, line:i.line };
+	var i = new Float64Array(i.o);
+	var max = Math.round(i.length/3);
+	var o = new Uint8Array(max*4);
+	var k=0;
+	var l=0;
+	if (this.nul) {
+		for (var j=0; j<max; j++) {
+			o[k] = Math.min(255,Math.max(0,Math.round(i[l]*255)));
+			o[k+1] = Math.min(255,Math.max(0,Math.round(i[l+1]*255)));
+			o[k+2] = Math.min(255,Math.max(0,Math.round(i[l+2]*255)));
+			o[k+3] = 255;
+			k += 4;
+			l += 3;
+		}
+	} else {
+		if (this.scale) {
+			for (var j=0; j<max; j++) {
+				o[k] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l])*this.al)+this.bl)*255)));
+				o[k+1] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+1])*this.al)+this.bl)*255)));
+				o[k+2] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+2])*this.al)+this.bl)*255)));
+				o[k+3] = 255;
+				k += 4;
+				l += 3;
+			}
+		} else {
+			for (var j=0; j<max; j++) {
+				o[k] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l])*255)));
+				o[k+1] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+1])*255)));
+				o[k+2] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+2])*255)));
+				o[k+3] = 255;
+				k += 4;
+				l += 3;
+			}
+		}
+	}
+	out.o = o.buffer;
 	return out;
 }
 LUTGamma.prototype.getLists = function(p,t) {
@@ -1213,8 +1246,8 @@ addEventListener('message', function(e) {
 					break;
 			case 11:postMessage(gammas.chartVals(d.p,d.t,d.d));
 					break;
-//			case 12:postMessage(gammas.highDefault(d.p,d.t,d.d));
-//					break;
+			case 12:postMessage(gammas.preview(d.p,d.t,d.d));
+					break;
 		}
 	}
 }, false);
