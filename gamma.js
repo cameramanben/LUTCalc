@@ -716,6 +716,10 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 }
 LUTGamma.prototype.preview = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, line:i.line };
+	var eiMult = 1;
+	if (typeof i.eiMult === 'number') {
+		eiMult = i.eiMult;
+	}
 	var i = new Float64Array(i.o);
 	var max = Math.round(i.length/3);
 	var o = new Uint8Array(max*4);
@@ -723,9 +727,9 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	var l=0;
 	if (this.nul) {
 		for (var j=0; j<max; j++) {
-			o[k] = Math.min(255,Math.max(0,Math.round(i[l]*255)));
-			o[k+1] = Math.min(255,Math.max(0,Math.round(i[l+1]*255)));
-			o[k+2] = Math.min(255,Math.max(0,Math.round(i[l+2]*255)));
+			o[k] = Math.min(255,Math.max(0,Math.round(this.gammas[this.SL3].linToLegal(i[l])*255)));
+			o[k+1] = Math.min(255,Math.max(0,Math.round(this.gammas[this.SL3].linToLegal(i[l+1])*255)));
+			o[k+2] = Math.min(255,Math.max(0,Math.round(this.gammas[this.SL3].linToLegal(i[l+2])*255)));
 			o[k+3] = 255;
 			k += 4;
 			l += 3;
@@ -733,18 +737,18 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	} else {
 		if (this.scale) {
 			for (var j=0; j<max; j++) {
-				o[k] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l])*this.al)+this.bl)*255)));
-				o[k+1] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+1])*this.al)+this.bl)*255)));
-				o[k+2] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+2])*this.al)+this.bl)*255)));
+				o[k] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l]*eiMult)*this.al)+this.bl)*255)));
+				o[k+1] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+1]*eiMult)*this.al)+this.bl)*255)));
+				o[k+2] = Math.min(255,Math.max(0,Math.round(((this.gammas[this.curOut].linToLegal(i[l+2]*eiMult)*this.al)+this.bl)*255)));
 				o[k+3] = 255;
 				k += 4;
 				l += 3;
 			}
 		} else {
 			for (var j=0; j<max; j++) {
-				o[k] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l])*255)));
-				o[k+1] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+1])*255)));
-				o[k+2] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+2])*255)));
+				o[k] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l]*eiMult)*255)));
+				o[k+1] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+1]*eiMult)*255)));
+				o[k+2] = Math.min(255,Math.max(0,Math.round(this.gammas[this.curOut].linToLegal(i[l+2]*eiMult)*255)));
 				o[k+3] = 255;
 				k += 4;
 				l += 3;

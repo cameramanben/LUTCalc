@@ -115,7 +115,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 	var max = this.inGammaSelect.length;
 	var defGamma = this.inputs.defGammaIn;
 	for (var i = 0; i < max; i++) {
-		if (defGamma == this.inGammaSelect.options[i].lastChild.nodeValue) {
+		if (defGamma === this.inGammaSelect.options[i].lastChild.nodeValue) {
 			this.inGammaSelect.options[i].selected = true;
 			break;
 		}
@@ -123,7 +123,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 	max = this.inGamutSelect.length;
 	var defGamut = this.inputs.defGamutIn;
 	for (var i = 0; i < max; i++) {
-		if (defGamut == this.inGamutSelect.options[i].lastChild.nodeValue) {
+		if (defGamut === this.inGamutSelect.options[i].lastChild.nodeValue) {
 			this.inGamutSelect.options[i].selected = true;
 			break;
 		}
@@ -164,7 +164,7 @@ LUTGammaBox.prototype.changeOutGamut = function() {
 		var max = this.inGamutSelect.length;
 		var defGamut = this.inputs.defGamutIn;
 		for (var i = 0; i < max; i++) {
-			if (defGamut == this.inGamutSelect.options[i].lastChild.nodeValue) {
+			if (defGamut === this.inGamutSelect.options[i].lastChild.nodeValue) {
 				this.inGamutSelect.options[i].selected = true;
 				break;
 			}

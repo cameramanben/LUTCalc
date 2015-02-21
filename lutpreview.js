@@ -34,7 +34,7 @@ function LUTPreview(fieldset,inputs,message) {
 	this.line=0;
 	this.buildBox();
 	fieldset.appendChild(this.box);
-	fieldset.style.width = '32em';	
+	fieldset.style.width = '48em';	
 	fieldset.style.display = 'none';
 }
 LUTPreview.prototype.setUIs = function(generateBox,lutbox) {
@@ -55,8 +55,8 @@ LUTPreview.prototype.toggle = function() {
 		this.show = false;
 		this.preButton.value = 'Preview';
 	} else {
-		main.style.width = '70em';
-		right.style.width = '36em';
+		main.style.width = '86em';
+		right.style.width = '52em';
 		this.fieldSet.style.display = 'block';
 		this.lutbox.style.display = 'none';
 		this.generateButton.style.display = 'none';
@@ -83,8 +83,8 @@ LUTPreview.prototype.buildBox = function() {
 	this.pCan = document.createElement('canvas');
 	this.pCan.width = this.width.toString();
 	this.pCan.height = this.height.toString();
-	this.pCan.style.width = '32em';
-	this.pCan.style.height = '18em';
+	this.pCan.style.width = '48em';
+	this.pCan.style.height = '27em';
 	this.pCtx = this.pCan.getContext('2d');
 	this.pData = this.pCtx.createImageData(this.width,this.height);
 	this.box.appendChild(this.pCan);

@@ -492,7 +492,7 @@ LUTs.prototype.rgbRGBCub = function(rgb) {
 		return out;
 	}
 }
-LUTs.prototype.rgbRGBLin = function(input) {
+LUTs.prototype.rgbRGBLin = function(rgb) {
 	var out = new Float64Array(3);
 	// 1D case where R,G & B have the same gammas
 	if (this.d === 1 && !this.rgbl) {

@@ -83,7 +83,7 @@ LUTGenerateBox.prototype.prepVars = function() {
 	}
 	this.gamutInName = this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].lastChild.nodeValue;
 	this.gamutOutName = this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue;
-	this.gamutHGName = this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].lastChild.nodeValue;;
+	this.gamutHGName = this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].lastChild.nodeValue;
 	if (this.doTweaks && this.inputs.tweakHGCheck.checked) {
 		this.doHG = true;
 	} else {

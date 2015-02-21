@@ -61,31 +61,24 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 		}
 		if (valid) {
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
+				var reader = new FileReader();
+				var localDestination = this.inputs[destination];
+				localDestination.format = ext;
+				localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
 				if (ext === 'labin') {
-					this.inputs.laTitle.value = file;
-					var localDestination = this.inputs[destination];
-					localDestination.format = ext;
-					localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
-					var xhr = new XMLHttpRequest();
-					xhr.open('GET', file.name, true);
-					xhr.responseType = 'arraybuffer';
-					xhr.onload = (function(lut) {
-						var lut = lut;
-						return function(e) {
-							lut.theDestination.buff = this.response;
-							lut.parentObject.followUp(lut.next);
-						};
-					})({
-						theDestination: localDestination,
-						parentObject: parentObject,
-						next: next
-					});
-					xhr.send();
+					reader.onload = (function(theFile){
+						var theDestination = localDestination;
+    					return function(e){
+    						theDestination.buff = e.target.result;
+							parentObject.followUp(next);
+    					};
+    				})(file);
+					reader.onerror = function(theFile) { return function() {
+						alert("Error reading file.");
+						inputBox.value = '';
+					}; }(file);
+					reader.readAsArrayBuffer(file);
 				} else {
-					var reader = new FileReader();
-					var localDestination = this.inputs[destination];
-					localDestination.format = ext;
-					localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
 					reader.onload = (function(theFile){
 						var theDestination = localDestination;
     					return function(e){

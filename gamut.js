@@ -269,7 +269,7 @@ LUTGamut.prototype.preview = function(p,t,i) {
 					d[k+2] = (low[2] * (1-prop)) + (high[2] * prop);
 				}
 			} else {
-				var g = this.outGamuts[this.curOut].calc(c);
+				var g = this.outGamuts[this.curOut].fast(c);
 				d[ k ] = g[0];
 				d[k+1] = g[1];
 				d[k+2] = g[2];
