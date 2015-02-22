@@ -16,6 +16,8 @@ function LUTGamut() {
 	this.ver = 0;
 	this.curIn = 0;
 	this.curOut = 0;
+	this.doTemp = false;
+	this.CAT = new LUTGamutTemperature();
 	this.doHG = false;
 	this.curHG = 0;
 	this.hgLow = 0;
@@ -41,6 +43,7 @@ LUTGamut.prototype.gamutList = function() {
 	this.inGamuts.push(new LUTGamutMatrix('S-Gamut3',new Float64Array([1.1642234944,-0.1768455024,0.0126220080, 0.0260509511,0.9341657009,0.0397833480, 0.0246996363,0.0215592308,0.9537411328])));
 	this.inGamuts.push(new LUTGamutMatrix('S-Gamut',new Float64Array([1.1642234944,-0.1768455024,0.0126220080, 0.0260509511,0.9341657009,0.0397833480, 0.0246996363,0.0215592308,0.9537411328])));
 	this.inGamuts.push(new LUTGamutMatrix('Rec709',new Float64Array([0.6456794776,0.2591145470,0.0952059754, 0.0875299915,0.7596995626,0.1527704459, 0.0369574199,0.1292809048,0.8337616753])));
+	this.inGamuts.push(new LUTGamutMatrix('Rec2020',new Float64Array([1.0381440618,-0.0954526919,0.0573086300, 0.0479489221,0.7938618493,0.1581892287, 0.0301320543,0.0408857929,0.9289821529])));
 	this.inGamuts.push(new LUTGamutMatrix('ACES',new Float64Array([1.5554591070,-0.3932807985,-0.1621783087, 0.0090216145,0.9185569566,0.0724214290, 0.0442640666,0.0118502607,0.9438856727])));
 	this.inGamuts.push(new LUTGamutMatrix('XYZ',new Float64Array([1.8467789693,-0.5259861230,-0.2105452114, -0.4441532629,1.2594429028,0.1493999729, 0.0408554212,0.0156408893,0.8682072487])));
 	this.inGamuts.push(new LUTGamutMatrix('Alexa Wide Gamut',new Float64Array([1.024107,-0.022704,-0.001402, 0.084744,0.932204,-0.016948, 0.033062,-0.036542,1.003480])));
@@ -53,6 +56,7 @@ LUTGamut.prototype.gamutList = function() {
 	this.outGamuts.push(new LUTGamutMatrix('S-Gamut3',new Float64Array([0.8556915182,0.1624073699,-0.0180988882, -0.0229408919,1.0671513074,-0.0442104155, -0.0216418068,-0.0283288236,1.0499706304])));
 	this.outGamuts.push(new LUTGamutMatrix('S-Gamut',new Float64Array([0.8556915182,0.1624073699,-0.0180988882, -0.0229408919,1.0671513074,-0.0442104155, -0.0216418068,-0.0283288236,1.0499706304])));
 	this.outGamuts.push(new LUTGamutMatrix('Rec709',new Float64Array([1.6269474097,-0.5401385389,-0.0868088709, -0.1785155271,1.4179409275,-0.2394254003, -0.0444361150,-0.1959199662,1.2403560812])));
+	this.outGamuts.push(new LUTGamutMatrix('Rec2020',new Float64Array([0.9600463439,0.1195329788,-0.0795793226, -0.0522394796,1.2643057472,-0.2120662678, -0.0288405067,-0.0595209682,1.0883614748])));
 	this.outGamuts.push(new LUTGamutLUT(
 		'LC709',
 		{
@@ -130,6 +134,14 @@ LUTGamut.prototype.gamutList = function() {
 		}
 	}
 }
+LUTGamut.prototype.getCATs = function(p,t) {
+	return {
+		p: p,
+		t: t+20,
+		v: this.ver,
+		o: this.CAT.getCATs()
+	};
+}
 // I/O functions
 LUTGamut.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
@@ -152,11 +164,26 @@ LUTGamut.prototype.setParams = function(params) {
 	}
 	this.doHG = false;
 	out.doHG = false;
+	this.doTemp = false;
+	out.doTemp = false;
 	if (typeof params.tweaks === 'boolean' && params.tweaks) {
 		if (typeof params.doHG === 'boolean') {
 			this.doHG = params.doHG;
 			out.doHG = this.doHG;
 		}
+		if (typeof params.doTemp === 'boolean') {
+			this.doTemp = params.doTemp;
+			out.doTemp = this.doTemp;
+		}
+	}
+	if (typeof params.CAT === 'number') {
+		this.CAT.setCAT(params.CAT);
+		out.CAT = params.CAT;
+	}
+	if (typeof params.baseTemp === 'number' && typeof params.newTemp === 'number') {
+		this.CAT.setTemps(params.newTemp,params.baseTemp);
+		out.baseTemp = params.baseTemp;
+		out.newTemp = params.newTemp;
 	}
 	if (typeof params.hgLin === 'boolean') {
 		this.hgLin = params.hgLin;
@@ -199,6 +226,9 @@ LUTGamut.prototype.calc = function(p,t,i) {
 			c[0] *= eiMult;
 			c[1] *= eiMult;
 			c[2] *= eiMult;
+			if (this.doTemp) {
+				c = this.CAT.calc(c.slice(0));
+			}
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
@@ -243,6 +273,9 @@ LUTGamut.prototype.preview = function(p,t,i) {
 		for (var j=0; j<max; j++) {
 			var k = j*3;
 			var c = [d[k]*eiMult,d[k+1]*eiMult,d[k+2]*eiMult];
+			if (this.doTemp) {
+				c = this.CAT.calc(c.slice(0));
+			}
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
@@ -325,6 +358,147 @@ LUTGamut.prototype.ioNames = function(p,t) {
 	return {p: p, t: t+20, v: this.ver, o: out};
 }
 // Gamut calculation objects
+function LUTGamutTemperature() {
+	this.cur = 0;
+	this.names = [];
+	this.M = [];
+	this.SG3C = [];
+	this.SG3CI = [];
+	this.net = [];
+	this.t1 = 5500;
+	this.t2 = 5500;
+	this.loci = new LUTs();
+	this.setLoci();
+	this.models();
+}
+LUTGamutTemperature.prototype.setLoci = function() {
+	this.loci.setDetails({
+		title: 'loci',
+		format: 'cube',
+		dims: 1,
+		s: 65,
+		min: [0,0,0],
+		max: [1,1,1],
+		C: [new Float64Array(
+			[1.34656,1.24451,1.17117,1.11848,1.08017,1.05187,1.03065,1.01455,
+			 1.00197,0.99234,0.98506,0.97960,0.97557,0.97264,0.97058,0.96920,
+			 0.96835,0.96791,0.96780,0.96794,0.96828,0.96877,0.96937,0.97006,
+			 0.97082,0.97163,0.97246,0.97332,0.97419,0.97507,0.97594,0.97681,
+			 0.97767,0.97852,0.97936,0.98017,0.98098,0.98176,0.98253,0.98327,
+			 0.98400,0.98471,0.98540,0.98607,0.98673,0.98736,0.98798,0.98858,
+			 0.98917,0.98974,0.99029,0.99083,0.99135,0.99186,0.99236,0.99284,
+			 0.99331,0.99376,0.99421,0.99464,0.99506,0.99547,0.99586,0.99625,
+			 0.99663]),
+			new Float64Array(
+		    [1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1,1,1,1,1,1,1,1,
+			 1]),
+			new Float64Array(
+			[0.10372,0.16741,0.24024,0.31663,0.39400,0.47089,0.54644,0.62019,
+			 0.69148,0.75874,0.82247,0.88270,0.93953,0.99307,1.04350,1.09097,
+			 1.13565,1.17772,1.21733,1.25466,1.28985,1.32304,1.35437,1.38397,
+			 1.41196,1.43844,1.46352,1.48728,1.50983,1.53123,1.55157,1.57090,
+			 1.58931,1.60684,1.62355,1.63949,1.65471,1.66925,1.68316,1.69646,
+			 1.70920,1.72141,1.73311,1.74434,1.75512,1.76548,1.77544,1.78502,
+			 1.79423,1.80311,1.81166,1.81991,1.82786,1.83553,1.84294,1.85010,
+			 1.85702,1.86371,1.87018,1.87645,1.88251,1.88839,1.89408,1.89960,
+			 1.90495])
+			]
+	});
+}
+LUTGamutTemperature.prototype.models = function() {
+	this.addModel(
+		'Bradford Chromatic Adaptation',
+		[0.8951,0.2664,-0.1614, -0.7502,1.7135,0.0367, 0.0389,-0.0685,1.0296],
+		[0.598711644,0.463059543,-0.120392007, -0.082077156,1.328805893,-0.206292353, -0.024443328,-0.079421069,1.193630992],
+		[1.597166837,-0.552657842,0.065578923, 0.104813502,0.724142189,0.13572344, 0.039681001, 0.03686512, 0.84815347]
+	);
+	this.addModel(
+		'Von Kries',
+		[0.40024,0.7076,-0.08081, -0.2263,1.16532,0.0457, 0,0,0.91822],
+		[0.39455624,0.728139495,-0.122692012, 0.113594054,0.973792194,-0.087384485, -0.029443504,-0.025396488,1.0548346],
+		[3.244909721,-2.421724712,0.176808131, -0.371196824,1.306166354,0.0650299, 0.08163784,-0.036149767,0.954516833]
+	);
+	this.addModel(
+		'Sharp',
+		[1.2694,-0.0988,-0.1706, -0.8364,1.8006,0.0357, 0.0297,-0.0315,1.0018],
+		[0.744698072,0.233259804,-0.056042374, -0.114953021,1.384465638,-0.224994593, -0.021105664,-0.048194746,1.157047005],
+		[1.309466843,-0.219904425,0.020663226, 0.113375079,0.708183505,0.143201847, 0.028608388,0.02548686,0.870610859]
+	);
+	this.addModel(
+		'CMCCAT2000',
+		[0.7982,0.3389,-0.1371, -0.5918,1.5512,0.0406, 0.0008,0.0239,0.9753],
+		[0.555474209,0.502434028,-0.109664133, -0.022214126,1.224481209,-0.169331156, -0.025654244,-0.005622951,1.118095584],
+		[1.774110042,-0.727666932,0.063804524, 0.037840809,0.801720007,0.125128797, 0.040896529,-0.012664134,0.896471164]
+	);
+	this.addModel(
+		'CAT02',
+		[0.7328,0.4296,-0.1624, -0.7036,1.6975,0.0061, 0.003,0.0136,0.9834],
+		[0.536612763,0.567129769,-0.154511408, -0.056619844,1.327091072,-0.235068767, -0.026811273,-0.014415553,1.128657587],
+		[1.787333656,-0.762881579,0.085795558, 0.083966529,0.719397261,0.161325823, 0.043530577,-0.008933903,0.890106885]
+	);
+	this.addModel(
+		'XYZ Scaling',
+		[1,0,0, 0,1,0, 0,0,1],
+		[0.599083921,0.248925516,0.10244649, 0.21507582,0.885068502,-0.100144322, -0.03206585,-0.027658391,1.148781991],
+		[1.846778969,-0.525986123,-0.210545211, -0.444153263,1.259442903,0.149399973, 0.040855421,0.015640889,0.868207249]
+	);
+}
+LUTGamutTemperature.prototype.addModel = function(name,M,SG3C,SG3CI) {
+	this.names.push(name);
+	this.M.push(M);
+	this.SG3C.push(SG3C);
+	this.SG3CI.push(SG3CI);
+}
+LUTGamutTemperature.prototype.getCATs = function() {
+	var max = this.names.length;
+	var out = [];
+	for (var j=0; j<max; j++) {
+		out.push({idx: j, name: this.names[j]});
+	}
+	return out;
+}
+LUTGamutTemperature.prototype.setCAT = function(cat) {
+	this.cur = cat;
+	this.setMatrix();
+}
+LUTGamutTemperature.prototype.setTemps = function(t1,t2) {
+	this.t1 = t1;
+	this.t2 = t2;
+	this.setMatrix();
+}
+LUTGamutTemperature.prototype.setMatrix = function() {
+	var w1 = this.w(this.t1);
+	var w2 = this.w(this.t2);
+	var W = [w1[0]/w2[0],w1[1]/w2[1],w1[2]/w2[2]];
+	var xyz = [	W[0]*this.SG3C[this.cur][0],W[0]*this.SG3C[this.cur][1],W[0]*this.SG3C[this.cur][2],
+				W[1]*this.SG3C[this.cur][3],W[1]*this.SG3C[this.cur][4],W[1]*this.SG3C[this.cur][5],
+				W[2]*this.SG3C[this.cur][6],W[2]*this.SG3C[this.cur][7],W[2]*this.SG3C[this.cur][8] ];
+	this.net = new Float64Array([
+				(this.SG3CI[this.cur][0]*xyz[0])+(this.SG3CI[this.cur][1]*xyz[3])+(this.SG3CI[this.cur][2]*xyz[6]), (this.SG3CI[this.cur][0]*xyz[1])+(this.SG3CI[this.cur][1]*xyz[4])+(this.SG3CI[this.cur][2]*xyz[7]), (this.SG3CI[this.cur][0]*xyz[2])+(this.SG3CI[this.cur][1]*xyz[5])+(this.SG3CI[this.cur][2]*xyz[8]),
+				(this.SG3CI[this.cur][3]*xyz[0])+(this.SG3CI[this.cur][4]*xyz[3])+(this.SG3CI[this.cur][5]*xyz[6]), (this.SG3CI[this.cur][3]*xyz[1])+(this.SG3CI[this.cur][4]*xyz[4])+(this.SG3CI[this.cur][5]*xyz[7]), (this.SG3CI[this.cur][3]*xyz[2])+(this.SG3CI[this.cur][4]*xyz[5])+(this.SG3CI[this.cur][5]*xyz[8]),
+				(this.SG3CI[this.cur][6]*xyz[0])+(this.SG3CI[this.cur][7]*xyz[3])+(this.SG3CI[this.cur][8]*xyz[6]), (this.SG3CI[this.cur][6]*xyz[1])+(this.SG3CI[this.cur][7]*xyz[4])+(this.SG3CI[this.cur][8]*xyz[7]), (this.SG3CI[this.cur][6]*xyz[2])+(this.SG3CI[this.cur][7]*xyz[5])+(this.SG3CI[this.cur][8]*xyz[8])
+	]);
+}
+LUTGamutTemperature.prototype.w = function(t) {
+	var T = (parseFloat(t)-1800)/19200;
+	var rgb = this.loci.lumaRGBCub(T);
+// rgb is the XYZ vector transformed by matrix M 
+	return [(this.M[this.cur][0]*rgb[0])+(this.M[this.cur][1]*rgb[1])+(this.M[this.cur][2]*rgb[2]),
+			(this.M[this.cur][3]*rgb[0])+(this.M[this.cur][4]*rgb[1])+(this.M[this.cur][5]*rgb[2]),
+			(this.M[this.cur][6]*rgb[0])+(this.M[this.cur][7]*rgb[1])+(this.M[this.cur][8]*rgb[2])];
+}
+LUTGamutTemperature.prototype.calc = function(rgb) {
+	return [(this.net[0]*rgb[0])+(this.net[1]*rgb[1])+(this.net[2]*rgb[2]),
+			(this.net[3]*rgb[0])+(this.net[4]*rgb[1])+(this.net[5]*rgb[2]),
+			(this.net[6]*rgb[0])+(this.net[7]*rgb[1])+(this.net[8]*rgb[2])];
+}
 function LUTGamutMatrix(name,params) {
 	this.name = name;
 	this.matrix = params;
@@ -332,12 +506,12 @@ function LUTGamutMatrix(name,params) {
 LUTGamutMatrix.prototype.calc = function(rgb) {
 	return [(this.matrix[0]*rgb[0])+(this.matrix[1]*rgb[1])+(this.matrix[2]*rgb[2]),
 			(this.matrix[3]*rgb[0])+(this.matrix[4]*rgb[1])+(this.matrix[5]*rgb[2]),
-			(this.matrix[3]*rgb[0])+(this.matrix[7]*rgb[1])+(this.matrix[8]*rgb[2])];
+			(this.matrix[6]*rgb[0])+(this.matrix[7]*rgb[1])+(this.matrix[8]*rgb[2])];
 }
 LUTGamutMatrix.prototype.fast = function(rgb) {
 	return [(this.matrix[0]*rgb[0])+(this.matrix[1]*rgb[1])+(this.matrix[2]*rgb[2]),
 			(this.matrix[3]*rgb[0])+(this.matrix[4]*rgb[1])+(this.matrix[5]*rgb[2]),
-			(this.matrix[3]*rgb[0])+(this.matrix[7]*rgb[1])+(this.matrix[8]*rgb[2])];
+			(this.matrix[6]*rgb[0])+(this.matrix[7]*rgb[1])+(this.matrix[8]*rgb[2])];
 }
 function LUTGamutLUT(name,params) {
 	this.name = name;
@@ -641,6 +815,8 @@ this.addEventListener('message', function(e) {
 			case 7: this.postMessage(gamuts.setLATitle(d.p,d.t,d.d)); 
 					break;
 			case 10:this.postMessage(gamuts.ioNames(d.p,d.t));
+					break;
+			case 11:this.postMessage(gamuts.getCATs(d.p,d.t));
 					break;
 			case 12:this.postMessage(gamuts.preview(d.p,d.t,d.d)); 
 					break;

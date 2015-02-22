@@ -304,7 +304,9 @@ LUTMessage.prototype.gtSetParams = function() {
 		outGamut: parseInt(this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].value),
 		hgGamut: parseInt(this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].value),
 		hgLowStop: parseFloat(this.inputs.tweakHGLow.value),
-		hgHighStop: parseFloat(this.inputs.tweakHGHigh.value)
+		hgHighStop: parseFloat(this.inputs.tweakHGHigh.value),
+		baseTemp: parseInt(this.inputs.tweakTempBase.value),
+		newTemp: parseInt(this.inputs.tweakTempNew.value)
 	};
 	if (this.inputs.tweaks.checked) {
 		d.tweaks = true;
@@ -320,6 +322,12 @@ LUTMessage.prototype.gtSetParams = function() {
 		d.hgLin = true;
 	} else {
 		d.hgLin = false;
+	}
+	if (this.inputs.tweakTempCheck.checked) {
+		d.doTemp = true;
+		d.CAT = parseInt(this.inputs.tweakTempCATSelect.options[this.inputs.tweakTempCATSelect.selectedIndex].value);
+	} else {
+		d.doTemp = false;
 	}
 	var max = this.gts.length;
 	for (var i=0; i<max; i++) {
@@ -370,8 +378,11 @@ console.log('Resending - ' + d.t);
 					break;
 			case 27: // Set LA Title
 					break;
-			case 30: // Get IRE values for output from a list of linear values
+			case 30: //
 					this.gotIOGamutNames(d);
+					break;
+			case 31: // Get Chromatic Adaptation Transform options
+					this.ui[3].gotCATs(d.o);
 					break;
 			case 32: // Get preview colour correction
 					this.gaTx(d.p,12,d)

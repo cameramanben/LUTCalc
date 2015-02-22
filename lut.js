@@ -54,8 +54,8 @@ LUTs.prototype.getDetails = function() {
 	return out;
 }
 LUTs.prototype.setDetails = function(d) {
-	title: this.title = d.title;
-	format: this.format = d.format;
+	this.title = d.title;
+	this.format = d.format;
 	this.d = d.dims;
 	this.s = d.s;
 	this.min = d.min;

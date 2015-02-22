@@ -47,6 +47,7 @@ var lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
 // Set Up Data
 lutMessage.gaTx(0,5,{});
 lutMessage.gtTx(0,5,{});
+lutMessage.gtTx(0,11,{});
 // Set Up Form Input Events
 //		Camera Box
 lutInputs.camera.onchange = function(){
@@ -142,6 +143,30 @@ lutInputs.tweakHiMap.onchange = function(){
 	lutTweaksBox.changeHighLevelMap();
 	lutMessage.gaSetParams();
 }
+//			Colour Temperature tweakBlk
+lutInputs.tweakTempCheck.onchange = function(){
+	lutTweaksBox.toggleTempCheck();
+	lutMessage.gtSetParams();
+}
+lutInputs.tweakTempCTSlider.onchange = function(){
+	lutTweaksBox.updateTempSlider();
+	lutMessage.gtSetParams();
+}
+lutInputs.tweakTempNew.onchange = function(){
+	lutTweaksBox.changeNewTemp();
+	lutMessage.gtSetParams();
+}
+lutInputs.tweakTempAdvancedCheck.onchange = function(){
+	lutTweaksBox.toggleTempAdvancedCheck();
+}
+lutInputs.tweakTempBase.onchange = function(){
+	lutTweaksBox.changeBaseTemp();
+	lutMessage.gtSetParams();
+}
+lutInputs.tweakTempCATSelect.onchange = function(){
+	lutMessage.gtSetParams();
+}
+
 //			LUT Analyst Tweak
 if (lutInputs.isApp) {
 	lutInputs.laFileInput.onclick = function(){

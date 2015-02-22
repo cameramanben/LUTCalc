@@ -1,6 +1,16 @@
 LUTCalc Changelog
 =================
 
+v1.9 Beta 3
+-----------
+* Added real-time(ish) preview, currently with built-in low and high-contrast test images.
+* Test images include 75% saturation primaries and secondaries in Rec709 and Rec2020, 16-stop grayscale and colour charts at correct exposure and +/- 2 stops (low contrast image) and  +/- 4 stops (high contrast image).
+* Test images are 16-bit and stored as most significant bits (MSB) and least significant bits (LSB) 8-bit PNGs.
+* Added colour temperature adjustment to tweaks. Available to 3D LUTs. Can be set as either CTO / CTB values or as recorded and desired colour temperature (advanced settings). Also under advanced various chromatic adaptation models are available for the adjustment.
+* Added Rec2020 colour space.
+* Fixed matrix bug from previous beta.
+* Bumped version number to 1.9 as new features and changes are substantial enough for final release to be v2.0.
+
 v1.5 Beta 3
 -----------
 * Fixed a LUTAnalyst input gamut bug. Recalculated V709.

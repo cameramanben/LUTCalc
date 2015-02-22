@@ -62,6 +62,23 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.inputs.addInput('tweakHiMap',this.highLevelMap);
 	this.lutAnalystBox = document.createElement('div');
 	this.lutAnalystCheck = document.createElement('input');
+
+	this.tempBox = document.createElement('div');
+	this.tempWindow = document.createElement('div');
+	this.tempCheck = document.createElement('input');
+	this.inputs.addInput('tweakTempCheck',this.tempCheck);
+	this.tempCTSlider = document.createElement('input');
+	this.tempCTSliderLabel = document.createElement('label');
+	this.inputs.addInput('tweakTempCTSlider',this.tempCTSlider);
+	this.tempNew = document.createElement('input');
+	this.inputs.addInput('tweakTempNew',this.tempNew);
+	this.tempAdvancedCheck = document.createElement('input');
+	this.inputs.addInput('tweakTempAdvancedCheck',this.tempAdvancedCheck);
+	this.tempBase = document.createElement('input');
+	this.inputs.addInput('tweakTempBase',this.tempBase);
+	this.tempCATSelect = document.createElement('select');
+	this.inputs.addInput('tweakTempCATSelect',this.tempCATSelect);
+
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
@@ -118,6 +135,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	tweakHolder.appendChild(this.blackLevelBox);
 	this.highlightLevel();
 	tweakHolder.appendChild(this.highLevelBox);
+	this.tempShift();
+	tweakHolder.appendChild(this.tempBox);
 	this.lutAnalyst();
 	tweakHolder.appendChild(this.lutAnalystBox);
 	this.box.appendChild(tweakHolder);
@@ -143,9 +162,12 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 	if (this.tweakCheck.checked) {
 		if (this.inputs.d[1].checked) {
 			this.highGamutBox.style.display = 'block';
+			this.tempBox.style.display = 'block';
 		} else {
 			this.highGamutBox.style.display = 'none';
 			this.highGamutCheck.checked = false;
+			this.tempBox.style.display = 'none';
+			this.tempCheck.checked = false;
 		}
 		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 		if (curOut === 9999) {
@@ -445,6 +467,150 @@ LUTTweaksBox.prototype.changeHighLevelMap = function() {
 	if (!isNaN(parseFloat(this.highLevelMap.value)) && isFinite(this.highLevelMap.value) && (parseFloat(this.highLevelMap.value)>-7.3)) {
 	} else {
 		this.highLevelMap.value = null;
+	}
+}
+//
+// *** Colour Temperature Tweak ***
+//		Build UI
+LUTTweaksBox.prototype.tempShift = function() {
+	this.tempBox.setAttribute('class','graybox');
+	this.tempBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Colour Temperature Shift')));
+	this.tempCheck.setAttribute('type','checkbox');
+	this.tempBox.appendChild(this.tempCheck);
+	this.tempWindow.appendChild(document.createElement('br'));
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('CTO')));
+	this.tempCTSlider.setAttribute('type','range');
+	this.tempCTSlider.setAttribute('min',-1.75);
+	this.tempCTSlider.setAttribute('max',1.75);
+	this.tempCTSlider.setAttribute('value',0);
+	this.tempCTSlider.setAttribute('step',0.125);
+	this.tempCTSliderLabel.innerHTML = 'Clear';
+	this.tempWindow.appendChild(this.tempCTSlider);
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('CTB')));
+	this.tempWindow.appendChild(document.createElement('br'));
+	this.tempWindow.appendChild(this.tempCTSliderLabel);
+	this.tempWindow.appendChild(document.createElement('br'));
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
+	this.tempAdvancedCheck.setAttribute('type','checkbox');
+	this.tempWindow.appendChild(this.tempAdvancedCheck);
+	this.tempAdvanced = document.createElement('div');
+	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Base Colour Temperature')));
+	this.tempBase.setAttribute('type','number');
+	this.tempBase.setAttribute('class','kelvininput');
+	this.tempBase.value = '5500';
+	this.tempAdvanced.appendChild(this.tempBase);
+	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.tempAdvanced.appendChild(document.createElement('br'));
+	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('New White Balance')));
+	this.tempNew.setAttribute('type','number');
+	this.tempNew.setAttribute('class','kelvininput');
+	this.tempNew.value = '5500';
+	this.tempAdvanced.appendChild(this.tempNew);
+	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.tempAdvanced.appendChild(document.createElement('br'));
+	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Chromatic Adaptation Model')));
+	this.tempAdvanced.appendChild(this.tempCATSelect);
+	this.tempWindow.appendChild(this.tempAdvanced);
+	this.tempBox.appendChild(this.tempWindow);
+	this.toggleTempAdvancedCheck();
+	this.toggleTempCheck();
+}
+//		Set Up Data
+//		Event Responses
+LUTTweaksBox.prototype.toggleTempCheck = function() {
+	if (this.tempCheck.checked) {
+		this.tempBase.disabled = false;
+		this.tempNew.disabled = false;
+		this.tempCATSelect.disabled = false;
+		this.tempWindow.style.display = 'inline';
+	} else {
+		this.tempBase.disabled = true;
+		this.tempNew.disabled = true;
+		this.tempCATSelect.disabled = true;
+		this.tempWindow.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.gotCATs = function(cats) {
+	this.tempCATSelect.length = 0;
+	var max = cats.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = cats[j].idx;
+		option.appendChild(document.createTextNode(cats[j].name));
+		this.tempCATSelect.appendChild(option);
+	}
+}
+LUTTweaksBox.prototype.updateTempSlider = function() {
+	var val = parseFloat(this.tempCTSlider.value);
+	var ratio = Math.exp(val*0.6018616199);
+	var base = Math.round(parseFloat(this.tempBase.value));
+	var temp = base*ratio;
+	if (temp < 1800) {
+		this.tempBase.value = Math.round(1800/ratio).toString();
+		this.tempNew.value = '1800';
+	} else if (temp > 21000) {
+		this.tempBase.value = Math.round(21000/ratio).toString();
+		this.tempNew.value = '21000';
+	} else {
+		this.tempNew.value = Math.round(temp).toString();
+	}
+	if (val<0) {
+		this.tempCTSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
+	} else if (val === 0) {
+		this.tempCTSliderLabel.innerHTML = 'Clear';
+	} else {
+		this.tempCTSliderLabel.innerHTML = val.toString() + ' CTB';
+	}
+}
+LUTTweaksBox.prototype.toggleTempAdvancedCheck = function() {
+	if (this.tempAdvancedCheck.checked) {
+		this.tempAdvanced.style.display = 'block';
+	} else {
+		this.tempAdvanced.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.changeBaseTemp = function() {
+	var base = Math.round(parseFloat(this.tempBase.value));
+	var temp = Math.round(parseFloat(this.tempNew.value));
+	if (base < 1800) {
+		this.tempBase.value = '1800';
+	} else if (temp > 21000) {
+		this.tempBase.value = '21000';
+	} else {
+		this.tempBase.value = base.toString();
+	}
+	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.6018616199;
+	var valEight = Math.round(8*val)/8;
+	val = +val.toFixed(3);
+	this.tempCTSlider.value = val.toString();
+	if (val<0) {
+		this.tempCTSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
+	} else if (val === 0) {
+		this.tempCTSliderLabel.innerHTML = 'Clear';
+	} else {
+		this.tempCTSliderLabel.innerHTML = val.toString() + ' CTB';
+	}
+}
+LUTTweaksBox.prototype.changeNewTemp = function() {
+	var base = Math.round(parseFloat(this.tempBase.value));
+	var temp = Math.round(parseFloat(this.tempNew.value));
+	if (temp < 1800) {
+		this.tempNew.value = '1800';
+	} else if (temp > 21000) {
+		this.tempNew.value = '21000';
+	} else {
+		this.tempNew.value = temp.toString();
+	}
+	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.6018616199;
+	var valEight = Math.round(8*val)/8;
+	val = +val.toFixed(3);
+	this.tempCTSlider.value = val.toString();
+	if (val<0) {
+		this.tempCTSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
+	} else if (val === 0) {
+		this.tempCTSliderLabel.innerHTML = 'Clear';
+	} else {
+		this.tempCTSliderLabel.innerHTML = val.toString() + ' CTB';
 	}
 }
 //
