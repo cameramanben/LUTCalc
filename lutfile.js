@@ -31,7 +31,7 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 }
 LUTFile.prototype.saveBinary = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension);
+        return window.lutCalcApp.saveBIN(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName), extension);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName) + '.' + extension);
 		return true;
