@@ -1,6 +1,3 @@
-[submodule "Blob"]
-	path = Blob
-	url = https://github.com/eligrey/Blob.js.git
 [submodule "FileSaver"]
 	path = FileSaver
 	url = https://github.com/eligrey/FileSaver.js.git
