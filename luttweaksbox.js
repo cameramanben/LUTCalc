@@ -187,10 +187,12 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		this.highGamutBox.style.display = 'none';
 		this.blackLevelBox.style.display = 'none';
 		this.highLevelBox.style.display = 'none';
+		this.tempBox.style.display = 'none';
 		this.lutAnalystBox.style.display = 'none';
 		this.highGamutCheck.checked = false;
 		this.blackLevelCheck.checked = false;
 		this.highLevelCheck.checked = false;
+		this.tempCheck.checked = false;
 		this.lutAnalystCheck.checked = false;
 	}
 	if (this.highGamutCheck.checked) {

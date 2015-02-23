@@ -95,6 +95,7 @@ lutInputs.outGamut.onchange = function(){
 lutInputs.tweaks.onchange = function(){
 	lutTweaksBox.toggleTweakCheck();
 	lutMessage.gaSetParams();
+	lutMessage.gtSetParams();
 }
 //			Highlight Gamut Tweak
 lutInputs.tweakHGCheck.onchange = function(){
