@@ -154,7 +154,6 @@ LUTPreview.prototype.loadedDefault = function() {
 	}
 }
 LUTPreview.prototype.sl3ToLin = function(input) {
- 0.1677922920,-0.0155818840, 0.2556207230, 4.7368421060,10.0000000000, 0.4105571850, 0.0526315790, 0.1673609920, 0.0125000000
  	if (input >= 0.1673609920) {
 		return (Math.pow(10,(input - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
 	} else {

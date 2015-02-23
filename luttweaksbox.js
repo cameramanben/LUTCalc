@@ -480,8 +480,8 @@ LUTTweaksBox.prototype.tempShift = function() {
 	this.tempWindow.appendChild(document.createElement('br'));
 	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('CTO')));
 	this.tempCTSlider.setAttribute('type','range');
-	this.tempCTSlider.setAttribute('min',-1.75);
-	this.tempCTSlider.setAttribute('max',1.75);
+	this.tempCTSlider.setAttribute('min',-2);
+	this.tempCTSlider.setAttribute('max',2);
 	this.tempCTSlider.setAttribute('value',0);
 	this.tempCTSlider.setAttribute('step',0.125);
 	this.tempCTSliderLabel.innerHTML = 'Clear';
@@ -542,7 +542,7 @@ LUTTweaksBox.prototype.gotCATs = function(cats) {
 }
 LUTTweaksBox.prototype.updateTempSlider = function() {
 	var val = parseFloat(this.tempCTSlider.value);
-	var ratio = Math.exp(val*0.6018616199);
+	var ratio = Math.exp(val*0.5415972824);
 	var base = Math.round(parseFloat(this.tempBase.value));
 	var temp = base*ratio;
 	if (temp < 1800) {
@@ -579,7 +579,7 @@ LUTTweaksBox.prototype.changeBaseTemp = function() {
 	} else {
 		this.tempBase.value = base.toString();
 	}
-	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.6018616199;
+	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.5415972824;
 	var valEight = Math.round(8*val)/8;
 	val = +val.toFixed(3);
 	this.tempCTSlider.value = val.toString();
@@ -601,7 +601,7 @@ LUTTweaksBox.prototype.changeNewTemp = function() {
 	} else {
 		this.tempNew.value = temp.toString();
 	}
-	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.6018616199;
+	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.5415972824;
 	var valEight = Math.round(8*val)/8;
 	val = +val.toFixed(3);
 	this.tempCTSlider.value = val.toString();

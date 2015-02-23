@@ -99,27 +99,34 @@ lutInputs.tweaks.onchange = function(){
 //			Highlight Gamut Tweak
 lutInputs.tweakHGCheck.onchange = function(){
 	lutTweaksBox.toggleHighGamutCheck();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGSelect.onchange = function(){
 	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGLinLog[0].onchange = function(){
 	lutTweaksBox.toggleHighGamutLinLog();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGLinLog[1].onchange = function(){
 	lutTweaksBox.toggleHighGamutLinLog();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGLinLow.onchange = function(){
 	lutTweaksBox.changeHighGamutLinLow();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGLinHigh.onchange = function(){
 	lutTweaksBox.changeHighGamutLinHigh();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGLow.onchange = function(){
 	lutTweaksBox.changeHighGamutLogLow();
+	lutMessage.gtSetParams();
 }
 lutInputs.tweakHGHigh.onchange = function(){
 	lutTweaksBox.changeHighGamutLogHigh();
+	lutMessage.gtSetParams();
 }
 //			Black Level Tweak
 lutInputs.tweakBlkCheck.onchange = function(){
