@@ -866,7 +866,9 @@ LUTTweaksBox.prototype.lutAnalystDone = function() {
 	this.lutAnalystToggleCheck();
 	this.lutAnalystDoButton.value = 'Re-Analyse';
 	this.lutAnalystStoreButton.style.display = 'inline';
-	this.lutAnalystStoreBinButton.style.display = 'inline';
+	if (!this.inputs.isApp) { // remove option in Mac app until I can figure out saving binaries
+		this.lutAnalystStoreBinButton.style.display = 'inline';
+	}
 }
 LUTTweaksBox.prototype.lutAnalystStore = function(cube) {
 	if (cube) {
