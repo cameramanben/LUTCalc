@@ -149,6 +149,7 @@ body {text-align:center;margin: 0px auto;}
 	border-radius:0.25em;
 /*	-moz-border-radius:5px; */
 }
+#javascriptwarning{display: block;}
 .isoinput {width:5em;line-height:0.8;}
 .shiftinput {width:5em;line-height:0.8;}
 .ireinput {width:4em;line-height:0.8;}

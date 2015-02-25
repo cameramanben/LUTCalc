@@ -12,21 +12,10 @@
 // Housekeeping
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
-var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v1.9 beta 1');
+lutInputs.addInput('version','v1.9 beta 3');
 lutInputs.addInput('date','February 2015');
-// Test for native app bridges
-if (typeof window.lutCalcApp != 'undefined') {
-    lutInputs.addInput('isApp',true);
-} else {
-    lutInputs.addInput('isApp',false);
-}
-// Test Endianness for arraybuffer data to and from files
-if ((new Int8Array(new Int16Array([1]).buffer)[0]) > 0) {
-	lutInputs.addInput('isLE', true);
-} else {
-	lutInputs.addInput('isLE', false);
-}
+// Browser feature tests
+var lutTests = new LUTTests(lutInputs);
 // Build UI
 var lutMessage = new LUTMessage(lutInputs);
 var lutFile = new LUTFile(lutInputs);

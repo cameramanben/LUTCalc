@@ -5,18 +5,12 @@ Web App for generating 1D and 3D Lookup Tables (LUTs) for video cameras that sho
 
 LUTCalc generates 1D and 3D .cube format LUTs suitable for use in DaVinci Resolve, Adobe Speedgrade and as user 3D LUTs in Sony's log-recording video cameras. These include the PMW-F5, PMW-F55 and PXW-FS7.
 
-For Mac OSX users, the sister [LUTCalc For Mac](https://github.com/cameramanben/LUTCalc-For-Mac) project provides a native app version using a sandbox-friendly Objective-C Webkit wrapper around the LUTCalc Javascript.
-
-Instructions are included, just open 'index.html' in a web browser with Javascript enabled.
-
-Supported Browsers
-------------------
-
-Safari may cause difficulties in automatically saving LUTs - it does not support file saving via Javascript. LUTs should open up in a new tab where they can be saved with 'Save As'.
-
-If using Internet Explorer it should be a recent version (10+).
-
-Firefox, Chrome and recent IE should all work fine.
+How To Start
+------------
+Mac OSX Safari: For Mac OSX users, the sister [LUTCalc For Mac](https://github.com/cameramanben/LUTCalc-For-Mac) project provides a native app version using a sandbox-friendly Objective-C Webkit wrapper around the LUTCalc Javascript.
+Chrome (Windows, Mac or Linux): LUTCalc currently needs to be run as an app extension. Either click Window->Extensions in the menu bar or type chrome://extensions in the address bar. Check 'developer mode' in the top right, then click 'Load unpacked extension' and find the main LUTCalc directory and click select. LUTCalc should then show up on the list of installed extensions. You can now uncheck developer mode and start LUTCalc either by clicking 'Launch' or from the Chrome App Launcher.
+Firefox: I have been developing using Firefox, so opening index.html in the main directory should work.
+Internet Explorer: currently looking in to making this work.
 
 Gamma / Gamut Information
 -------------------------
@@ -47,12 +41,17 @@ Rec709 - [ITU BT.709-5](http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-
 
 sRGB - [Wikipedia entry](http://en.wikipedia.org/wiki/SRGB)
 
+Dolby PQ and alternative prospective transfer functions for HDR displays - [Non-linear Opto-Electrical Transfer Functions for High Dynamic Range Television](http://www.bbc.co.uk/rd/publications/whitepaper283)
+
+Chromatic adaptation and Von Kries transform for colour temperature adjustments - [Wikipedia article](http://en.wikipedia.org/wiki/Chromatic_adaptation)
+
+
 LUTCalc File List
 =================
 
 Main Files
 ----------
-* index.html - HTML5 base of LUTCalc. Launch to start.
+* index.html (window.html) - HTML5 base of LUTCalc. Launch to start.
 * lutcalc.js - main Javascript file. Initialises all the UI and calculation objects and sets up the event handlers.
 
 UI Files
@@ -60,31 +59,44 @@ UI Files
 * lutcamerabox.js - builds the UI object where camera and ISO are chosen.
 * lutgammabox.js - builds the UI object for transfer curve (gamma) and  colour space (gamut) selection.
 * luttweaksbox.js - builds the UI object for customising the transfer (gamma) curves and colour spaces / gamuts.
+* lutanalyst.js - extension to luttweaksbox which reads and then analyses LUTs into transfer function and colour space components so that they can be adapted for use with other input colour spaces and further tweaked as with the built-in options.
 * lutlutbox.js - builds the UI object containing options concerning the LUT format.
 * lutgeneratebox.js - builds the 'Generate' button that triggers the LUT generation, plus the generation logic itself.
-* lutinfobox.js - builds the UI object which shows instructions, the changelog, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
+* lutinfobox.js - builds the UI object which shows instructions, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
+* lutpreview.js - builds the UI object which previews LUTs on test images.
 
-Calculation Files
------------------
-* lutgamma.js - contains all the data and equations for calculating the transfer curves, plus input and output functions to various ranges / scales.
-* lutgamut.js - contains the data for matrix-based colour spaces, plus the calculations for those, LUT-based spaces and compound combinations of the two.
-* lutgamut.lc709.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709 look profile colour. Effectively a LUT of a LUT.
-* lutgamut.lc709a.js - a pure colour space transform LUT from S-Gamut3.cine to the LC709a look profile colour. Effectively a LUT of a LUT.
-* lutgamut.cine709.js - a pure colour space transform LUT from S-Gamut3.cine to the Cine+709 look profile colour. Effectively a LUT of a LUT.
-* lutgamut.cpoutdaylight.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on a daylight or mixed lighting balance. Derived from 3D Newton-Raphson on Canon's published daylight IDT matrices.
-* lutgamut.cpouttungsten.js - pure colour space transform LUTs from S-Gamut3.cine to the colour space of CP Lock on a tungsten or warmer balance. Derived from 3D Newton-Raphson on Canon's published tungsten IDT matrices.
+Web Workers
+-----------
+* lutmessage.js - handles creation and message passing for multiple web worker calculation threads.
+* gamma.js - handles all the calculations relating to transfer functions (gammas).
+* gamut.js - handles all the functions relating to colour spaces (gamuts).
+
+
+Binary LUT Files
+----------------
+* LC709.labin - little-endian Float64Array buffer of colour space (S-Log3 to S-Log3, S-Gamut3.cine to LC709) data based on Sony's look profile.
+* LC709A.labin - colour space data based on Sony's look profile.
+* V709.labin - experimental colour space data based on Panasonic's reference V-log to V709 LUT.
+* cpoutdaylight.labin - Canon CP lock to S-Gamut3.cine data developed by testing against Canon's reference daylight IDT.
+* cpouttungsten.labin - Canon CP lock to S-Gamut3.cine data developed by testing against Canon's reference tungsten IDT.
 
 Helper Javascript
 -----------------
-* luts.js - LUT handling object. Will calculate interpolated values from LUTs using cubic and tricubic interpolation. Also includes code for breaking a 3D LUT into gamma and gamut component LUTs and changing the input gamma / gamut (as used by the LUTAnalyst tool).
+* lut.js - LUT handling object. Will calculate interpolated values from LUTs using cubic and tricubic interpolation. Also includes code for breaking a 3D LUT into gamma and gamut component LUTs and changing the input gamma / gamut (as used by the LUTAnalyst tool).
 * lutfile.js - file handling object.
 * lutinputs.js - simple object into which the other objects can place their form input objects, to allow interaction without globals.
+* brent.js - Brent's method of root finding for LUTAnalyst.
+* tests.js - object containing feature / environment detection tests.
 
 Other Files
 -----------
+* background.js - Chrome packaged app requirement
 * style.css - stylesheet controlling the look of the app. All dimensions (greater than 1 pixel) are em values.
 * LUTCalc.icns - icon file containing a logo in a format suitable for Mac OSX Apps in XCode.
+* logo(x).png - various sizes of png containing the LUTCalc logo for the Chrome app.
+* LDR / HDR Preview LSB / MSB .png - test images for use in the preview window. Low dynamic range / contrast (LDR) and high dynamic range (HDR) from 16-bit originals broken into 8-bit most significant and least significant byte images (MSB and LSB) for Javascript.
 * README.md - this file.
+* CHANGELOG.md - changelog.
 * LICENSE - GPL2 License document.
 
 External Code Used

@@ -19,3 +19,4 @@ LUTInputs.prototype.addInput = function(inputName,inputValue) {
 		return false;
 	}
 }
+var lutInputs = new LUTInputs();

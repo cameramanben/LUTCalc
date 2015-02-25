@@ -3,6 +3,14 @@ LUTCalc Changelog
 
 v1.9 Beta 3
 -----------
+Added Google Chrome packaged app code.
+
+v1.9 Beta 2
+-----------
+Fixed missing FileSaver.js and Blob.js files
+
+v1.9 Beta 1
+-----------
 * Added real-time(ish) preview, currently with built-in low and high-contrast test images.
 * Test images include 75% saturation primaries and secondaries in Rec709 and Rec2020, 16-stop grayscale and colour charts at correct exposure and +/- 2 stops (low contrast image) and  +/- 4 stops (high contrast image).
 * Test images are 16-bit and stored as most significant bits (MSB) and least significant bits (LSB) 8-bit PNGs.
