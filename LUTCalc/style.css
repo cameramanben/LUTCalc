@@ -1,0 +1,172 @@
+/*CSS Reset */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+pre {
+	white-space: pre; /* CSS2 */
+	white-space: pre-wrap; /* CSS 2.1 */
+	white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */
+	word-wrap: break-word; /* IE */
+}
+/* Reset end */
+
+/*Basic Adjustments */
+body { color: #333333; background-color: #eaeaea; padding: 0.25em;}
+h1,h2,h3,h4,h5,h6 { text-align: center; }
+a {			text-decoration: none;
+			background-color: inherit; color: #0000ff; }
+/* Element font choices */
+body {
+	font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+}
+pre, code, kbd, samp {
+	font-family: monospace, sans-serif;
+}
+
+h1 { font-size: 1.4em; }
+h2 { font-size: 1.3em; }
+h3 { font-size: 1.2em; }
+h4 { font-size: 1em; font-weight: bold;}
+h5 { font-size: 1.1em; }
+h6 { font-size: 0.6em; font-weight: bold; }
+i { font-weight: bold; }
+th {font-weight: bold;}
+th { padding-left:0.75em; padding-right:0.75em; }
+p {margin-bottom:0.6em;}
+strong { font-weight: bold; font-size: 1.1em; }
+sup { vertical-align: top; font-size: 0.7em; }
+small {font-size: 0.7em;}
+select, input, textarea {font: 99% sans-serif;}
+table {
+	font-size: 0.8em;
+	margin: 0px auto;
+}
+input {
+	margin-left:0.25em;
+	margin-right:0.25em;
+	text-align: center;
+}
+select {
+	margin-left:0.5em;
+	margin-right:0.5em;
+}
+tr { text-align:center; }
+
+.smaller {font-size: 0.8em;}
+.bold {font-weight:bold;}
+
+/* Header
+-------------------------------------------------------------------------------*/
+#titlebar {
+	width:100%;
+	text-align: center;
+	clear:both;
+	padding-top: 0.1em;
+	padding-bottom: 0.2em;
+	color: #ffff00;
+	background-color: #202090;
+}
+/* Footer
+-------------------------------------------------------------------------------*/
+#footer {
+	width:100%;
+	text-align: center;
+	clear:both;
+	margin-top:0.5em;
+	padding-top: 0.1em;
+	padding-bottom: 0.2em;
+	color: #ffff00;
+	background-color: #202090;
+}
+
+/* Main Section
+-------------------------------------------------------------------------------*/
+body {text-align:center;margin: 0px auto;}
+#javascriptwarning { margin-top:1em; }
+#main { padding-right:0.2em; width:69em;margin: 0px auto;}
+#left { float:left;}
+#right {float:right;overflow:auto;width:35em;max-height:38.5em;padding-right:1em;}
+#lutcalcform {margin: 0px auto;}
+.shadowbox	{	
+	box-shadow:0.05em 0.05em 0.2em #808080;
+	-webkit-box-shadow:0.05em 0.05em 0.2em #808080;
+/*	-moz-box-shadow:0.05em 0.05em 0.2em #808080; */
+	padding: 0.5em 1em 0.5em 1em;
+	background-color: #f2f2f2;
+	color: #333333;
+	line-height: 1.3;
+	text-align: center;
+	width: 30em; margin: 0px auto; margin-top: 0.5em;margin-bottom:0.5em;
+}
+.graybox {
+	display: inline-block;
+	margin:0 0.15em 0.2em 0.15em;
+	padding: 0.15em 0.35em 0.25em 0.15em;
+	border:1px solid;
+	border-color: #dadada;
+	background-color: #eaeaea;
+	border-radius:0.25em;
+/*	-moz-border-radius:5px; */
+}
+#javascriptwarning{display: block;}
+.isoinput {width:5em;line-height:0.8;}
+.shiftinput {width:5em;line-height:0.8;}
+.ireinput {width:4em;line-height:0.8;}
+.kelvininput {width:5em;line-height:0.8;}
+.textinput {line-height:0.8;margin-bottom:0.15em;}
+.infobox {height:21em;margin-top:0.15em;overflow:auto;}
+.buttons { text-align: center; }
+#tweakholder {margin:0;padding:0;overflow:auto;max-height:18em;}
+#chartcanvas1 {display:block;width:28em;height:15em; z-index: 1;}
+#chartcanvas2 {display:block;width:28em;height:15em; z-index: 1;}
+#chartcanvas3 {display:block;width:28em;height:15em; z-index: 1;}
+#reccanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#reccanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#reccanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
+#outcanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#chartreclabel {color:red; margin-right:10px;}
+#chartoutlabel {color:blue; margin-left:10px;}
+#genbutton { text-align:center; }
