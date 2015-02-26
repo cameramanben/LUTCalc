@@ -1,0 +1,24 @@
+{
+	"name": "LUTCalc",
+	"description": "Camera LUT Generator / Analyser / Visualiser.",
+	"version": "1.9.1.3",
+	"type": "web",
+	"launch_path": "LUTCalc/LUTCalc/index.html",
+	"developer": {
+		"name": "Ben Turley",
+		"url": "http://turley.tv"
+	},
+	"icons": {
+		"16": "logo16.png",
+		"32": "logo32.png",
+		"48": "logo48.png",
+		"60": "logo60.png",
+		"64": "logo64.png",
+		"90": "logo90.png",
+		"128": "logo128.png",
+		"256": "logo256.png",
+		"512": "logo512.png",
+		"1024": "logo1024.png"
+	},
+	"default_locale": "en"
+}
