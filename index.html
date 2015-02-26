@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>LUTCalc by cameramanben</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>LUTCalc</h1>
+        <p>A Web App for generating, analysing and previewing 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.</p>
+
+        <p class="view"><a href="https://github.com/cameramanben/LUTCalc">View the Project on GitHub <small>cameramanben/LUTCalc</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/cameramanben/LUTCalc/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/cameramanben/LUTCalc/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/cameramanben/LUTCalc">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>
+<a id="cinematic-cameras--log-recording" class="anchor" href="#cinematic-cameras--log-recording" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cinematic Cameras &amp; Log Recording.</h3>
+
+<p>Modern video cameras such as Sony's F55, F5 and FS7, Canons CineEOSes and Arri Alexas and Amiras are able to resolve huge dynamic ranges and wide colour spaces, and coupled with the availability of sophisticated grading tools log recording has developed to offer the greatest flexibility of data storage within the limitations of 10, 12 or in the case of the C300 8-bit codecs.</p>
+
+<p>Log recordings attempt to distribute picture information evenly over each recorded stop so that highlights can be manipulated to the same degree as midtones and - allowing for noise - shadows. The downsides are that this results in a flat, bland picture (particularly when combined with a wide colour gamut) and that if using a waveform for exposure, the low contrast log signal is not well suited to easy, accurate exposure judgement.</p>
+
+<p>An elegant solution is that many cameras can use lookup tables or LUTs to map the base log data into more attractive forms designed around displays and their colour space and contrast characteristics. These are typically either base looks provided by manufacturers or LUTs generated from graded material to ensure a consistent look across a production.</p>
+
+<p>In addition, some cameras can 'burn-in' LUTs, recording a 'graded' picture where postproduction resources or time do not lend themselves to a fully log workflow.</p>
+
+<h3>
+<a id="lutcalc-the-information-tool" class="anchor" href="#lutcalc-the-information-tool" aria-hidden="true"><span class="octicon octicon-link"></span></a>LUTCalc The Information Tool</h3>
+
+<p>LUTCalc has been written to utilise publically available information about various manufacturers log equations and finishing looks. From that LUTCalc can produce tables and charts of exposure values suitable for a given recording and desired end look and quickly and easily preview how different LUTs will alter the picture using test image.</p>
+
+<p>In addition to the built-in colour spaces and transfer functions, LUTCalc can also read LUTs in the widespread .cube format using the LUTAnalyst tool. Then, if given the expected input gamma and colour space of that LUT it will break down the contrast and colour elements of the LUT and allow them to be used and visualised in the same way as any of the built-in options.</p>
+
+<h3>
+<a id="lutcalc-the-adjustment-tool" class="anchor" href="#lutcalc-the-adjustment-tool" aria-hidden="true"><span class="octicon octicon-link"></span></a>LUTCalc The Adjustment Tool</h3>
+
+<p>As well as displaying the basic appearance of different looks, LUTCalc can make a number of adjustments. Output levels can be scaled to preferred values for black and arbitrary reflectances, different colour spaces can be applied to shadows and highlights and the colour temperature can be adjusted, either as a CTO / CTB shift or by directly setting recorded and output temperatures.</p>
+
+<p>Once the input, output and adjustment options have been set LUTCalc can then output .cube LUTs suitable for use in camera as monitor LUTs or in post to provide one-click base looks.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/cameramanben">cameramanben</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
