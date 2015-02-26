@@ -1,0 +1,9 @@
+{
+    "name": "LUTCalc",
+    "package_path" : "https://cameramanben.github.io/LUTCalc/package.zip",
+    "version": "1.9.1.3",
+    "developer": {
+        "name": "Ben Turley",
+        "url": "http://turley.tv"
+    }
+}
