@@ -34,8 +34,12 @@
 		"16": "logo16.png",
 		"32": "logo32.png",
 		"48": "logo48.png",
+		"60": "logo60.png",
 		"64": "logo64.png",
+		"90": "logo90.png",
 		"128": "logo128.png",
+		"256": "logo256.png",
+		"512": "logo512.png",
 		"1024": "logo1024.png"
 	},
 	"offline_enabled": true,
