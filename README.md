@@ -1,7 +1,7 @@
 LUTCalc
 =======
 
-Web App for generating 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, principally the Sony CineAlta line.
+A Web App for generating 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, principally the Sony CineAlta line.
 
 LUTCalc generates 1D and 3D .cube format LUTs suitable for use in DaVinci Resolve, Adobe Speedgrade and as user 3D LUTs in Sony's log-recording video cameras. These include the PMW-F5, PMW-F55 and PXW-FS7.
 
