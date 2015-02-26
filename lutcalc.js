@@ -12,7 +12,7 @@
 // Housekeeping
 document.getElementById('javascriptwarning').style.display='none';
 var lutCalcForm = document.getElementById('lutcalcform');
-lutInputs.addInput('version','v1.9 beta 3');
+lutInputs.addInput('version','v1.9 beta 1.3');
 lutInputs.addInput('date','February 2015');
 // Browser feature tests
 var lutTests = new LUTTests(lutInputs);
