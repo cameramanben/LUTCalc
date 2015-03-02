@@ -40,7 +40,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 		return false;
 	}
 }
-LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, parentObject, next) {
+LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.index, next);
 	} else {
@@ -99,6 +99,58 @@ LUTFile.prototype.loadFromInput = function(fileInput, extensions, destination, p
 		} else {
 			fileInput.value = '';
 			alert("LUTCalc does not understand this file.");
+		}
+	}
+}
+LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination, parentObject, next) {
+	if (this.inputs.isApp) {
+		window.lutCalcApp.loadImg(extensions.toString(), destination, parentObject.index, next);
+	} else {
+		var file = fileInput.files[0];
+		var valid = false;
+		var dot = file.name.lastIndexOf('.');
+		var ext = '';
+		if (dot != -1) {
+			dot++;
+			ext = file.name.substr(dot).toLowerCase();
+			var max = extensions.length;
+			for (var i=0; i<max; i++) {
+				if (ext === extensions[i]) {
+					valid = true;
+					break;
+				}
+			}
+		}
+		if (valid) {
+			if (window.File && window.FileReader && window.FileList && window.Blob) {
+				var reader = new FileReader();
+				var localDestination = this.inputs[destination];
+				localDestination.format = ext;
+				localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
+				reader.onload = (function(theFile){
+					var theDestination = localDestination;
+    				return function(e){
+    					theDestination.pic = new Image();
+    					theDestination.pic.onload = function(e){
+    						theDestination.w = theDestination.pic.width;
+	    					theDestination.h = theDestination.pic.height;
+	 						parentObject.followUp(next);
+    					};
+    					theDestination.pic.src = e.target.result;
+    				};
+    			})(file);
+				reader.onerror = function(theFile) { return function() {
+					alert("Error reading file.");
+					inputBox.value = '';
+				}; }(file);
+				reader.readAsDataURL(file);
+			} else {
+				alert("Can't load image - your browser is not set to support Javascript File APIs.");
+				fileInput.value = '';
+			}
+		} else {
+			fileInput.value = '';
+			alert("LUTCalc does not understand this image type.");
 		}
 	}
 }

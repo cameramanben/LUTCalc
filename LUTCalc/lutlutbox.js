@@ -19,8 +19,8 @@ function LUTLutBox(fieldset, inputs, message) {
 	this.fieldSet = fieldset;
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
-	this.lutOneD = this.createRadioElement('dims', true);
-	this.lutThreeD = this.createRadioElement('dims', false);
+	this.lutOneD = this.createRadioElement('dims', false);
+	this.lutThreeD = this.createRadioElement('dims', true);
 	this.inputs.addInput('d',[this.lutOneD,this.lutThreeD]);	
 	this.lutOne1024 = this.createRadioElement('dimension', true);
 	this.lutOne1024.value = '1024';

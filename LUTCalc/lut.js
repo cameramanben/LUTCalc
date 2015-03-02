@@ -49,7 +49,7 @@ LUTs.prototype.getDetails = function() {
 	if (this.d === 3 || this.C.length === 3) {
 		out.C = [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer];
 	} else {
-		out.C = [this.L];
+		out.C = [this.L.buffer];
 	}
 	return out;
 }

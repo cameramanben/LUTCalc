@@ -155,7 +155,8 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 	}
 }
 LUTGenerateBox.prototype.got1D = function(d) {
-	this.lut.set(d.o, d.start*3);
+	var o = new Float64Array(d.o);
+	this.lut.set(o, d.start*3);
 	this.lT += d.vals;
 	if (this.lT === this.dimension) {
 		this.lT = 0;
@@ -163,7 +164,8 @@ LUTGenerateBox.prototype.got1D = function(d) {
 	}
 }
 LUTGenerateBox.prototype.got3D = function(d) {
-	this.lut.set(d.o, d.vals*d.B*3);
+	var o = new Float64Array(d.o);
+	this.lut.set(o, d.vals*d.B*3);
 	this.lT++;
 	if (this.lT === this.dimension) {
 		this.lT = 0;

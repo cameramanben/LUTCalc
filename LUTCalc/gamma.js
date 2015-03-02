@@ -12,6 +12,7 @@
 function LUTGamma() {
 	this.nul = false;
 	this.gammas = [];
+	this.isTrans = false;
 	this.ver = 0;
 	this.curIn = 0;
 	this.curOut = 0;
@@ -389,6 +390,9 @@ LUTGamma.prototype.setParams = function(params) {
 		this.ad = 1;
 		this.bd = 0;
 	}
+	if (typeof params.isTrans === 'boolean') {
+		this.isTrans = params.isTrans;
+	}
 	this.ver = params.v;
 	out.v = this.ver;
 	return out;
@@ -510,7 +514,8 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 			}
 		}
 	}
-	out.o = o;
+	out.o = o.buffer;
+	out.to = ['o'];
 	return out;
 }
 LUTGamma.prototype.SL3Val = function(p,t,i) {
@@ -532,11 +537,13 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	out.dim = i.dim;
 	out.legIn = i.legIn;
 	out.gamma = i.gamma;
+	out.to = ['o'];
 	return out;
 }
+/*
 LUTGamma.prototype.inCalc = function(p,t,i) {
-	var o = [];
 	var max = i.length;
+	var o = new Float64Array(max);
 	if (this.inL) {
 		for (var j=0; j<max; j++) {
 			o[j] = this.gammas[this.curIn].linFromLegal(i[j]);
@@ -546,8 +553,13 @@ LUTGamma.prototype.inCalc = function(p,t,i) {
 			o[j] = this.gammas[this.curIn].linFromData(i[j]);
 		}
 	}
-	return { p: p, t: t+20, v: this.ver, i: i.slice(0), o: o };
+	var out = { p: p, t: t+20, v: this.ver};
+	out.i = i.buffer;
+	out.o = o.buffer;
+	out.to = ['i','o'];
+	return out;
 }
+*/
 LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 	var dim = i.dim;
 	var d = dim -1;
@@ -564,11 +576,13 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 			}
 		}
 	}
-	var out = { p: p, t: t+20, v: this.ver, o: o.buffer };
+	var out = { p: p, t: t+20, v: this.ver };
 	out.dim = i.dim;
 	out.legIn = i.legIn;
 	out.gamma = i.gamma;
 	out.gamut = i.gamut;
+	out.o = o.buffer;
+	out.to = ['o'];
 	return out;
 }
 LUTGamma.prototype.laCalcInput = function(p,t,i) {
@@ -584,10 +598,12 @@ LUTGamma.prototype.laCalcInput = function(p,t,i) {
 			o[j] = this.gammas[i.gamma].linToData(o[j]);
 		}
 	}
-	var out = { p: p, t: t+20, v: this.ver, o: o.buffer};
+	var out = { p: p, t: t+20, v: this.ver};
 	out.dim = i.dim;
 	out.legIn = i.legIn;
 	out.gamma = i.gamma;
+	out.o = o.buffer;
+	out.to = ['o'];
 	return out;
 }
 LUTGamma.prototype.inCalcRGB = function(p,t,i) {
@@ -659,12 +675,13 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 			}
 		}
 	}
-	out.o = o;
+	out.o = o.buffer;
+	out.to = ['o'];
 	return out;
 }
 LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim };
-	var o = i.o;
+	var o = new Float64Array(i.o);
 	var cMin;
 	if (this.outL && !this.clip && !this.mlut) {
 		cMin = -0.06256109481916;
@@ -711,7 +728,8 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 			}
 		}
 	}
-	out.o = o;
+	out.o = o.buffer;
+	out.to = ['o'];
 	return out;
 }
 LUTGamma.prototype.preview = function(p,t,i) {
@@ -756,6 +774,25 @@ LUTGamma.prototype.preview = function(p,t,i) {
 		}
 	}
 	out.o = o.buffer;
+	out.to = ['o'];
+	return out;
+}
+LUTGamma.prototype.previewLin = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver, gamma: i.gamma, gamut: i.gamut, legal: i.legal, i: i.i };
+	var input = new Float64Array(i.i);
+	var max = input.length;
+	var o = new Float64Array(max);
+	if (i.legal) {
+		for (var j=0; j<max; j++) {
+			o[j] = this.gammas[i.gamma].linFromLegal(input[j]);
+		}
+	} else {
+		for (var j=0; j<max; j++) {
+			o[j] = this.gammas[i.gamma].linFromData(input[j]);
+		}
+	}
+	out.o = o.buffer;
+	out.to = ['i','o'];
 	return out;
 }
 LUTGamma.prototype.getLists = function(p,t) {
@@ -1218,39 +1255,55 @@ LUTGammaNull.prototype.linFromLegal = function(input) {
 	return input;
 }
 // Web worker code
+function sendMessage(d) {
+	if (gammas.isTrans && typeof d.to !== 'undefined') {
+		var max = d.to.length;
+		var objArray = [];
+		for (var j=0; j < max; j++) {
+			objArray.push(d[d.to[j]]);
+		}
+		postMessage(d,objArray);
+	} else {
+		postMessage(d);
+	}
+}
 importScripts('lut.js');
 var gammas = new LUTGamma();
+var trans = false;
 addEventListener('message', function(e) {
 	var d = e.data;
-	if (d.t !== 0 && d.t < 20 && d.v !== gammas.ver) {
+	if (typeof d.t === 'undefined') {
+	} else if (d.t !== 0 && d.t < 20 && d.v !== gammas.ver) {
 		postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
 	} else {
 		switch (d.t) {
-			case 0:	postMessage(gammas.setParams(d.d));
+			case 0:	sendMessage(gammas.setParams(d.d));
 					break;
-			case 1: postMessage(gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
+			case 1: sendMessage(gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
 					break;
-			case 2: postMessage(gammas.laCalcRGB(d.p,d.t,d.d));
+			case 2: sendMessage(gammas.laCalcRGB(d.p,d.t,d.d));
 					break;
-			case 3: postMessage(gammas.inCalcRGB(d.p,d.t,d.d)); 
+			case 3: sendMessage(gammas.inCalcRGB(d.p,d.t,d.d)); 
 					break;
-			case 4: postMessage(gammas.outCalcRGB(d.p,d.t,d.d)); 
+			case 4: sendMessage(gammas.outCalcRGB(d.p,d.t,d.d)); 
 					break;
-			case 5: postMessage(gammas.getLists(d.p,d.t)); 
+			case 5: sendMessage(gammas.getLists(d.p,d.t)); 
 					break;
-			case 6: postMessage(gammas.setLA(d.p,d.t,d.d)); 
+			case 6: sendMessage(gammas.setLA(d.p,d.t,d.d)); 
 					break;
-			case 7: postMessage(gammas.setLATitle(d.p,d.t,d.d)); 
+			case 7: sendMessage(gammas.setLATitle(d.p,d.t,d.d)); 
 					break;
-			case 8: postMessage(gammas.SL3Val(d.p,d.t,d.d)); 
+			case 8: sendMessage(gammas.SL3Val(d.p,d.t,d.d)); 
 					break;
-			case 9: postMessage(gammas.laCalcInput(d.p,d.t,d.d)); 
+			case 9: sendMessage(gammas.laCalcInput(d.p,d.t,d.d)); 
 					break;
-			case 10:postMessage(gammas.ioNames(d.p,d.t));
+			case 10:sendMessage(gammas.ioNames(d.p,d.t));
 					break;
-			case 11:postMessage(gammas.chartVals(d.p,d.t,d.d));
+			case 11:sendMessage(gammas.chartVals(d.p,d.t,d.d));
 					break;
-			case 12:postMessage(gammas.preview(d.p,d.t,d.d));
+			case 12:sendMessage(gammas.preview(d.p,d.t,d.d));
+					break;
+			case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
 					break;
 		}
 	}
