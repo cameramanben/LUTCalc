@@ -278,15 +278,17 @@ LUTPreview.prototype.gotLine = function(data) {
 	}
 }
 LUTPreview.prototype.refresh = function() {
-	this.changed = false;
-	var max = Math.max(this.message.getGammaThreads(),this.message.getGamutThreads());
-	for (var j=0; j<max; j++) {
-		this.line = j;
-		var input = {line: this.line, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']};
-		if (this.inputs.d[0].checked) {
-			this.message.gaTx(this.p,12,input);
-		} else {
-			this.message.gtTx(this.p,12,input);
+	if (typeof this.pre !== 'undefined') {
+		this.changed = false;
+		var max = Math.max(this.message.getGammaThreads(),this.message.getGamutThreads());
+		for (var j=0; j<max; j++) {
+			this.line = j;
+			var input = {line: this.line, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']};
+			if (this.inputs.d[0].checked) {
+				this.message.gaTx(this.p,12,input);
+			} else {
+				this.message.gtTx(this.p,12,input);
+			}
 		}
 	}
 }
