@@ -44,6 +44,9 @@ LUTMessage.prototype.getGammaThreads = function() {
 LUTMessage.prototype.getGamutThreads = function() {
 	return this.gtT;
 }
+LUTMessage.prototype.getWorker = function() {
+	return this.gas[0];
+}
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
 	var max = this.gaT;
@@ -96,7 +99,8 @@ LUTMessage.prototype.gaSetParams = function() {
 		camType: parseInt(this.inputs.cameraType.value),
 		stopShift: parseFloat(this.inputs.stopShift.value),
 		clip: this.inputs.clipCheck.checked,
-		mlut: this.inputs.mlutCheck.checked
+		mlut: this.inputs.mlutCheck.checked,
+		isTrans: this.inputs.isTrans
 	};
 	if (this.inputs.tweaks.checked) {
 		d.tweaks = true;
@@ -141,14 +145,39 @@ LUTMessage.prototype.gaSetParams = function() {
 	}
 }
 LUTMessage.prototype.gaTx = function(p,t,d) { // parent (sender), type, data
-// console.log(d);
-	this.gas[this.gaN].postMessage({p: p, t: t, v: this.gaV, d: d});
-	this.gaN = (this.gaN + 1) % this.gaT;
+	if (typeof p !== 'undefined') {
+		if (this.inputs.isTrans && d !== null && typeof d.to !== 'undefined') {
+			var max = d.to.length;
+			var objArray = [];
+			for (var j=0; j < max; j++) {
+				objArray.push(d[d.to[j]]);
+			}
+			this.gas[this.gaN].postMessage({p: p, t: t, v: this.gaV, d: d},objArray);
+			this.gaN = (this.gaN + 1) % this.gaT;
+		} else {
+			this.gas[this.gaN].postMessage({p: p, t: t, v: this.gaV, d: d});
+			this.gaN = (this.gaN + 1) % this.gaT;
+		}
+	}
 }
 LUTMessage.prototype.gaTxAll = function(p,t,d) { // parent (sender), type, data
-	var max = this.gas.length;
-	for (var j=0; j<max; j++) {
-		this.gas[j].postMessage({p: p, t: t, v: this.gaV, d: d});
+	if (typeof p !== 'undefined') {
+		if (this.inputs.isTrans && d !== null && typeof d.to !== 'undefined') {
+			var max = d.to.length;
+			var objArray = [];
+			for (var j=0; j < max; j++) {
+				objArray.push(d[d.to[j]]);
+			}
+			max = this.gas.length;
+			for (var j=0; j<max; j++) {
+				this.gas[j].postMessage({p: p, t: t, v: this.gaV, d: d}, objArray);
+			}
+		} else {
+			var max = this.gas.length;
+			for (var j=0; j<max; j++) {
+				this.gas[j].postMessage({p: p, t: t, v: this.gaV, d: d});
+			}
+		}
 	}
 }
 LUTMessage.prototype.gaRx = function(d) {
@@ -203,6 +232,9 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					break;
 			case 32: // Get 8-bit corrected values for preview image
 					this.ui[d.p].gotLine(d);
+					break;
+			case 34: // Get linear / S-Gamut3.cine value for preview image
+					this.gtTx(d.p,14,d)
 					break;
 		}
 	} else {
@@ -306,7 +338,8 @@ LUTMessage.prototype.gtSetParams = function() {
 		hgLowStop: parseFloat(this.inputs.tweakHGLow.value),
 		hgHighStop: parseFloat(this.inputs.tweakHGHigh.value),
 		baseTemp: parseInt(this.inputs.tweakTempBase.value),
-		newTemp: parseInt(this.inputs.tweakTempNew.value)
+		newTemp: parseInt(this.inputs.tweakTempNew.value),
+		isTrans: this.inputs.isTrans
 	};
 	if (this.inputs.tweaks.checked) {
 		d.tweaks = true;
@@ -335,13 +368,39 @@ LUTMessage.prototype.gtSetParams = function() {
 	}
 }
 LUTMessage.prototype.gtTx = function(p,t,d) { // parent (sender), type, data
-	this.gts[this.gtN].postMessage({p: p, t: t, v: this.gtV, d: d});
-	this.gtN = (this.gtN + 1) % this.gtT;
+	if (typeof p !== 'undefined') {
+		if (this.inputs.isTrans && d !== null && typeof d.to !== 'undefined') {
+			var max = d.to.length;
+			var objArray = [];
+			for (var j=0; j < max; j++) {
+				objArray.push(d[d.to[j]]);
+			}
+			this.gts[this.gtN].postMessage({p: p, t: t, v: this.gtV, d: d}, objArray);
+			this.gtN = (this.gtN + 1) % this.gtT;
+		} else {
+			this.gts[this.gtN].postMessage({p: p, t: t, v: this.gtV, d: d});
+			this.gtN = (this.gtN + 1) % this.gtT;
+		}
+	}
 }
 LUTMessage.prototype.gtTxAll = function(p,t,d) { // parent (sender), type, data
-	var max = this.gts.length;
-	for (var j=0; j<max; j++) {
-		this.gts[j].postMessage({p: p, t: t, v: this.gtV, d: d});
+	if (typeof p !== 'undefined') {
+		if (this.inputs.isTrans && d !== null && typeof d.to !== 'undefined') {
+			var max = d.to.length;
+			var objArray = [];
+			for (var j=0; j < max; j++) {
+				objArray.push(d[d.to[j]]);
+			}
+			max = this.gts.length;
+			for (var j=0; j<max; j++) {
+				this.gts[j].postMessage({p: p, t: t, v: this.gtV, d: d}, objArray);
+			}
+		} else {
+			var max = this.gts.length;
+			for (var j=0; j<max; j++) {
+				this.gts[j].postMessage({p: p, t: t, v: this.gtV, d: d});
+			}
+		}
 	}
 }
 LUTMessage.prototype.gtRx = function(d) {
@@ -386,6 +445,9 @@ console.log('Resending - ' + d.t);
 					break;
 			case 32: // Get preview colour correction
 					this.gaTx(d.p,12,d)
+					break;
+			case 34: // Get linear / S-Gamut3.cine value for preview image
+					this.ui[d.p].preppedPreview(d.o);
 					break;
 		}
 	} else {

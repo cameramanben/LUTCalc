@@ -149,6 +149,21 @@ body {text-align:center;margin: 0px auto;}
 	border-radius:0.25em;
 /*	-moz-border-radius:5px; */
 }
+.popup	{
+	position: relative;
+	left: -15em;	
+	box-shadow:0.05em 0.25em 2em #808080;
+	-webkit-box-shadow:0.05em 0.25em 2em #808080;
+/*	-moz-box-shadow:0.05em 0.05em 0.2em #808080; */
+	padding: 0.5em 1em 0.5em 1em;
+	background-color: #f2f2f2;
+	color: #333333;
+	line-height: 1.8;
+	text-align: center;
+	width: 30em; margin: 0px auto; margin-top: 0.5em;margin-bottom:0.5em;
+}
+.popupholder { position:fixed; top: 10em; left: 50%;
+}	
 #javascriptwarning{display: block;}
 .isoinput {width:5em;line-height:0.8;}
 .shiftinput {width:5em;line-height:0.8;}

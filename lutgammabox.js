@@ -131,7 +131,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 }
 // Event Responses
 LUTGammaBox.prototype.changeGammaIn = function() {
-	if (this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].value == '9999') {
+	if (this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].value === '9999') {
 		this.inLin.style.display = 'block';
 	} else {
 		this.inLin.style.display = 'none';

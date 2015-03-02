@@ -725,7 +725,7 @@ LUTTweaksBox.prototype.lutAnalystGetFile = function() {
 		validExts = ['lacube','labin'];
 	}
 	if (this.inputs.isApp || this.lutAnalystFileInput.value !== '') {
-		this.file.loadFromInput(this.lutAnalystFileInput, validExts, 'laFileData', this, 0);
+		this.file.loadLUTFromInput(this.lutAnalystFileInput, validExts, 'laFileData', this, 0);
 	}
 }
 LUTTweaksBox.prototype.lutAnalystGotFile = function() {
