@@ -42,7 +42,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 }
 LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
-		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.index, next);
+		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.p, next);
 	} else {
 		var file = fileInput.files[0];
 		var valid = false;
@@ -104,7 +104,7 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination
 }
 LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
-		window.lutCalcApp.loadImg(extensions.toString(), destination, parentObject.index, next);
+		window.lutCalcApp.loadImg(extensions.toString(), destination, parentObject.p, next);
 	} else {
 		var file = fileInput.files[0];
 		var valid = false;

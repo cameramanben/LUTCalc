@@ -299,7 +299,7 @@ LUTPreview.prototype.preGetImg = function() {
 	}
 }
 LUTPreview.prototype.preGotImg = function() {
-	var w = this.inputs.preFileData.w;
+    var w = this.inputs.preFileData.w;
 	var h = this.inputs.preFileData.h;
 	var wS = 960;
 	var hS = h * wS / w;
@@ -335,7 +335,7 @@ LUTPreview.prototype.preppedPreview = function(buff) {
 }
 LUTPreview.prototype.followUp = function(d) {
 	switch (d) {
-		case 0: this.preGotImg();
+        case 0: this.preGotImg();
 			break;
 	}
 }
