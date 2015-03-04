@@ -11,7 +11,6 @@
 */
 function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.box = document.createElement('fieldset');
-	this.index = 7;
 	this.message = message;
 	this.p = 3;
 	this.message.addUI(this.p,this);
@@ -866,9 +865,9 @@ LUTTweaksBox.prototype.lutAnalystDone = function() {
 	this.lutAnalystToggleCheck();
 	this.lutAnalystDoButton.value = 'Re-Analyse';
 	this.lutAnalystStoreButton.style.display = 'inline';
-	if (!this.inputs.isApp) { // remove option in Mac app until I can figure out saving binaries
-		this.lutAnalystStoreBinButton.style.display = 'inline';
-	}
+    if (!this.inputs.isApp) {
+        this.lutAnalystStoreBinButton.style.display = 'inline';
+    }
 }
 LUTTweaksBox.prototype.lutAnalystStore = function(cube) {
 	if (cube) {

@@ -58,7 +58,7 @@ a {			text-decoration: none;
 			background-color: inherit; color: #0000ff; }
 /* Element font choices */
 body {
-	font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+	font-family: "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
 }
 pre, code, kbd, samp {
 	font-family: monospace, sans-serif;
