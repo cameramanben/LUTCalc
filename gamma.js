@@ -888,6 +888,16 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	}	
 	return out;
 }
+LUTGamma.prototype.getPrimaries = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver };
+	var i = new Float64Array(i.o);
+	var o = new Float64Array(18);
+	for (var j=0; j<18; j++) {
+		o[j] = this.gammas[this.curOut].linToLegal(i[j]);
+	}
+	out.o = o.buffer;
+	return out;
+}
 // Gamma calculation objects
 function LUTGammaLog(name,params) {
 	this.name = name;
@@ -1304,6 +1314,8 @@ addEventListener('message', function(e) {
 			case 12:sendMessage(gammas.preview(d.p,d.t,d.d));
 					break;
 			case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
+					break;
+			case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
 					break;
 		}
 	}

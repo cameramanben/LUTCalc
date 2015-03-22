@@ -234,7 +234,10 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					this.ui[d.p].gotLine(d);
 					break;
 			case 34: // Get linear / S-Gamut3.cine value for preview image
-					this.gtTx(d.p,14,d)
+					this.gtTx(d.p,14,d);
+					break;
+			case 35: // Get primaries of current colour space for preview
+					this.ui[d.p].updatePrimaries(d.o);
 					break;
 		}
 	} else {
@@ -262,6 +265,7 @@ LUTMessage.prototype.paramsSet = function(d) {
 	this.gaU++;
 	if (this.gaU === this.gaT) {
 		this.gaU = 0;
+		this.gtTx(8,15,d);
 		this.ui[3].blackHigh(d.blackDef,d.blackLevel,d.highRef,d.highDef,d.highMap,d.high709,d.changedGamma);
 		this.ui[6].updateGamma();
 		this.ui[8].isChanged(d.eiMult);
@@ -339,6 +343,8 @@ LUTMessage.prototype.gtSetParams = function() {
 		hgHighStop: parseFloat(this.inputs.tweakHGHigh.value),
 		baseTemp: parseInt(this.inputs.tweakTempBase.value),
 		newTemp: parseInt(this.inputs.tweakTempNew.value),
+		greenTemp: parseInt(this.inputs.tweakGreenTemp.value),
+		greenMag: parseFloat(this.inputs.tweakGreenPMSlider.value),
 		isTrans: this.inputs.isTrans
 	};
 	if (this.inputs.tweaks.checked) {
@@ -361,6 +367,12 @@ LUTMessage.prototype.gtSetParams = function() {
 		d.CAT = parseInt(this.inputs.tweakTempCATSelect.options[this.inputs.tweakTempCATSelect.selectedIndex].value);
 	} else {
 		d.doTemp = false;
+	}
+	if (this.inputs.tweakGreenCheck.checked) {
+		d.doGreen = true;
+		d.greenCAT = parseInt(this.inputs.tweakGreenCATSelect.options[this.inputs.tweakGreenCATSelect.selectedIndex].value);
+	} else {
+		d.doGreen = false;
 	}
 	var max = this.gts.length;
 	for (var i=0; i<max; i++) {
@@ -418,6 +430,7 @@ console.log('Resending - ' + d.t);
 	} else if (d.v === this.gtV) {
 		switch(d.t) {
 			case 20: // Set params
+					this.gtTx(8,15,d);
 					this.ui[8].isChanged();
 					break;
 			case 21: // RGB input to output
@@ -441,13 +454,17 @@ console.log('Resending - ' + d.t);
 					this.gotIOGamutNames(d);
 					break;
 			case 31: // Get Chromatic Adaptation Transform options
-					this.ui[3].gotCATs(d.o);
+					this.ui[3].gotCATs(d.o[0]);
+					this.ui[3].gotGreenCATs(d.o[1]);
 					break;
 			case 32: // Get preview colour correction
 					this.gaTx(d.p,12,d)
 					break;
 			case 34: // Get linear / S-Gamut3.cine value for preview image
 					this.ui[d.p].preppedPreview(d.o);
+					break;
+			case 35: // Get primaries of current colour space for preview
+					this.gaTx(d.p,15,d)
 					break;
 		}
 	} else {

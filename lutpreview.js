@@ -23,6 +23,8 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.inputs.addInput('preButton',this.preButton);
 	this.drButton = document.createElement('input');
 	this.inputs.addInput('drButton',this.drButton);
+	this.vecButton = document.createElement('input');
+	this.inputs.addInput('vecButton',this.vecButton);
 	this.fileButton = document.createElement('input');
 	this.inputs.addInput('preFileButton',this.fileButton);
 	this.fileInput = document.createElement('input');
@@ -35,17 +37,54 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.eiMult = 1;
 	this.show = false;
 	this.changed = false;
-	this.line=0;
+	this.line = 0;
+	this.vscope = false;
+	this.vscale = 425;
+	this.primaries();
 	this.buildBox();
 	fieldset.appendChild(this.box);
 	fieldset.style.width = '48em';	
 	fieldset.style.display = 'none';
+}
+LUTPreview.prototype.primaries = function() {
+	this.pName = ['Yl','Cy','G','Mg','R','B'];
+	this.p75x = [-0.375,0.0859375,-0.2890625,0.2890625,-0.0859375,0.375];
+	this.p75y = [0.034598214,-0.375,-0.340401786,0.340401786,0.375,-0.034598214];
+	this.p100x = [-0.5,0.114955357,-0.385416667,0.385416667,-0.114955357,0.5];
+	this.p100y = [0.045758929,-0.5,-0.453869048,0.453869048,0.5,-0.045758929];
+	this.pCurx = [-0.375,0.0859375,-0.2890625,0.2890625,-0.0859375,0.375];
+	this.pCury = [0.034598214,-0.375,-0.340401786,0.340401786,0.375,-0.034598214];
+	this.pTextx = [];
+	this.pTexty = [];
+	for (var j=0; j<6; j++) {
+		this.p75x[j] = Math.round((this.p75x[j]*this.vscale)+480);
+		this.p100x[j] = Math.round((this.p100x[j]*this.vscale)+480);
+		this.pCurx[j] = Math.round((this.pCurx[j]*this.vscale)+480);
+		this.p75y[j] = Math.round(270-(this.p75y[j]*this.vscale));
+		this.p100y[j] = Math.round(270-(this.p100y[j]*this.vscale));
+		this.pCury[j] = Math.round(270-(this.pCury[j]*this.vscale));
+		this.pTextx.push(0.5*(this.p100x[j]+this.p75x[j]));
+		this.pTexty.push(0.5*(this.p100y[j]+this.p75y[j]));
+	}
+}
+LUTPreview.prototype.updatePrimaries = function(data) {
+	var d = new Float64Array(data)
+	var Y,Pr,Pb;
+	for (var j=0; j<18; j += 3) {
+		Y = (0.2126*d[j]) + ((1-0.2126-0.0722)*d[j+1]) + (0.0722*d[j+2]);
+		Pb = 0.5*(d[j+2]-Y)/(1-0.0722);
+		Pr = 0.5*(d[ j ]-Y)/(1-0.2126);
+		this.pCurx[j/3] = Math.round((Pb*this.vscale)+480);
+		this.pCury[j/3] = Math.round(270-(Pr*this.vscale));
+	}
 }
 LUTPreview.prototype.buildBox = function() {
 	this.preButton.setAttribute('type','button');
 	this.preButton.value = 'Preview';
 	this.drButton.setAttribute('type','button');
 	this.drButton.value = 'To Low Contrast Image';
+	this.vecButton.setAttribute('type','button');
+	this.vecButton.value = 'Vectorscope';
 	this.fileButton.setAttribute('type','button');
 	this.fileInput.setAttribute('type','file');
 	this.fileInput.style.display = 'none';
@@ -147,8 +186,10 @@ LUTPreview.prototype.setUIs = function(generateBox,lutbox) {
 	this.generateButton = generateBox.button;
 	generateBox.box.insertBefore(this.preButton,generateBox.button);
 	generateBox.box.insertBefore(this.drButton,generateBox.button);
+	generateBox.box.insertBefore(this.vecButton,generateBox.button);
 	generateBox.box.insertBefore(this.fileButton,generateBox.button);
 	this.drButton.style.display = 'none';
+	this.vecButton.style.display = 'none';
 }
 LUTPreview.prototype.toggle = function() {
 	if (this.show) {
@@ -159,6 +200,7 @@ LUTPreview.prototype.toggle = function() {
 		this.fileButton.style.display = 'none';
 		this.generateButton.style.display = 'inline';
 		this.drButton.style.display = 'none';
+		this.vecButton.style.display = 'none';
 		this.show = false;
 		this.preButton.value = 'Preview';
 	} else {
@@ -169,6 +211,7 @@ LUTPreview.prototype.toggle = function() {
 		this.fileButton.style.display = 'inline';
 		this.generateButton.style.display = 'none';
 		this.drButton.style.display = 'inline';
+		this.vecButton.style.display = 'inline';
 		this.show = true;
 		this.preButton.value = 'Hide Preview';
 		this.refresh();
@@ -185,6 +228,17 @@ LUTPreview.prototype.toggleDefault = function() {
 		this.drButton.value = 'To Low Contrast Image';
 		this.hdrDefault = true;
 		this.loadDefault(true);
+	}
+}
+LUTPreview.prototype.toggleVectorscope = function() {
+	if (this.vscope) {
+		this.vecButton.value = 'Vectorscope';
+		this.vscope = false;
+		this.refresh();
+	} else {
+		this.vecButton.value = 'Image';
+		this.vscope = true;
+		this.refresh();
 	}
 }
 LUTPreview.prototype.loadDefault = function(hdr) {
@@ -260,9 +314,54 @@ LUTPreview.prototype.isChanged = function(eiMult) {
 }
 LUTPreview.prototype.gotLine = function(data) {
 	var raster = new Uint8Array(data.o);
-	this.pData.data.set(raster,data.line*this.width*4);
+	if (!this.vscope) {
+		this.pData.data.set(raster,data.line*this.width*4);
+	} else {
+		var l = raster.length;
+		var Kb = 0.0722;
+		var Kr = 0.2126;
+		var Y,Pb, Pr;
+		var s = this.vscale;
+		for (var j=0; j<l; j += 4) {
+			r = parseFloat(raster[ j ])/255;
+			g = parseFloat(raster[j+1])/255;
+			b = parseFloat(raster[j+2])/255;
+			Y = (Kr*r) + ((1-Kr-Kb)*g) + (Kb*b);
+			Pb = 0.5*(b-Y)/(1-Kb);
+			Pr = 0.5*(r-Y)/(1-Kr);
+        	p = (
+        			((480 + Math.round(s * Pb))) +
+        			((270 - Math.round(s * Pr))*960)
+        		) * 4;
+
+			this.pData.data[ p ] = Math.max(64,raster[ j ]);
+			this.pData.data[p+1] = Math.max(64,raster[j+1]);
+			this.pData.data[p+2] = Math.max(64,raster[j+2]);
+			this.pData.data[p+3] = 255;
+
+			this.pData.data[p+4] = Math.max(64,raster[ j ]);
+			this.pData.data[p+5] = Math.max(64,raster[j+1]);
+			this.pData.data[p+6] = Math.max(64,raster[j+2]);
+			this.pData.data[p+7] = 255;
+
+			this.pData.data[p+3840] = Math.max(64,raster[ j ]);
+			this.pData.data[p+3841] = Math.max(64,raster[j+1]);
+			this.pData.data[p+3842] = Math.max(64,raster[j+2]);
+			this.pData.data[p+3843] = 255;
+
+			this.pData.data[p+3844] = Math.max(64,raster[ j ]);
+			this.pData.data[p+3845] = Math.max(64,raster[j+1]);
+			this.pData.data[p+3846] = Math.max(64,raster[j+2]);
+			this.pData.data[p+3847] = 255;
+
+		}
+	}
+
 	if (this.line === this.height-1) {
 		this.pCtx.putImageData(this.pData,0,0);
+		if (this.vscope) {
+			this.drawVectorScope();
+		}
 		this.line = 0;
 		if (this.show && this.changed) {
 			this.refresh();
@@ -280,6 +379,9 @@ LUTPreview.prototype.gotLine = function(data) {
 LUTPreview.prototype.refresh = function() {
 	if (typeof this.pre !== 'undefined') {
 		this.changed = false;
+		if (this.vscope) {
+			this.clearVectorScope();
+		}
 		var max = Math.max(this.message.getGammaThreads(),this.message.getGamutThreads());
 		for (var j=0; j<max; j++) {
 			this.line = j;
@@ -290,6 +392,49 @@ LUTPreview.prototype.refresh = function() {
 				this.message.gtTx(this.p,12,input);
 			}
 		}
+	}
+}
+LUTPreview.prototype.clearVectorScope = function() {
+	var max = 960*540*4;
+	for (var j=0; j<max; j += 4) {
+		this.pData.data[ j ] = 0;
+		this.pData.data[j+1] = 0;
+		this.pData.data[j+2] = 0;
+		this.pData.data[j+3] = 255;
+	}
+}
+LUTPreview.prototype.drawVectorScope = function() {
+	var s = this.vscale;
+	this.pCtx.beginPath();
+	this.pCtx.strokeStyle = '#307030';
+	this.pCtx.lineWidth = 3;
+	this.pCtx.font='20px "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	this.pCtx.textAlign = 'center';
+	this.pCtx.textBaseline = 'middle';
+	this.pCtx.arc(480,270,(s/2)+60,0,2*Math.PI);
+	this.pCtx.stroke();
+	this.pCtx.beginPath();
+	this.pCtx.lineWidth = 1.5;
+	this.pCtx.moveTo(460,270);
+	this.pCtx.lineTo(500,270);
+	this.pCtx.moveTo(480,250);
+	this.pCtx.lineTo(480,290);
+	for (var j=0; j<6; j++) {
+		this.pCtx.moveTo(this.p75x[j]+10,this.p75y[j]);
+		this.pCtx.arc(this.p75x[j],this.p75y[j],10,0,2*Math.PI);
+		this.pCtx.moveTo(this.p100x[j]+10,this.p100y[j]);
+		this.pCtx.arc(this.p100x[j],this.p100y[j],10,0,2*Math.PI);
+		this.pCtx.strokeText(this.pName[j],this.pTextx[j],this.pTexty[j]);
+	}
+	this.pCtx.stroke();
+	var colour = ['#c0c000','#00c0c0','#00c000','#c000c0','#c00000','#0000c0'];
+	for (var j=0; j<6; j++) {
+		this.pCtx.beginPath();
+		this.pCtx.lineWidth = 2;
+		this.pCtx.strokeStyle = colour[j];
+		this.pCtx.moveTo(this.pCurx[j]+10,this.pCury[j]);
+		this.pCtx.arc(this.pCurx[j],this.pCury[j],10,0,2*Math.PI);
+		this.pCtx.stroke();
 	}
 }
 LUTPreview.prototype.preGetImg = function() {

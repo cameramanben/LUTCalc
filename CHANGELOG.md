@@ -3,11 +3,14 @@ LUTCalc Changelog
 
 v1.9 Beta 3
 -----------
-Added Google Chrome packaged app code.
+* Added green correction tool.
+* Added Vectorscope option to previews. Includes Rec709 75% and 100% boxes, plus a set of Rec709 75% boxes mapped to the current colour space.
+* Adjusted test image primary boxes to be Rec709 75% and 100% colours.
 
 v1.9 Beta 2
 -----------
-Fixed missing FileSaver.js and Blob.js files
+* Fixed missing FileSaver.js and Blob.js files.
+* Added Google Chrome packaged app code.
 
 v1.9 Beta 1
 -----------
