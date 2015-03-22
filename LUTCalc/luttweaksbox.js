@@ -78,6 +78,22 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.tempCATSelect = document.createElement('select');
 	this.inputs.addInput('tweakTempCATSelect',this.tempCATSelect);
 
+	this.greenBox = document.createElement('div');
+	this.greenWindow = document.createElement('div');
+	this.greenCheck = document.createElement('input');
+	this.inputs.addInput('tweakGreenCheck',this.greenCheck);
+	this.greenPMSlider = document.createElement('input');
+	this.greenPMSliderLabel = document.createElement('label');
+	this.inputs.addInput('tweakGreenPMSlider',this.greenPMSlider);
+	this.greenLampTempSelect = document.createElement('select');
+	this.inputs.addInput('tweakGreenLampTempSelect',this.greenLampTempSelect);
+	this.greenAdvancedCheck = document.createElement('input');
+	this.inputs.addInput('tweakGreenAdvancedCheck',this.greenAdvancedCheck);
+	this.greenTemp = document.createElement('input');
+	this.inputs.addInput('tweakGreenTemp',this.greenTemp);
+	this.greenCATSelect = document.createElement('select');
+	this.inputs.addInput('tweakGreenCATSelect',this.greenCATSelect);
+
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
@@ -136,6 +152,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	tweakHolder.appendChild(this.highLevelBox);
 	this.tempShift();
 	tweakHolder.appendChild(this.tempBox);
+	this.greenShift();
+	tweakHolder.appendChild(this.greenBox);
 	this.lutAnalyst();
 	tweakHolder.appendChild(this.lutAnalystBox);
 	this.box.appendChild(tweakHolder);
@@ -162,11 +180,14 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		if (this.inputs.d[1].checked) {
 			this.highGamutBox.style.display = 'block';
 			this.tempBox.style.display = 'block';
+			this.greenBox.style.display = 'block';
 		} else {
 			this.highGamutBox.style.display = 'none';
 			this.highGamutCheck.checked = false;
 			this.tempBox.style.display = 'none';
+			this.greenBox.style.display = 'none';
 			this.tempCheck.checked = false;
+			this.greenCheck.checked = false;
 		}
 		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 		if (curOut === 9999) {
@@ -187,11 +208,13 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		this.blackLevelBox.style.display = 'none';
 		this.highLevelBox.style.display = 'none';
 		this.tempBox.style.display = 'none';
+		this.greenBox.style.display = 'none';
 		this.lutAnalystBox.style.display = 'none';
 		this.highGamutCheck.checked = false;
 		this.blackLevelCheck.checked = false;
 		this.highLevelCheck.checked = false;
 		this.tempCheck.checked = false;
+		this.greenCheck.checked = false;
 		this.lutAnalystCheck.checked = false;
 	}
 	if (this.highGamutCheck.checked) {
@@ -483,32 +506,34 @@ LUTTweaksBox.prototype.tempShift = function() {
 	this.tempCTSlider.setAttribute('type','range');
 	this.tempCTSlider.setAttribute('min',-2);
 	this.tempCTSlider.setAttribute('max',2);
-	this.tempCTSlider.setAttribute('value',0);
 	this.tempCTSlider.setAttribute('step',0.125);
+	this.tempCTSlider.setAttribute('value',0);
 	this.tempCTSliderLabel.innerHTML = 'Clear';
 	this.tempWindow.appendChild(this.tempCTSlider);
 	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('CTB')));
 	this.tempWindow.appendChild(document.createElement('br'));
 	this.tempWindow.appendChild(this.tempCTSliderLabel);
 	this.tempWindow.appendChild(document.createElement('br'));
+
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera White Balance')));
+	this.tempBase.setAttribute('type','number');
+	this.tempBase.setAttribute('class','kelvininput');
+	this.tempBase.value = '5500';
+	this.tempWindow.appendChild(this.tempBase);
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.tempWindow.appendChild(document.createElement('br'));
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('New White Balance')));
+	this.tempNew.setAttribute('type','number');
+	this.tempNew.setAttribute('class','kelvininput');
+	this.tempNew.value = '5500';
+	this.tempWindow.appendChild(this.tempNew);
+	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.tempWindow.appendChild(document.createElement('br'));
+
 	this.tempWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
 	this.tempAdvancedCheck.setAttribute('type','checkbox');
 	this.tempWindow.appendChild(this.tempAdvancedCheck);
 	this.tempAdvanced = document.createElement('div');
-	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Base Colour Temperature')));
-	this.tempBase.setAttribute('type','number');
-	this.tempBase.setAttribute('class','kelvininput');
-	this.tempBase.value = '5500';
-	this.tempAdvanced.appendChild(this.tempBase);
-	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
-	this.tempAdvanced.appendChild(document.createElement('br'));
-	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('New White Balance')));
-	this.tempNew.setAttribute('type','number');
-	this.tempNew.setAttribute('class','kelvininput');
-	this.tempNew.value = '5500';
-	this.tempAdvanced.appendChild(this.tempNew);
-	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
-	this.tempAdvanced.appendChild(document.createElement('br'));
 	this.tempAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Chromatic Adaptation Model')));
 	this.tempAdvanced.appendChild(this.tempCATSelect);
 	this.tempWindow.appendChild(this.tempAdvanced);
@@ -543,7 +568,7 @@ LUTTweaksBox.prototype.gotCATs = function(cats) {
 }
 LUTTweaksBox.prototype.updateTempSlider = function() {
 	var val = parseFloat(this.tempCTSlider.value);
-	var ratio = Math.exp(val*0.5415972824);
+	var ratio = Math.exp(-val*0.5415972824);
 	var base = Math.round(parseFloat(this.tempBase.value));
 	var temp = base*ratio;
 	if (temp < 1800) {
@@ -582,7 +607,7 @@ LUTTweaksBox.prototype.changeBaseTemp = function() {
 	}
 	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.5415972824;
 	var valEight = Math.round(8*val)/8;
-	val = +val.toFixed(3);
+	val = -val.toFixed(3);
 	this.tempCTSlider.value = val.toString();
 	if (val<0) {
 		this.tempCTSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
@@ -604,7 +629,7 @@ LUTTweaksBox.prototype.changeNewTemp = function() {
 	}
 	var val = Math.log(parseFloat(this.tempNew.value)/parseFloat(this.tempBase.value))/0.5415972824;
 	var valEight = Math.round(8*val)/8;
-	val = +val.toFixed(3);
+	val = -val.toFixed(3);
 	this.tempCTSlider.value = val.toString();
 	if (val<0) {
 		this.tempCTSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
@@ -613,6 +638,152 @@ LUTTweaksBox.prototype.changeNewTemp = function() {
 	} else {
 		this.tempCTSliderLabel.innerHTML = val.toString() + ' CTB';
 	}
+}
+//
+// *** Green Spike Tweak ***
+//		Build UI
+LUTTweaksBox.prototype.greenShift = function() {
+	this.greenBox.setAttribute('class','graybox');
+	this.greenBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Fluori / LED Correction')));
+	this.greenCheck.setAttribute('type','checkbox');
+	this.greenBox.appendChild(this.greenCheck);
+	this.greenWindow.appendChild(document.createElement('br'));
+	this.greenWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Magenta')));
+	this.greenPMSlider.setAttribute('type','range');
+	this.greenPMSlider.setAttribute('min',-1.5);
+	this.greenPMSlider.setAttribute('max',1.5);
+	this.greenPMSlider.setAttribute('step',0.05);
+	this.greenPMSlider.setAttribute('value',0);
+	this.greenPMSliderLabel.innerHTML = 'Clear';
+	this.greenWindow.appendChild(this.greenPMSlider);
+	this.greenWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Green')));
+	this.greenWindow.appendChild(document.createElement('br'));
+	this.greenWindow.appendChild(this.greenPMSliderLabel);
+	this.greenWindow.appendChild(document.createElement('br'));
+	this.greenWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
+	this.greenAdvancedCheck.setAttribute('type','checkbox');
+	this.greenWindow.appendChild(this.greenAdvancedCheck);
+	this.greenAdvanced = document.createElement('div');
+	this.greenAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Lamp Base Colour')));
+	this.setupGreenLampTempSelect();
+	this.greenAdvanced.appendChild(this.greenLampTempSelect);
+	this.greenAdvanced.appendChild(document.createElement('br'));
+	this.greenAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Lamp Colour Temperature')));
+	this.greenTemp.setAttribute('type','number');
+	this.greenTemp.setAttribute('class','kelvininput');
+	this.greenAdvanced.appendChild(this.greenTemp);
+	this.greenAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.greenAdvanced.appendChild(document.createElement('br'));
+	this.greenAdvanced.appendChild(document.createElement('label').appendChild(document.createTextNode('Chromatic Adaptation Model')));
+	this.greenAdvanced.appendChild(this.greenCATSelect);
+	this.greenWindow.appendChild(this.greenAdvanced);
+	this.greenBox.appendChild(this.greenWindow);
+	this.toggleGreenAdvancedCheck();
+	this.toggleGreenCheck();
+}
+//		Set Up Data
+LUTTweaksBox.prototype.setupGreenLampTempSelect = function() {
+	var colours = [	'Warm Comfort Light',
+					'Warm White',
+					'Tungsten',
+					'White',
+					'Cool White',
+					'Daylight',
+					'Cool Daylight'
+	];
+	var temps = [	2500,
+					2800,
+					3200,
+					3500,
+					4300,
+					5500,
+					6500
+	];
+	this.greenTempL = [];
+	this.greenTempH = [];
+	var max = colours.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = temps[j].toString();
+		option.appendChild(document.createTextNode(colours[j]));
+		if (colours[j] === 'Cool White') {
+			option.selected = true;
+			this.greenTemp.value = temps[j].toString();
+		}
+		if (j === 0) {
+			this.greenTempL[j] = 0;
+			this.greenTempH[j] = (temps[j] + temps[j+1])/2;
+		} else if (j === max-1) {
+			this.greenTempL[j] = this.greenTempH[j-1]+1;
+			this.greenTempH[j] = 99999;
+		} else {
+			this.greenTempL[j] = this.greenTempH[j-1]+1;
+			this.greenTempH[j] = (temps[j] + temps[j+1])/2;
+		}
+		this.greenLampTempSelect.appendChild(option);
+	}
+}
+//		Event Responses
+LUTTweaksBox.prototype.toggleGreenCheck = function() {
+	if (this.greenCheck.checked) {
+		this.greenLampTempSelect.disabled = false;
+		this.greenTemp.disabled = false;
+		this.greenCATSelect.disabled = false;
+		this.greenWindow.style.display = 'inline';
+	} else {
+		this.greenLampTempSelect.disabled = true;
+		this.greenTemp.disabled = true;
+		this.greenCATSelect.disabled = true;
+		this.greenWindow.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.gotGreenCATs = function(cats) {
+	this.greenCATSelect.length = 0;
+	var max = cats.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = cats[j].idx;
+		option.appendChild(document.createTextNode(cats[j].name));
+		this.greenCATSelect.appendChild(option);
+	}
+}
+LUTTweaksBox.prototype.updateGreenSlider = function() {
+	var val = parseFloat(this.greenPMSlider.value);
+	if (val<0) {
+		this.greenPMSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
+	} else if (val === 0) {
+		this.greenPMSliderLabel.innerHTML = 'Clear';
+	} else {
+		this.greenPMSliderLabel.innerHTML = Math.abs(val).toString() + ' Plus Green';
+	}
+}
+LUTTweaksBox.prototype.toggleGreenAdvancedCheck = function() {
+	if (this.greenAdvancedCheck.checked) {
+		this.greenAdvanced.style.display = 'block';
+	} else {
+		this.greenAdvanced.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.changeGreenTemp = function() {
+	var temp = Math.round(parseFloat(this.greenTemp.value));
+	if (temp < 1800) {
+		this.greenTemp.value = '1800';
+	} else if (temp > 21000) {
+		this.greenTemp.value = '21000';
+	} else {
+		this.greenTemp.value = temp.toString();
+	}
+	temp = Math.round(parseFloat(this.greenTemp.value));
+	var max = this.greenTempL.length;
+	for (var j=0; j<max; j++) {
+		if (temp >= this.greenTempL[j] && temp <= this.greenTempH[j]) {
+			this.greenLampTempSelect.options[j].selected = true;
+			break;
+		}
+	}
+}
+LUTTweaksBox.prototype.changeGreenLampTemp = function() {
+	this.greenTemp.value = this.greenLampTempSelect.options[this.greenLampTempSelect.selectedIndex].value;
 }
 //
 // *** LUT Analyst ***

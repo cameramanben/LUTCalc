@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 beta 2');
-	lutInputs.addInput('date','February 2015');
+	lutInputs.addInput('version','v1.9 beta 3');
+	lutInputs.addInput('date','March 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
 	// Build UI
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutTweaksBox.changeHighLevelMap();
 		lutMessage.gaSetParams();
 	}
-	//			Colour Temperature tweakBlk
+	//			Colour Temperature tweak
 	lutInputs.tweakTempCheck.onchange = function(){
 		lutTweaksBox.toggleTempCheck();
 		lutMessage.gtSetParams();
@@ -180,6 +180,29 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakTempCATSelect.onchange = function(){
+		lutMessage.gtSetParams();
+	}
+	//			Green Shift tweak
+	lutInputs.tweakGreenCheck.onchange = function(){
+		lutTweaksBox.toggleGreenCheck();
+		lutMessage.gtSetParams();
+	}
+	lutInputs.tweakGreenPMSlider.onchange = function(){
+		lutTweaksBox.updateGreenSlider();
+		lutMessage.gtSetParams();
+	}
+	lutInputs.tweakGreenLampTempSelect.onchange = function(){
+		lutTweaksBox.changeGreenLampTemp();
+		lutMessage.gtSetParams();
+	}
+	lutInputs.tweakGreenAdvancedCheck.onchange = function(){
+		lutTweaksBox.toggleGreenAdvancedCheck();
+	}
+	lutInputs.tweakGreenTemp.onchange = function(){
+		lutTweaksBox.changeGreenTemp();
+		lutMessage.gtSetParams();
+	}
+	lutInputs.tweakGreenCATSelect.onchange = function(){
 		lutMessage.gtSetParams();
 	}
 	//			LUT Analyst Tweak
@@ -281,6 +304,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	lutInputs.drButton.onclick = function(){
 		lutPreview.toggleDefault();
+	}
+	lutInputs.vecButton.onclick = function(){
+		lutPreview.toggleVectorscope();
 	}
 	//		Generate Button
 	lutGenerate.genButton.onclick = function(){
