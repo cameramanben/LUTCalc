@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 beta 3');
+	lutInputs.addInput('version','v1.9 beta 4');
 	lutInputs.addInput('date','March 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
@@ -205,6 +205,100 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.tweakGreenCATSelect.onchange = function(){
 		lutMessage.gtSetParams();
 	}
+	//			ASC CDL Tweak
+	lutInputs.tweakCDLCheck.onchange = function(){
+		lutTweaksBox.toggleCDLCheck();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLChannelSelect.onchange = function(){
+		lutTweaksBox.cdlChangeChannel();
+	}
+	lutInputs.tweakCDLSatSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateSat(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLSSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLS(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLOSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLO(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLPSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLP(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRSSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLROSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRPSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGSSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGOSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGPSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBSSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBOSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBPSlider.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLSatVal.onchange = function(){
+		lutTweaksBox.cdlUpdateSat(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLSVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLS(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLOVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLO(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLPVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLP(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRSVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLROVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRPVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGSVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGOVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGPVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBSVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBOVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBPVal.onchange = function(){
+		lutMessage.gaSetParams();
+	}
 	//			LUT Analyst Tweak
 	if (lutInputs.isApp) {
 		lutInputs.laFileInput.onclick = function(){
@@ -305,8 +399,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.drButton.onclick = function(){
 		lutPreview.toggleDefault();
 	}
-	lutInputs.vecButton.onclick = function(){
+	lutInputs.wavCheck.onclick = function(){
+		lutPreview.toggleWaveform();
+	}
+	lutInputs.vecCheck.onclick = function(){
 		lutPreview.toggleVectorscope();
+	}
+	lutInputs.rgbCheck.onclick = function(){
+		lutPreview.toggleParade();
 	}
 	//		Generate Button
 	lutGenerate.genButton.onclick = function(){

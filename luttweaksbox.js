@@ -94,6 +94,74 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.greenCATSelect = document.createElement('select');
 	this.inputs.addInput('tweakGreenCATSelect',this.greenCATSelect);
 
+	this.cdlBox = document.createElement('div');
+	this.cdlWindow = document.createElement('div');
+	this.cdlCheck = document.createElement('input');
+	this.inputs.addInput('tweakCDLCheck',this.cdlCheck);
+
+	this.cdlSatSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLSatSlider',this.cdlSatSlider);
+	this.cdlSatVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLSatVal',this.cdlSatVal);
+	this.cdlChannelSelect = document.createElement('select');
+	this.inputs.addInput('tweakCDLChannelSelect',this.cdlChannelSelect);
+
+	this.cdlL = document.createElement('div');
+	this.cdlLSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLSSlider',this.cdlLSSlider);
+	this.cdlLSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLSVal',this.cdlLSVal);
+	this.cdlLOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLOSlider',this.cdlLOSlider);
+	this.cdlLOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLOVal',this.cdlLOVal);
+	this.cdlLPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLPSlider',this.cdlLPSlider);
+	this.cdlLPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLPVal',this.cdlLPVal);
+
+	this.cdlR = document.createElement('div');
+	this.cdlRSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLRSSlider',this.cdlRSSlider);
+	this.cdlRSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLRSVal',this.cdlRSVal);
+	this.cdlROSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLROSlider',this.cdlROSlider);
+	this.cdlROVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLROVal',this.cdlROVal);
+	this.cdlRPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLRPSlider',this.cdlRPSlider);
+	this.cdlRPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLRPVal',this.cdlRPVal);
+
+	this.cdlG = document.createElement('div');
+	this.cdlGSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGSSlider',this.cdlGSSlider);
+	this.cdlGSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGSVal',this.cdlGSVal);
+	this.cdlGOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGOSlider',this.cdlGOSlider);
+	this.cdlGOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGOVal',this.cdlGOVal);
+	this.cdlGPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGPSlider',this.cdlGPSlider);
+	this.cdlGPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGPVal',this.cdlGPVal);
+
+	this.cdlB = document.createElement('div');
+	this.cdlBSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBSSlider',this.cdlBSSlider);
+	this.cdlBSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBSVal',this.cdlBSVal);
+	this.cdlBOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBOSlider',this.cdlBOSlider);
+	this.cdlBOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBOVal',this.cdlBOVal);
+	this.cdlBPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBPSlider',this.cdlBPSlider);
+	this.cdlBPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBPVal',this.cdlBPVal);
+
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
@@ -154,6 +222,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	tweakHolder.appendChild(this.tempBox);
 	this.greenShift();
 	tweakHolder.appendChild(this.greenBox);
+	this.ascCDL();
+	tweakHolder.appendChild(this.cdlBox);
 	this.lutAnalyst();
 	tweakHolder.appendChild(this.lutAnalystBox);
 	this.box.appendChild(tweakHolder);
@@ -181,13 +251,16 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 			this.highGamutBox.style.display = 'block';
 			this.tempBox.style.display = 'block';
 			this.greenBox.style.display = 'block';
+			this.cdlBox.style.display = 'block';
 		} else {
 			this.highGamutBox.style.display = 'none';
 			this.highGamutCheck.checked = false;
 			this.tempBox.style.display = 'none';
 			this.greenBox.style.display = 'none';
+			this.cdlBox.style.display = 'none';
 			this.tempCheck.checked = false;
 			this.greenCheck.checked = false;
+			this.cdlCheck.checked = false;
 		}
 		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 		if (curOut === 9999) {
@@ -209,12 +282,14 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		this.highLevelBox.style.display = 'none';
 		this.tempBox.style.display = 'none';
 		this.greenBox.style.display = 'none';
+		this.cdlBox.style.display = 'none';
 		this.lutAnalystBox.style.display = 'none';
 		this.highGamutCheck.checked = false;
 		this.blackLevelCheck.checked = false;
 		this.highLevelCheck.checked = false;
 		this.tempCheck.checked = false;
 		this.greenCheck.checked = false;
+		this.cdlCheck.checked = false;
 		this.lutAnalystCheck.checked = false;
 	}
 	if (this.highGamutCheck.checked) {
@@ -784,6 +859,356 @@ LUTTweaksBox.prototype.changeGreenTemp = function() {
 }
 LUTTweaksBox.prototype.changeGreenLampTemp = function() {
 	this.greenTemp.value = this.greenLampTempSelect.options[this.greenLampTempSelect.selectedIndex].value;
+}
+//
+// *** ASC-CDL Tweak ***
+//		Build UI
+LUTTweaksBox.prototype.ascCDL = function() {
+	this.cdlBox.setAttribute('class','graybox');
+	this.cdlBox.appendChild(document.createElement('label').appendChild(document.createTextNode('ASC-CDL')));
+	this.cdlCheck.setAttribute('type','checkbox');
+	this.cdlBox.appendChild(this.cdlCheck);
+
+	this.cdlWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation')));
+	this.cdlSatSlider.setAttribute('type','range');
+	this.cdlSatSlider.setAttribute('min',0);
+	this.cdlSatSlider.setAttribute('max',2);
+	this.cdlSatSlider.setAttribute('step',0.05);
+	this.cdlSatSlider.setAttribute('value',1);
+	this.cdlWindow.appendChild(this.cdlSatSlider);
+	this.cdlSatVal.setAttribute('type','text');
+	this.cdlSatVal.setAttribute('class','smallinput');
+	this.cdlSatVal.value = '1';
+	this.cdlWindow.appendChild(this.cdlSatVal);
+	this.cdlWindow.appendChild(document.createElement('br'));
+	this.cdlWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Colour Channel')));
+	this.cdlChannelOptions();
+	this.cdlWindow.appendChild(this.cdlChannelSelect);
+
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlLSSlider.setAttribute('type','range');
+	this.cdlLSSlider.setAttribute('min',0);
+	this.cdlLSSlider.setAttribute('max',10);
+	this.cdlLSSlider.setAttribute('step',0.05);
+	this.cdlLSSlider.setAttribute('value',1);
+	this.cdlL.appendChild(this.cdlLSSlider);
+	this.cdlLSVal.setAttribute('type','text');
+	this.cdlLSVal.setAttribute('class','smallinput');
+	this.cdlLSVal.value = '1';
+	this.cdlL.appendChild(this.cdlLSVal);
+	this.cdlL.appendChild(document.createElement('br'));
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlLOSlider.setAttribute('type','range');
+	this.cdlLOSlider.setAttribute('min',-10);
+	this.cdlLOSlider.setAttribute('max',10);
+	this.cdlLOSlider.setAttribute('step',0.05);
+	this.cdlLOSlider.setAttribute('value',0);
+	this.cdlL.appendChild(this.cdlLOSlider);
+	this.cdlLOVal.setAttribute('type','text');
+	this.cdlLOVal.setAttribute('class','smallinput');
+	this.cdlLOVal.value = '0';
+	this.cdlL.appendChild(this.cdlLOVal);
+	this.cdlL.appendChild(document.createElement('br'));
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlLPSlider.setAttribute('type','range');
+	this.cdlLPSlider.setAttribute('min',0);
+	this.cdlLPSlider.setAttribute('max',5);
+	this.cdlLPSlider.setAttribute('step',0.05);
+	this.cdlLPSlider.setAttribute('value',1);
+	this.cdlL.appendChild(this.cdlLPSlider);
+	this.cdlLPVal.setAttribute('type','text');
+	this.cdlLPVal.setAttribute('class','smallinput');
+	this.cdlLPVal.value = '1';
+	this.cdlL.appendChild(this.cdlLPVal);
+	this.cdlL.style.display = 'block';
+	this.cdlWindow.appendChild(this.cdlL);
+
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlRSSlider.setAttribute('type','range');
+	this.cdlRSSlider.setAttribute('min',0);
+	this.cdlRSSlider.setAttribute('max',10);
+	this.cdlRSSlider.setAttribute('step',0.05);
+	this.cdlRSSlider.setAttribute('value',1);
+	this.cdlR.appendChild(this.cdlRSSlider);
+	this.cdlRSVal.setAttribute('type','text');
+	this.cdlRSVal.setAttribute('class','smallinput');
+	this.cdlRSVal.value = '1';
+	this.cdlR.appendChild(this.cdlRSVal);
+	this.cdlR.appendChild(document.createElement('br'));
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlROSlider.setAttribute('type','range');
+	this.cdlROSlider.setAttribute('min',-10);
+	this.cdlROSlider.setAttribute('max',10);
+	this.cdlROSlider.setAttribute('step',0.05);
+	this.cdlROSlider.setAttribute('value',0);
+	this.cdlR.appendChild(this.cdlROSlider);
+	this.cdlROVal.setAttribute('type','text');
+	this.cdlROVal.setAttribute('class','smallinput');
+	this.cdlROVal.value = '0';
+	this.cdlR.appendChild(this.cdlROVal);
+	this.cdlR.appendChild(document.createElement('br'));
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlRPSlider.setAttribute('type','range');
+	this.cdlRPSlider.setAttribute('min',0);
+	this.cdlRPSlider.setAttribute('max',5);
+	this.cdlRPSlider.setAttribute('step',0.05);
+	this.cdlRPSlider.setAttribute('value',1);
+	this.cdlR.appendChild(this.cdlRPSlider);
+	this.cdlRPVal.setAttribute('type','text');
+	this.cdlRPVal.setAttribute('class','smallinput');
+	this.cdlRPVal.value = '1';
+	this.cdlR.appendChild(this.cdlRPVal);
+	this.cdlR.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlR);
+
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlGSSlider.setAttribute('type','range');
+	this.cdlGSSlider.setAttribute('min',0);
+	this.cdlGSSlider.setAttribute('max',10);
+	this.cdlGSSlider.setAttribute('step',0.05);
+	this.cdlGSSlider.setAttribute('value',1);
+	this.cdlG.appendChild(this.cdlGSSlider);
+	this.cdlGSVal.setAttribute('type','text');
+	this.cdlGSVal.setAttribute('class','smallinput');
+	this.cdlGSVal.value = '1';
+	this.cdlG.appendChild(this.cdlGSVal);
+	this.cdlG.appendChild(document.createElement('br'));
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlGOSlider.setAttribute('type','range');
+	this.cdlGOSlider.setAttribute('min',-10);
+	this.cdlGOSlider.setAttribute('max',10);
+	this.cdlGOSlider.setAttribute('step',0.05);
+	this.cdlGOSlider.setAttribute('value',0);
+	this.cdlG.appendChild(this.cdlGOSlider);
+	this.cdlGOVal.setAttribute('type','text');
+	this.cdlGOVal.setAttribute('class','smallinput');
+	this.cdlGOVal.value = '0';
+	this.cdlG.appendChild(this.cdlGOVal);
+	this.cdlG.appendChild(document.createElement('br'));
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlGPSlider.setAttribute('type','range');
+	this.cdlGPSlider.setAttribute('min',0);
+	this.cdlGPSlider.setAttribute('max',5);
+	this.cdlGPSlider.setAttribute('step',0.05);
+	this.cdlGPSlider.setAttribute('value',1);
+	this.cdlG.appendChild(this.cdlGPSlider);
+	this.cdlGPVal.setAttribute('type','text');
+	this.cdlGPVal.setAttribute('class','smallinput');
+	this.cdlGPVal.value = '1';
+	this.cdlG.appendChild(this.cdlGPVal);
+	this.cdlG.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlG);
+
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlBSSlider.setAttribute('type','range');
+	this.cdlBSSlider.setAttribute('min',0);
+	this.cdlBSSlider.setAttribute('max',10);
+	this.cdlBSSlider.setAttribute('step',0.05);
+	this.cdlBSSlider.setAttribute('value',1);
+	this.cdlB.appendChild(this.cdlBSSlider);
+	this.cdlBSVal.setAttribute('type','text');
+	this.cdlBSVal.setAttribute('class','smallinput');
+	this.cdlBSVal.value = '1';
+	this.cdlB.appendChild(this.cdlBSVal);
+	this.cdlB.appendChild(document.createElement('br'));
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlBOSlider.setAttribute('type','range');
+	this.cdlBOSlider.setAttribute('min',-10);
+	this.cdlBOSlider.setAttribute('max',10);
+	this.cdlBOSlider.setAttribute('step',0.05);
+	this.cdlBOSlider.setAttribute('value',0);
+	this.cdlB.appendChild(this.cdlBOSlider);
+	this.cdlBOVal.setAttribute('type','text');
+	this.cdlBOVal.setAttribute('class','smallinput');
+	this.cdlBOVal.value = '0';
+	this.cdlB.appendChild(this.cdlBOVal);
+	this.cdlB.appendChild(document.createElement('br'));
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlBPSlider.setAttribute('type','range');
+	this.cdlBPSlider.setAttribute('min',0);
+	this.cdlBPSlider.setAttribute('max',5);
+	this.cdlBPSlider.setAttribute('step',0.05);
+	this.cdlBPSlider.setAttribute('value',1);
+	this.cdlB.appendChild(this.cdlBPSlider);
+	this.cdlBPVal.setAttribute('type','text');
+	this.cdlBPVal.setAttribute('class','smallinput');
+	this.cdlBPVal.value = '1';
+	this.cdlB.appendChild(this.cdlBPVal);
+	this.cdlB.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlB);
+
+	this.cdlWindow.style.display = 'none';
+	this.cdlBox.appendChild(this.cdlWindow);
+}
+//		Set Up Data
+LUTTweaksBox.prototype.cdlChannelOptions = function() {
+	var channels = ['Luma','Red','Green','Blue'];
+	for (var j=0; j<4; j++) {
+		var option = document.createElement('option');
+		option.value = j.toString();
+		option.appendChild(document.createTextNode(channels[j]));
+		this.cdlChannelSelect.appendChild(option);
+	}
+}
+//		Event Responses
+LUTTweaksBox.prototype.toggleCDLCheck = function() {
+	if (this.cdlCheck.checked) {
+		this.cdlWindow.style.display = 'block';
+	} else {
+		this.cdlWindow.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.cdlChangeChannel = function() {
+	this.cdlL.style.display = 'none';
+	this.cdlR.style.display = 'none';
+	this.cdlG.style.display = 'none';
+	this.cdlB.style.display = 'none';
+	switch (this.cdlChannelSelect.selectedIndex) {
+		case 0: this.cdlL.style.display = 'block';
+				break;
+		case 1: this.cdlR.style.display = 'block';
+				break;
+		case 2: this.cdlG.style.display = 'block';
+				break;
+		case 3: this.cdlB.style.display = 'block';
+				break;
+	}
+}
+LUTTweaksBox.prototype.cdlUpdateSat = function(slider) {
+	var s,S;
+	if (slider) {
+		s = this.cdlSatSlider.value;
+		S = parseFloat(s);
+	} else {
+		s = this.cdlSatVal.value;
+		S = parseFloat(s);
+		if (isNaN(S)) {
+			s = this.cdlSatSlider.value;
+			S = parseFloat(s);
+		} else if (S < 0) {
+			s = '0';
+			S = 0;
+		}
+	}
+	this.cdlSatVal.value = s;
+	this.cdlSatSlider.value = s;
+}
+LUTTweaksBox.prototype.cdlUpdateLS = function(slider) {
+	var s,S;
+	if (slider) {
+		s = this.cdlLSSlider.value;
+		S = parseFloat(s);
+	} else {
+		s = this.cdlLSVal.value;
+		S = parseFloat(s);
+		if (isNaN(S)) {
+			s = this.cdlLSSlider.value;
+			S = parseFloat(s);
+		} else if (S < 0) {
+			s = '0';
+			S = 0;
+		}
+	}
+	this.cdlLSVal.value = s;
+	this.cdlLSSlider.value = s;
+	var rS = parseFloat(this.cdlRSVal.value);
+	var gS = parseFloat(this.cdlGSVal.value);
+	var bS = parseFloat(this.cdlBSVal.value);
+	var lS = (0.2126*rS) + (0.7152*gS) + (0.0722*bS);
+	var r,g,b;
+	if (lS === 0) {
+		r = s;
+		g = s;
+		b = s;
+	} else {
+		var scale = S/lS;
+		r = (rS*scale).toString();
+		g = (gS*scale).toString();
+		b = (bS*scale).toString();
+	}
+	this.cdlRSVal.value = r;
+	this.cdlGSVal.value = g;
+	this.cdlBSVal.value = b;
+	this.cdlRSSlider.value = r;
+	this.cdlGSSlider.value = g;
+	this.cdlBSSlider.value = b;
+}
+LUTTweaksBox.prototype.cdlUpdateLO = function(slider) {
+	var o,P;
+	if (slider) {
+		o = this.cdlLOSlider.value;
+		O = parseFloat(o);
+	} else {
+		o = this.cdlLOVal.value;
+		O = parseFloat(o);
+		if (isNaN(O)) {
+			o = this.cdlLOSlider.value;
+			O = parseFloat(o);
+		}
+	}
+	this.cdlLOVal.value = o;
+	this.cdlLOSlider.value = o;
+	var rO = parseFloat(this.cdlROVal.value);
+	var gO = parseFloat(this.cdlGOVal.value);
+	var bO = parseFloat(this.cdlBOVal.value);
+	var lO = (0.2126*rO) + (0.7152*gO) + (0.0722*bO);
+	var r,g,b;
+	if (lO === 0) {
+		r = o;
+		g = o;
+		b = o;
+	} else {
+		var scale = O/lO;
+		r = (rO*scale).toString();
+		g = (gO*scale).toString();
+		b = (bO*scale).toString();
+	}
+	this.cdlROVal.value = r;
+	this.cdlGOVal.value = g;
+	this.cdlBOVal.value = b;
+	this.cdlROSlider.value = r;
+	this.cdlGOSlider.value = g;
+	this.cdlBOSlider.value = b;
+}
+LUTTweaksBox.prototype.cdlUpdateLP = function(slider) {
+	var p,P;
+	if (slider) {
+		p = this.cdlLPSlider.value;
+		P = parseFloat(p);
+	} else {
+		p = this.cdlLPVal.value;
+		P = parseFloat(p);
+		if (isNaN(P)) {
+			p = this.cdlLPSlider.value;
+			P = parseFloat(p);
+		} else if (P < 0) {
+			p = '0';
+			P = 0;
+		}
+	}
+	this.cdlLPVal.value = p;
+	this.cdlLPSlider.value = p;
+	var rP = parseFloat(this.cdlRPVal.value);
+	var gP = parseFloat(this.cdlGPVal.value);
+	var bP = parseFloat(this.cdlBPVal.value);
+	var lP = (0.2126*rP) + (0.7152*gP) + (0.0722*bP);
+	var r,g,b;
+	if (lP === 0) {
+		r = p;
+		g = p;
+		b = p;
+	} else {
+		var scale = P/lP;
+		r = (rP*scale).toString();
+		g = (gP*scale).toString();
+		b = (bP*scale).toString();
+	}
+	this.cdlRPVal.value = r;
+	this.cdlGPVal.value = g;
+	this.cdlBPVal.value = b;
+	this.cdlRPSlider.value = r;
+	this.cdlGPSlider.value = g;
+	this.cdlBPSlider.value = b;
 }
 //
 // *** LUT Analyst ***
