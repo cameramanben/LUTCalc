@@ -143,7 +143,6 @@ LUTMessage.prototype.gaSetParams = function() {
 			parseFloat(this.inputs.tweakCDLBPVal.value),
 			parseFloat(this.inputs.tweakCDLSatVal.value)
 		]);
-console.log(ascCDL);
 		d.ascCDL = ascCDL.buffer;
 	} else {
 		d.doASC = false;

@@ -29,7 +29,7 @@ Brent.prototype.setRange = function(a,b) {
 	this.b = b;			// For f(x), maximum value of x
 	this.fMax = this.func.f(b);
 	this.mid = this.func.f((a+b)/2);
-console.log(this.mid);
+// console.log(this.mid);
 }
 Brent.prototype.minMax = function(x) {
 	if (x < this.a) {

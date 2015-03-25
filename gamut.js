@@ -233,10 +233,13 @@ LUTGamut.prototype.setParams = function(params) {
 	}
 	this.ver = params.v;
 	out.v = this.ver;
+var LCR = this.outGamuts[this.curOut].calc([0.645679,0.087530,0.036957]);
+var LCG = this.outGamuts[this.curOut].calc([0.259115,0.759700,0.129281]);
+var LCB = this.outGamuts[this.curOut].calc([0.095206,0.152770,0.833762]);
 	return out;
 }
 LUTGamut.prototype.calc = function(p,t,i) {
-	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim};
+	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim, outGamut: this.curOut};
 	if (!this.nul) {
 		var o = new Float64Array(i.o);
 		var max = o.length / 3;
@@ -294,7 +297,7 @@ LUTGamut.prototype.calc = function(p,t,i) {
 	return out;
 }
 LUTGamut.prototype.preview = function(p,t,i) {
-	var out = { p: p, t: t+20, v: this.ver, line: i.line};
+	var out = { p: p, t: t+20, v: this.ver, line: i.line, outGamut: this.curOut};
 	var o = new Float64Array(i.o);
 	if (!this.nul) {
 		var max = o.length / 3;
@@ -717,7 +720,6 @@ LUTGamutGreen.prototype.shift = function() {
 	var y = x*d;
 	x += xyz[0];
 	y += xyz[1];
- // self.postMessage({msg:true,details:'d - ' + d});
 	var w1 = this.w([x/y,1,((1-x)/y)-1]);
 	var w2 = this.w([xyz[0]/xyz[1],1,((1-xyz[0])/xyz[1])-1]);
 	var out = [w1[0]/w2[0],w1[1]/w2[1],w1[2]/w2[2]];

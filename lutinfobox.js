@@ -486,6 +486,9 @@ LUTInfoBox.prototype.gammaChartOpt = function() {
 }
 LUTInfoBox.prototype.updateTables = function() {
 	for (var j=0; j<7; j++) {
+		if (this.tableIREVals[j] < -0.07305936073059) {
+			this.tableIREVals[j] = -0.07305936073059;
+		}
 		this.lutOutIREs[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
 		this.lutOutVals[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
 		this.lutOutIREsChart[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
