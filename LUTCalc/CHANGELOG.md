@@ -1,6 +1,13 @@
 LUTCalc Changelog
 =================
 
+v1.9 Beta 4
+-----------
+* Added ASC CDL controls tweak.
+* Added Waveform.
+* Added RGB Parade.
+* Preview, Waveform, Vectorscope and Parade can now all be displayed at the same time.
+
 v1.9 Beta 3
 -----------
 * Added green correction tool.

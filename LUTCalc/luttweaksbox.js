@@ -94,6 +94,95 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.greenCATSelect = document.createElement('select');
 	this.inputs.addInput('tweakGreenCATSelect',this.greenCATSelect);
 
+	this.cdlBox = document.createElement('div');
+	this.cdlWindow = document.createElement('div');
+	this.cdlCheck = document.createElement('input');
+	this.inputs.addInput('tweakCDLCheck',this.cdlCheck);
+	this.cdlSatSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLSatSlider',this.cdlSatSlider);
+	this.cdlSatVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLSatVal',this.cdlSatVal);
+	this.cdlChannelSelect = document.createElement('select');
+	this.inputs.addInput('tweakCDLChannelSelect',this.cdlChannelSelect);
+	this.cdlL = document.createElement('div');
+	this.cdlLSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLSSlider',this.cdlLSSlider);
+	this.cdlLSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLSVal',this.cdlLSVal);
+	this.cdlLOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLOSlider',this.cdlLOSlider);
+	this.cdlLOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLOVal',this.cdlLOVal);
+	this.cdlLPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLLPSlider',this.cdlLPSlider);
+	this.cdlLPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLLPVal',this.cdlLPVal);
+	this.cdlR = document.createElement('div');
+	this.cdlRSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLRSSlider',this.cdlRSSlider);
+	this.cdlRSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLRSVal',this.cdlRSVal);
+	this.cdlROSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLROSlider',this.cdlROSlider);
+	this.cdlROVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLROVal',this.cdlROVal);
+	this.cdlRPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLRPSlider',this.cdlRPSlider);
+	this.cdlRPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLRPVal',this.cdlRPVal);
+	this.cdlG = document.createElement('div');
+	this.cdlGSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGSSlider',this.cdlGSSlider);
+	this.cdlGSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGSVal',this.cdlGSVal);
+	this.cdlGOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGOSlider',this.cdlGOSlider);
+	this.cdlGOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGOVal',this.cdlGOVal);
+	this.cdlGPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLGPSlider',this.cdlGPSlider);
+	this.cdlGPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLGPVal',this.cdlGPVal);
+	this.cdlB = document.createElement('div');
+	this.cdlBSSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBSSlider',this.cdlBSSlider);
+	this.cdlBSVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBSVal',this.cdlBSVal);
+	this.cdlBOSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBOSlider',this.cdlBOSlider);
+	this.cdlBOVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBOVal',this.cdlBOVal);
+	this.cdlBPSlider = document.createElement('input');
+	this.inputs.addInput('tweakCDLBPSlider',this.cdlBPSlider);
+	this.cdlBPVal = document.createElement('input');
+	this.inputs.addInput('tweakCDLBPVal',this.cdlBPVal);
+	this.cdlSatReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLSatReset',this.cdlSatReset);
+	this.cdlLSReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLLSReset',this.cdlLSReset);
+	this.cdlLOReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLLOReset',this.cdlLOReset);
+	this.cdlLPReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLLPReset',this.cdlLPReset);
+	this.cdlRSReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLRSReset',this.cdlRSReset);
+	this.cdlROReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLROReset',this.cdlROReset);
+	this.cdlRPReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLRPReset',this.cdlRPReset);
+	this.cdlGSReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLGSReset',this.cdlGSReset);
+	this.cdlGOReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLGOReset',this.cdlGOReset);
+	this.cdlGPReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLGPReset',this.cdlGPReset);
+	this.cdlBSReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLBSReset',this.cdlBSReset);
+	this.cdlBOReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLBOReset',this.cdlBOReset);
+	this.cdlBPReset = document.createElement('input');
+	this.inputs.addInput('tweakCDLBPReset',this.cdlBPReset);
+
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
@@ -154,6 +243,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	tweakHolder.appendChild(this.tempBox);
 	this.greenShift();
 	tweakHolder.appendChild(this.greenBox);
+	this.ascCDL();
+	tweakHolder.appendChild(this.cdlBox);
 	this.lutAnalyst();
 	tweakHolder.appendChild(this.lutAnalystBox);
 	this.box.appendChild(tweakHolder);
@@ -181,13 +272,16 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 			this.highGamutBox.style.display = 'block';
 			this.tempBox.style.display = 'block';
 			this.greenBox.style.display = 'block';
+			this.cdlBox.style.display = 'block';
 		} else {
 			this.highGamutBox.style.display = 'none';
 			this.highGamutCheck.checked = false;
 			this.tempBox.style.display = 'none';
 			this.greenBox.style.display = 'none';
+			this.cdlBox.style.display = 'none';
 			this.tempCheck.checked = false;
 			this.greenCheck.checked = false;
+			this.cdlCheck.checked = false;
 		}
 		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 		if (curOut === 9999) {
@@ -209,12 +303,14 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		this.highLevelBox.style.display = 'none';
 		this.tempBox.style.display = 'none';
 		this.greenBox.style.display = 'none';
+		this.cdlBox.style.display = 'none';
 		this.lutAnalystBox.style.display = 'none';
 		this.highGamutCheck.checked = false;
 		this.blackLevelCheck.checked = false;
 		this.highLevelCheck.checked = false;
 		this.tempCheck.checked = false;
 		this.greenCheck.checked = false;
+		this.cdlCheck.checked = false;
 		this.lutAnalystCheck.checked = false;
 	}
 	if (this.highGamutCheck.checked) {
@@ -784,6 +880,564 @@ LUTTweaksBox.prototype.changeGreenTemp = function() {
 }
 LUTTweaksBox.prototype.changeGreenLampTemp = function() {
 	this.greenTemp.value = this.greenLampTempSelect.options[this.greenLampTempSelect.selectedIndex].value;
+}
+//
+// *** ASC-CDL Tweak ***
+//		Build UI
+LUTTweaksBox.prototype.ascCDL = function() {
+	var oMin = -0.5;
+	var oMax = 0.5;
+	this.cdlBox.setAttribute('class','graybox');
+	this.cdlBox.appendChild(document.createElement('label').appendChild(document.createTextNode('ASC-CDL')));
+	this.cdlCheck.setAttribute('type','checkbox');
+	this.cdlBox.appendChild(this.cdlCheck);
+
+	this.cdlWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation')));
+	this.cdlSatSlider.setAttribute('type','range');
+	this.cdlSatSlider.setAttribute('min',0);
+	this.cdlSatSlider.setAttribute('max',2);
+	this.cdlSatSlider.setAttribute('step',0.05);
+	this.cdlSatSlider.setAttribute('value',1);
+	this.cdlWindow.appendChild(this.cdlSatSlider);
+	this.cdlSatVal.setAttribute('type','text');
+	this.cdlSatVal.setAttribute('class','smallinput');
+	this.cdlSatVal.value = '1';
+	this.cdlWindow.appendChild(this.cdlSatVal);
+	this.cdlSatReset.setAttribute('type','button');
+	this.cdlSatReset.setAttribute('class','smallbutton');
+	this.cdlSatReset.setAttribute('value','Reset');
+	this.cdlWindow.appendChild(this.cdlSatReset);
+	this.cdlWindow.appendChild(document.createElement('br'));
+	this.cdlWindow.appendChild(document.createElement('label').appendChild(document.createTextNode('Colour Channel')));
+	this.cdlChannelOptions();
+	this.cdlWindow.appendChild(this.cdlChannelSelect);
+
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlLSSlider.setAttribute('type','range');
+	this.cdlLSSlider.setAttribute('min',0);
+	this.cdlLSSlider.setAttribute('max',2);
+	this.cdlLSSlider.setAttribute('step',0.01);
+	this.cdlLSSlider.setAttribute('value',1);
+	this.cdlL.appendChild(this.cdlLSSlider);
+	this.cdlLSVal.setAttribute('type','text');
+	this.cdlLSVal.setAttribute('class','smallinput');
+	this.cdlLSVal.value = '1';
+	this.cdlL.appendChild(this.cdlLSVal);
+	this.cdlLSReset.setAttribute('type','button');
+	this.cdlLSReset.setAttribute('class','smallbutton');
+	this.cdlLSReset.setAttribute('value','Reset');
+	this.cdlL.appendChild(this.cdlLSReset);
+	this.cdlL.appendChild(document.createElement('br'));
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlLOSlider.setAttribute('type','range');
+	this.cdlLOSlider.setAttribute('min',oMin);
+	this.cdlLOSlider.setAttribute('max',oMax);
+	this.cdlLOSlider.setAttribute('step',0.01);
+	this.cdlLOSlider.setAttribute('value',0);
+	this.cdlL.appendChild(this.cdlLOSlider);
+	this.cdlLOVal.setAttribute('type','text');
+	this.cdlLOVal.setAttribute('class','smallinput');
+	this.cdlLOVal.value = '0';
+	this.cdlL.appendChild(this.cdlLOVal);
+	this.cdlLOReset.setAttribute('type','button');
+	this.cdlLOReset.setAttribute('class','smallbutton');
+	this.cdlLOReset.setAttribute('value','Reset');
+	this.cdlL.appendChild(this.cdlLOReset);
+	this.cdlL.appendChild(document.createElement('br'));
+	this.cdlL.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlLPSlider.setAttribute('type','range');
+	this.cdlLPSlider.setAttribute('min',0);
+	this.cdlLPSlider.setAttribute('max',2);
+	this.cdlLPSlider.setAttribute('step',0.01);
+	this.cdlLPSlider.setAttribute('value',1);
+	this.cdlL.appendChild(this.cdlLPSlider);
+	this.cdlLPVal.setAttribute('type','text');
+	this.cdlLPVal.setAttribute('class','smallinput');
+	this.cdlLPVal.value = '1';
+	this.cdlL.appendChild(this.cdlLPVal);
+	this.cdlLPReset.setAttribute('type','button');
+	this.cdlLPReset.setAttribute('class','smallbutton');
+	this.cdlLPReset.setAttribute('value','Reset');
+	this.cdlL.appendChild(this.cdlLPReset);
+	this.cdlL.style.display = 'block';
+	this.cdlWindow.appendChild(this.cdlL);
+
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlRSSlider.setAttribute('type','range');
+	this.cdlRSSlider.setAttribute('min',0);
+	this.cdlRSSlider.setAttribute('max',2);
+	this.cdlRSSlider.setAttribute('step',0.01);
+	this.cdlRSSlider.setAttribute('value',1);
+	this.cdlR.appendChild(this.cdlRSSlider);
+	this.cdlRSVal.setAttribute('type','text');
+	this.cdlRSVal.setAttribute('class','smallinput');
+	this.cdlRSVal.value = '1';
+	this.cdlR.appendChild(this.cdlRSVal);
+	this.cdlRSReset.setAttribute('type','button');
+	this.cdlRSReset.setAttribute('class','smallbutton');
+	this.cdlRSReset.setAttribute('value','Reset');
+	this.cdlR.appendChild(this.cdlRSReset);
+	this.cdlR.appendChild(document.createElement('br'));
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlROSlider.setAttribute('type','range');
+	this.cdlROSlider.setAttribute('min',oMin);
+	this.cdlROSlider.setAttribute('max',oMax);
+	this.cdlROSlider.setAttribute('step',0.01);
+	this.cdlROSlider.setAttribute('value',0);
+	this.cdlR.appendChild(this.cdlROSlider);
+	this.cdlROVal.setAttribute('type','text');
+	this.cdlROVal.setAttribute('class','smallinput');
+	this.cdlROVal.value = '0';
+	this.cdlR.appendChild(this.cdlROVal);
+	this.cdlROReset.setAttribute('type','button');
+	this.cdlROReset.setAttribute('class','smallbutton');
+	this.cdlROReset.setAttribute('value','Reset');
+	this.cdlR.appendChild(this.cdlROReset);
+	this.cdlR.appendChild(document.createElement('br'));
+	this.cdlR.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlRPSlider.setAttribute('type','range');
+	this.cdlRPSlider.setAttribute('min',0);
+	this.cdlRPSlider.setAttribute('max',2);
+	this.cdlRPSlider.setAttribute('step',0.01);
+	this.cdlRPSlider.setAttribute('value',1);
+	this.cdlR.appendChild(this.cdlRPSlider);
+	this.cdlRPVal.setAttribute('type','text');
+	this.cdlRPVal.setAttribute('class','smallinput');
+	this.cdlRPVal.value = '1';
+	this.cdlR.appendChild(this.cdlRPVal);
+	this.cdlRPReset.setAttribute('type','button');
+	this.cdlRPReset.setAttribute('class','smallbutton');
+	this.cdlRPReset.setAttribute('value','Reset');
+	this.cdlR.appendChild(this.cdlRPReset);
+	this.cdlR.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlR);
+
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlGSSlider.setAttribute('type','range');
+	this.cdlGSSlider.setAttribute('min',0);
+	this.cdlGSSlider.setAttribute('max',2);
+	this.cdlGSSlider.setAttribute('step',0.01);
+	this.cdlGSSlider.setAttribute('value',1);
+	this.cdlG.appendChild(this.cdlGSSlider);
+	this.cdlGSVal.setAttribute('type','text');
+	this.cdlGSVal.setAttribute('class','smallinput');
+	this.cdlGSVal.value = '1';
+	this.cdlG.appendChild(this.cdlGSVal);
+	this.cdlGSReset.setAttribute('type','button');
+	this.cdlGSReset.setAttribute('class','smallbutton');
+	this.cdlGSReset.setAttribute('value','Reset');
+	this.cdlG.appendChild(this.cdlGSReset);
+	this.cdlG.appendChild(document.createElement('br'));
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlGOSlider.setAttribute('type','range');
+	this.cdlGOSlider.setAttribute('min',oMin);
+	this.cdlGOSlider.setAttribute('max',oMax);
+	this.cdlGOSlider.setAttribute('step',0.01);
+	this.cdlGOSlider.setAttribute('value',0);
+	this.cdlG.appendChild(this.cdlGOSlider);
+	this.cdlGOVal.setAttribute('type','text');
+	this.cdlGOVal.setAttribute('class','smallinput');
+	this.cdlGOVal.value = '0';
+	this.cdlG.appendChild(this.cdlGOVal);
+	this.cdlGOReset.setAttribute('type','button');
+	this.cdlGOReset.setAttribute('class','smallbutton');
+	this.cdlGOReset.setAttribute('value','Reset');
+	this.cdlG.appendChild(this.cdlGOReset);
+	this.cdlG.appendChild(document.createElement('br'));
+	this.cdlG.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlGPSlider.setAttribute('type','range');
+	this.cdlGPSlider.setAttribute('min',0);
+	this.cdlGPSlider.setAttribute('max',2);
+	this.cdlGPSlider.setAttribute('step',0.01);
+	this.cdlGPSlider.setAttribute('value',1);
+	this.cdlG.appendChild(this.cdlGPSlider);
+	this.cdlGPVal.setAttribute('type','text');
+	this.cdlGPVal.setAttribute('class','smallinput');
+	this.cdlGPVal.value = '1';
+	this.cdlG.appendChild(this.cdlGPVal);
+	this.cdlGPReset.setAttribute('type','button');
+	this.cdlGPReset.setAttribute('class','smallbutton');
+	this.cdlGPReset.setAttribute('value','Reset');
+	this.cdlG.appendChild(this.cdlGPReset);
+	this.cdlG.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlG);
+
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope ')));
+	this.cdlBSSlider.setAttribute('type','range');
+	this.cdlBSSlider.setAttribute('min',0);
+	this.cdlBSSlider.setAttribute('max',2);
+	this.cdlBSSlider.setAttribute('step',0.01);
+	this.cdlBSSlider.setAttribute('value',1);
+	this.cdlB.appendChild(this.cdlBSSlider);
+	this.cdlBSVal.setAttribute('type','text');
+	this.cdlBSVal.setAttribute('class','smallinput');
+	this.cdlBSVal.value = '1';
+	this.cdlB.appendChild(this.cdlBSVal);
+	this.cdlBSReset.setAttribute('type','button');
+	this.cdlBSReset.setAttribute('class','smallbutton');
+	this.cdlBSReset.setAttribute('value','Reset');
+	this.cdlB.appendChild(this.cdlBSReset);
+	this.cdlB.appendChild(document.createElement('br'));
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Offset ')));
+	this.cdlBOSlider.setAttribute('type','range');
+	this.cdlBOSlider.setAttribute('min',oMin);
+	this.cdlBOSlider.setAttribute('max',oMax);
+	this.cdlBOSlider.setAttribute('step',0.01);
+	this.cdlBOSlider.setAttribute('value',0);
+	this.cdlB.appendChild(this.cdlBOSlider);
+	this.cdlBOVal.setAttribute('type','text');
+	this.cdlBOVal.setAttribute('class','smallinput');
+	this.cdlBOVal.value = '0';
+	this.cdlB.appendChild(this.cdlBOVal);
+	this.cdlBOReset.setAttribute('type','button');
+	this.cdlBOReset.setAttribute('class','smallbutton');
+	this.cdlBOReset.setAttribute('value','Reset');
+	this.cdlB.appendChild(this.cdlBOReset);
+	this.cdlB.appendChild(document.createElement('br'));
+	this.cdlB.appendChild(document.createElement('label').appendChild(document.createTextNode('Power ')));
+	this.cdlBPSlider.setAttribute('type','range');
+	this.cdlBPSlider.setAttribute('min',0);
+	this.cdlBPSlider.setAttribute('max',2);
+	this.cdlBPSlider.setAttribute('step',0.01);
+	this.cdlBPSlider.setAttribute('value',1);
+	this.cdlB.appendChild(this.cdlBPSlider);
+	this.cdlBPVal.setAttribute('type','text');
+	this.cdlBPVal.setAttribute('class','smallinput');
+	this.cdlBPVal.value = '1';
+	this.cdlB.appendChild(this.cdlBPVal);
+	this.cdlBPReset.setAttribute('type','button');
+	this.cdlBPReset.setAttribute('class','smallbutton');
+	this.cdlBPReset.setAttribute('value','Reset');
+	this.cdlB.appendChild(this.cdlBPReset);
+	this.cdlB.style.display = 'none';
+	this.cdlWindow.appendChild(this.cdlB);
+
+	this.cdlWindow.style.display = 'none';
+	this.cdlBox.appendChild(this.cdlWindow);
+}
+//		Set Up Data
+LUTTweaksBox.prototype.cdlChannelOptions = function() {
+	var channels = ['Luma','Red','Green','Blue'];
+	for (var j=0; j<4; j++) {
+		var option = document.createElement('option');
+		option.value = j.toString();
+		option.appendChild(document.createTextNode(channels[j]));
+		this.cdlChannelSelect.appendChild(option);
+	}
+}
+//		Event Responses
+LUTTweaksBox.prototype.toggleCDLCheck = function() {
+	if (this.cdlCheck.checked) {
+		this.cdlWindow.style.display = 'block';
+	} else {
+		this.cdlWindow.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.cdlChangeChannel = function() {
+	this.cdlL.style.display = 'none';
+	this.cdlR.style.display = 'none';
+	this.cdlG.style.display = 'none';
+	this.cdlB.style.display = 'none';
+	switch (this.cdlChannelSelect.selectedIndex) {
+		case 0: this.cdlL.style.display = 'block';
+				break;
+		case 1: this.cdlR.style.display = 'block';
+				break;
+		case 2: this.cdlG.style.display = 'block';
+				break;
+		case 3: this.cdlB.style.display = 'block';
+				break;
+	}
+}
+LUTTweaksBox.prototype.cdlUpdateSat = function(slider) {
+	var s,S;
+	if (slider) {
+		s = this.cdlSatSlider.value;
+		S = parseFloat(s);
+	} else {
+		s = this.cdlSatVal.value;
+		S = parseFloat(s);
+		if (isNaN(S)) {
+			s = this.cdlSatSlider.value;
+			S = parseFloat(s);
+		} else if (S < 0) {
+			s = '0';
+			S = 0;
+		}
+	}
+	this.cdlSatVal.value = s;
+	this.cdlSatSlider.value = s;
+}
+LUTTweaksBox.prototype.cdlSyncL = function() {
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	var r = parseFloat(this.cdlRSVal.value);
+	var g = parseFloat(this.cdlGSVal.value);
+	var b = parseFloat(this.cdlBSVal.value);
+	var lS = ((r+g+b)/3);
+	this.cdlLSSlider.value = ((Math.log((lS-c4)/c3)-c2)/c1).toString();
+	this.cdlLSVal.value = lS.toString();
+	r = parseFloat(this.cdlROVal.value);
+	g = parseFloat(this.cdlGOVal.value);
+	b = parseFloat(this.cdlBOVal.value);
+	var lO = ((r+g+b)/3);
+	this.cdlLOSlider.value = lO.toString();
+	this.cdlLOVal.value = lO.toString();
+	r = parseFloat(this.cdlRPVal.value);
+	g = parseFloat(this.cdlGPVal.value);
+	b = parseFloat(this.cdlBPVal.value);
+	var lP = ((r+g+b)/3);
+	this.cdlLPSlider.value = ((Math.log((lP-c4)/c3)-c2)/c1).toString();
+	this.cdlLPVal.value = lP.toString();
+}
+LUTTweaksBox.prototype.cdlUpdateLS = function(slider) {
+	var s,S;
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	if (slider) {
+		s = this.cdlLSSlider.value;
+		S = (c3*Math.exp((c1*parseFloat(s))+c2)) + c4;
+	} else {
+		s = this.cdlLSVal.value;
+		S = parseFloat(s);
+		if (isNaN(S)) {
+			s = this.cdlLSSlider.value;
+			S = (c3*Math.exp((c1*parseFloat(s))+c2)) + c4;
+		} else if (S < 0) {
+			s = '0';
+			S = 0;
+		}
+	}
+	this.cdlLSVal.value = S.toString();
+	this.cdlLSSlider.value = ((Math.log((S-c4)/c3)-c2)/c1).toString();
+	var rS = parseFloat(this.cdlRSVal.value);
+	var gS = parseFloat(this.cdlGSVal.value);
+	var bS = parseFloat(this.cdlBSVal.value);
+	var aS = (rS+gS+bS)/3;
+	var r,g,b;
+	var offset = S-aS;
+	r = (rS + offset);
+	g = (gS + offset);
+	b = (bS + offset);
+	if (r<0) {r=0;}
+	if (g<0) {g=0;}
+	if (b<0) {b=0;}
+	this.cdlRSVal.value = r.toString();
+	this.cdlGSVal.value = g.toString();
+	this.cdlBSVal.value = b.toString();
+	this.cdlRSSlider.value = ((Math.log((r-c4)/c3)-c2)/c1).toString();
+	this.cdlGSSlider.value = ((Math.log((g-c4)/c3)-c2)/c1).toString();
+	this.cdlBSSlider.value = ((Math.log((b-c4)/c3)-c2)/c1).toString();
+	this.cdlSyncL();
+}
+LUTTweaksBox.prototype.cdlUpdateLO = function(slider) {
+	var o,O;
+	if (slider) {
+		o = this.cdlLOSlider.value;
+		O = parseFloat(o);
+	} else {
+		o = this.cdlLOVal.value;
+		O = parseFloat(o);
+		if (isNaN(O)) {
+			o = this.cdlLOSlider.value;
+			O = parseFloat(o);
+		}
+	}
+	this.cdlLOVal.value = o;
+	this.cdlLOSlider.value = o;
+	var rO = parseFloat(this.cdlROVal.value);
+	var gO = parseFloat(this.cdlGOVal.value);
+	var bO = parseFloat(this.cdlBOVal.value);
+	var aO = (rO+gO+bO)/3;
+	var r,g,b;
+	var offset = O - aO;
+	r = (rO + offset).toString();
+	g = (gO + offset).toString();
+	b = (bO + offset).toString();
+	this.cdlROVal.value = r;
+	this.cdlGOVal.value = g;
+	this.cdlBOVal.value = b;
+	this.cdlROSlider.value = r;
+	this.cdlGOSlider.value = g;
+	this.cdlBOSlider.value = b;
+}
+LUTTweaksBox.prototype.cdlUpdateLP = function(slider) {
+	var p,P;
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	if (slider) {
+		p = this.cdlLPSlider.value;
+		P = (c3*Math.exp((c1*parseFloat(p))+c2)) + c4;
+	} else {
+		p = this.cdlLPVal.value;
+		P = parseFloat(p);
+		if (isNaN(P)) {
+			p = this.cdlLPSlider.value;
+			P = (c3*Math.exp((c1*parseFloat(p))+c2)) + c4;
+		} else if (P < 0) {
+			p = '0';
+			P = 0;
+		}
+	}
+	this.cdlLPVal.value = P.toString();
+	this.cdlLPSlider.value = ((Math.log((P-c4)/c3)-c2)/c1).toString();
+	var rP = parseFloat(this.cdlRPVal.value);
+	var gP = parseFloat(this.cdlGPVal.value);
+	var bP = parseFloat(this.cdlBPVal.value);
+	var aP = (rP+gP+bP)/3;
+	var r,g,b;
+	var offset = P - aP;
+	r = (rP + offset);
+	g = (gP + offset);
+	b = (bP + offset);
+	if (r<0) {r=0;}
+	if (g<0) {g=0;}
+	if (b<0) {b=0;}
+	this.cdlRPVal.value = r.toString();
+	this.cdlGPVal.value = g.toString();
+	this.cdlBPVal.value = b.toString();
+	this.cdlRPSlider.value = ((Math.log((r-c4)/c3)-c2)/c1).toString();
+	this.cdlGPSlider.value = ((Math.log((g-c4)/c3)-c2)/c1).toString();
+	this.cdlBPSlider.value = ((Math.log((b-c4)/c3)-c2)/c1).toString();
+	this.cdlSyncL();
+}
+LUTTweaksBox.prototype.cdlUpdateS = function(channel,slider) {
+	var s,S;
+	var val,sli;
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	switch (channel) {
+		case 0:	val = this.cdlRSVal;
+				sli = this.cdlRSSlider;
+				break;
+		case 1:	val = this.cdlGSVal;
+				sli = this.cdlGSSlider;
+				break;
+		case 2:	val = this.cdlBSVal;
+				sli = this.cdlBSSlider;
+				break;
+	}
+	if (slider) {
+		s = sli.value;
+		S = (c3*Math.exp((c1*parseFloat(s))+c2)) + c4;
+	} else {
+		s = val.value;
+		S = parseFloat(s);
+		if (isNaN(S)) {
+			s = sli.value;
+			S = (c3*Math.exp((c1*parseFloat(s))+c2)) + c4;
+		} else if (S < 0) {
+			s = '0';
+			S = 0;
+		}
+	}
+	val.value = S.toString();
+	sli.value = ((Math.log((S-c4)/c3)-c2)/c1).toString();
+	this.cdlSyncL();
+}
+LUTTweaksBox.prototype.cdlUpdateO = function(channel,slider) {
+	var o,O;
+	var val,sli;
+	switch (channel) {
+		case 0:	val = this.cdlROVal;
+				sli = this.cdlROSlider;
+				break;
+		case 1:	val = this.cdlGOVal;
+				sli = this.cdlGOSlider;
+				break;
+		case 2:	val = this.cdlBOVal;
+				sli = this.cdlBOSlider;
+				break;
+	}
+	if (slider) {
+		o = sli.value;
+	} else {
+		o = val.value;
+		if (isNaN(parseFloat(o))) {
+			o = sli.value;
+		}
+	}
+	val.value = o;
+	sli.value = o;
+	this.cdlSyncL();
+}
+LUTTweaksBox.prototype.cdlUpdateP = function(channel,slider) {
+	var p,P;
+	var val,sli;
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	switch (channel) {
+		case 0:	val = this.cdlRPVal;
+				sli = this.cdlRPSlider;
+				break;
+		case 1:	val = this.cdlGPVal;
+				sli = this.cdlGPSlider;
+				break;
+		case 2:	val = this.cdlBPVal;
+				sli = this.cdlBPSlider;
+				break;
+	}
+	if (slider) {
+		p = sli.value;
+		P = (c3*Math.exp((c1*parseFloat(p))+c2)) + c4;
+	} else {
+		p = val.value;
+		P = parseFloat(p);
+		if (isNaN(P)) {
+			p = sli.value;
+			P = (c3*Math.exp((c1*parseFloat(p))+c2)) + c4;
+		} else if (P < 0) {
+			p = '0';
+			P = 0;
+		}
+	}
+	val.value = P.toString();
+	sli.value = ((Math.log((P-c4)/c3)-c2)/c1).toString();
+	this.cdlSyncL();
+}
+LUTTweaksBox.prototype.cdlResetSat = function() {
+	this.cdlSatSlider.value = '1';
+	this.cdlSatVal.value = '1';
+}
+LUTTweaksBox.prototype.cdlResetS = function() {
+	this.cdlLSSlider.value = '1';
+	this.cdlLSVal.value = '1';
+	this.cdlRSSlider.value = '1';
+	this.cdlRSVal.value = '1';
+	this.cdlGSSlider.value = '1';
+	this.cdlGSVal.value = '1';
+	this.cdlBSSlider.value = '1';
+	this.cdlBSVal.value = '1';
+}
+LUTTweaksBox.prototype.cdlResetO = function() {
+	this.cdlLOSlider.value = '0';
+	this.cdlLOVal.value = '0';
+	this.cdlROSlider.value = '0';
+	this.cdlROVal.value = '0';
+	this.cdlGOSlider.value = '0';
+	this.cdlGOVal.value = '0';
+	this.cdlBOSlider.value = '0';
+	this.cdlBOVal.value = '0';
+}
+LUTTweaksBox.prototype.cdlResetP = function() {
+	this.cdlLPSlider.value = '1';
+	this.cdlLPVal.value = '1';
+	this.cdlRPSlider.value = '1';
+	this.cdlRPVal.value = '1';
+	this.cdlGPSlider.value = '1';
+	this.cdlGPVal.value = '1';
+	this.cdlBPSlider.value = '1';
+	this.cdlBPVal.value = '1';
 }
 //
 // *** LUT Analyst ***

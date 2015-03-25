@@ -129,6 +129,24 @@ LUTMessage.prototype.gaSetParams = function() {
 	if (!isNaN(highMap)) {
 		d.highMap = highMap/100;
 	}
+	if (this.inputs.tweakCDLCheck.checked) {
+		d.doASC = true;
+		var ascCDL = new Float64Array([
+			parseFloat(this.inputs.tweakCDLRSVal.value),
+			parseFloat(this.inputs.tweakCDLGSVal.value),
+			parseFloat(this.inputs.tweakCDLBSVal.value),
+			parseFloat(this.inputs.tweakCDLROVal.value),
+			parseFloat(this.inputs.tweakCDLGOVal.value),
+			parseFloat(this.inputs.tweakCDLBOVal.value),
+			parseFloat(this.inputs.tweakCDLRPVal.value),
+			parseFloat(this.inputs.tweakCDLGPVal.value),
+			parseFloat(this.inputs.tweakCDLBPVal.value),
+			parseFloat(this.inputs.tweakCDLSatVal.value)
+		]);
+		d.ascCDL = ascCDL.buffer;
+	} else {
+		d.doASC = false;
+	}
 	if (this.inputs.inRange[0].checked) {
 		d.inL = true;
 	} else {

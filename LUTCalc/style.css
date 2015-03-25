@@ -168,10 +168,12 @@ body {text-align:center;margin: 0px auto;}
 .isoinput {width:5em;line-height:0.8;}
 .shiftinput {width:5em;line-height:0.8;}
 .ireinput {width:4em;line-height:0.8;}
+.smallinput {width:3em;line-height:0.8;}
 .kelvininput {width:5em;line-height:0.8;}
 .textinput {line-height:0.8;margin-bottom:0.15em;}
 .infobox {height:21em;margin-top:0.15em;overflow:auto;}
 .buttons { text-align: center; }
+.smallbutton {text-align: center;font-size:0.6em;vertical-align:middle;}
 #tweakholder {margin:0;padding:0;overflow:auto;max-height:18em;}
 #chartcanvas1 {display:block;width:28em;height:15em; z-index: 1;}
 #chartcanvas2 {display:block;width:28em;height:15em; z-index: 1;}

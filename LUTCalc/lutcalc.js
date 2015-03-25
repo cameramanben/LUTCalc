@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 beta 3');
+	lutInputs.addInput('version','v1.9 beta 4');
 	lutInputs.addInput('date','March 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
@@ -205,6 +205,170 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.tweakGreenCATSelect.onchange = function(){
 		lutMessage.gtSetParams();
 	}
+	//			ASC CDL Tweak
+	lutInputs.tweakCDLCheck.onchange = function(){
+		lutTweaksBox.toggleCDLCheck();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLChannelSelect.onchange = function(){
+		lutTweaksBox.cdlChangeChannel();
+	}
+	lutInputs.tweakCDLSatSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateSat(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLSSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLS(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLOSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLO(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLPSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateLP(true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRSSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateS(0,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLROSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateO(0,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRPSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateP(0,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGSSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateS(1,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGOSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateO(1,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGPSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateP(1,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBSSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateS(2,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBOSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateO(2,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBPSlider.onchange = function(){
+		lutTweaksBox.cdlUpdateP(2,true);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLSatVal.onchange = function(){
+		lutTweaksBox.cdlUpdateSat(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLSVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLS(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLOVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLO(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLPVal.onchange = function(){
+		lutTweaksBox.cdlUpdateLP(false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRSVal.onchange = function(){
+		lutTweaksBox.cdlUpdateS(0,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLROVal.onchange = function(){
+		lutTweaksBox.cdlUpdateO(0,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRPVal.onchange = function(){
+		lutTweaksBox.cdlUpdateP(0,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGSVal.onchange = function(){
+		lutTweaksBox.cdlUpdateS(1,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGOVal.onchange = function(){
+		lutTweaksBox.cdlUpdateO(1,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGPVal.onchange = function(){
+		lutTweaksBox.cdlUpdateP(1,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBSVal.onchange = function(){
+		lutTweaksBox.cdlUpdateS(2,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBOVal.onchange = function(){
+		lutTweaksBox.cdlUpdateO(2,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBPVal.onchange = function(){
+		lutTweaksBox.cdlUpdateP(2,false);
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLSatReset.onclick = function(){
+		lutTweaksBox.cdlResetSat();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLSReset.onclick = function(){
+		lutTweaksBox.cdlResetS();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRSReset.onclick = function(){
+		lutTweaksBox.cdlResetS();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGSReset.onclick = function(){
+		lutTweaksBox.cdlResetS();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBSReset.onclick = function(){
+		lutTweaksBox.cdlResetS();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLOReset.onclick = function(){
+		lutTweaksBox.cdlResetO();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLROReset.onclick = function(){
+		lutTweaksBox.cdlResetO();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGOReset.onclick = function(){
+		lutTweaksBox.cdlResetO();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBOReset.onclick = function(){
+		lutTweaksBox.cdlResetO();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLLPReset.onclick = function(){
+		lutTweaksBox.cdlResetP();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLRPReset.onclick = function(){
+		lutTweaksBox.cdlResetP();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLGPReset.onclick = function(){
+		lutTweaksBox.cdlResetP();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakCDLBPReset.onclick = function(){
+		lutTweaksBox.cdlResetP();
+		lutMessage.gaSetParams();
+	}
 	//			LUT Analyst Tweak
 	if (lutInputs.isApp) {
 		lutInputs.laFileInput.onclick = function(){
@@ -260,11 +424,15 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutBox.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweakCheck();
+		lutMessage.gtSetParams();
+		lutMessage.gaSetParams();
 	}
 	lutInputs.d[1].onchange = function(){
 		lutBox.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweakCheck();
+		lutMessage.gtSetParams();
+		lutMessage.gaSetParams();
 	}
 	lutInputs.inRange[0].onchange = function(){
 		lutMessage.gaSetParams();
@@ -305,8 +473,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.drButton.onclick = function(){
 		lutPreview.toggleDefault();
 	}
-	lutInputs.vecButton.onclick = function(){
+	lutInputs.wavCheck.onclick = function(){
+		lutPreview.toggleWaveform();
+	}
+	lutInputs.vecCheck.onclick = function(){
 		lutPreview.toggleVectorscope();
+	}
+	lutInputs.rgbCheck.onclick = function(){
+		lutPreview.toggleParade();
 	}
 	//		Generate Button
 	lutGenerate.genButton.onclick = function(){
