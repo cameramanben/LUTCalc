@@ -29,12 +29,12 @@ LUTInfoBox.prototype.buildBox = function() {
 	this.instructions();
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBut.setAttribute('type','button');
-	this.gammaInfoBut.value = 'Gamma Info';
+	this.gammaInfoBut.value = 'Log Info';
 	this.gammaInfoBox = document.createElement('div');
 	this.gammaInfo();
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBut.setAttribute('type','button');
-	this.gammaChartBut.value = 'Gamma Chart';
+	this.gammaChartBut.value = 'Charts';
 	this.gammaChartBox = document.createElement('div');
 	this.gammaChart();
 	this.gammaChartBox.style.display = 'block';
@@ -47,45 +47,284 @@ LUTInfoBox.prototype.buildBox = function() {
 }
 LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.setAttribute('class','graybox infobox');
-	this.addText(this.instructionsBox,'LUTCalc ' + this.inputs.version + ' by Ben Turley (cameramanben)',true);
-	this.addText(this.instructionsBox,'*** New option - LUTAnalyst ***',true);
-	this.addText(this.instructionsBox,"A note about the main new feature called 'LUTAnalyst'.");
-	this.addText(this.instructionsBox,'This is available as an option in the customisation box. With it you can import a LUT (currently in cube format) and LUTAnalyst will be able to analyse the transfer function (1D) and colour space conversion (3D) so that they can then be used in the same way as the built in options.');
-	this.addText(this.instructionsBox,'Additionally, if you have developed a custom look and LUT then LUTAnalyst would allow you to visualise the gamma curve, produce accurate exposure compensated versions for your choice of input gamma / gamut and get IRE values for various reflectances such that the underlying log recording will be correctly exposed.');
-	this.addText(this.instructionsBox,'Cubic (1D) and tricubic (3D) interpolation provides accurate conversions.');
-	this.addText(this.instructionsBox,'Analysis is a two-stage process. Initially there are two options - import new LUT and Load Existing Analysed LA LUT.');
-	this.addText(this.instructionsBox,'Select the import new LUT option, click on the file browser and select a cube LUT to be analysed.');
-	this.addText(this.instructionsBox,'If the LUTCalc is able to read the file the LUTAnalyst box should now change to show the Analysis options.');
-	this.addText(this.instructionsBox,"First is 'LUT Title'. If the cube file contains a title, this will show here. If not, it will show 'LUT Analyser'. You can change this to whatever you wish to see in the gamma and gamut options.");
-	this.addText(this.instructionsBox,'Next come the input gamma and - if the LUT is 3D - input gamut options. Select the ones appropriate to the loaded LUT. For example, Sony provides a set of Look Profiles designed for S-Log3/S-Gamut3.cine and another for S-Log2/S-Gamut.');
-	this.addText(this.instructionsBox,"The last, important option is to set the input and output scaling of the LUT to be analysed. LUTs which work on log INPUT gammas tend to be data in (D). This is the case with all of Sony's look profiles. For LUTs which OUTPUT LOG curves the output scaling will also tend to be data (D). For other types of output curve the scaling is generally legal levels.");
-	this.addText(this.instructionsBox,"With the F5/F55 and Sony's looks as examples, 3D monitor LUTs, LC709, LC709A and Cine+709 are all data to legal (D→L), whereas the S-Log3 to S-Log2 look profile is data to data (D→D). Custom and home-made LUTs may also be legal to legal (L→L) and legal to data (L→D) is included for completeness, though somewhat unusual!");
-	this.addText(this.instructionsBox,"Once the gamma, gamut and scaling have been established, click the 'Analyse' button. After a few seconds, the row of button should change to show 'Re-Analyse', 'Save LA LUT' and 'Change LUT' and your newly analysed LUT should now be available as output gamma and output gamut options in the main part of LUTCalc. They show up as 'LA - ' followed by the LUT title.");
-	this.addText(this.instructionsBox,"'Re-Analyse' is useful for changing the gamma, gamut and scaling options if they have been incorrectly chosen.");
-	this.addText(this.instructionsBox,"'Save LA LUT' will save a file ending .lacube which contains two conventional cube LUTs. The first is a 1D transfer function (gamma) LUT from S-Log3 to the analysed gamma, data levels to data levels. The second is a 3D pure colour space conversion LUT, S-Log3/S-Gamut3.cine to S-Log3/analysed gamut, data levels to data levels. This can be loaded back into LUTCalc with the 'Load Existing Analysed LA LUT', avoiding the analysis stage.");
-	this.addText(this.instructionsBox,"'Change LUT' returns LUTAnalyst to its initial condition.");
-	this.addText(this.instructionsBox,'Instructions',true);
-	this.addText(this.instructionsBox,"Having opened either the Mac App or the index.html file you should see a set of four options boxes on this page, plus the 'Generate LUT' button and this information window.");
-	this.addText(this.instructionsBox,'First is the camera options box. Here you select a camera model. This sets the native ISO and CineEI recording approach (Sony, Arri, Canon) so that the correct exposure shift is calculated if a different CineEI is set.');
-	this.addText(this.instructionsBox,'Next is the gamma box. This allows you to set the log gamma you intend to shoot with (Recorded Gamma) and the output gamma you would like the LUT to translate to. It also contains options for recorded and output gamuts which appear when the 3D LUTs option is selected.');
-	this.addText(this.instructionsBox,"The third box contains a checkbox marked 'Customisation' which we will come back to later.");
-	this.addText(this.instructionsBox,"After that and moving to the right hand side is the LUT box. The 'LUT Title / Filename' is both the filename that will be used when saving the LUT and a note expected at the start of a .cube format LUT file. The latter is not generally used by grading software, but can be a handy guide to what the LUT does in case the filename gets changed.");
-	this.addText(this.instructionsBox,'The next options are for the type of LUT to be produced - either 1D or 3D - and the dimension of the LUT. 1D LUTs alter the gamma only, but are small yet precise, as every input value has a defined output value. The default dimension is 1024, which is ideal for 10-bit recording such as XAVC or SR, though 4096 is included as it is also a standard dimension.');
-	this.addText(this.instructionsBox,'3D LUTs are able to controllably adjust both gamma and colour; they have output values that depend on the combination of red, green and blue inputs. If every possible combination had a precisely defined value the LUT would be enormous, so 3D LUTs use a smaller set of control points and interpolate the values in between. The options are 17x17x17, 33x33x33 - either of which the camera can use as MLUTs - and 65x65x65. 33x33x33 is generally plenty for the kinds of transformations produced here. 65x65x65 is more precise, but takes considerably longer to produce and results in an enormous LUT file.');
-	this.addText(this.instructionsBox,"Sony's own LC709 and LC709A Look Profiles are both 33x33x33 LUTs.");
-	this.addText(this.instructionsBox,"Switching to 3D LUTs enables the gamut options. They should be fairly clear, but one of note is 'Passthrough'. This sends the colour information through the LUT unchanged, effectively making a 3D LUT behave like a 1D gamma only LUT. Other than testing it is not much use in post software when 1D LUTs are available, but is the way to make gamma only MLUTs that the camera will accept.");
-	this.addText(this.instructionsBox,'The input and output ranges can now be controlled for the LUT. Legal range means the IRE values of 0%-100%, or 10-bit values 64-940 and data range means -7%-109% or 0-1023. Recordings in S-Log3 cannot exceed the legal range, but other log curves can go above 940 which would be clipped with legal range set, so for the input it is best to leave it as data range.  You may have to specify that a clip is data range in your grading software.');
-	this.addText(this.instructionsBox,'For the output, the range setting only affects the scaling; output values are in floating point and can easily exceed legal or data range without clipping. Data range here is useful if you are producing an exposure shift only LUT, or going from one log curve to another. Legal range here tends to lead to a simpler workflow and works with the default setup in Resolve.');
-	this.addText(this.instructionsBox,"Sony's Look Profiles and LUTs map from data levels to legal levels, which is the default setup in LUTCalc for non-log gammas.");
-	this.addText(this.instructionsBox,'The last option in this box is the Camera MLUT checkbox. Sony specifies that for use in the camera, 3D MLUTs must be 17x17x17 or 33x33x33, legal range scaling on the output and clipped 0-1.0. This setting ensures that the LUT is correct for use in the camera, though the clipping is less than ideal for grading. It is easy enough to bake two versions of a LUT.');
-	this.addText(this.instructionsBox,"The 0-1 clipping on the output would mean that 3D MLUTs couldn't reach into the extended range between 100% and 109% (such as HG7 and HG8 or Rec709(800%)), so after checking in the camera I actually have the clipping set as 0-1.09. This doesn't seem to cause any issues and makes the MLUT rather more useful.");
-	this.addText(this.instructionsBox,"Now it only remains to press the Generate LUT button. The Mac App version of this program currently saves cube files directly to a folder on the the desktop. For the web app version depending on your browser either a file will be saved to the Downloads directory or a tab should open up in your browser displaying the contents of the LUT. If the latter, save this page - make sure that the format is NOT 'web archive' in the Save As box of the browser - and give it a meaningful name and the extension .cube .");
-	this.addText(this.instructionsBox,"Using Resolve as an example and assuming that you have saved it to Resolve's LUT folder, the LUT should now show up under the 3D LUT options. For some reason with .cube files in Resolve both 1D and 3D LUTs appear under 3D LUTs.");
-	this.addText(this.instructionsBox,"This is the basic operation, but there is considerably more flexibility available by clicking the 'Customisation' checkbox.");
-	this.addText(this.instructionsBox,"Initially nothing will happen, but if you set the output gamma to non-log option (except 'Linear' or 'Null') two new boxes should appear. 'Black level' allows you to set the lowest output value (in IRE) that the output gamma will allow, and by default will then scale the rest of the curve so that the output value for 100% IRE input remains unchanged. This can be useful as many curves set black around 3% IRE and I like to have the option of pushing that down for thicker, crunchier blacks.");
-	this.addText(this.instructionsBox,"The 'Highlight Level' allows you to set a reflected value (such as 18% gray or 90% white) and see what level that gets displayed at in your chosen gamma. you can then set a level that you would like it to display at and LUTCalc will scale the curve, keeping the black level unchanged.");
-	this.addText(this.instructionsBox,'The idea of this is that it allows people who favour setting their exposures by IRE levels that can vary significantly from gamma to gamma (eg 90% IRE) to expose to the LUT but have correctly exposed underlying log material.');
-	this.addText(this.instructionsBox,'Setting the LUT type to 3D will bring up a third box. Highlight gamut allows you to chose a second colour transform for the highlights, plus the start and end of the transition and how abruptly it happens. It is rather suck it and see, but allows for some fairly interesting and complex effects such as differing saturation in the highlights and shadows.');
+	this.createMainscreen();
+	this.instructionsBox.appendChild(this.mainscreen);
+	this.createCamInfo();
+	this.instructionsBox.appendChild(this.insCam);
+	this.createGamInfo();
+	this.instructionsBox.appendChild(this.insGam);
+	this.createLutInfo();
+	this.instructionsBox.appendChild(this.insLut);
+	this.createPreInfo();
+	this.instructionsBox.appendChild(this.insPre);
+	this.createGenInfo();
+	this.instructionsBox.appendChild(this.insGen);
+	this.createInfInfo();
+	this.instructionsBox.appendChild(this.insInf);
+	this.setupEvents();
+}
+LUTInfoBox.prototype.showMainscreen = function() {
+	this.hideAll();
+	this.mainscreen.style.display = 'block';
+}
+LUTInfoBox.prototype.showCamInfo = function() {
+	this.hideAll();
+	this.insCam.style.display = 'block';
+}
+LUTInfoBox.prototype.showGamInfo = function() {
+	this.hideAll();
+	this.insGam.style.display = 'block';
+}
+LUTInfoBox.prototype.showLutInfo = function() {
+	this.hideAll();
+	this.insLut.style.display = 'block';
+}
+LUTInfoBox.prototype.showPreInfo = function() {
+	this.hideAll();
+	this.insPre.style.display = 'block';
+}
+LUTInfoBox.prototype.showGenInfo = function() {
+	this.hideAll();
+	this.insGen.style.display = 'block';
+}
+LUTInfoBox.prototype.showInfInfo = function() {
+	this.hideAll();
+	this.insInf.style.display = 'block';
+}
+LUTInfoBox.prototype.hideAll = function() {
+	this.mainscreen.style.display = 'none';
+	this.insCam.style.display = 'none';
+	this.insGam.style.display = 'none';
+	this.insLut.style.display = 'none';
+	this.insPre.style.display = 'none';
+	this.insGen.style.display = 'none';
+	this.insInf.style.display = 'none';
+}
+LUTInfoBox.prototype.createMainscreen = function() {
+	this.mainscreen = document.createElement('div');
+	this.mainscreen.setAttribute('class','imagemap');
+	this.mainscreen.setAttribute('id','ins-mainscreen');
+	var click = document.createElement('p');
+	click.appendChild(document.createTextNode('Click an area for information:'));
+	this.mainscreen.appendChild(click);
+	var header = document.createElement('div');
+	header.setAttribute('class','imagemapimg');	
+	header.setAttribute('id','ins-main-header');	
+	this.mainscreen.appendChild(header);
+	var left = document.createElement('div');
+	left.setAttribute('id','ins-main-left');
+	this.insMainCam = document.createElement('div');
+	this.insMainCam.setAttribute('class','imagemapimg');
+	this.insMainCam.setAttribute('id','ins-main-cam');
+	left.appendChild(this.insMainCam);
+	this.insMainGam = document.createElement('div');
+	this.insMainGam.setAttribute('class','imagemapimg');
+	this.insMainGam.setAttribute('id','ins-main-gam');
+	left.appendChild(this.insMainGam);
+	this.insMainTwk = document.createElement('div');
+	this.insMainTwk.setAttribute('class','imagemapimg');
+	this.insMainTwk.setAttribute('id','ins-main-twk');
+	left.appendChild(this.insMainTwk);
+	var spacer = document.createElement('div');
+	spacer.setAttribute('class','imagemapimg');
+	spacer.setAttribute('id','ins-main-spacer');	
+	left.appendChild(spacer);
+	this.mainscreen.appendChild(left);
+	var right = document.createElement('div');
+	right.setAttribute('id','ins-main-right');
+	this.insMainLut = document.createElement('div');
+	this.insMainLut.setAttribute('class','imagemapimg');
+	this.insMainLut.setAttribute('id','ins-main-lut');
+	right.appendChild(this.insMainLut);
+	var buttons = document.createElement('div');
+	buttons.setAttribute('id','ins-main-buttons');
+	this.insMainPre = document.createElement('div');
+	this.insMainPre.setAttribute('class','imagemapimg');
+	this.insMainPre.setAttribute('id','ins-main-pre');
+	buttons.appendChild(this.insMainPre);
+	this.insMainGen = document.createElement('div');
+	this.insMainGen.setAttribute('class','imagemapimg');
+	this.insMainGen.setAttribute('id','ins-main-gen');
+	buttons.appendChild(this.insMainGen);
+	right.appendChild(buttons);
+	this.insMainInf = document.createElement('div');
+	this.insMainInf.setAttribute('class','imagemapimg');
+	this.insMainInf.setAttribute('id','ins-main-inf');
+	right.appendChild(this.insMainInf);
+	this.mainscreen.appendChild(right);
+	var footer = document.createElement('div');
+	footer.setAttribute('class','imagemapimg');	
+	footer.setAttribute('id','ins-main-footer');	
+	this.mainscreen.appendChild(footer);
+}
+LUTInfoBox.prototype.createCamInfo = function() {
+	this.insCam = document.createElement('div');
+	this.insCam.setAttribute('class','instructions');
+	this.insCam.setAttribute('id','ins-cam');
+	this.insCamBack = document.createElement('input');
+	this.insCamBack.setAttribute('type','button');
+	this.insCamBack.value = 'Back';
+	this.insCam.appendChild(this.insCamBack);
+	this.insCamInfo = document.createElement('div');
+	this.insCamInfo.setAttribute('class','infotext');
+	this.addInfo(this.insCamInfo,false,null,'This box defines which camera model the LUT generated is to be used with.');
+	this.addInfo(this.insCamInfo,false,null,'Differing manufacturers take differing approaches to recording log, which primarily effects how exposure corrections are handled.');
+	this.addInfo(this.insCamInfo,true,'The Sony Approach','Sony have arguably the most pure approach to log. The entire dynamic range of the camera is captured, with changes in ISO being stored purely as metadata in the clip file.');
+	this.addInfo(this.insCamInfo,true,null,'Post production software is then expected to read the metadata and automatically do the exposure adjustment.');
+	this.addInfo(this.insCamInfo,true,null,'In practice this does not currently always work, so LUTCalc can be used to create exposure corrected LUTs, eg LC709A with a 1-stop push.');
+	this.addInfo(this.insCamInfo,true,null,"Exposure can be entered either as the CineEI ISO value used, or as a stop correction from the base ISO, which is shown as 'Native ISO' next to the camera model.");
+	this.addInfo(this.insCamInfo,true,'The Canon Approach','The C300 has popularised log recording with CP Lock, but only records in 8-bit. Log is normally recorded in at least 10-bit, for a broad spread of picture data when the contrast is increased in post.');
+	this.addInfo(this.insCamInfo,true,null,'In order to have a reasonable result in the midtones and highlights, C-Log spreads information very thinly in the shadows. Storing exposure shifts as metadata and performing the adjustment in post would work very badly when pushing to increase the ISO, so Canon bakes in the exposure shift.');
+	this.addInfo(this.insCamInfo,true,null,'Consequently, the full dynamic range of the camera is only captured at the base ISO.');
+	this.addInfo(this.insCamInfo,true,null,"LUTCalc allows you to generate exposure shifts, but as the ISO is arbitrary, it only shows the 'exposure correction' option for the Cine EOS cameras. LUTs for the C300 will also be appropriate for the C100 and C500");
+	this.addInfo(this.insCamInfo,true,'The Arri Approach','Somewhere between the other two, in LogC Arri adjusts the log parameters with ISO, incorporating a slight knee at high ISOs. Combined with higher bit depths than in the C300, this means that the full dynamic range is always captured.');
+	this.insCam.style.display = 'none';
+	this.insCam.appendChild(this.insCamInfo);
+}
+LUTInfoBox.prototype.createGamInfo = function() {
+	this.insGam = document.createElement('div');
+	this.insGam.setAttribute('class','instructions');
+	this.insGam.setAttribute('id','ins-gam');
+	this.insGamBack = document.createElement('input');
+	this.insGamBack.setAttribute('type','button');
+	this.insGamBack.value = 'Back';
+	this.insGam.appendChild(this.insGamBack);
+	this.insGamInfo = document.createElement('div');
+	this.insGamInfo.setAttribute('class','infotext');
+	this.addInfo(this.insGamInfo,false,null,'This box is used to set the transfer function and colour space that the camera records to and the basic combination that the LUT is intended to output.');
+	this.addInfo(this.insGamInfo,false,null,"The menus refer to 'Gamma' and 'Gamut' as these terms are in common use and generally understood in the context, though the accurate terms should be 'Transfer Function' and 'Colour Space'.");
+	this.addInfo(this.insGamInfo,false,null,'There are four types of transfer function offered:');
+	this.addInfo(this.insGamInfo,true,'Log Curves','These are designed to spread picture information evenly between stops and are how cameras are able to capture high dynamic range within limited bit depth whilst allowing extensive manipulation in post.');
+	this.addInfo(this.insGamInfo,true,null,'They are not intended to be used uncorrected, appearing very flat and dull. For this reason they are also not very suitable for setting exposures to. Examples are S-Log, S-Log2 and S-Log3 on Sony cameras, C-Log on Canon cameras and LogC on Arris.');
+	this.addInfo(this.insGamInfo,true,'Linear And Gamma Curves',"These are offered when 'Linear/Rec709' is selected in the gamma boxes. Pure linear is effectively the sensor response of the camera; the value is proportional to the number of photons hitting the sensor.");
+	this.addInfo(this.insGamInfo,true,null,'Displays generally expect the linear signal to be adjusted with a power function, raising the linear value in relation to a power known as the gamma. sRGB is common in computing and photography, Rec709 is the standard for HDTV and Rec2020 is a slight refinement of Rec709 for UHDTV and deeper bit depths.');
+	this.addInfo(this.insGamInfo,true,'Creative Curves','These are curves which are not defined by standards, though generally relate to them. An example is Rec709(800%) which is a Sony interpretation of Rec709 with a smooth knee to extend the dynamic range captured to 800% IRE at a recording level of 109%. These are the main choices for useful camera gammas.');
+	this.addInfo(this.insGamInfo,true,'Hybrid Gamma Curves',"These are proposed replacements for the current Rec709/Rec2020 curves as displays become able to produces very wide dynamic ranges. Two, listed as 'ITU Proposal' and 'BBC WHP283' are very similar to Rec709 in the shadows and midtones, but transitioning to a flat log region in the highlights.");
+	this.addInfo(this.insGamInfo,true,null,"'Dolby PQ' breaks with backwards compatibility and distributes picture information in a way calculated to hold the maximum possible dynamic range for a given bit depth before effects such as banding become apparent. It appears extraordinarily flat on a Rec709 or sRGB screen.");
+	this.addInfo(this.insGamInfo,false,null,'There are two main types of colour space:');
+	this.addInfo(this.insGamInfo,true,'Matrix','These are gamuts where a picture can be changed from one to another via a 3x3 matrix performed on linear data. There are capture ones such as the S-Gamuts, Arri Wide Gamut and Canon Cinema Gamut, photometric and intermediate ones such as XYZ and ACES and output gamuts such as Rec709 and Rec2020 (the last two have very similar transfer functions, but the Rec2020 colour space is much wider than the Rec709 one).');
+	this.addInfo(this.insGamInfo,true,'LUT','These are ones where the conversion from another colour space is complex and may be irreversible, so LUTCalc stores them as LUTs internally. The advantage is that they can have more complex responses than basic matrices, changing saturation with colour and exposure or tuning the look to favour skin tones or natural greens. Examples include LC709 and LC709A, based on the look profiles produced by Sony.');
+	this.addInfo(this.insGamInfo,true,null,'LC709 as a colour space gives a similar though arguably subtler colour response than the basic Rec709 matrix');
+	this.insGam.style.display = 'none';
+	this.insGam.appendChild(this.insGamInfo);
+}
+LUTInfoBox.prototype.createTwkInfo = function() {
+}
+LUTInfoBox.prototype.createLutInfo = function() {
+	this.insLut = document.createElement('div');
+	this.insLut.setAttribute('class','instructions');
+	this.insLut.setAttribute('id','ins-lut');
+	this.insLutBack = document.createElement('input');
+	this.insLutBack.setAttribute('type','button');
+	this.insLutBack.value = 'Back';
+	this.insLut.appendChild(this.insLutBack);
+	this.insLutInfo = document.createElement('div');
+	this.insLutInfo.setAttribute('class','infotext');
+	this.addInfo(this.insLutInfo,false,null,'This is the box where the format of the LUT to be generated is decided.');
+	this.addInfo(this.insLutInfo,false,null,"The first option is 'LUT Title / Filename'. This is used as the filename when saving the LUT, but also is featured in the file itself as a title, for future reference in case the filename is changed. LUTCalc will make sure that it is appropriately formatted as a filename.");
+	this.addInfo(this.insLutInfo,false,null,'LUTCalc produces 1D and 3D LUTs in the cube format.');
+	this.addInfo(this.insLutInfo,true,'1D','these are used for contrast control, since there is no combining of colour channels.');
+	this.addInfo(this.insLutInfo,true,null,'They can store an output value for every possible 8-bit, 10-bit or 16-bit value allowing the actual transform to be arbitrarily complex. This may well be vital with an extensive grade, but with smooth curves such as those built in to LUTCalc and the use of cubic interpolation, considerably fewer control point are needed for an effective result. LUT calc can produce 1024-point (10-bit) and 4096-point (fairly standard shaper LUT size) 1D LUTs.');
+	this.addInfo(this.insLutInfo,true,'3D','3D LUTs consider the possible combinations of red, green and blue input values to reference an output value. Whereas a 1024-point 1D LUT references every possible 10-bit input value, a 3D LUT would need to be 1024x1024x1024-point to consider every possible RGB combination.');
+	this.addInfo(this.insLutInfo,true,null,'This would be impractically large and complex, so 3D LUTs are generally of a much smaller dimension and use interpolation to obtain intermediate values. LUTCalc can produce 17x17x17, 33x33x33 and 65x65x65 3D cubes, which are the most common 3D sizes.');
+	this.addInfo(this.insLutInfo,true,null,'Sony F cameras accept 33x33x33 cubes and this size does a very good job of reproducing the kinds of effects possible in LUTCalc. 65x65x65 is much larger, but gives greater precision for post software where the size is less of an issue.');
+	this.addInfo(this.insLutInfo,false,null,'The next options relate to the input and output ranges of the LUT. Cube LUTs contain floating point values (decimals), and generally map 0 to be black and 1 to be white. Values can actually be greater or less than these, but 0 and 1 are the reference points. What 0 and 1 actually represent depends on the video range used.');
+	this.addInfo(this.insLutInfo,true,'Legal Range',"10-bit binary can store 1024 different values, in the base 10 range 0-1023. In analogue video picture information was stored within a voltage range defined as a percentage 0%-100%. Values just outside were that classed 'super black' and 'super white'.");
+	this.addInfo(this.insLutInfo,true,null,"In digital video, the extremes have been kept and the 'legal' 0%-100% range defined as being between 10-bit values 64 and 940. When 'legal range' is set for a LUT, 0 equates to 10-bit 64 and 1 to 10-bit 940. 10-bit 0 becomes a value of -0.073 and 10-bit 1023 1.095. This is a commonly expected output range in software such as DaVinci Resolve and is the output range of Sony monitor LUTs (MLUTS).");
+	this.addInfo(this.insLutInfo,true,'Data Range','this treats the full range of 10-bit values as mapping to the 0-1 LUT range. Technically, the top and bottom couple of values are generally reserved, but for the sake of simplicity that can be ignored here. LUTs can output values outside of the 0-1 range, but will only consider input values within it. If a log recording goes outside of legal range (generally only above 1), then the LUT input needs to be data range to make sure that no data is lost.');
+	this.addInfo(this.insLutInfo,true,null,'S-Log2 and Canon C-Log both go above legal range, and for consistency Sony recommends working with S-Log3 set to data range in software such as Resolve. Sony MLUTs are data in, legal out.');
+	this.addInfo(this.insLutInfo,false,null,'LUTCalc will generally default to data in, legal out, though if both the input and output gammas are log curves then it will set data in data out, on the assumption that further LUTs or corrections will be applied.');
+	this.addInfo(this.insLutInfo,false,null,'It has also been suggested that the Lumetri plugin in Adobe Premiere CC expects data in, data out in order to give the correct look. The best suggestion is to test and compare in the software to be used in post.');
+	this.addInfo(this.insLutInfo,false,null,'The final two options relate to clipping output levels.');
+	this.addInfo(this.insLutInfo,true,'Camera MLUT (3D, Clip To 0-1.09)','Sony MLUTs expect output values to be within the range 0-1.09, with the ranges data in and legal out. This option ensures that everything is set correctly.');
+	this.addInfo(this.insLutInfo,true,'Clip To 0-1.0','The cube file spec allows for output values beyond 0-1. This allows limited dynamic range conversions such as linear or Rec709 to be performed non destructively, ie the overexposed data can still be pulled back into range.');
+	this.addInfo(this.insLutInfo,true,null,'Some software does not handle out of range values correctly, so this option hard clips from 0-1.0. This does mean that data outside of that range is lost.');
+	this.insLut.style.display = 'none';
+	this.insLut.appendChild(this.insLutInfo);
+}
+LUTInfoBox.prototype.createPreInfo = function() {
+	this.insPre = document.createElement('div');
+	this.insPre.setAttribute('class','instructions');
+	this.insPre.setAttribute('id','ins-gen');
+	this.insPreBack = document.createElement('input');
+	this.insPreBack.setAttribute('type','button');
+	this.insPreBack.value = 'Back';
+	this.insPre.appendChild(this.insPreBack);
+	this.insPreInfo = document.createElement('div');
+	this.insPreInfo.setAttribute('class','infotext');
+	this.addInfo(this.insPreInfo,false,null,"Clicking 'Preview' brings up a test image in place of the LUT options box at the top right. It is displayed legal range and incorporates any adjustments made.");
+	this.addInfo(this.insPreInfo,false,null,'LUTCalc includes two test images.');
+	this.addInfo(this.insPreInfo,true,'High Contrast','The initial one is high contrast, covering around eleven or twelve stops and with information over 5 1/2 stops above 18% gray.');
+	this.addInfo(this.insPreInfo,true,'Low Contrast','This toggles to the second image, which is against greenscreen and stays within the dynamic range of Rec709, with about 2 1/3 stops above 18% gray.');
+	this.addInfo(this.insPreInfo,false,null,'Both images include a set of Rec709 75% and 100% primary and secondary boxes, a 16-stop grayscale and a colour chart on the right.');
+	this.addInfo(this.insPreInfo,false,null,'The high contrast image also includes colour charts four stops above and below base and the low contrast chart two stops above and below.');
+	this.addInfo(this.insPreInfo,false,null,"A png, bmp or jpeg recorded in a known colour space can also be loaded in place of the defaults by clicking 'Load Preview...'.");
+	this.addInfo(this.insPreInfo,false,null,"'Large Image' / 'Small Image' toggles between the default small preview image and a larger version which requires scrolling to view the scopes.");
+	this.addInfo(this.insPreInfo,false,null,'Above the preview window are the scope options:');
+	this.addInfo(this.insPreInfo,true,'Waveform','The horizontal axis is the same as the test image, whilst the vertical axis is luma values of all the pixels in that column. The scale lines are blocks of 10% IRE and the full range runs from -7% to +109%.');
+	this.addInfo(this.insPreInfo,true,'Vectorscope','This is a polar plot of the image chroma. LUTCalc includes standard 75% and 100% Rec709 boxes (the two rows of green circles). In pure Rec709 75% colour bars should fall dead centre of the inner green circles.');
+	this.addInfo(this.insPreInfo,true,null,'In addition there is a set of 75% Rec709 boxes that have been mapped to the current chosen colour space. These are the colour of their associated primary or secondary and will lie inside the green ones.');
+	this.addInfo(this.insPreInfo,true,null,'These give a guide to the size and nature of the chosen colour space, and also where a test chart should lie for correcting colour castes without changing colour space.');
+	this.addInfo(this.insPreInfo,true,'RGB Parade','Similar to the waveform, but the red, green and blue components are separated horizontally.');
+	this.insPre.style.display = 'none';
+	this.insPre.appendChild(this.insPreInfo);
+}
+LUTInfoBox.prototype.createGenInfo = function() {
+	this.insGen = document.createElement('div');
+	this.insGen.setAttribute('class','instructions');
+	this.insGen.setAttribute('id','ins-gen');
+	this.insGenBack = document.createElement('input');
+	this.insGenBack.setAttribute('type','button');
+	this.insGenBack.value = 'Back';
+	this.insGen.appendChild(this.insGenBack);
+	this.insGenInfo = document.createElement('div');
+	this.insGenInfo.setAttribute('class','infotext');
+	this.addInfo(this.insGenInfo,false,'Generate','The GO button!');
+	this.addInfo(this.insGenInfo,false,null,'In most browsers you will either be given a choice of where to save your LUT, or it will automatically go to the Downloads folder.');
+	this.addInfo(this.insGenInfo,false,null,'In some versions of Safari it may just appear in a new browser tab. In that case you will need to save it manually.');
+	this.addInfo(this.insGenInfo,false,null,'LUTCalc For Mac allows you to choose the destination for saving.');
+	this.addInfo(this.insGenInfo,false,null,"LUTCalc currently generates LUTs in the 'cube' format.");
+	this.insGen.style.display = 'none';
+	this.insGen.appendChild(this.insGenInfo);
+}
+LUTInfoBox.prototype.createInfInfo = function() {
+	this.insInf = document.createElement('div');
+	this.insInf.setAttribute('class','instructions');
+	this.insInf.setAttribute('id','ins-inf');
+	this.insInfBack = document.createElement('input');
+	this.insInfBack.setAttribute('type','button');
+	this.insInfBack.value = 'Back';
+	this.insInf.appendChild(this.insInfBack);
+	this.insInfPic = document.createElement('div');
+	this.insInfPic.setAttribute('class','imagemap');
+	this.insInfPic.setAttribute('id','ins-inf-pic');
+	this.insInf.appendChild(this.insInfPic);
+	this.insInfInfo = document.createElement('div');
+	this.insInfInfo.setAttribute('class','infotext');
+	this.addInfo(this.insInfInfo,false,'Instructions','Hopefully fairly obvious, after all here you are!');
+	this.addInfo(this.insInfInfo,false,'Log Info','This shows tables of % IRE and 10-bit values for the main log and gamma curves, plus the current output curve.');
+	this.addInfo(this.insInfInfo,false,'Charts','This provides three different ways of comparing input and output levels:');
+	this.addInfo(this.insInfInfo,true,'Reflected/IRE','Reflectance levels of the scene (eg 18% gray, 90% white) against % IRE. The simplest chart, but as the x-axis is linear it is hard to read anything meaningful from it.');
+	this.addInfo(this.insInfInfo,true,'Stop/IRE','Shows the output level against input stops. Clearly shows the difference between linear/gamma (keep increasing in slope), log curves (tend towards a straight line slope in the highlights and curves with knee (tend towards a horizontal line in the highlights). Also gives a good idea of dynamic range in stops.');
+	this.addInfo(this.insInfInfo,true,'LUT In / LUT Out','similar to Stop/IRE, but better shows true black (black is technically minus infinity stops, so Stop/IRE never quite shows it).');
+	this.addInfo(this.insInfInfo,false,null,'The charts tab also includes a table of %IRE and 10-bit values for the current curve.');
+	this.insInf.style.display = 'none';
+	this.insInf.appendChild(this.insInfInfo);
+}
+LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
+	var para = document.createElement('p');
+	if (indent) {
+	console.log(title);
+		para.setAttribute('class','indentpara');
+	}
+	if (typeof title === 'string') {
+		var titleText = document.createElement('strong');
+		titleText.appendChild(document.createTextNode(title));
+		para.appendChild(titleText);
+		para.appendChild(document.createTextNode(' - '));
+	}
+	para.appendChild(document.createTextNode(text));
+	infoBox.appendChild(para);
 }
 LUTInfoBox.prototype.gammaInfo = function() {
 	this.tableRefVals = [0,0.18,0.38,0.44,0.9,7.2,13.5];
@@ -467,6 +706,21 @@ LUTInfoBox.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
+}
+// Event Listeners
+LUTInfoBox.prototype.setupEvents = function() {
+	this.insMainCam.onclick = function(here){ return function(){ here.showCamInfo(); };}(this);
+	this.insCamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainGam.onclick = function(here){ return function(){ here.showGamInfo(); };}(this);
+	this.insGamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainLut.onclick = function(here){ return function(){ here.showLutInfo(); };}(this);
+	this.insLutBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainPre.onclick = function(here){ return function(){ here.showPreInfo(); };}(this);
+	this.insPreBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainGen.onclick = function(here){ return function(){ here.showGenInfo(); };}(this);
+	this.insGenBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
+	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 }
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {

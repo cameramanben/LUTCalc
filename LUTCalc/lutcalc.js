@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 beta 4');
+	lutInputs.addInput('version','v1.9 Beta 6');
 	lutInputs.addInput('date','March 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
@@ -469,6 +469,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	lutInputs.preButton.onclick = function(){
 		lutPreview.toggle();
+	}
+	lutInputs.sizeButton.onclick = function(){
+		lutPreview.toggleSize();
 	}
 	lutInputs.drButton.onclick = function(){
 		lutPreview.toggleDefault();
