@@ -75,6 +75,7 @@ th {font-weight: bold;}
 th { padding-left:0.75em; padding-right:0.75em; }
 p {margin-bottom:0.6em;}
 strong { font-weight: bold; font-size: 1.1em; }
+.indentpara strong { font-size: 1em; }
 sup { vertical-align: top; font-size: 0.7em; }
 small {font-size: 0.7em;}
 select, input, textarea {font: 99% sans-serif;}
@@ -126,7 +127,7 @@ body {text-align:center;margin: 0px auto;}
 #javascriptwarning { margin-top:1em; }
 #main { padding-right:0.2em; width:69em;margin: 0px auto;}
 #left { float:left;}
-#right {float:right;overflow:auto;width:35em;max-height:38.5em;padding-right:1em;}
+#right {float:right;overflow:auto;width:35em;height:39.5em;padding-right:1em;}
 #lutcalcform {margin: 0px auto;}
 .shadowbox	{	
 	box-shadow:0.05em 0.05em 0.2em #808080;
@@ -187,3 +188,32 @@ body {text-align:center;margin: 0px auto;}
 #chartreclabel {color:red; margin-right:10px;}
 #chartoutlabel {color:blue; margin-left:10px;}
 #genbutton { text-align:center; }
+/* Preview canvases */
+#can-hidden {margin:0px auto;}
+#can-waveform {margin:0px auto;}
+#can-vector {margin:0px auto;}
+#can-parade {margin:0px auto;}
+/* Instructions images */
+.infotext { text-align:left; }
+.indentpara { margin-left:2em; }
+#ins-mainscreen {width:28em;margin:0px auto;}
+#ins-main-header {display:block;background-image: url('pngs/main-header.png');margin:0;padding:0;background-size:28em 0.7875em;width:28em;height:0.7875em;}
+#ins-main-left {margin:0;padding:0;display:inline-block;}
+#ins-main-cam {background-image: url('pngs/main-cam.png');margin:0;padding:0;background-size:14em 2.58125em;width:14em;height:2.58125em;}
+#ins-main-cam:hover {background-image: url('pngs/main-cam-g.png');margin:0;padding:0;background-size:14em 2.58125em;width:14em;height:2.58125em;}
+#ins-main-gam {background-image: url('pngs/main-gam.png');margin:0;padding:0;background-size:14em 3.10625em;width:14em;height:3.10625em;}
+#ins-main-gam:hover {background-image: url('pngs/main-gam-g.png');margin:0;padding:0;background-size:14em 3.10625em;width:14em;height:3.10625em;}
+#ins-main-twk {background-image: url('pngs/main-twk.png');margin:0;padding:0;background-size:14em 8.44375em;width:14em;height:8.44375em;}
+#ins-main-twk:hover {background-image: url('pngs/main-twk-g.png');margin:0;padding:0;background-size:14em 8.44375em;width:14em;height:8.44375em;}
+#ins-main-spacer {background-image: url('pngs/main-spacer.png');margin:0;padding:0;background-size:14em 1.4875em;width:14em;height:1.4875em;}
+#ins-main-right {margin:0;padding:0;display:inline-block;}
+#ins-main-lut {background-image: url('pngs/main-lut.png');margin:0;padding:0;background-size:14em 4.4625em;width:14em;height:4.4625em;}
+#ins-main-lut:hover {background-image: url('pngs/main-lut-g.png');margin:0;padding:0;background-size:14em 4.4625em;width:14em;height:4.4625em;}
+#ins-main-buttons {margin:0;padding:0;width:14em;height:0.7875em;}
+#ins-main-pre {float:left;background-image: url('pngs/main-pre.png');margin:0;padding:0;background-size:6.4em 0.7875em;width:6.4em;height:0.7875em;}
+#ins-main-pre:hover {float:left;background-image: url('pngs/main-pre-g.png');margin:0;padding:0;background-size:6.4em 0.7875em;width:6.4em;height:0.7875em;}
+#ins-main-gen {float:right;background-image: url('pngs/main-gen.png');margin:0;padding:0;background-size:7.54em 0.7875em;width:7.54em;height:0.7875em;}
+#ins-main-gen:hover {float:right;background-image: url('pngs/main-gen-g.png');margin:0;padding:0;background-size:7.54em 0.7875em;width:7.54em;height:0.7875em;}
+#ins-main-inf {background-image: url('pngs/main-inf.png');margin:0;padding:0;background-size:14em 10.36875em;width:14em;height:10.36875em;}
+#ins-main-inf:hover {background-image: url('pngs/main-inf-g.png');margin:0;padding:0;background-size:14em 10.36875em;width:14em;height:10.36875em;}
+#ins-main-footer {display:block;background-image: url('pngs/main-footer.png');margin:0;padding:0;background-size:28em 0.56875em;width:28em;height:0.56875em;}

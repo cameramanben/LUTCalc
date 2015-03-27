@@ -21,6 +21,8 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.right = document.getElementById('right');
 	this.preButton = document.createElement('input');
 	this.inputs.addInput('preButton',this.preButton);
+	this.sizeButton = document.createElement('input');
+	this.inputs.addInput('sizeButton',this.sizeButton);
 	this.drButton = document.createElement('input');
 	this.inputs.addInput('drButton',this.drButton);
 	this.wavCheck = document.createElement('input');
@@ -42,6 +44,7 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.show = false;
 	this.changed = false;
 	this.line = 0;
+	this.small = true;
 	this.wform = false;
 	this.vscope = false;
 	this.parade = false;
@@ -49,7 +52,7 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.primaries();
 	this.buildBox();
 	fieldset.appendChild(this.box);
-	fieldset.style.width = '48em';	
+	fieldset.style.width = '32em';	
 	fieldset.style.display = 'none';
 }
 LUTPreview.prototype.primaries = function() {
@@ -87,15 +90,17 @@ LUTPreview.prototype.updatePrimaries = function(data) {
 LUTPreview.prototype.buildBox = function() {
 	this.preButton.setAttribute('type','button');
 	this.preButton.value = 'Preview';
+	this.sizeButton.setAttribute('type','button');
+	this.sizeButton.value = 'Large Image';
+	this.sizeButton.style.display = 'none';
 	this.drButton.setAttribute('type','button');
-	this.drButton.value = 'To Low Contrast Image';
+	this.drButton.value = 'Low Contrast';
 	this.fileButton.setAttribute('type','button');
 	this.fileInput.setAttribute('type','file');
 	this.fileInput.style.display = 'none';
 	this.box.appendChild(this.fileInput);
 	this.fileButton.value = 'Load Preview...';
 	this.fileButton.style.display = 'none';
-
 	this.wavCheck.setAttribute('type','checkbox');
 	this.wavCheck.checked = false;
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Waveform')));
@@ -111,47 +116,52 @@ LUTPreview.prototype.buildBox = function() {
 	this.box.appendChild(document.createElement('br'));
 	
 	this.pCan = document.createElement('canvas');
+	this.pCan.setAttribute('id','can-preview');
 	this.pCan.width = this.width.toString();
 	this.pCan.height = this.height.toString();
-	this.pCan.style.width = '48em';
-	this.pCan.style.height = '27em';
+	this.pCan.style.width = '32em';
+	this.pCan.style.height = '18em';
 	this.pCtx = this.pCan.getContext('2d');
 	this.pData = this.pCtx.createImageData(this.width,this.height);
 	this.box.appendChild(this.pCan);
 	this.lCan = document.createElement('canvas');
+	this.pCan.setAttribute('id','can-hidden');
 	this.lCan.width = this.width.toString();
 	this.lCan.height = this.height.toString();
-	this.lCan.style.width = '48em';
-	this.lCan.style.height = '27em';
+	this.lCan.style.width = '32em';
+	this.lCan.style.height = '18em';
 	this.lCan.style.display = 'none';
 	this.lCtx = this.lCan.getContext('2d');
 	this.box.appendChild(this.lCan);
 
 	this.wCan = document.createElement('canvas'); // Waveform
+	this.wCan.setAttribute('id','can-waveform');
 	this.wCan.width = this.width.toString();
 	this.wCan.height = this.height.toString();
-	this.wCan.style.width = '48em';
-	this.wCan.style.height = '27em';
+	this.wCan.style.width = '32em';
+	this.wCan.style.height = '18em';
 	this.wCan.style.display = 'none';
 	this.wCtx = this.wCan.getContext('2d');
 	this.wData = this.wCtx.createImageData(this.width,this.height);
 	this.box.appendChild(this.wCan);
 
 	this.vCan = document.createElement('canvas'); // Vectorscope
+	this.vCan.setAttribute('id','can-vector');
 	this.vCan.width = this.width.toString();
 	this.vCan.height = this.height.toString();
-	this.vCan.style.width = '48em';
-	this.vCan.style.height = '27em';
+	this.vCan.style.width = '32em';
+	this.vCan.style.height = '18em';
 	this.vCan.style.display = 'none';
 	this.vCtx = this.vCan.getContext('2d');
 	this.vData = this.vCtx.createImageData(this.width,this.height);
 	this.box.appendChild(this.vCan);
 
 	this.rgbCan = document.createElement('canvas'); // RGB Parade
+	this.pCan.setAttribute('id','can-parade');
 	this.rgbCan.width = this.width.toString();
 	this.rgbCan.height = this.height.toString();
-	this.rgbCan.style.width = '48em';
-	this.rgbCan.style.height = '27em';
+	this.rgbCan.style.width = '32em';
+	this.rgbCan.style.height = '18em';
 	this.rgbCan.style.display = 'none';
 	this.rgbCtx = this.rgbCan.getContext('2d');
 	this.rgbData = this.rgbCtx.createImageData(this.width,this.height);
@@ -235,6 +245,7 @@ LUTPreview.prototype.setUIs = function(generateBox,lutbox) {
 	this.lutbox = lutbox;
 	this.generateButton = generateBox.button;
 	generateBox.box.insertBefore(this.preButton,generateBox.button);
+	generateBox.box.insertBefore(this.sizeButton,generateBox.button);
 	generateBox.box.insertBefore(this.drButton,generateBox.button);
 	generateBox.box.insertBefore(this.fileButton,generateBox.button);
 	this.drButton.style.display = 'none';
@@ -243,19 +254,26 @@ LUTPreview.prototype.setUIs = function(generateBox,lutbox) {
 LUTPreview.prototype.toggle = function() {
 	if (this.show) {
 		main.style.width = '69em';
-		right.style.width = '34em';
+		right.style.width = '33em';
 		this.fieldSet.style.display = 'none';
 		this.lutbox.style.display = 'block';
+		this.sizeButton.style.display = 'none';
 		this.fileButton.style.display = 'none';
 		this.generateButton.style.display = 'inline';
 		this.drButton.style.display = 'none';
 		this.show = false;
 		this.preButton.value = 'Preview';
 	} else {
-		main.style.width = '86em';
-		right.style.width = '52em';
+		if (this.small) {
+			main.style.width = '72em';
+			right.style.width = '36em';
+		} else {
+			main.style.width = '86em';
+			right.style.width = '52em';
+		}
 		this.fieldSet.style.display = 'block';
 		this.lutbox.style.display = 'none';
+		this.sizeButton.style.display = 'inline';
 		this.fileButton.style.display = 'inline';
 		this.generateButton.style.display = 'none';
 		this.drButton.style.display = 'inline';
@@ -264,15 +282,48 @@ LUTPreview.prototype.toggle = function() {
 		this.refresh();
 	}
 }
+LUTPreview.prototype.toggleSize = function() {
+	if (this.small) {
+		main.style.width = '86em';
+		right.style.width = '52em';
+		this.pCan.style.width = '48em';
+		this.pCan.style.height = '27em';
+		this.lCan.style.width = '48em';
+		this.lCan.style.height = '27em';
+		this.wCan.style.width = '48em';
+		this.wCan.style.height = '27em';
+		this.vCan.style.width = '48em';
+		this.vCan.style.height = '27em';
+		this.rgbCan.style.width = '48em';
+		this.rgbCan.style.height = '27em';
+		this.sizeButton.value = 'Small Image';
+		this.small = false;
+	} else {
+		main.style.width = '72em';
+		right.style.width = '36em';
+		this.pCan.style.width = '32em';
+		this.pCan.style.height = '18em';
+		this.lCan.style.width = '32em';
+		this.lCan.style.height = '18em';
+		this.wCan.style.width = '32em';
+		this.wCan.style.height = '18em';
+		this.vCan.style.width = '32em';
+		this.vCan.style.height = '18em';
+		this.rgbCan.style.width = '32em';
+		this.rgbCan.style.height = '18em';
+		this.sizeButton.value = 'Large Image';
+		this.small = true;
+	}
+}
 LUTPreview.prototype.toggleDefault = function() {
 	if (this.hdrDefault) {
 		this.changed = true;
-		this.drButton.value = 'To High Contrast Image';
+		this.drButton.value = 'High Contrast';
 		this.hdrDefault = false;
 		this.loadDefault(false);
 	} else {
 		this.changed = true;
-		this.drButton.value = 'To Low Contrast Image';
+		this.drButton.value = 'Low Contrast';
 		this.hdrDefault = true;
 		this.loadDefault(true);
 	}
