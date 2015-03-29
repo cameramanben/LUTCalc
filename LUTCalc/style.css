@@ -217,3 +217,22 @@ body {text-align:center;margin: 0px auto;}
 #ins-main-inf {background-image: url('pngs/main-inf.png');margin:0;padding:0;background-size:14em 10.36875em;width:14em;height:10.36875em;}
 #ins-main-inf:hover {background-image: url('pngs/main-inf-g.png');margin:0;padding:0;background-size:14em 10.36875em;width:14em;height:10.36875em;}
 #ins-main-footer {display:block;background-image: url('pngs/main-footer.png');margin:0;padding:0;background-size:28em 0.56875em;width:28em;height:0.56875em;}
+
+#ins-pre {display:block;background-image: url('pngs/pre.jpg');margin:0px auto;padding:0;background-size:21em 13.125em;width:21em;height:13.125em;}
+#ins-pre-scp {display:block;background-image: url('pngs/pre-scp.png');margin:0px auto;padding:0;background-size:28em 5.95em;width:28em;height:5.95em;}
+
+#ins-custscreen {width:21em;margin:0px auto;}
+#ins-cust-header {display:block;background-image: url('pngs/cust-header.png');margin:0;padding:0;background-size:21em 0.78em;width:21em;height:0.78em;}
+#ins-cust-gam {background-image: url('pngs/cust-gam.png');margin:0;padding:0;background-size:21em 1.35em;width:21em;height:1.35em;}
+#ins-cust-gam:hover {background-image: url('pngs/cust-gam-g.png');margin:0;padding:0;background-size:21em 1.35em;width:21em;height:1.35em;}
+#ins-cust-bhi {background-image: url('pngs/cust-bhi.png');margin:0;padding:0;background-size:21em 2.745em;width:21em;height:2.745em;}
+#ins-cust-bhi:hover {background-image: url('pngs/cust-bhi-g.png');margin:0;padding:0;background-size:21em 2.745em;width:21em;height:2.745em;}
+#ins-cust-cts {background-image: url('pngs/cust-cts.png');margin:0;padding:0;background-size:21em 1.35em;width:21em;height:1.35em;}
+#ins-cust-cts:hover {background-image: url('pngs/cust-cts-g.png');margin:0;padding:0;background-size:21em 1.35em;width:21em;height:1.35em;}
+#ins-cust-flc {background-image: url('pngs/cust-flc.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-flc:hover {background-image: url('pngs/cust-flc-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-cdl {background-image: url('pngs/cust-cdl.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-cdl:hover {background-image: url('pngs/cust-cdl-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-lut {background-image: url('pngs/cust-lut.png');margin:0;padding:0;background-size:21em 3.24em;width:21em;height:3.24em;}
+#ins-cust-lut:hover {background-image: url('pngs/cust-lut-g.png');margin:0;padding:0;background-size:21em 3.24em;width:21em;height:3.24em;}
+#ins-cust-footer {display:block;background-image: url('pngs/cust-footer.png');margin:0;padding:0;background-size:21em 0.33em;width:21em;height:0.33em;}

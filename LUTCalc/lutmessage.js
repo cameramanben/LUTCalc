@@ -392,6 +392,24 @@ LUTMessage.prototype.gtSetParams = function() {
 	} else {
 		d.doGreen = false;
 	}
+	if (this.inputs.tweakCDLCheck.checked) {
+		d.doASC = true;
+		var ascCDL = new Float64Array([
+			parseFloat(this.inputs.tweakCDLRSVal.value),
+			parseFloat(this.inputs.tweakCDLGSVal.value),
+			parseFloat(this.inputs.tweakCDLBSVal.value),
+			parseFloat(this.inputs.tweakCDLROVal.value),
+			parseFloat(this.inputs.tweakCDLGOVal.value),
+			parseFloat(this.inputs.tweakCDLBOVal.value),
+			parseFloat(this.inputs.tweakCDLRPVal.value),
+			parseFloat(this.inputs.tweakCDLGPVal.value),
+			parseFloat(this.inputs.tweakCDLBPVal.value),
+			parseFloat(this.inputs.tweakCDLSatVal.value)
+		]);
+		d.ascCDL = ascCDL.buffer;
+	} else {
+		d.doASC = false;
+	}
 	var max = this.gts.length;
 	for (var i=0; i<max; i++) {
 		this.gts[i].postMessage({t: 0, d: d});

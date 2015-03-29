@@ -39,7 +39,7 @@ function LUTGamma() {
 		1,1,1,	// p - Power / Gamma
 		1		// sat - Saturation
 	]);
-	this.lumaList();
+//	this.lumaList();
 	this.gammaList();
 }
 LUTGamma.prototype.lumaList = function() {
@@ -725,21 +725,23 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 			o[j] = Math.min(cMax,Math.max(cMin,o[j]));
 		}
 	} else {
+/*
 		if (this.doASC) {
 			var lum = this.lumas[i.outGamut];
 			for (var j=0; j<max; j += 3) {
 				o[ j ] = Math.pow((o[ j ]*this.asc[0])+this.asc[3],this.asc[6]);
-				o[ j ] = (isNaN(o[ j ])?0:i[ j ]);
+				o[ j ] = (isNaN(o[ j ])?0:o[ j ]);
 				o[j+1] = Math.pow((o[j+1]*this.asc[1])+this.asc[4],this.asc[7]);
-				o[j+1] = (isNaN(o[j+1])?0:i[j+1]);
+				o[j+1] = (isNaN(o[j+1])?0:o[j+1]);
 				o[j+2] = Math.pow((o[j+2]*this.asc[2])+this.asc[5],this.asc[8]);
-				o[j+2] = (isNaN(o[j+2])?0:i[j+2]);
+				o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
 				var luma = (lum[0]*o[ j ])+(lum[1]*o[j+1])+(lum[2]*o[j+2]);
 				o[ j ] = luma + (this.asc[9]*(o[ j ]-luma));
 				o[j+1] = luma + (this.asc[9]*(o[j+1]-luma));
 				o[j+2] = luma + (this.asc[9]*(o[j+2]-luma));
 			}
 		}
+*/
 		if (this.scale) {
 			if (this.outL) {
 				for (var j=0; j<max; j++) {
@@ -790,6 +792,7 @@ LUTGamma.prototype.preview = function(p,t,i) {
 			l += 3;
 		}
 	} else {
+/*
 		if (this.doASC) {
 			var r,g,b;
 			var max2 = max*3;
@@ -807,6 +810,7 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				f[j+2] = luma + (this.asc[9]*(f[j+2]-luma));
 			}
 		}
+*/
 		if (this.scale) {
 			for (var j=0; j<max; j++) {
 				f[ l ] = Math.min(1.095,Math.max(-0.073,(this.gammas[this.curOut].linToLegal(f[ l ]*eiMult)*this.al)+this.bl));

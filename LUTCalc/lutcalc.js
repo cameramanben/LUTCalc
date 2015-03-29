@@ -209,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.tweakCDLCheck.onchange = function(){
 		lutTweaksBox.toggleCDLCheck();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLChannelSelect.onchange = function(){
 		lutTweaksBox.cdlChangeChannel();
@@ -216,158 +217,197 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.tweakCDLSatSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateSat(true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLSSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateLS(true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLOSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateLO(true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLPSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateLP(true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRSSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateS(0,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLROSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateO(0,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRPSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateP(0,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGSSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateS(1,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGOSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateO(1,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGPSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateP(1,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBSSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateS(2,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBOSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateO(2,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBPSlider.onchange = function(){
 		lutTweaksBox.cdlUpdateP(2,true);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLSatVal.onchange = function(){
 		lutTweaksBox.cdlUpdateSat(false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLSVal.onchange = function(){
 		lutTweaksBox.cdlUpdateLS(false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLOVal.onchange = function(){
 		lutTweaksBox.cdlUpdateLO(false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLPVal.onchange = function(){
 		lutTweaksBox.cdlUpdateLP(false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRSVal.onchange = function(){
 		lutTweaksBox.cdlUpdateS(0,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLROVal.onchange = function(){
 		lutTweaksBox.cdlUpdateO(0,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRPVal.onchange = function(){
 		lutTweaksBox.cdlUpdateP(0,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGSVal.onchange = function(){
 		lutTweaksBox.cdlUpdateS(1,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGOVal.onchange = function(){
 		lutTweaksBox.cdlUpdateO(1,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGPVal.onchange = function(){
 		lutTweaksBox.cdlUpdateP(1,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBSVal.onchange = function(){
 		lutTweaksBox.cdlUpdateS(2,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBOVal.onchange = function(){
 		lutTweaksBox.cdlUpdateO(2,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBPVal.onchange = function(){
 		lutTweaksBox.cdlUpdateP(2,false);
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLSatReset.onclick = function(){
 		lutTweaksBox.cdlResetSat();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLSReset.onclick = function(){
 		lutTweaksBox.cdlResetS();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRSReset.onclick = function(){
 		lutTweaksBox.cdlResetS();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGSReset.onclick = function(){
 		lutTweaksBox.cdlResetS();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBSReset.onclick = function(){
 		lutTweaksBox.cdlResetS();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLOReset.onclick = function(){
 		lutTweaksBox.cdlResetO();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLROReset.onclick = function(){
 		lutTweaksBox.cdlResetO();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGOReset.onclick = function(){
 		lutTweaksBox.cdlResetO();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBOReset.onclick = function(){
 		lutTweaksBox.cdlResetO();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLLPReset.onclick = function(){
 		lutTweaksBox.cdlResetP();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLRPReset.onclick = function(){
 		lutTweaksBox.cdlResetP();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLGPReset.onclick = function(){
 		lutTweaksBox.cdlResetP();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	lutInputs.tweakCDLBPReset.onclick = function(){
 		lutTweaksBox.cdlResetP();
 		lutMessage.gaSetParams();
+		lutMessage.gtSetParams();
 	}
 	//			LUT Analyst Tweak
 	if (lutInputs.isApp) {
