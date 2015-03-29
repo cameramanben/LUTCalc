@@ -53,6 +53,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.insCam);
 	this.createGamInfo();
 	this.instructionsBox.appendChild(this.insGam);
+	this.createTwkInfo();
+	this.instructionsBox.appendChild(this.insTwk);
 	this.createLutInfo();
 	this.instructionsBox.appendChild(this.insLut);
 	this.createPreInfo();
@@ -75,6 +77,10 @@ LUTInfoBox.prototype.showGamInfo = function() {
 	this.hideAll();
 	this.insGam.style.display = 'block';
 }
+LUTInfoBox.prototype.showCustscreen = function() {
+	this.hideAll();
+	this.insTwk.style.display = 'block';
+}
 LUTInfoBox.prototype.showLutInfo = function() {
 	this.hideAll();
 	this.insLut.style.display = 'block';
@@ -95,6 +101,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.mainscreen.style.display = 'none';
 	this.insCam.style.display = 'none';
 	this.insGam.style.display = 'none';
+	this.insTwk.style.display = 'none';
 	this.insLut.style.display = 'none';
 	this.insPre.style.display = 'none';
 	this.insGen.style.display = 'none';
@@ -173,7 +180,7 @@ LUTInfoBox.prototype.createCamInfo = function() {
 	this.addInfo(this.insCamInfo,true,null,'Post production software is then expected to read the metadata and automatically do the exposure adjustment.');
 	this.addInfo(this.insCamInfo,true,null,'In practice this does not currently always work, so LUTCalc can be used to create exposure corrected LUTs, eg LC709A with a 1-stop push.');
 	this.addInfo(this.insCamInfo,true,null,"Exposure can be entered either as the CineEI ISO value used, or as a stop correction from the base ISO, which is shown as 'Native ISO' next to the camera model.");
-	this.addInfo(this.insCamInfo,true,'The Canon Approach','The C300 has popularised log recording with CP Lock, but only records in 8-bit. Log is normally recorded in at least 10-bit, for a broad spread of picture data when the contrast is increased in post.');
+	this.addInfo(this.insCamInfo,true,'The Canon Approach','The C300 has popularised log recording with CP Lock, but only records in 8-bit. Log is normally recorded in at least 10-bit, to ensure a broad spread of picture data even after the contrast is increased in post.');
 	this.addInfo(this.insCamInfo,true,null,'In order to have a reasonable result in the midtones and highlights, C-Log spreads information very thinly in the shadows. Storing exposure shifts as metadata and performing the adjustment in post would work very badly when pushing to increase the ISO, so Canon bakes in the exposure shift.');
 	this.addInfo(this.insCamInfo,true,null,'Consequently, the full dynamic range of the camera is only captured at the base ISO.');
 	this.addInfo(this.insCamInfo,true,null,"LUTCalc allows you to generate exposure shifts, but as the ISO is arbitrary, it only shows the 'exposure correction' option for the Cine EOS cameras. LUTs for the C300 will also be appropriate for the C100 and C500");
@@ -209,6 +216,50 @@ LUTInfoBox.prototype.createGamInfo = function() {
 	this.insGam.appendChild(this.insGamInfo);
 }
 LUTInfoBox.prototype.createTwkInfo = function() {
+
+	this.insTwk = document.createElement('div');
+	this.insTwk.setAttribute('class','instructions');
+	this.insTwk.setAttribute('id','ins-twk');
+	this.insCustBack = document.createElement('input');
+	this.insCustBack.setAttribute('type','button');
+	this.insCustBack.value = 'Back';
+	this.insTwk.appendChild(this.insCustBack);
+	var click = document.createElement('p');
+	click.appendChild(document.createTextNode('Click an area for information:'));
+	this.insTwk.appendChild(click);
+	this.custscreen = document.createElement('div');
+	this.custscreen.setAttribute('class','imagemap');
+	this.custscreen.setAttribute('id','ins-custscreen');
+	var header = document.createElement('div');
+	header.setAttribute('class','imagemapimg');	
+	header.setAttribute('id','ins-cust-header');	
+	this.custscreen.appendChild(header);
+	this.insCustGam = document.createElement('div');
+	this.insCustGam.setAttribute('class','imagemapimg');	
+	this.insCustGam.setAttribute('id','ins-cust-gam');	
+	this.custscreen.appendChild(this.insCustGam);
+	this.insCustBhi = document.createElement('div');
+	this.insCustBhi.setAttribute('class','imagemapimg');	
+	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
+	this.custscreen.appendChild(this.insCustBhi);
+	this.insCustCts = document.createElement('div');
+	this.insCustCts.setAttribute('class','imagemapimg');	
+	this.insCustCts.setAttribute('id','ins-cust-cts');	
+	this.custscreen.appendChild(this.insCustCts);
+	this.insCustFlc = document.createElement('div');
+	this.insCustFlc.setAttribute('class','imagemapimg');	
+	this.insCustFlc.setAttribute('id','ins-cust-flc');	
+	this.custscreen.appendChild(this.insCustFlc);
+	this.insCustCdl = document.createElement('div');
+	this.insCustCdl.setAttribute('class','imagemapimg');	
+	this.insCustCdl.setAttribute('id','ins-cust-cdl');	
+	this.custscreen.appendChild(this.insCustCdl);
+	this.insCustLut = document.createElement('div');
+	this.insCustLut.setAttribute('class','imagemapimg');	
+	this.insCustLut.setAttribute('id','ins-cust-lut');	
+	this.custscreen.appendChild(this.insCustLut);
+	this.insTwk.style.display = 'none';
+	this.insTwk.appendChild(this.custscreen);
 }
 LUTInfoBox.prototype.createLutInfo = function() {
 	this.insLut = document.createElement('div');
@@ -221,17 +272,18 @@ LUTInfoBox.prototype.createLutInfo = function() {
 	this.insLutInfo = document.createElement('div');
 	this.insLutInfo.setAttribute('class','infotext');
 	this.addInfo(this.insLutInfo,false,null,'This is the box where the format of the LUT to be generated is decided.');
-	this.addInfo(this.insLutInfo,false,null,"The first option is 'LUT Title / Filename'. This is used as the filename when saving the LUT, but also is featured in the file itself as a title, for future reference in case the filename is changed. LUTCalc will make sure that it is appropriately formatted as a filename.");
-	this.addInfo(this.insLutInfo,false,null,'LUTCalc produces 1D and 3D LUTs in the cube format.');
-	this.addInfo(this.insLutInfo,true,'1D','these are used for contrast control, since there is no combining of colour channels.');
-	this.addInfo(this.insLutInfo,true,null,'They can store an output value for every possible 8-bit, 10-bit or 16-bit value allowing the actual transform to be arbitrarily complex. This may well be vital with an extensive grade, but with smooth curves such as those built in to LUTCalc and the use of cubic interpolation, considerably fewer control point are needed for an effective result. LUT calc can produce 1024-point (10-bit) and 4096-point (fairly standard shaper LUT size) 1D LUTs.');
-	this.addInfo(this.insLutInfo,true,'3D','3D LUTs consider the possible combinations of red, green and blue input values to reference an output value. Whereas a 1024-point 1D LUT references every possible 10-bit input value, a 3D LUT would need to be 1024x1024x1024-point to consider every possible RGB combination.');
+	this.addInfo(this.insLutInfo,false,null,"The first option is 'LUT Title / Filename'. As well as being used as the filename for saving the LUT, this appears within the file as the title. This may help keep track of LUTs in case filenames change. LUTCalc will make sure that it is appropriately formatted.");
+	this.addInfo(this.insLutInfo,false,null,'LUTCalc produces 1D and 3D LUTs in the cube format:');
+	this.addInfo(this.insLutInfo,true,'1D','these are used for contrast control, with each colour channel changed independently.');
+	this.addInfo(this.insLutInfo,true,null,'With a 1D LUT it is practical to store every possible 8-bit, 10-bit or 16-bit value. As such the adjustment can be arbitrarily complex, which may well be useful for storing an extensive grade, but with smooth curves such as those built in to LUTCalc and the use of cubic interpolation, considerably fewer control point are needed for an effective result. LUT calc can produce 1024-point (10-bit) and 4096-point (fairly standard shaper LUT size) 1D LUTs.');
+	this.addInfo(this.insLutInfo,true,'3D','3D LUTs input combinations of red, green and blue values to reference output values. This allows for sophisticated adjustment of colours across the gamut and exposure range. Where a 1024-point 1D LUT covers every possible 10-bit input value for one channel, a 3D LUT would need to be 1024x1024x1024-point to consider every possible RGB combination.');
 	this.addInfo(this.insLutInfo,true,null,'This would be impractically large and complex, so 3D LUTs are generally of a much smaller dimension and use interpolation to obtain intermediate values. LUTCalc can produce 17x17x17, 33x33x33 and 65x65x65 3D cubes, which are the most common 3D sizes.');
 	this.addInfo(this.insLutInfo,true,null,'Sony F cameras accept 33x33x33 cubes and this size does a very good job of reproducing the kinds of effects possible in LUTCalc. 65x65x65 is much larger, but gives greater precision for post software where the size is less of an issue.');
-	this.addInfo(this.insLutInfo,false,null,'The next options relate to the input and output ranges of the LUT. Cube LUTs contain floating point values (decimals), and generally map 0 to be black and 1 to be white. Values can actually be greater or less than these, but 0 and 1 are the reference points. What 0 and 1 actually represent depends on the video range used.');
-	this.addInfo(this.insLutInfo,true,'Legal Range',"10-bit binary can store 1024 different values, in the base 10 range 0-1023. In analogue video picture information was stored within a voltage range defined as a percentage 0%-100%. Values just outside were that classed 'super black' and 'super white'.");
-	this.addInfo(this.insLutInfo,true,null,"In digital video, the extremes have been kept and the 'legal' 0%-100% range defined as being between 10-bit values 64 and 940. When 'legal range' is set for a LUT, 0 equates to 10-bit 64 and 1 to 10-bit 940. 10-bit 0 becomes a value of -0.073 and 10-bit 1023 1.095. This is a commonly expected output range in software such as DaVinci Resolve and is the output range of Sony monitor LUTs (MLUTS).");
-	this.addInfo(this.insLutInfo,true,'Data Range','this treats the full range of 10-bit values as mapping to the 0-1 LUT range. Technically, the top and bottom couple of values are generally reserved, but for the sake of simplicity that can be ignored here. LUTs can output values outside of the 0-1 range, but will only consider input values within it. If a log recording goes outside of legal range (generally only above 1), then the LUT input needs to be data range to make sure that no data is lost.');
+	this.addInfo(this.insLutInfo,false,null,'After the dimension settings come the range options. Cube LUTs contain floating point values rather than integers, and generally map 0 to be black and 1 to be white. Values can actually be greater or less than these, but 0 and 1 are the reference points. What 0 and 1 actually represent depends on the video range used.');
+	this.addInfo(this.insLutInfo,true,'Legal Range',"10-bit binary can store 1024 different values, in the decimal range 0-1023. In analogue video picture information was stored within a voltage range defined as a percentage 0%-100%. Values just outside were that classed 'super black' and 'super white'.");
+	this.addInfo(this.insLutInfo,true,null,"In digital video, 0% IRE has been defined as 10-bit 64 in decimal, with 100% IRE at 10-bit 940. With 'legal range' set 0 in the LUT equates to 0% IRE and 1 equates to 100% IRE. On this scale, 10-bit 0 would be -0.073 and 10-bit 1023 1.095.");
+	this.addInfo(this.insLutInfo,true,null,"This is a commonly expected output range in software such as DaVinci Resolve and is the output range of Sony monitor LUTs (MLUTS).");
+	this.addInfo(this.insLutInfo,true,'Data Range','this treats the full range of 10-bit values as mapping to the 0-1 LUT range. Technically, the top and bottom couple of values are generally reserved, but for the sake of simplicity that can be ignored here. LUTs can output values outside of the 0-1 range, but can only consider input values within it. If a log recording goes outside of legal range (generally only above 1), then the LUT input needs to be data range to make sure that no data is lost.');
 	this.addInfo(this.insLutInfo,true,null,'S-Log2 and Canon C-Log both go above legal range, and for consistency Sony recommends working with S-Log3 set to data range in software such as Resolve. Sony MLUTs are data in, legal out.');
 	this.addInfo(this.insLutInfo,false,null,'LUTCalc will generally default to data in, legal out, though if both the input and output gammas are log curves then it will set data in data out, on the assumption that further LUTs or corrections will be applied.');
 	this.addInfo(this.insLutInfo,false,null,'It has also been suggested that the Lumetri plugin in Adobe Premiere CC expects data in, data out in order to give the correct look. The best suggestion is to test and compare in the software to be used in post.');
@@ -252,6 +304,10 @@ LUTInfoBox.prototype.createPreInfo = function() {
 	this.insPre.appendChild(this.insPreBack);
 	this.insPreInfo = document.createElement('div');
 	this.insPreInfo.setAttribute('class','infotext');
+	var preview = document.createElement('div');
+	preview.setAttribute('class','infoimage');
+	preview.setAttribute('id','ins-pre');
+	this.insPreInfo.appendChild(preview);
 	this.addInfo(this.insPreInfo,false,null,"Clicking 'Preview' brings up a test image in place of the LUT options box at the top right. It is displayed legal range and incorporates any adjustments made.");
 	this.addInfo(this.insPreInfo,false,null,'LUTCalc includes two test images.');
 	this.addInfo(this.insPreInfo,true,'High Contrast','The initial one is high contrast, covering around eleven or twelve stops and with information over 5 1/2 stops above 18% gray.');
@@ -261,6 +317,10 @@ LUTInfoBox.prototype.createPreInfo = function() {
 	this.addInfo(this.insPreInfo,false,null,"A png, bmp or jpeg recorded in a known colour space can also be loaded in place of the defaults by clicking 'Load Preview...'.");
 	this.addInfo(this.insPreInfo,false,null,"'Large Image' / 'Small Image' toggles between the default small preview image and a larger version which requires scrolling to view the scopes.");
 	this.addInfo(this.insPreInfo,false,null,'Above the preview window are the scope options:');
+	var scopes = document.createElement('div');
+	scopes.setAttribute('class','infoimage');
+	scopes.setAttribute('id','ins-pre-scp');
+	this.insPreInfo.appendChild(scopes);
 	this.addInfo(this.insPreInfo,true,'Waveform','The horizontal axis is the same as the test image, whilst the vertical axis is luma values of all the pixels in that column. The scale lines are blocks of 10% IRE and the full range runs from -7% to +109%.');
 	this.addInfo(this.insPreInfo,true,'Vectorscope','This is a polar plot of the image chroma. LUTCalc includes standard 75% and 100% Rec709 boxes (the two rows of green circles). In pure Rec709 75% colour bars should fall dead centre of the inner green circles.');
 	this.addInfo(this.insPreInfo,true,null,'In addition there is a set of 75% Rec709 boxes that have been mapped to the current chosen colour space. These are the colour of their associated primary or secondary and will lie inside the green ones.');
@@ -314,7 +374,6 @@ LUTInfoBox.prototype.createInfInfo = function() {
 LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	var para = document.createElement('p');
 	if (indent) {
-	console.log(title);
 		para.setAttribute('class','indentpara');
 	}
 	if (typeof title === 'string') {
@@ -713,6 +772,8 @@ LUTInfoBox.prototype.setupEvents = function() {
 	this.insCamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainGam.onclick = function(here){ return function(){ here.showGamInfo(); };}(this);
 	this.insGamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainTwk.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainLut.onclick = function(here){ return function(){ here.showLutInfo(); };}(this);
 	this.insLutBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainPre.onclick = function(here){ return function(){ here.showPreInfo(); };}(this);
@@ -724,6 +785,7 @@ LUTInfoBox.prototype.setupEvents = function() {
 }
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {
+	this.showMainscreen();
 	this.instructionsBox.style.display = 'block';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'none';

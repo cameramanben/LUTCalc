@@ -38,6 +38,13 @@ function LUTGamut() {
 	} else {
 		this.isLE = false;
 	}
+	this.doASC = false;
+	this.asc = new Float64Array([
+		1,1,1,	// s - Slope / Gain
+		0,0,0,	// o - Offset / Lift
+		1,1,1,	// p - Power / Gamma
+		1		// sat - Saturation
+	]);
 	this.gamutList();
 }
 LUTGamut.prototype.gamutList = function() {
@@ -171,6 +178,8 @@ LUTGamut.prototype.setParams = function(params) {
 	out.doTemp = false;
 	this.doGreen = false;
 	out.doGreen = false;
+	this.doASC = false;
+	out.doASC = false;
 	if (typeof params.tweaks === 'boolean' && params.tweaks) {
 		if (typeof params.doHG === 'boolean') {
 			this.doHG = params.doHG;
@@ -183,6 +192,10 @@ LUTGamut.prototype.setParams = function(params) {
 		if (typeof params.doGreen === 'boolean') {
 			this.doGreen = params.doGreen;
 			out.doGreen = this.doGreen;
+		}
+		if (typeof params.doASC === 'boolean') {
+			this.doASC = params.doASC;
+			out.doASC = this.doASC;
 		}
 	}
 	if (typeof params.CAT === 'number') {
@@ -202,6 +215,9 @@ LUTGamut.prototype.setParams = function(params) {
 		this.green.setGreen(params.greenTemp,params.greenMag);
 		out.greenTemp = params.greenTemp;
 		out.greenMag = params.greenMag;
+	}
+	if (typeof params.ascCDL !== 'undefined') {
+		this.asc = new Float64Array(params.ascCDL);
 	}
 	if (typeof params.hgLin === 'boolean') {
 		this.hgLin = params.hgLin;
@@ -256,6 +272,20 @@ LUTGamut.prototype.calc = function(p,t,i) {
 			if (this.doGreen) {
 				c = this.green.calc(c.slice(0));
 			}
+
+			if (this.doASC) {
+				c[0] = Math.pow((c[0]*this.asc[0])+this.asc[3],this.asc[6]);
+				c[0] = (isNaN(c[0])?0:c[0]);
+				c[1] = Math.pow((c[1]*this.asc[1])+this.asc[4],this.asc[7]);
+				c[1] = (isNaN(c[1])?0:c[1]);
+				c[2] = Math.pow((c[2]*this.asc[2])+this.asc[5],this.asc[8]);
+				c[2] = (isNaN(c[2])?0:c[2]);
+				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				c[0] = luma + (this.asc[9]*(c[0]-luma));
+				c[1] = luma + (this.asc[9]*(c[1]-luma));
+				c[2] = luma + (this.asc[9]*(c[2]-luma));
+			}
+
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
@@ -311,6 +341,20 @@ LUTGamut.prototype.preview = function(p,t,i) {
 			if (this.doGreen) {
 				c = this.green.calc(c.slice(0));
 			}
+
+			if (this.doASC) {
+				c[0] = Math.pow((c[0]*this.asc[0])+this.asc[3],this.asc[6]);
+				c[0] = (isNaN(c[0])?0:c[0]);
+				c[1] = Math.pow((c[1]*this.asc[1])+this.asc[4],this.asc[7]);
+				c[1] = (isNaN(c[1])?0:c[1]);
+				c[2] = Math.pow((c[2]*this.asc[2])+this.asc[5],this.asc[8]);
+				c[2] = (isNaN(c[2])?0:c[2]);
+				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				c[0] = luma + (this.asc[9]*(c[0]-luma));
+				c[1] = luma + (this.asc[9]*(c[1]-luma));
+				c[2] = luma + (this.asc[9]*(c[2]-luma));
+			}
+
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
