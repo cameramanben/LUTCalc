@@ -357,6 +357,15 @@ LUTGamma.prototype.setParams = function(params) {
 		this.mlut = params.mlut;
 		out.mlut = this.mlut;
 	}
+	if (params.tweaks && typeof params.doASC === 'boolean') {
+		this.doASC = params.doASC;
+	} else {
+		this.doASC = false;
+	}
+	out.doASC = this.doASC;
+	if (typeof params.ascCDL !== 'undefined') {
+		this.asc = new Float64Array(params.ascCDL);
+	}
 	var blackDefault = this.gammas[this.curOut].linToLegal(0);
 	var blackMap;
 	if (typeof params.blackLevel === 'number') {
@@ -378,7 +387,7 @@ LUTGamma.prototype.setParams = function(params) {
 		this.highRef = 0.9;
 	}
 	var highMap;
-	highDefault = this.gammas[this.curOut].linToLegal(this.highRef/0.9);
+	var highDefault = this.gammas[this.curOut].linToLegal(this.highRef/0.9);
 	if (typeof params.highMap === 'number') {
 		if (Math.abs(highDefault-params.highMap)>0.0001 && !changedOut && !changedRef) {
 			highMap = params.highMap;
@@ -422,15 +431,6 @@ LUTGamma.prototype.setParams = function(params) {
 	}
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
-	}
-	if (params.tweaks && typeof params.doASC === 'boolean') {
-		this.doASC = params.doASC;
-	} else {
-		this.doASC = false;
-	}
-	out.doASC = this.doASC;
-	if (typeof params.ascCDL !== 'undefined') {
-		this.asc = new Float64Array(params.ascCDL);
 	}
 	this.ver = params.v;
 	out.v = this.ver;
