@@ -147,6 +147,22 @@ LUTMessage.prototype.gaSetParams = function() {
 	} else {
 		d.doASC = false;
 	}
+	if (this.inputs.tweakFCCheck.checked) {
+		d.doFC = true;
+		d.fcChecks = [
+			this.inputs.tweakFCPurpleCheck.checked,
+			this.inputs.tweakFCBlueCheck.checked,
+			this.inputs.tweakFCGreenCheck.checked,
+			this.inputs.tweakFCPinkCheck.checked,
+			this.inputs.tweakFCOrangeCheck.checked,
+			this.inputs.tweakFCYellowCheck.checked,
+			this.inputs.tweakFCRedCheck.checked
+		];
+		d.fcBlue = parseFloat(this.inputs.tweakFCBlueWidth.value);
+		d.fcYellow = parseFloat(this.inputs.tweakFCYellowWidth.value);
+	} else {
+		d.doFC = false;
+	}
 	if (this.inputs.inRange[0].checked) {
 		d.inL = true;
 	} else {

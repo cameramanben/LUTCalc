@@ -59,8 +59,6 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.inputs.addInput('tweakHiRef',this.highLevelRef);
 	this.highLevelMap = document.createElement('input');
 	this.inputs.addInput('tweakHiMap',this.highLevelMap);
-	this.lutAnalystBox = document.createElement('div');
-	this.lutAnalystCheck = document.createElement('input');
 
 	this.tempBox = document.createElement('div');
 	this.tempWindow = document.createElement('div');
@@ -183,6 +181,31 @@ function LUTTweaksBox(fieldset, inputs, message, file) {
 	this.cdlBPReset = document.createElement('input');
 	this.inputs.addInput('tweakCDLBPReset',this.cdlBPReset);
 
+	this.fcBox = document.createElement('div');
+	this.fcWindow = document.createElement('div');
+	this.fcCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCCheck',this.fcCheck);
+	this.fcPurpleCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCPurpleCheck',this.fcPurpleCheck);
+	this.fcBlueCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCBlueCheck',this.fcBlueCheck);
+	this.fcBlueInput = document.createElement('input');
+	this.inputs.addInput('tweakFCBlueWidth',this.fcBlueInput);
+	this.fcGreenCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCGreenCheck',this.fcGreenCheck);
+	this.fcPinkCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCPinkCheck',this.fcPinkCheck);
+	this.fcOrangeCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCOrangeCheck',this.fcOrangeCheck);
+	this.fcYellowCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCYellowCheck',this.fcYellowCheck);
+	this.fcYellowInput = document.createElement('input');
+	this.inputs.addInput('tweakFCYellowWidth',this.fcYellowInput);
+	this.fcRedCheck = document.createElement('input');
+	this.inputs.addInput('tweakFCRedCheck',this.fcRedCheck);
+
+	this.lutAnalystBox = document.createElement('div');
+	this.lutAnalystCheck = document.createElement('input');
 	this.inputs.addInput('laCheck',this.lutAnalystCheck);
 	this.lutAnalystInLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.lutAnalystInLUT);
@@ -245,6 +268,8 @@ LUTTweaksBox.prototype.buildBox = function() {
 	tweakHolder.appendChild(this.greenBox);
 	this.ascCDL();
 	tweakHolder.appendChild(this.cdlBox);
+	this.falseColour();
+	tweakHolder.appendChild(this.fcBox);
 	this.lutAnalyst();
 	tweakHolder.appendChild(this.lutAnalystBox);
 	this.box.appendChild(tweakHolder);
@@ -273,15 +298,18 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 			this.tempBox.style.display = 'block';
 			this.greenBox.style.display = 'block';
 			this.cdlBox.style.display = 'block';
+			this.fcBox.style.display = 'block';
 		} else {
 			this.highGamutBox.style.display = 'none';
 			this.highGamutCheck.checked = false;
 			this.tempBox.style.display = 'none';
 			this.greenBox.style.display = 'none';
 			this.cdlBox.style.display = 'none';
+			this.fcBox.style.display = 'block';
 			this.tempCheck.checked = false;
 			this.greenCheck.checked = false;
 			this.cdlCheck.checked = false;
+			this.fcCheck.checked = false;
 		}
 		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 		if (curOut === 9999) {
@@ -1438,6 +1466,124 @@ LUTTweaksBox.prototype.cdlResetP = function() {
 	this.cdlGPVal.value = '1';
 	this.cdlBPSlider.value = '1';
 	this.cdlBPVal.value = '1';
+}
+//
+// *** False Colour ***
+//		Build UI
+LUTTweaksBox.prototype.falseColour = function() {
+	this.fcBox.setAttribute('class','graybox');
+	this.fcBox.appendChild(document.createElement('label').appendChild(document.createTextNode('False Colour')));
+	this.fcCheck.setAttribute('type','checkbox');
+	this.fcBox.appendChild(this.fcCheck);
+
+	var purpleBox = document.createElement('div');
+	purpleBox.setAttribute('class','whitebox');
+	purpleBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Purple - Black Clip')));
+	this.fcPurpleCheck.setAttribute('type','checkbox');
+	this.fcPurpleCheck.checked = true;
+	purpleBox.appendChild(this.fcPurpleCheck);
+	purpleBox.style.display = 'block';
+	this.fcWindow.appendChild(purpleBox);
+
+	var blueBox = document.createElement('div');
+	blueBox.setAttribute('class','whitebox');
+	blueBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Blue - Just Above Black Clip')));
+	this.fcBlueCheck.setAttribute('type','checkbox');
+	this.fcBlueCheck.checked = true;
+	blueBox.appendChild(this.fcBlueCheck);
+	blueBox.appendChild(document.createElement('br'));
+	this.fcBlueInput.setAttribute('type','number');
+	this.fcBlueInput.setAttribute('step','any');
+	this.fcBlueInput.setAttribute('class','ireinput');
+	this.fcBlueInput.value = '6.1';
+	blueBox.appendChild(this.fcBlueInput);
+	blueBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops Below 18% Gray')));
+	blueBox.style.display = 'block';
+	this.fcWindow.appendChild(blueBox);
+
+	var greenBox = document.createElement('div');
+	greenBox.setAttribute('class','whitebox');
+	greenBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Green - 18% Mid Gray')));
+	this.fcGreenCheck.setAttribute('type','checkbox');
+	this.fcGreenCheck.checked = true;
+	greenBox.appendChild(this.fcGreenCheck);
+	greenBox.style.display = 'block';
+	this.fcWindow.appendChild(greenBox);
+
+	var pinkBox = document.createElement('div');
+	pinkBox.setAttribute('class','whitebox');
+	pinkBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Pink - One Stop Over Mid Gray')));
+	this.fcPinkCheck.setAttribute('type','checkbox');
+	this.fcPinkCheck.checked = true;
+	pinkBox.appendChild(this.fcPinkCheck);
+	pinkBox.style.display = 'block';
+	this.fcWindow.appendChild(pinkBox);
+
+	var orangeBox = document.createElement('div');
+	orangeBox.setAttribute('class','whitebox');
+	orangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Orange - 90% White')));
+	this.fcOrangeCheck.setAttribute('type','checkbox');
+	this.fcOrangeCheck.checked = false;
+	orangeBox.appendChild(this.fcOrangeCheck);
+	orangeBox.style.display = 'block';
+	this.fcWindow.appendChild(orangeBox);
+
+	var yellowBox = document.createElement('div');
+	yellowBox.setAttribute('class','whitebox');
+	yellowBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Yellow - Just Below White Clip')));
+	this.fcYellowCheck.setAttribute('type','checkbox');
+	this.fcYellowCheck.checked = true;
+	yellowBox.appendChild(this.fcYellowCheck);
+	yellowBox.appendChild(document.createElement('br'));
+	this.fcYellowInput.setAttribute('type','number');
+	this.fcYellowInput.setAttribute('step','any');
+	this.fcYellowInput.setAttribute('class','ireinput');
+	this.fcYellowInput.value = '0.26';
+	yellowBox.appendChild(this.fcYellowInput);
+	yellowBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops Below White Clip')));
+	yellowBox.style.display = 'block';
+	this.fcWindow.appendChild(yellowBox);
+
+	var redBox = document.createElement('div');
+	redBox.setAttribute('class','whitebox');
+	redBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Red - White Clip')));
+	this.fcRedCheck.setAttribute('type','checkbox');
+	this.fcRedCheck.checked = true;
+	redBox.appendChild(this.fcRedCheck);
+	redBox.style.display = 'block';
+	this.fcWindow.appendChild(redBox);
+
+	this.fcBox.appendChild(this.fcWindow);
+	this.toggleFalseColourCheck();
+}
+//		Set Up Data
+//		Event Responses
+LUTTweaksBox.prototype.toggleFalseColourCheck = function() {
+	if (this.fcCheck.checked) {
+		this.fcWindow.style.display = 'block';
+	} else {
+		this.fcWindow.style.display = 'none';
+	}
+}
+LUTTweaksBox.prototype.changeFalseColourBlue = function() {
+	if (!isNaN(parseFloat(this.fcBlueInput.value)) && isFinite(this.fcBlueInput.value)) {
+		if (parseFloat(this.fcBlueInput.value)<1) {
+			this.fcBlueInput.value = '1';
+		}
+	} else {
+		this.fcBlueInput.value = '6.1';
+	}
+}
+LUTTweaksBox.prototype.changeFalseColourYellow = function() {
+	if (!isNaN(parseFloat(this.fcYellowInput.value)) && isFinite(this.fcYellowInput.value)) {
+		 if (parseFloat(this.fcYellowInput.value)<0.0001) {
+			this.fcYellowInput.value = '0.0001';
+		 } else if (parseFloat(this.fcYellowInput.value)>3) {
+			this.fcYellowInput.value = '3';
+		 }
+	} else {
+		this.fcYellowInput.value = '0.26';
+	}
 }
 //
 // *** LUT Analyst ***

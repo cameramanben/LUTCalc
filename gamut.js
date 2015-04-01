@@ -274,11 +274,14 @@ LUTGamut.prototype.calc = function(p,t,i) {
 			}
 
 			if (this.doASC) {
-				c[0] = Math.pow((c[0]*this.asc[0])+this.asc[3],this.asc[6]);
+				c[0] = (c[0]*this.asc[0])+this.asc[3];
+				c[0] = Math.pow((c[0]<0)?0:c[0],this.asc[6]);
 				c[0] = (isNaN(c[0])?0:c[0]);
-				c[1] = Math.pow((c[1]*this.asc[1])+this.asc[4],this.asc[7]);
+				c[1] = (c[1]*this.asc[1])+this.asc[4];
+				c[1] = Math.pow((c[1]<0)?0:c[1],this.asc[7]);
 				c[1] = (isNaN(c[1])?0:c[1]);
-				c[2] = Math.pow((c[2]*this.asc[2])+this.asc[5],this.asc[8]);
+				c[2] = (c[2]*this.asc[2])+this.asc[5];
+				c[2] = Math.pow((c[2]<0)?0:c[2],this.asc[8]);
 				c[2] = (isNaN(c[2])?0:c[2]);
 				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
 				c[0] = luma + (this.asc[9]*(c[0]-luma));
@@ -343,11 +346,14 @@ LUTGamut.prototype.preview = function(p,t,i) {
 			}
 
 			if (this.doASC) {
-				c[0] = Math.pow((c[0]*this.asc[0])+this.asc[3],this.asc[6]);
+				c[0] = (c[0]*this.asc[0])+this.asc[3];
+				c[0] = Math.pow((c[0]<0)?0:c[0],this.asc[6]);
 				c[0] = (isNaN(c[0])?0:c[0]);
-				c[1] = Math.pow((c[1]*this.asc[1])+this.asc[4],this.asc[7]);
+				c[1] = (c[1]*this.asc[1])+this.asc[4];
+				c[1] = Math.pow((c[1]<0)?0:c[1],this.asc[7]);
 				c[1] = (isNaN(c[1])?0:c[1]);
-				c[2] = Math.pow((c[2]*this.asc[2])+this.asc[5],this.asc[8]);
+				c[2] = (c[2]*this.asc[2])+this.asc[5];
+				c[2] = Math.pow((c[2]<0)?0:c[2],this.asc[8]);
 				c[2] = (isNaN(c[2])?0:c[2]);
 				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
 				c[0] = luma + (this.asc[9]*(c[0]-luma));
