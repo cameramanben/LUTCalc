@@ -73,6 +73,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custFlc);
 	this.createCustCdl();
 	this.instructionsBox.appendChild(this.custCdl);
+	this.createCustFls();
+	this.instructionsBox.appendChild(this.custFls);
 	this.createCustLut();
 	this.instructionsBox.appendChild(this.custLut);
 	this.setupEvents();
@@ -129,6 +131,10 @@ LUTInfoBox.prototype.showCustCdlInfo = function() {
 	this.hideAll();
 	this.custCdl.style.display = 'block';
 }
+LUTInfoBox.prototype.showCustFlsInfo = function() {
+	this.hideAll();
+	this.custFls.style.display = 'block';
+}
 LUTInfoBox.prototype.showCustLutInfo = function() {
 	this.hideAll();
 	this.custLut.style.display = 'block';
@@ -147,6 +153,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custCts.style.display = 'none';
 	this.custFlc.style.display = 'none';
 	this.custCdl.style.display = 'none';
+	this.custFls.style.display = 'none';
 	this.custLut.style.display = 'none';
 }
 LUTInfoBox.prototype.createMainscreen = function() {
@@ -303,6 +310,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustCdl.setAttribute('class','imagemapimg');	
 	this.insCustCdl.setAttribute('id','ins-cust-cdl');	
 	this.custscreen.appendChild(this.insCustCdl);
+	this.insCustFls = document.createElement('div');
+	this.insCustFls.setAttribute('class','imagemapimg');	
+	this.insCustFls.setAttribute('id','ins-cust-fls');	
+	this.custscreen.appendChild(this.insCustFls);
 	this.insCustLut = document.createElement('div');
 	this.insCustLut.setAttribute('class','imagemapimg');	
 	this.insCustLut.setAttribute('id','ins-cust-lut');	
@@ -469,7 +480,7 @@ LUTInfoBox.prototype.createCustBhi = function() {
 	bhi1.setAttribute('id','ins-cust-bhi-1');
 	this.custBhiInfo.appendChild(bhi1);
 	this.addInfo(this.custBhiInfo,false,'Black Level','initially gives the % IRE level of 0% black in the output transfer function or gamma. This can then be fixed against highlight adjustments or reset, for example to thicken the black level by a measured amount.');
-	this.addInfo(this.custBhiInfo,false,null,'Currently in LUTCalc it is calculated against the default value for the curve, and does not take into account ASC-CDL adjustments.');
+	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level include ASC-CDL adjustments in their calculations, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
 	var bhi2 = document.createElement('div');
 	bhi2.setAttribute('class','infoimage');
 	bhi2.setAttribute('id','ins-cust-bhi-2');
@@ -558,6 +569,35 @@ LUTInfoBox.prototype.createCustCdl = function() {
 	this.addInfo(this.custCdlInfo,false,null,'For simplicity, LUTCalc includes a luma channel alongside the red, green and blue and locking the individual channel adjustments together.');
 	this.custCdl.style.display = 'none';
 	this.custCdl.appendChild(this.custCdlInfo);
+}
+LUTInfoBox.prototype.createCustFls = function() {
+	this.custFls = document.createElement('div');
+	this.custFls.setAttribute('class','instructions');
+	this.custFls.setAttribute('id','cust-fls');
+	this.custFlsBack = document.createElement('input');
+	this.custFlsBack.setAttribute('type','button');
+	this.custFlsBack.value = 'Back';
+	this.custFls.appendChild(this.custFlsBack);
+	this.custFlsInfo = document.createElement('div');
+	this.custFlsInfo.setAttribute('class','infotext');
+	var fls1 = document.createElement('div');
+	fls1.setAttribute('class','infoimage');
+	fls1.setAttribute('id','ins-cust-fls-1');
+	this.custFlsInfo.appendChild(fls1);
+	this.addInfo(this.custFlsInfo,false,null,"'False Colour' changes luminance ranges to fixed colours as an exposure aid for wide dynamic range log recording.");
+	this.addInfo(this.custFlsInfo,false,null,'The colours and ranges LUTCalc uses are based on those used by Sony. They are:');
+	this.addInfo(this.custFlsInfo,true,'Purple','Black clip (actually 10 stops below 18% gray).');
+	this.addInfo(this.custFlsInfo,true,'Blue','Just above black clip. Default is 6.1 stops below 18% gray, but this can be changed to taste.');
+	this.addInfo(this.custFlsInfo,true,'Green','18% gray +/- 0.2 stops. Exposure datum.');
+	this.addInfo(this.custFlsInfo,true,'Pink','One stop over 18% gray +/- 0.175 stops. Common reference for caucasian skin.');
+	this.addInfo(this.custFlsInfo,true,'Orange','90% white +/- 0.175 stops. Off by default as not included by Sony, 90% white is a common datum in broadcast video.');
+	this.addInfo(this.custFlsInfo,true,'Yellow','Just below white clip. The default is 0.26 stops below clip, but this can also be changed.');
+	this.addInfo(this.custFlsInfo,true,'Red','White clip (5.95 stops above 18% gray).');
+	this.addInfo(this.custFlsInfo,false,null,'False colours map to the original real world exposure levels, regardless of the chosen input and output colour spaces.');
+	this.addInfo(this.custFlsInfo,false,null,'However the compact dimension of 3D LUTs does not lend itself to stepped colours. Consequently choices of output colour space with significantly increased contrast and saturation shooting low dynamic range scenes can lead to spreading of the colour bands. The centres of the bands will remain correct.');
+	this.addInfo(this.custFlsInfo,false,null,'False colour LUTs should be 33x33x33 or larger.');
+	this.custFls.style.display = 'none';
+	this.custFls.appendChild(this.custFlsInfo);
 }
 LUTInfoBox.prototype.createCustLut = function() {
 	this.custLut = document.createElement('div');
@@ -1020,6 +1060,8 @@ LUTInfoBox.prototype.setupEvents = function() {
 	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustCdl.onclick = function(here){ return function(){ here.showCustCdlInfo(); };}(this);
 	this.custCdlBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustFls.onclick = function(here){ return function(){ here.showCustFlsInfo(); };}(this);
+	this.custFlsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustLut.onclick = function(here){ return function(){ here.showCustLutInfo(); };}(this);
 	this.custLutBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 }

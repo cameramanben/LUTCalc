@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v1.9 Beta 8
+-----------
+* Added False Colour.
+* Black Level and Highlight Level now take into account ASC-CDL.
+
 v1.9 Beta 4
 -----------
 * Added ASC CDL controls tweak.

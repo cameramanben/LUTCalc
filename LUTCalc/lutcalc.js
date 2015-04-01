@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 Beta 7');
+	lutInputs.addInput('version','v1.9 Beta 8');
 	lutInputs.addInput('date','March 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
@@ -408,6 +408,40 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutTweaksBox.cdlResetP();
 		lutMessage.gaSetParams();
 		lutMessage.gtSetParams();
+	}
+	//			False Colour Tweak
+	lutInputs.tweakFCCheck.onchange = function(){
+		lutTweaksBox.toggleFalseColourCheck();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCPurpleCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCBlueCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCBlueWidth.onchange = function(){
+		lutTweaksBox.changeFalseColourBlue();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCGreenCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCPinkCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCOrangeCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCYellowCheck.onchange = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCYellowWidth.onchange = function(){
+		lutTweaksBox.changeFalseColourYellow();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.tweakFCRedCheck.onchange = function(){
+		lutMessage.gaSetParams();
 	}
 	//			LUT Analyst Tweak
 	if (lutInputs.isApp) {

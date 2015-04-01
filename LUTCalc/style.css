@@ -150,6 +150,16 @@ body {text-align:center;margin: 0px auto;}
 	border-radius:0.25em;
 /*	-moz-border-radius:5px; */
 }
+.whitebox {
+	display: inline-block;
+	margin:0 0.15em 0.2em 0.15em;
+	padding: 0.15em 0.35em 0.25em 0.15em;
+	border:1px solid;
+	border-color: #dadada;
+	background-color: #f2f2f2;
+	border-radius:0.25em;
+/*	-moz-border-radius:5px; */
+}
 .popup	{
 	position: relative;
 	left: -15em;	
@@ -237,6 +247,8 @@ body {text-align:center;margin: 0px auto;}
 #ins-cust-flc:hover {background-image: url('pngs/cust-flc-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-cdl {background-image: url('pngs/cust-cdl.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-cdl:hover {background-image: url('pngs/cust-cdl-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-fls {background-image: url('pngs/cust-fls.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-fls:hover {background-image: url('pngs/cust-fls-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-lut {background-image: url('pngs/cust-lut.png');margin:0;padding:0;background-size:21em 3.24em;width:21em;height:3.24em;}
 #ins-cust-lut:hover {background-image: url('pngs/cust-lut-g.png');margin:0;padding:0;background-size:21em 3.24em;width:21em;height:3.24em;}
 #ins-cust-footer {display:block;background-image: url('pngs/cust-footer.png');margin:0;padding:0;background-size:21em 0.33em;width:21em;height:0.33em;}
@@ -249,6 +261,7 @@ body {text-align:center;margin: 0px auto;}
 #ins-cust-flc-1 {display:block;background-image: url('pngs/cust-flc-1.png');margin:0px auto;padding:0;background-size:21em 5.074em;width:21em;height:5.074em;}
 #ins-cust-flc-2 {display:block;background-image: url('pngs/cust-flc-2.png');margin:0px auto;padding:0;background-size:21em 9.176em;width:21em;height:9.176em;}
 #ins-cust-cdl-1 {display:block;background-image: url('pngs/cust-cdl-1.png');margin:0px auto;padding:0;background-size:21em 8.426em;width:21em;height:8.426em;}
+#ins-cust-fls-1 {display:block;background-image: url('pngs/cust-fls-1.png');margin:0px auto;padding:0;background-size:21em 14.56em;width:21em;height:14.56em;}
 #ins-cust-lut-1 {display:block;background-image: url('pngs/cust-lut-1.png');margin:0px auto;padding:0;background-size:21em 4.059em;width:21em;height:4.059em;}
 #ins-cust-lut-2 {display:block;background-image: url('pngs/cust-lut-2.png');margin:0px auto;padding:0;background-size:21em 8.162em;width:21em;height:8.162em;}
 #ins-cust-lut-3 {display:block;background-image: url('pngs/cust-lut-3.png');margin:0px auto;padding:0;background-size:21em 8.162em;width:21em;height:8.162em;}
