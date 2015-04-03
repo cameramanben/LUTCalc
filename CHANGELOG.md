@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v1.9 Beta 9
+-----------
+* Simplified False Colour calculation. Now works with every output gamma / gamut / tweak option
+
 v1.9 Beta 8
 -----------
 * Added False Colour.
