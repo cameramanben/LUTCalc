@@ -45,6 +45,23 @@ function LUTGamut() {
 		1,1,1,	// p - Power / Gamma
 		1		// sat - Saturation
 	]);
+
+	this.doFC = false;
+	this.fcWhite = 15;
+	this.fcVals = new Float64Array([
+		0.000195313,// Purple - Black Clip (18%-10 stops)
+		0.002915728,// Blue - Just Above Black Clip (18%-6.1 stops)
+		0.174110113,// Green - 18%-0.2 Stop
+		0.229739671,// Green - 18%+0.2 stop
+		0.354307008,// Pink - One Stop Over 18%-0.175 Stop
+		0.451585762,// Pink - One Stop Over 18%+0.175 Stop
+		0.885767519,// Orange - 90% White-0.175 Stop
+		1.128964405,// Orange - 90% White+0.175 Stop
+		10.39683067,// Yellow - White Clip (Sony F55,F5,FS7)-0.3 Stop
+		12.36398501 // Red - White Clip (Sony F55,F5,FS7) 18%+6 stops
+	]);
+	this.fcL = new Float64Array(10);
+
 	this.gamutList();
 }
 LUTGamut.prototype.gamutList = function() {
@@ -180,6 +197,8 @@ LUTGamut.prototype.setParams = function(params) {
 	out.doGreen = false;
 	this.doASC = false;
 	out.doASC = false;
+	this.doFC = false;
+	out.doFC = false;
 	if (typeof params.tweaks === 'boolean' && params.tweaks) {
 		if (typeof params.doHG === 'boolean') {
 			this.doHG = params.doHG;
@@ -196,6 +215,10 @@ LUTGamut.prototype.setParams = function(params) {
 		if (typeof params.doASC === 'boolean') {
 			this.doASC = params.doASC;
 			out.doASC = this.doASC;
+		}
+		if (typeof params.doFC === 'boolean') {
+			this.doFC = params.doFC;
+			out.doFC = this.doFC;
 		}
 	}
 	if (typeof params.CAT === 'number') {
@@ -244,6 +267,79 @@ LUTGamut.prototype.setParams = function(params) {
 		this.doHG = false;
 		out.doHG = false;
 	}
+
+
+	this.doFCPurple = false;
+	this.fcVals[0] = -10;	// Purple - Black Clip
+	this.fcVals[1] = -10;	// Blue - Just Above Black Clip (18%-6.1 stops)
+	this.fcVals[2] = -10;	// Green - 18%-0.2 Stop
+	this.fcVals[3] = -10;	// Green - 18%+0.2 stop
+	this.fcVals[4] = -10;	// Pink - One Stop Over 18%-0.175 Stop
+	this.fcVals[5] = -10;	// Pink - One Stop Over 18%+0.175 Stop
+	this.fcVals[6] = -10;	// Orange - 90% White-0.175 Stop
+	this.fcVals[7] = -10;	// Orange - 90% White+0.175 Stop
+	this.fcVals[8] = -10;	// Yellow - White Clip (Sony F55,F5,FS7)-0.25 Stop
+	this.fcVals[9] = -10;	// Red - White Clip (Sony F55,F5,FS7)
+	this.doFCYellow = false;
+	this.doFCRed = false;
+	var noFCs = true;
+	if (typeof params.fcChecks !== 'undefined') {
+		var fcs = params.fcChecks;
+		if (fcs[0]) { 
+			this.fcVals[0] = 0.000195313;
+			this.doFCPurple = true;
+			noFCs = false;
+		}
+		if (fcs[1]) {
+			if (typeof params.fcBlue === 'number') {
+				this.fcVals[1] = Math.pow(2,-params.fcBlue)*0.2;
+			} else {
+				this.fcVals[1] = 0.002915728;
+			}
+			out.fcBlue = Math.log(this.fcVals[1]/0.2)/Math.log(2);
+			this.fcVals[0] = 0.000195313;
+			noFCs = false;
+		}
+		if (fcs[2]) {
+			this.fcVals[2] = 0.174110113;
+			this.fcVals[3] = 0.229739671;
+			noFCs = false;
+		}
+		if (fcs[3]) {
+			this.fcVals[4] = 0.354307008;
+			this.fcVals[5] = 0.451585762;
+			noFCs = false;
+		}
+		if (fcs[4]) {
+			this.fcVals[6] = 0.885767519;
+			this.fcVals[7] = 1.128964405;
+			noFCs = false;
+		}
+		if (fcs[5]) {
+			if (typeof params.fcYellow === 'number') {
+				this.fcVals[8] = Math.pow(2,5.95-params.fcYellow)*0.2;
+			} else {
+//				this.fcVals[8] = 10.33834716;
+				this.fcVals[8] = 10.32501452;
+			}
+			out.fcYellow = Math.log(this.fcVals[8]/0.2)/Math.log(2);
+			this.fcVals[9] = 12.36398501;
+			this.doFCYellow = true;
+			noFCs = false;
+		}
+		if (fcs[6]) {
+//			this.fcVals[9] = 12.294436;
+			this.fcVals[9] = 12.36398501;
+			this.doFCRed = true;
+			noFCs = false;
+		}
+		if (noFCs) {
+			this.doFC = false;
+		}
+	} else {
+		this.doFC = false;
+	}
+
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
 	}
@@ -259,20 +355,45 @@ LUTGamut.prototype.calc = function(p,t,i) {
 	if (!this.nul) {
 		var o = new Float64Array(i.o);
 		var max = o.length / 3;
+		var fc;
+		if (this.doFC) {
+			fc = new Uint8Array(max);
+			out.doFC = true;
+		} else {
+			out.doFC = false;
+		}
 		var eiMult = i.eiMult;
 		for (var j=0; j<max; j++) {
 			var k = j*3;
 			var c = this.inGamuts[this.curIn].calc([o[k],o[k+1],o[k+2]]);
+			// False Colour
+			if (this.doFC) {
+				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				for (var s=0; s<10; s++) {
+					if (this.fcVals[s] !==-10 && luma <= this.fcVals[s]) {
+						fc[j] = s;
+						break;
+					}
+				}
+				if (fc[j] === 0 && this.doFCRed && luma > this.fcVals[9]) {
+					fc[j] = 10;
+				} else if (fc[j] === 9 && !this.doFCYellow) {
+					fc[j] = 0;
+				}
+			}
+			// CineEI / Exposure Shift
 			c[0] *= eiMult;
 			c[1] *= eiMult;
 			c[2] *= eiMult;
+			// Colour Temperature Shift
 			if (this.doTemp) {
 				c = this.CAT.calc(c.slice(0));
 			}
+			// Fluori Correction
 			if (this.doGreen) {
 				c = this.green.calc(c.slice(0));
 			}
-
+			// ASC-CDL
 			if (this.doASC) {
 				c[0] = (c[0]*this.asc[0])+this.asc[3];
 				c[0] = Math.pow((c[0]<0)?0:c[0],this.asc[6]);
@@ -288,7 +409,7 @@ LUTGamut.prototype.calc = function(p,t,i) {
 				c[1] = luma + (this.asc[9]*(c[1]-luma));
 				c[2] = luma + (this.asc[9]*(c[2]-luma));
 			}
-
+			// Highlight Gamut
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
@@ -320,8 +441,11 @@ LUTGamut.prototype.calc = function(p,t,i) {
 				o[k+1] = g[1];
 				o[k+2] = g[2];
 			}
-		out.o = o.buffer;
-		out.to = ['o'];
+			out.o = o.buffer;
+			out.to = ['o'];
+			if (this.doFC) {
+				out.fc = fc.buffer;
+			}
 		}
 	} else {
 		out.o = i.o;
@@ -332,12 +456,36 @@ LUTGamut.prototype.calc = function(p,t,i) {
 LUTGamut.prototype.preview = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, line: i.line, outGamut: this.curOut};
 	var o = new Float64Array(i.o);
+	var fc;
 	if (!this.nul) {
 		var max = o.length / 3;
+		if (this.doFC) {
+			fc = new Uint8Array(max);
+			out.doFC = true;
+		} else {
+			out.doFC = false;
+		}
 		var eiMult = i.eiMult;
 		for (var j=0; j<max; j++) {
 			var k = j*3;
-			var c = [o[k]*eiMult,o[k+1]*eiMult,o[k+2]*eiMult];
+			var c = new Float64Array([o[k],o[k+1],o[k+2]]);
+			if (this.doFC) {
+				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				for (var s=0; s<10; s++) {
+					if (this.fcVals[s] !==-10 && luma <= this.fcVals[s]) {
+						fc[j] = s;
+						break;
+					}
+				}
+				if (fc[j] === 0 && this.doFCRed && luma > this.fcVals[9]) {
+					fc[j] = 10;
+				} else if (fc[j] === 9 && !this.doFCYellow) {
+					fc[j] = 0;
+				}
+			}
+			c[0] *= eiMult;
+			c[1] *= eiMult;
+			c[2] *= eiMult;
 			if (this.doTemp) {
 				c = this.CAT.calc(c.slice(0));
 			}
@@ -395,6 +543,9 @@ LUTGamut.prototype.preview = function(p,t,i) {
 		}
 	}
 	out.o = o.buffer;
+	if (this.doFC) {
+		out.fc = fc.buffer;
+	}
 	out.to = ['o'];
 	return out;
 }

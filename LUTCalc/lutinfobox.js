@@ -594,7 +594,6 @@ LUTInfoBox.prototype.createCustFls = function() {
 	this.addInfo(this.custFlsInfo,true,'Yellow','Just below white clip. The default is 0.26 stops below clip, but this can also be changed.');
 	this.addInfo(this.custFlsInfo,true,'Red','White clip (5.95 stops above 18% gray).');
 	this.addInfo(this.custFlsInfo,false,null,'False colours map to the original real world exposure levels, regardless of the chosen input and output colour spaces.');
-	this.addInfo(this.custFlsInfo,false,null,'However the compact dimension of 3D LUTs does not lend itself to stepped colours. Consequently choices of output colour space with significantly increased contrast and saturation shooting low dynamic range scenes can lead to spreading of the colour bands. The centres of the bands will remain correct.');
 	this.addInfo(this.custFlsInfo,false,null,'False colour LUTs should be 33x33x33 or larger.');
 	this.custFls.style.display = 'none';
 	this.custFls.appendChild(this.custFlsInfo);
