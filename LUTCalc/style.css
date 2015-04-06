@@ -185,7 +185,7 @@ body {text-align:center;margin: 0px auto;}
 .infobox {height:21em;margin-top:0.15em;overflow:auto;}
 .buttons { text-align: center; }
 .smallbutton {text-align: center;font-size:0.6em;vertical-align:middle;}
-#tweakholder {margin:0;padding:0;overflow:auto;max-height:18em;}
+#tweakholder {margin:0;padding:0;overflow:auto;max-height:19.6em;}
 #chartcanvas1 {display:block;width:28em;height:15em; z-index: 1;}
 #chartcanvas2 {display:block;width:28em;height:15em; z-index: 1;}
 #chartcanvas3 {display:block;width:28em;height:15em; z-index: 1;}

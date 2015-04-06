@@ -180,56 +180,6 @@ LUTGenerateBox.prototype.output = function() {
 		}
 		this.file.save(this.header() + d, this.inputs.name.value, 'cube');
 }
-/*
-LUTGenerateBox.prototype.clip = function(data,rgb) {
-	var out = rgb.slice(0);
-	if (this.mlut) {
-		if (out[0] < 0) {
-			out[0] = 0;
-		} else if (out[0] > 1.09474885844749) {
-			out[0] = 1.09474885844749;
-		}
-		if (out[1] < 0) {
-			out[1] = 0;
-		} else if (out[1] > 1.09474885844749) {
-			out[1] = 1.09474885844749;
-		}
-		if (out[2] < 0) {
-			out[2] = 0;
-		} else if (out[2] > 1.09474885844749) {
-			out[2] = 1.09474885844749;
-		}
-	} else {
-		if (out[0] < -0.06256109481916) {
-			out[0] = -0.06256109481916;
-		}
-		if (out[1] < -0.06256109481916) {
-			out[1] = -0.06256109481916;
-		}
-		if (out[2] < -0.06256109481916) {
-			out[2] = -0.06256109481916;
-		}
-	}
-	if (this.hardClip) {
-			if (out[0] > 1) {
-				out[0] = 1;
-			} else if (out[0] < 0) {
-				out[0] = 0;
-			}
-			if (out[1] > 1) {
-				out[1] = 1;
-			} else if (out[1] < 0) {
-				out[1] = 0;
-			}
-			if (out[2] > 1) {
-				out[2] = 1;
-			} else if (out[2] < 0) {
-				out[2] = 0;
-			}
-	}
-	return out;
-}
-*/
 LUTGenerateBox.prototype.fixedString = function(rgb) {
 	return [parseFloat(rgb[0]).toFixed(10).toString(),
 			parseFloat(rgb[1]).toFixed(10).toString(),

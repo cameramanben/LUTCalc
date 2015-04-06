@@ -1,9 +1,15 @@
 LUTCalc Changelog
 =================
 
+v1.9 Beta RC1
+-------------
+* Fixed 'Highlight Level' maps to box bug.
+* Allow black level and highlight level adjustment with log curves.
+* Fixed Canon CP IDT not available in LUTAnalyst bug.
+
 v1.9 Beta 9
 -----------
-* Simplified False Colour calculation. Now works with every output gamma / gamut / tweak option
+* Simplified False Colour calculation. Now works with every output gamma / gamut / tweak option.
 
 v1.9 Beta 8
 -----------

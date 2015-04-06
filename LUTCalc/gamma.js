@@ -39,24 +39,6 @@ function LUTGamma() {
 		1,1,1,	// p - Power / Gamma
 		1		// sat - Saturation
 	]);
-
-/*
-	this.doFC = false;
-	this.fcWhite = 15;
-	this.fcVals = new Float64Array([
-		0.000195313,// Purple - Black Clip (18%-10 stops)
-		0.002915728,// Blue - Just Above Black Clip (18%-6.1 stops)
-		0.174110113,// Green - 18%-0.2 Stop
-		0.229739671,// Green - 18%+0.2 stop
-		0.354307008,// Pink - One Stop Over 18%-0.175 Stop
-		0.451585762,// Pink - One Stop Over 18%+0.175 Stop
-		0.885767519,// Orange - 90% White-0.175 Stop
-		1.128964405,// Orange - 90% White+0.175 Stop
-		10.39683067,// Yellow - White Clip (Sony F55,F5,FS7)-0.3 Stop
-		12.36398501 // Red - White Clip (Sony F55,F5,FS7) 18%+6 stops
-	]);
-	this.fcL = new Float64Array(10);
-*/
 	this.gammaList();
 }
 LUTGamma.prototype.gammaList = function() {
@@ -372,14 +354,8 @@ LUTGamma.prototype.setParams = function(params) {
 		if (typeof params.highTweak === 'boolean') {
 			this.doHigh = params.highTweak;
 		}
-/*
-		if (typeof params.doFC === 'boolean') {
-			this.doFC = params.doFC;
-		}
-*/
 	}
 	out.doASC = this.doASC;
-//	out.doFC = this.doFC;
 // self.postMessage({msg:true,details:this.doFC});
 	if (typeof params.ascCDL !== 'undefined') {
 		var newASC = new Float64Array(params.ascCDL);
@@ -392,6 +368,15 @@ LUTGamma.prototype.setParams = function(params) {
 				break;
 			}
 		}
+	}
+	var changedRef = false;
+	if (typeof params.highRef === 'number') {
+		if (this.highRef !== params.highRef) {
+			changedRef = true;
+		}
+		this.highRef = params.highRef;
+	} else {
+		this.highRef = 0.9;
 	}
 	var blackDefault;
 	var highDefault;
@@ -411,15 +396,6 @@ LUTGamma.prototype.setParams = function(params) {
 		}
 	} else {
 		blackMap = blackDefault;
-	}
-	var changedRef = false;
-	if (typeof params.highRef === 'number') {
-		if (this.highRef !== params.highRef) {
-			changedRef = true;
-		}
-		this.highRef = params.highRef;
-	} else {
-		this.highRef = 0.9;
 	}
 	var highMap;
 	if (typeof params.highMap === 'number') {
@@ -455,80 +431,6 @@ LUTGamma.prototype.setParams = function(params) {
 		this.ad = 1;
 		this.bd = 0;
 	}
-/*
-	this.doFCPurple = false;
-	this.fcVals[0] = -10;	// Purple - Black Clip
-	this.fcVals[1] = -10;	// Blue - Just Above Black Clip (18%-6.1 stops)
-	this.fcVals[2] = -10;	// Green - 18%-0.2 Stop
-	this.fcVals[3] = -10;	// Green - 18%+0.2 stop
-	this.fcVals[4] = -10;	// Pink - One Stop Over 18%-0.175 Stop
-	this.fcVals[5] = -10;	// Pink - One Stop Over 18%+0.175 Stop
-	this.fcVals[6] = -10;	// Orange - 90% White-0.175 Stop
-	this.fcVals[7] = -10;	// Orange - 90% White+0.175 Stop
-	this.fcVals[8] = -10;	// Yellow - White Clip (Sony F55,F5,FS7)-0.25 Stop
-	this.fcVals[9] = -10;	// Red - White Clip (Sony F55,F5,FS7)
-	this.doFCYellow = false;
-	this.doFCRed = false;
-	var noFCs = true;
-	if (typeof params.fcChecks !== 'undefined') {
-		var fcs = params.fcChecks;
-		if (fcs[0]) { 
-			this.fcVals[0] = 0.000195313;
-			this.doFCPurple = true;
-			noFCs = false;
-		}
-		if (fcs[1]) {
-			if (typeof params.fcBlue === 'number') {
-				this.fcVals[1] = Math.pow(2,-params.fcBlue)*0.2;
-			} else {
-				this.fcVals[1] = 0.002915728;
-			}
-			out.fcBlue = Math.log(this.fcVals[1]/0.2)/Math.log(2);
-			this.fcVals[0] = 0.000195313;
-			noFCs = false;
-		}
-		if (fcs[2]) {
-			this.fcVals[2] = 0.174110113;
-			this.fcVals[3] = 0.229739671;
-			noFCs = false;
-		}
-		if (fcs[3]) {
-			this.fcVals[4] = 0.354307008;
-			this.fcVals[5] = 0.451585762;
-			noFCs = false;
-		}
-		if (fcs[4]) {
-			this.fcVals[6] = 0.885767519;
-			this.fcVals[7] = 1.128964405;
-			noFCs = false;
-		}
-		if (fcs[5]) {
-			if (typeof params.fcYellow === 'number') {
-				this.fcVals[8] = Math.pow(2,5.95-params.fcYellow)*0.2;
-			} else {
-//				this.fcVals[8] = 10.33834716;
-				this.fcVals[8] = 10.32501452;
-			}
-			out.fcYellow = Math.log(this.fcVals[8]/0.2)/Math.log(2);
-			this.fcVals[9] = 12.36398501;
-			this.doFCYellow = true;
-			noFCs = false;
-		}
-		if (fcs[6]) {
-//			this.fcVals[9] = 12.294436;
-			this.fcVals[9] = 12.36398501;
-			this.doFCRed = true;
-			noFCs = false;
-		}
-		if (noFCs) {
-			this.doFC = false;
-		} else {
-			this.getFCLevels();
-		}
-	} else {
-		this.doFC = false;
-	}
-*/
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
 	}
@@ -708,6 +610,7 @@ LUTGamma.prototype.laCalcInput = function(p,t,i) {
 	var max = i.dim;
 	var o = new Float64Array(i.o);
 	var max = o.length;
+ self.postMessage({msg:true,details:'input gamma'+i.gamma});
 	if (i.legIn) {
 		for (var j=0; j<max; j++) {
 			o[j] = this.gammas[i.gamma].linToLegal(o[j]);

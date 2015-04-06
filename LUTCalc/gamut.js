@@ -116,7 +116,7 @@ LUTGamut.prototype.gamutList = function() {
 	this.outGamuts.push(new LUTGamutMatrix('XYZ',new Float64Array([0.5990839208,0.2489255161,0.1024464902, 0.2150758201,0.8850685017,-0.1001443219, -0.0320658495,-0.0276583907,1.1487819910])));
 	this.outGamuts.push(new LUTGamutMatrix('Alexa Wide Gamut',new Float64Array([0.974435,0.023802,0.001763, -0.089226,1.071257,0.017968, -0.035355,0.038226,0.997128])));
 	this.outGamuts.push(new LUTGamutLUT(
-		'Canon CP Lock (Daylight)',
+		'Canon CP IDT (Daylight)',
 		{
 			format: 'cube',
 			min: [0,0,0],
@@ -125,7 +125,7 @@ LUTGamut.prototype.gamutList = function() {
 			le: this.isLE
 		}));
 	this.outGamuts.push(new LUTGamutLUT(
-		'Canon CP Lock (Tungsten)',
+		'Canon CP IDT (Tungsten)',
 		{
 			format: 'cube',
 			min: [0,0,0],
@@ -566,6 +566,7 @@ LUTGamut.prototype.previewLin = function(p,t,i) {
 	return out;
 }
 LUTGamut.prototype.laCalc = function(p,t,i) {
+ self.postMessage({msg:true,details:'input gamut'+i.gamut});
 		var o = new Float64Array(i.o);
 		var dim = i.dim;
 		var max = dim*dim*dim;
