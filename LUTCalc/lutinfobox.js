@@ -474,7 +474,7 @@ LUTInfoBox.prototype.createCustBhi = function() {
 	this.custBhi.appendChild(this.custBhiBack);
 	this.custBhiInfo = document.createElement('div');
 	this.custBhiInfo.setAttribute('class','infotext');
-	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level are available with all non-log output gammas. They apply an offset and scaling after all other adjustments and conversions have been applied.');
+	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level apply an offset and scaling after all other adjustments and conversions have been applied.');
 	var bhi1 = document.createElement('div');
 	bhi1.setAttribute('class','infoimage');
 	bhi1.setAttribute('id','ins-cust-bhi-1');
