@@ -32,6 +32,7 @@ function LUTMessage(inputs) {
 	this.gtT = 2; // Gamma threads
 	this.gtN = 0; // Next web worker to send data to
 	this.gtV = 0; // Counter keeping tabs on 'freshness' of returned data
+	this.gtU = 0; // Counter keeping tabs on how many of the threads are up-to-date
 	this.gtL = 0;
 	this.startGtThreads();
 }
@@ -209,7 +210,7 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 	} else if (d.v === this.gaV) {
 		switch(d.t) {
 			case 20: // Set Parameters
-					this.paramsSet(d);
+					this.gammaParamsSet(d);
 					break;
 			case 21: // 1D input to output
 					this.ui[5].got1D(d);
@@ -279,7 +280,7 @@ LUTMessage.prototype.showArray = function(o,dim) {
 	console.log(G);
 	console.log(B);
 }
-LUTMessage.prototype.paramsSet = function(d) {
+LUTMessage.prototype.gammaParamsSet = function(d) {
 	this.gaU++;
 	if (this.gaU === this.gaT) {
 		this.gaU = 0;
@@ -482,8 +483,7 @@ console.log('Resending - ' + d.t);
 	} else if (d.v === this.gtV) {
 		switch(d.t) {
 			case 20: // Set params
-					this.gtTx(8,15,d);
-					this.ui[8].isChanged();
+					this.gamutParamsSet(d);
 					break;
 			case 21: // RGB input to output
 					this.gaTx(5,4,d)
@@ -522,6 +522,14 @@ console.log('Resending - ' + d.t);
 	} else {
 console.log('Resending - ' + (d.t-20));
 		this.gtTx(d.p,d.t - 20,d);
+	}
+}
+LUTMessage.prototype.gamutParamsSet = function(d) {
+	this.gtU++;
+	if (this.gtU === this.gtT) {
+		this.gtU = 0;
+		this.gtTx(8,15,d);
+		this.ui[8].isChanged();
 	}
 }
 LUTMessage.prototype.gotGamutLists = function(d) {

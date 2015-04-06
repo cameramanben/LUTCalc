@@ -315,7 +315,7 @@ LUTTweaksBox.prototype.toggleTweakCheck = function() {
 		if (curOut === 9999) {
 			curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 		}
-		if (this.catList[curOut] != 0 && this.catList[curOut] != 3) {
+		if (this.catList[curOut] != 3) {
 			this.blackLevelBox.style.display = 'block';
 			this.highLevelBox.style.display = 'block';
 		} else {
