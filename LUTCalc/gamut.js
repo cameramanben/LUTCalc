@@ -468,7 +468,7 @@ LUTGamut.prototype.preview = function(p,t,i) {
 		var eiMult = i.eiMult;
 		for (var j=0; j<max; j++) {
 			var k = j*3;
-			var c = new Float64Array([o[k],o[k+1],o[k+2]]);
+			var c = [o[k],o[k+1],o[k+2]];
 			if (this.doFC) {
 				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
 				for (var s=0; s<10; s++) {

@@ -292,7 +292,7 @@ LUTGamma.prototype.setParams = function(params) {
 			}
 		}
 	}
-	if (this.gammas[this.curOut].cat !== 0 && this.gammas[this.curOut].cat !== 3){
+	if (this.gammas[this.curOut].cat !== 3){
 		this.scale = true;
 	} else {
 		this.scale = false;
