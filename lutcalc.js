@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Housekeeping
 	document.getElementById('javascriptwarning').style.display='none';
 	lutCalcForm = document.getElementById('lutcalcform');
-	lutInputs.addInput('version','v1.9 RC 1');
+	lutInputs.addInput('version','v1.9 RC 2');
 	lutInputs.addInput('date','April 2015');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
