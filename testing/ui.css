@@ -1,0 +1,72 @@
+/*Basic Adjustments */
+body { color: #333333; background-color: #eaeaea; padding: 0.25em;}
+h1,h2,h3,h4,h5,h6 { text-align: center; }
+a {	text-decoration: none; background-color: inherit; color: #0000ff; }
+th { padding-left:0.75em; padding-right:0.75em; }
+p {margin-bottom:0.6em;}
+table { margin: 0px auto; }
+tr { text-align:center; }
+input { margin-left:0.25em; margin-right:0.25em; text-align: center; }
+select { margin-left:0.5em; margin-right:0.5em; }
+/* Header
+-------------------------------------------------------------------------------*/
+#titlebar {
+	width:100%;
+	text-align: center;
+	clear:both;
+	padding-top: 0.1em;
+	padding-bottom: 0.2em;
+	color: #ffff00;
+	background-color: #202090;
+}
+/* Main Section
+-------------------------------------------------------------------------------*/
+body {text-align:center;margin: 0px auto;}
+#javascriptwarning { margin-top:1em; display: block; }
+.splash {
+	position:absolute;
+	left: 50%;
+	top: 10em;
+	background-image: url('img/logo256.png');
+	margin:0;
+	padding:0;
+	margin-left:-10em;
+	background-size:20em 20em;
+	width:20em;
+	height:20em;
+}
+.splash div {
+	padding-top: 7em;
+}
+.splash h1 {
+	font-size:2.2em;
+	color: #ffff00;
+text-shadow:
+    0 0 2px #000000,
+    0 0 6px #000000,
+    0 0 8px #505050;
+}
+.splash h5 {
+	font-size:1.5em;
+	color: #ffff00;
+text-shadow:
+    0 0 2px #000000,
+    0 0 6px #000000,
+    0 0 8px #505050;
+}
+#main { padding-right:0.2em; width:69em;margin: 0px auto;}
+#lutcalcform {margin: 0px auto;}
+#left { float:left;}
+#right {float:right;overflow:auto;width:35em;height:39.5em;padding-right:1em;}
+/* Footer
+-------------------------------------------------------------------------------*/
+#footer {
+	width:100%;
+	text-align: center;
+	clear:both;
+	margin-top:0.5em;
+	padding-top: 0.1em;
+	padding-bottom: 0.2em;
+	color: #ffff00;
+	background-color: #202090;
+}
