@@ -9,6 +9,7 @@ v1.9 RC3
 * Added option to False Colour to set the white clip level in stops above 18% gray.
 * Improved the coefficients used for S-Gamut3.cine luminance.
 * Initial tidying of UI control code to change from object.style.display approach over to object.className. Visuals are then completely controlled by style sheets, allowing fundamental reskinning for different platforms / applications.
+* Speedup in preview from increased use of transferrable objects.
 
 v1.9 RC2
 --------

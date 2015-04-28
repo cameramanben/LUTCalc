@@ -972,7 +972,7 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	}
 	out.o = o.buffer;
 	out.f = f.buffer;
-	out.to = ['o'];
+	out.to = ['o','f'];
 	return out;
 }
 LUTGamma.prototype.previewLin = function(p,t,i) {

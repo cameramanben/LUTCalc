@@ -760,8 +760,10 @@ LUTGamut.prototype.preview = function(p,t,i) {
 	out.o = o.buffer;
 	if (this.doFC) {
 		out.fc = fc.buffer;
+		out.to = ['o','fc'];
+	} else {
+		out.to = ['o'];
 	}
-	out.to = ['o'];
 	return out;
 }
 LUTGamut.prototype.previewLin = function(p,t,i) {

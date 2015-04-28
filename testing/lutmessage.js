@@ -163,7 +163,7 @@ LUTMessage.prototype.gaRx = function(d) {
 	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
-console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
+//		console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 		this.gaTx(d.p,d.t,d.d);
 	} else if (d.v === this.gaV) {
 		switch(d.t) {
@@ -218,7 +218,7 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					break;
 		}
 	} else {
-		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
+//		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
 		this.gaTx(d.p,d.t - 20,d);
 	}
 }
@@ -370,7 +370,7 @@ LUTMessage.prototype.gtRx = function(d) {
 	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
-console.log('Resending - ' + d.t);
+//		console.log('Resending - ' + d.t);
 		if (d.t === 1) {
 			this.gaTx(d.p,d.t,{R:d.d.R,G:d.d.G,B:d.d.B,vals:d.d.vals,dim:d.d.dim});
 		} else {
@@ -416,7 +416,7 @@ console.log('Resending - ' + d.t);
 					break;
 		}
 	} else {
-console.log('Resending - ' + (d.t-20));
+//		console.log('Resending - ' + (d.t-20));
 		this.gtTx(d.p,d.t - 20,d);
 	}
 }
