@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "1.9.9.2",
+	"version": "1.9.9.3",
 	"manifest_version": 2,
 	"app": {
 		"background": {
@@ -10,22 +10,32 @@
 				"blob/Blob.js",
 				"filesaver/FileSaver.js",
 				"lutinputs.js",
+				"splash.js",
 				"tests.js",
 				"lut.js",
-				"gamma.js",
-				"gamut.js",
+				"ring.js",
 				"lutmessage.js",
 				"brent.js",
 				"lutanalyst.js",
 				"lutfile.js",
 				"lutcamerabox.js",
 				"lutgammabox.js",
+				"twk-ct.js",
+				"twk-fl.js",
+				"twk-asccdl.js",
+				"twk-psstcdl.js",
+				"twk-hg.js",
+				"twk-blkhi.js",
+				"twk-fc.js",
+				"twk-la.js",
 				"luttweaksbox.js",
 				"lutlutbox.js",
 				"lutgeneratebox.js",
 				"lutpreview.js",
 				"lutinfobox.js",
-				"lutcalc.js"
+				"lutcalc.js",
+				"gamma.js",
+				"gamut.js"
 			]
 		}
 	},

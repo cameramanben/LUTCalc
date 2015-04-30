@@ -191,3 +191,38 @@ LUTLutBox.prototype.changeGamma = function() {
 LUTLutBox.prototype.gotGammaLists = function(catList) {
 	this.catList = catList;
 }
+LUTLutBox.prototype.getInfo = function(info) {
+	info.name = this.lutName.value;
+	if (this.lutOneD.checked) {
+		info.oneD = true;
+	} else {
+		info.oneD = false;
+	}
+	var max = this.inputs.dimension.length;
+	for (var j =0; j < max; j++) {
+		if (this.inputs.dimension[j].checked) {
+			info.dimension = parseInt(this.inputs.dimension[j].value);
+			break;
+		}
+	}
+	if (this.lutMLUTCheck.checked) {
+		info.mlut = true;
+	} else {
+		info.mlut = false;
+	}
+	if (this.lutClipCheck.checked) {
+		info.hardClip = true;
+	} else {
+		info.hardClip = false;
+	}
+	if (this.lutInLegal.checked) {
+		info.legalIn = true;
+	} else {
+		info.legalIn = false;
+	}
+	if (this.lutOutLegal.checked) {
+		info.legalOut = true;
+	} else {
+		info.legalOut = false;
+	}
+}

@@ -17,11 +17,8 @@ function LUTGamut() {
 	this.ver = 0;
 	this.curIn = 0;
 	this.curOut = 0;
-	this.doTemp = false;
-	this.doGreen = false;
 	this.CAT = new LUTGamutTemperature();
 	this.green = new LUTGamutGreen();
-	this.doHG = false;
 	this.curHG = 0;
 	this.hgLow = 0;
 	this.hgHigh = 0;
@@ -38,16 +35,13 @@ function LUTGamut() {
 	} else {
 		this.isLE = false;
 	}
-	this.doASC = false;
 	this.asc = new Float64Array([
 		1,1,1,	// s - Slope / Gain
 		0,0,0,	// o - Offset / Lift
 		1,1,1,	// p - Power / Gamma
 		1		// sat - Saturation
 	]);
-
-	this.doFC = false;
-	this.fcWhite = 15;
+	this.initPSSTCDL();
 	this.fcVals = new Float64Array([
 		0.000195313,// Purple - Black Clip (18%-10 stops)
 		0.002915728,// Blue - Just Above Black Clip (18%-6.1 stops)
@@ -60,7 +54,13 @@ function LUTGamut() {
 		10.39683067,// Yellow - White Clip (Sony F55,F5,FS7)-0.3 Stop
 		12.36398501 // Red - White Clip (Sony F55,F5,FS7) 18%+6 stops
 	]);
-	this.fcL = new Float64Array(10);
+
+	this.doHG = false;
+	this.doCT = false;
+	this.doFL = false;
+	this.doASCCDL = false;
+	this.doPSSTCDL = false;
+	this.doFC = false;
 
 	this.gamutList();
 }
@@ -185,91 +185,290 @@ LUTGamut.prototype.setParams = function(params) {
 		this.curOut = params.outGamut;
 		out.outGamut = this.curOut;
 	}
-	if (typeof params.hgGamut === 'number') {
-		this.curHG = params.hgGamut;
-		out.hgGamut = this.curHG;
+
+	if (typeof params.tweaks === 'boolean') {
+		this.tweaks = params.tweaks;
+	} else {
+		this.tweaks = false;
 	}
+	out.twkCT = this.setCT(params);
+	out.twkFL = this.setFL(params);
+	out.twkASCCDL = this.setASCCDL(params);
+	out.twkPSSTCDL = this.setPSSTCDL(params);
+	out.twkHG = this.setHG(params);
+	out.twkFC = this.setFC(params);
+
+	if (typeof params.isTrans === 'boolean') {
+		this.isTrans = params.isTrans;
+	}
+	this.ver = params.v;
+	out.v = this.ver;
+// var LCR = this.outGamuts[this.curOut].calc([0.645679,0.087530,0.036957]);
+// var LCG = this.outGamuts[this.curOut].calc([0.259115,0.759700,0.129281]);
+// var LCB = this.outGamuts[this.curOut].calc([0.095206,0.152770,0.833762]);
+	return out;
+}
+LUTGamut.prototype.setCT = function(params) {
+	var out = {};
+	this.doCT = false;
+	if (this.tweaks && typeof params.twkCT !== 'undefined') {
+		var p = params.twkCT;
+		if (typeof p.doCT === 'boolean' && p.doCT) {
+			this.doCT = true;
+
+			if (typeof p.CAT === 'number') {
+				this.CAT.setCAT(p.CAT);
+				out.CAT = params.CAT;
+			}
+			if (typeof p.camTemp === 'number' && typeof p.newTemp === 'number') {
+				this.CAT.setTemps(p.newTemp,p.camTemp);
+				out.camTemp = p.camTemp;
+				out.newTemp = p.newTemp;
+			}
+		}
+	}
+	out.doCT = this.doCT;
+	return out;
+}
+LUTGamut.prototype.setFL = function(params) {
+	var out = {};
+	this.doFL = false;
+	if (this.tweaks && typeof params.twkFL !== 'undefined') {
+		var p = params.twkFL;
+		if (typeof p.doFL === 'boolean' && p.doFL) {
+			this.doFL = true;
+
+			if (typeof p.CAT === 'number') {
+				this.green.setCAT(p.CAT);
+				out.CAT = p.CAT;
+			}
+			if (typeof p.flMag === 'number' && typeof p.flTemp === 'number') {
+				this.green.setGreen(p.flTemp,p.flMag);
+				out.flMag = p.flMag;
+				out.flTemp = p.flTemp;
+			}
+		}
+	}
+	out.doFL = this.doFL;
+	return out;
+}
+LUTGamut.prototype.setASCCDL = function(params) {
+	var out = {};
+	this.doASCCDL = false;
+	this.changedASCCDL = false;
+	if (this.tweaks && typeof params.twkASCCDL !== 'undefined') {
+		var p = params.twkASCCDL;
+		if (typeof p.doASCCDL === 'boolean') {
+			var didASCCDL = this.doASCCDL;
+			this.doASCCDL = p.doASCCDL		
+			if (didASCCDL && !this.doASCCDL) {
+				this.changedASCCDL = true;
+			}
+		}
+		if (typeof p.cdl !== 'undefined') {
+			var newCDL = new Float64Array(p.cdl);
+			for (var j=0; j<10; j++) {
+				if (newCDL[j] !== this.asc[j]) {
+					this.asc = newCDL;
+					if (j < 9) {
+						this.changedASCCDL = true;
+					}
+					break;
+				}
+			}
+		}
+	}
+	out.doASCCDL = this.doASCCDL;
+	return out;
+}
+LUTGamut.prototype.setPSSTCDL = function(params) {
+	var out = {};
+	this.doPSSTCDL = false;
+	if (this.tweaks && typeof params.twkPSSTCDL !== 'undefined') {
+		var p = params.twkPSSTCDL;
+		if (typeof p.doPSSTCDL === 'boolean' && p.doPSSTCDL) {
+			this.doPSSTCDL = true;		
+			if (typeof p.c !== 'undefined') {
+				this.psstC.setL(p.c);
+			}
+			if (typeof p.sat !== 'undefined') {
+				this.psstSat.setL(p.sat);
+			}
+			if (typeof p.s !== 'undefined') {
+				this.psstS.setL(p.s);
+			}
+			if (typeof p.o !== 'undefined') {
+				this.psstO.setL(p.o);
+			}
+			if (typeof p.p !== 'undefined') {
+				this.psstP.setL(p.p);
+			}
+			if (typeof p.chromaScale === 'boolean') {
+				this.psstMC = p.chromaScale;
+			}
+			if (typeof p.lumaScale === 'boolean') {
+				this.psstYC = p.lumaScale;
+			}
+		}
+	}
+	out.doPSSTCDL = this.doPSSTCDL;
+	var colours = this.psstColours();
+	out.before = colours[0];
+	out.after = colours[1];
+	return out;
+}
+LUTGamut.prototype.initPSSTCDL = function() {
+	this.psstMC = true;
+	this.psstYC = false;
+	this.psstC = new Ring();
+  	this.psstC.setDetails({
+		title: 'Colour',
+		L: new Float64Array([
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0
+		]).buffer
+	});
+	this.psstSat = new Ring();
+  	this.psstSat.setDetails({
+		title: 'Saturation',
+		L: new Float64Array([
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1
+		]).buffer
+	});
+	this.psstS = new Ring();
+  	this.psstS.setDetails({
+		title: 'Slope',
+		L: new Float64Array([
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1
+		]).buffer
+	});
+	this.psstO = new Ring();
+  	this.psstO.setDetails({
+		title: 'Offset',
+		L: new Float64Array([
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,
+			0,0,0,0,0
+		]).buffer
+	});
+	this.psstP = new Ring();
+  	this.psstP.setDetails({
+		title: 'Power',
+		L: new Float64Array([
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,
+			1,1,1,1,1
+		]).buffer
+	});
+	this.psstF = new Ring();
+  	this.psstF.setDetails({
+		title: 'Forward',
+		L: new Float64Array([
+			-0.0028437108057906, 0.0217509908959666, 0.0426184360709402, 0.0603428523944989, 0.0764816122134266, 0.0917463168369441, 0.1065668410326033, 0.1212649999280322,
+			0.1361363490437190, 0.1511109410328256, 0.1648547055969203, 0.1777454924921576, 0.1901620979455846, 0.2023701797333424, 0.2145937192915353, 0.2270596489283724,
+			0.2400441513238478, 0.2539517499055087, 0.2695133437033267, 0.2885617923664405, 0.3219041368998800, 0.3994432333100958, 0.4288190486329172, 0.4470884929301811,
+			0.4622857285205499, 0.4759707517871447, 0.4888079771255906, 0.5011773495968661, 0.5133459383909105, 0.5255401578610300, 0.5379913701564463, 0.5509844953157412,
+			0.5649433872473982, 0.5804536167387638, 0.5973512199438162, 0.6154550932732965, 0.6344220433169508, 0.6536820385912178, 0.6725743169054769, 0.6905508135209670,
+			0.7072970183401782, 0.7228742620103190, 0.7380301733880786, 0.7528476110622890, 0.7673149309230866, 0.7814256216339061, 0.7951775474029965, 0.8085721944100663,
+			0.8216139620033774, 0.8343095235141760, 0.8466672682495552, 0.8586914910329637, 0.8700805550365486, 0.8808476809327246, 0.8911878536452609, 0.9012389471079286,
+			0.9111074147573467, 0.9208825036358199, 0.9306453898874293, 0.9404762293861584, 0.9504609598089224, 0.9606995585648375, 0.9713182420267510, 0.9824905698927122,
+			0.9944795927849286
+		]).buffer
+	});
+	this.psstB = new Ring();
+  	this.psstB.setDetails({
+		title: 'Back',
+		L: new Float64Array([
+			0.021551968,
+			0.828850698,
+			1.852489293,
+			2.158688535,
+			3.183904084,
+			3.970443351,
+			4.994081951,
+			6.325496742
+		]).buffer
+	});
+	this.psstY = new Ring();
+  	this.psstY.setDetails({
+		title: 'Luma',
+		L: new Float64Array([
+			0.072199998,
+			0.284799997,
+			0.212599999,
+			0.377081946,
+			0.9278,
+			0.715200001,
+			0.787399999,
+			0.072199998
+		]).buffer
+	});
+	this.psstM = new Ring();
+  	this.psstM.setDetails({
+		title: 'CbCr Magnitude',
+		L: new Float64Array([
+			0.419009123,
+			0.394086142,
+			0.287167418,
+			0.300796819,
+			0.346430744,
+			0.394086141,
+			0.287167418,
+			0.346430745
+		]).buffer
+	});
+}
+LUTGamut.prototype.setHG = function(params) {
+	var out = {};
 	this.doHG = false;
-	out.doHG = false;
-	this.doTemp = false;
-	out.doTemp = false;
-	this.doGreen = false;
-	out.doGreen = false;
-	this.doASC = false;
-	out.doASC = false;
+	this.curHG = this.curOut;
+	if (this.tweaks && typeof params.twkHG !== 'undefined') {
+		var p = params.twkHG;
+		if (typeof p.doHG === 'boolean' && p.doHG) {
+			this.doHG = true;
+		}
+		if (typeof p.gamut === 'number') {
+			this.curHG = p.gamut;
+		}
+
+		if (typeof p.lin === 'boolean') {
+			this.hgLin = p.lin;
+			out.lin = this.hgLin;
+		} else {
+			this.doHG = false;
+		}
+		if (typeof p.low === 'number') {
+			this.hgLowStop = p.low;
+			this.hgLow = Math.pow(2,this.hgLowStop)/5;
+			out.low = this.hgLowStop;
+		} else {
+			this.doHG = false;
+		}
+		if (typeof p.high === 'number') {
+			this.hgHighStop = p.high;
+			this.hgHigh = Math.pow(2,this.hgHighStop)/5;
+			out.high = this.hgHighStop;
+		} else {
+			this.doHG = false;
+		}
+	}
+	out.gamut = this.curHG;
+	out.doHG = this.doHG;
+	return out;
+}
+LUTGamut.prototype.setFC = function(params) {
+	var out = {};
 	this.doFC = false;
-	out.doFC = false;
-	if (typeof params.tweaks === 'boolean' && params.tweaks) {
-		if (typeof params.doHG === 'boolean') {
-			this.doHG = params.doHG;
-			out.doHG = this.doHG;
-		}
-		if (typeof params.doTemp === 'boolean') {
-			this.doTemp = params.doTemp;
-			out.doTemp = this.doTemp;
-		}
-		if (typeof params.doGreen === 'boolean') {
-			this.doGreen = params.doGreen;
-			out.doGreen = this.doGreen;
-		}
-		if (typeof params.doASC === 'boolean') {
-			this.doASC = params.doASC;
-			out.doASC = this.doASC;
-		}
-		if (typeof params.doFC === 'boolean') {
-			this.doFC = params.doFC;
-			out.doFC = this.doFC;
-		}
-	}
-	if (typeof params.CAT === 'number') {
-		this.CAT.setCAT(params.CAT);
-		out.CAT = params.CAT;
-	}
-	if (typeof params.baseTemp === 'number' && typeof params.newTemp === 'number') {
-		this.CAT.setTemps(params.newTemp,params.baseTemp);
-		out.baseTemp = params.baseTemp;
-		out.newTemp = params.newTemp;
-	}
-	if (typeof params.greenCAT === 'number') {
-		this.green.setCAT(params.greenCAT);
-		out.greenCAT = params.greenCAT;
-	}
-	if (typeof params.greenTemp === 'number' && typeof params.greenMag === 'number') {
-		this.green.setGreen(params.greenTemp,params.greenMag);
-		out.greenTemp = params.greenTemp;
-		out.greenMag = params.greenMag;
-	}
-	if (typeof params.ascCDL !== 'undefined') {
-		this.asc = new Float64Array(params.ascCDL);
-	}
-	if (typeof params.hgLin === 'boolean') {
-		this.hgLin = params.hgLin;
-		out.hgLin = this.hgLin;
-	} else {
-		this.doHG = false;
-		out.doHG = false;
-	}
-	if (typeof params.hgLowStop === 'number') {
-		this.hgLowStop = params.hgLowStop;
-		this.hgLow = Math.pow(2,this.hgLowStop)/5;
-		out.hgLowStop = this.hgLowStop;
-		out.hgLow = this.hgLow;
-	} else {
-		this.doHG = false;
-		out.doHG = false;
-	}
-	if (typeof params.hgHighStop === 'number') {
-		this.hgHighStop = params.hgHighStop;
-		this.hgHigh = Math.pow(2,this.hgHighStop)/5;
-		out.hgHighStop = this.hgHighStop;
-		out.hgHigh = this.hgHigh;
-	} else {
-		this.doHG = false;
-		out.doHG = false;
-	}
-
-
-	this.doFCPurple = false;
 	this.fcVals[0] = -10;	// Purple - Black Clip
 	this.fcVals[1] = -10;	// Blue - Just Above Black Clip (18%-6.1 stops)
 	this.fcVals[2] = -10;	// Green - 18%-0.2 Stop
@@ -280,74 +479,85 @@ LUTGamut.prototype.setParams = function(params) {
 	this.fcVals[7] = -10;	// Orange - 90% White+0.175 Stop
 	this.fcVals[8] = -10;	// Yellow - White Clip (Sony F55,F5,FS7)-0.25 Stop
 	this.fcVals[9] = -10;	// Red - White Clip (Sony F55,F5,FS7)
+	this.doFCPurple = false;
 	this.doFCYellow = false;
 	this.doFCRed = false;
-	var noFCs = true;
-	if (typeof params.fcChecks !== 'undefined') {
-		var fcs = params.fcChecks;
-		if (fcs[0]) { 
-			this.fcVals[0] = 0.000195313;
-			this.doFCPurple = true;
-			noFCs = false;
-		}
-		if (fcs[1]) {
-			if (typeof params.fcBlue === 'number') {
-				this.fcVals[1] = Math.pow(2,-params.fcBlue)*0.2;
-			} else {
-				this.fcVals[1] = 0.002915728;
-			}
-			out.fcBlue = Math.log(this.fcVals[1]/0.2)/Math.log(2);
-			this.fcVals[0] = 0.000195313;
-			noFCs = false;
-		}
-		if (fcs[2]) {
-			this.fcVals[2] = 0.174110113;
-			this.fcVals[3] = 0.229739671;
-			noFCs = false;
-		}
-		if (fcs[3]) {
-			this.fcVals[4] = 0.354307008;
-			this.fcVals[5] = 0.451585762;
-			noFCs = false;
-		}
-		if (fcs[4]) {
-			this.fcVals[6] = 0.885767519;
-			this.fcVals[7] = 1.128964405;
-			noFCs = false;
-		}
-		if (fcs[5]) {
-			if (typeof params.fcYellow === 'number') {
-				this.fcVals[8] = Math.pow(2,5.95-params.fcYellow)*0.2;
-			} else {
-//				this.fcVals[8] = 10.33834716;
-				this.fcVals[8] = 10.32501452;
-			}
-			out.fcYellow = Math.log(this.fcVals[8]/0.2)/Math.log(2);
-			this.fcVals[9] = 12.36398501;
-			this.doFCYellow = true;
-			noFCs = false;
-		}
-		if (fcs[6]) {
-//			this.fcVals[9] = 12.294436;
-			this.fcVals[9] = 12.36398501;
-			this.doFCRed = true;
-			noFCs = false;
-		}
-		if (noFCs) {
-			this.doFC = false;
-		}
-	} else {
-		this.doFC = false;
-	}
+	if (this.tweaks && typeof params.twkFC !== 'undefined') {
+		var p = params.twkFC;
+		if (typeof p.doFC === 'boolean' && p.doFC) {
+			this.doFC = true;
 
-	if (typeof params.isTrans === 'boolean') {
-		this.isTrans = params.isTrans;
+			var noFCs = true;
+			if (typeof p.fcs !== 'undefined') {
+				var fcs = p.fcs;
+				if (fcs[0]) { 
+					this.fcVals[0] = Math.pow(2,-10)*0.2; // default 10 stops below 18% gray
+					this.doFCPurple = true;
+					noFCs = false;
+				}
+				if (fcs[1]) {
+					if (typeof p.blue === 'number') {
+						this.fcVals[1] = Math.pow(2,-p.blue)*0.2;
+					} else {
+						this.fcVals[1] = Math.pow(2,-6.1)*0.2; // default 6.1 stops below 18% gray
+					}
+					this.fcVals[0] = Math.pow(2,-10)*0.2; // default 10 stops below 18% gray
+					noFCs = false;
+				}
+				if (fcs[2]) {
+					this.fcVals[2] = 0.174110113;
+					this.fcVals[3] = 0.229739671;
+					noFCs = false;
+				}
+				if (fcs[3]) {
+					this.fcVals[4] = 0.354307008;
+					this.fcVals[5] = 0.451585762;
+					noFCs = false;
+				}
+				if (fcs[4]) {
+					this.fcVals[6] = 0.885767519;
+					this.fcVals[7] = 1.128964405;
+					noFCs = false;
+				}
+				if (fcs[5]) {
+					if (typeof p.yellow === 'number') {
+						if (typeof p.red === 'number') {
+							this.fcVals[8] = Math.pow(2,p.red-p.yellow)*0.2;
+						} else {
+							this.fcVals[8] = Math.pow(2,5.95-p.yellow)*0.2;
+						}
+					} else {
+						if (typeof p.red === 'number') {
+							this.fcVals[8] = Math.pow(2,p.red-0.26)*0.2; // default 0.26 stops below white clip
+						} else {
+							this.fcVals[8] = Math.pow(2,5.95-0.26)*0.2; // default 0.26 stops below white clip
+						}
+					}
+					this.fcVals[9] = Math.pow(2,5.95)*0.2; // default 5.95 stops above mid gray
+					this.doFCYellow = true;
+					noFCs = false;
+				}
+				if (fcs[6]) {
+					if (typeof p.red === 'number') {
+						this.fcVals[9] = Math.pow(2,p.red)*0.2;
+					} else {
+						this.fcVals[9] = Math.pow(2,5.95)*0.2; // default 5.95 stops above mid gray
+					}
+					this.doFCRed = true;
+					noFCs = false;
+				}
+				if (noFCs) {
+					this.doFC = false;
+				}
+			} else {
+				this.doFC = false;
+			}
+		}
 	}
-	this.ver = params.v;
-	out.v = this.ver;
-var LCR = this.outGamuts[this.curOut].calc([0.645679,0.087530,0.036957]);
-var LCG = this.outGamuts[this.curOut].calc([0.259115,0.759700,0.129281]);
-var LCB = this.outGamuts[this.curOut].calc([0.095206,0.152770,0.833762]);
+	out.blue = Math.log(this.fcVals[1]/0.2)/Math.log(2);
+	out.yellow = Math.log(this.fcVals[8]/0.2)/Math.log(2);
+	out.red = Math.log(this.fcVals[9]/0.2)/Math.log(2);
+	out.doFC = this.doFC;
 	return out;
 }
 LUTGamut.prototype.calc = function(p,t,i) {
@@ -368,7 +578,7 @@ LUTGamut.prototype.calc = function(p,t,i) {
 			var c = this.inGamuts[this.curIn].calc([o[k],o[k+1],o[k+2]]);
 			// False Colour
 			if (this.doFC) {
-				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				var luma = (0.215006425*c[0])+(0.885132479*c[1])+(-0.100138905*c[2]);
 				for (var s=0; s<10; s++) {
 					if (this.fcVals[s] !==-10 && luma <= this.fcVals[s]) {
 						fc[j] = s;
@@ -377,8 +587,8 @@ LUTGamut.prototype.calc = function(p,t,i) {
 				}
 				if (fc[j] === 0 && this.doFCRed && luma > this.fcVals[9]) {
 					fc[j] = 10;
-				} else if (fc[j] === 9 && !this.doFCYellow) {
-					fc[j] = 0;
+				} else if ((fc[j] === 0  && luma > this.fcVals[0]) || (fc[j] === 0 && !this.doFCPurple && luma < 0.1) || (fc[j] === 9 && !this.doFCYellow)) {
+					fc[j] = 8;
 				}
 			}
 			// CineEI / Exposure Shift
@@ -386,15 +596,19 @@ LUTGamut.prototype.calc = function(p,t,i) {
 			c[1] *= eiMult;
 			c[2] *= eiMult;
 			// Colour Temperature Shift
-			if (this.doTemp) {
+			if (this.doCT) {
 				c = this.CAT.calc(c.slice(0));
 			}
 			// Fluori Correction
-			if (this.doGreen) {
+			if (this.doFL) {
 				c = this.green.calc(c.slice(0));
 			}
+			// PSST-CDL
+			if (this.doPSSTCDL) {
+				c = this.psstCDL(c.slice(0));
+			}
 			// ASC-CDL
-			if (this.doASC) {
+			if (this.doASCCDL) {
 				c[0] = (c[0]*this.asc[0])+this.asc[3];
 				c[0] = Math.pow((c[0]<0)?0:c[0],this.asc[6]);
 				c[0] = (isNaN(c[0])?0:c[0]);
@@ -404,7 +618,7 @@ LUTGamut.prototype.calc = function(p,t,i) {
 				c[2] = (c[2]*this.asc[2])+this.asc[5];
 				c[2] = Math.pow((c[2]<0)?0:c[2],this.asc[8]);
 				c[2] = (isNaN(c[2])?0:c[2]);
-				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				var luma = (0.215006425*c[0])+(0.885132479*c[1])+(-0.100138905*c[2]);
 				c[0] = luma + (this.asc[9]*(c[0]-luma));
 				c[1] = luma + (this.asc[9]*(c[1]-luma));
 				c[2] = luma + (this.asc[9]*(c[2]-luma));
@@ -470,7 +684,7 @@ LUTGamut.prototype.preview = function(p,t,i) {
 			var k = j*3;
 			var c = [o[k],o[k+1],o[k+2]];
 			if (this.doFC) {
-				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				var luma = (0.215006425*c[0])+(0.885132479*c[1])+(-0.100138905*c[2]);
 				for (var s=0; s<10; s++) {
 					if (this.fcVals[s] !==-10 && luma <= this.fcVals[s]) {
 						fc[j] = s;
@@ -479,21 +693,23 @@ LUTGamut.prototype.preview = function(p,t,i) {
 				}
 				if (fc[j] === 0 && this.doFCRed && luma > this.fcVals[9]) {
 					fc[j] = 10;
-				} else if (fc[j] === 9 && !this.doFCYellow) {
-					fc[j] = 0;
+				} else if ((fc[j] === 0  && luma > this.fcVals[0]) || (fc[j] === 0 && !this.doFCPurple && luma < 0.1) || (fc[j] === 9 && !this.doFCYellow)) {
+					fc[j] = 8;
 				}
 			}
 			c[0] *= eiMult;
 			c[1] *= eiMult;
 			c[2] *= eiMult;
-			if (this.doTemp) {
+			if (this.doCT) {
 				c = this.CAT.calc(c.slice(0));
 			}
-			if (this.doGreen) {
+			if (this.doFL) {
 				c = this.green.calc(c.slice(0));
 			}
-
-			if (this.doASC) {
+			if (this.doPSSTCDL) {
+				c = this.psstCDL(c.slice(0));
+			}
+			if (this.doASCCDL) {
 				c[0] = (c[0]*this.asc[0])+this.asc[3];
 				c[0] = Math.pow((c[0]<0)?0:c[0],this.asc[6]);
 				c[0] = (isNaN(c[0])?0:c[0]);
@@ -503,12 +719,11 @@ LUTGamut.prototype.preview = function(p,t,i) {
 				c[2] = (c[2]*this.asc[2])+this.asc[5];
 				c[2] = Math.pow((c[2]<0)?0:c[2],this.asc[8]);
 				c[2] = (isNaN(c[2])?0:c[2]);
-				var luma = (0.21478*c[0])+(0.88415*c[1])+(-0.09391*c[2]);
+				var luma = (0.215006425*c[0])+(0.885132479*c[1])+(-0.100138905*c[2]);
 				c[0] = luma + (this.asc[9]*(c[0]-luma));
 				c[1] = luma + (this.asc[9]*(c[1]-luma));
 				c[2] = luma + (this.asc[9]*(c[2]-luma));
 			}
-
 			if (this.doHG) {
 				var luma = ((0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]));
 				if (luma <= this.hgLow) {
@@ -542,11 +757,14 @@ LUTGamut.prototype.preview = function(p,t,i) {
 			}
 		}
 	}
+	out.threeD = true;
 	out.o = o.buffer;
 	if (this.doFC) {
 		out.fc = fc.buffer;
+		out.to = ['o','fc'];
+	} else {
+		out.to = ['o'];
 	}
-	out.to = ['o'];
 	return out;
 }
 LUTGamut.prototype.previewLin = function(p,t,i) {
@@ -565,8 +783,123 @@ LUTGamut.prototype.previewLin = function(p,t,i) {
 	out.to = ['i','o'];
 	return out;
 }
+LUTGamut.prototype.psstColours = function() {
+	var before = new Uint8Array(84);
+	var after = new Uint8Array(84);
+	var f,a,m1,m2,M,Y,c,sat,Pb,Pr;
+	var rgb = [];
+	var i=0;
+	for (var j=0; j<84; j += 3) {
+		f = i;
+		i += 1/28;
+		a = this.psstB.lumaLCub(f);
+		m1 = this.psstM.lumaLLin(f);
+		c = this.psstC.lumaLCub(f);
+		sat = this.psstSat.lumaLCub(f);
+		if (sat < 0) {
+			sat = 0;
+		}
+		M = 0.5 * m1;
+		y1 = this.psstY.lumaLLin(f);
+		Y = y1;
+		Pb = M * Math.cos(a);
+		Pr = M * Math.sin(a);
+		rgb = this.outGamuts[this.curOut].calc([
+			(Pr * 1.569987151) + Y,
+			Y-(0.381363617*Pr) + (0.248927044*Pb),
+			(Pb * 2.200277811) + Y
+		]);
+		before[ j ] = Math.min(255,Math.max(0,rgb[0]*255));
+		before[j+1] = Math.min(255,Math.max(0,rgb[1]*255));
+		before[j+2] = Math.min(255,Math.max(0,rgb[2]*255));
+		f = (f+c%1);
+		if (this.psstYC) {
+			y2 = this.psstY.lumaLLin(f);
+		} else {
+			y2 = y1;
+		}
+		if (this.psstMC) {
+			m2 = this.psstM.lumaLLin(f);
+		} else {
+			m2 = m1;
+		}
+		m2 = this.psstM.lumaLLin(f);
+		a = this.psstB.lumaLCub(f);
+		M = M * m2 * sat / m1;
+		Y = Y * y2 / y1 ;
+		Pb = M * Math.cos(a);
+		Pr = M * Math.sin(a);
+		rgb = this.outGamuts[this.curOut].calc([
+			(Pr * 1.569987151) + Y,
+			Y-(0.381363617*Pr) + (0.248927044*Pb),
+			(Pb * 2.200277811) + Y
+		]);
+		after[ j ] = Math.min(255,Math.max(0,rgb[0]*255));
+		after[j+1] = Math.min(255,Math.max(0,rgb[1]*255));
+		after[j+2] = Math.min(255,Math.max(0,rgb[2]*255));
+	}
+	return [before.buffer,after.buffer];
+}
+LUTGamut.prototype.psstCDL = function(rgb) {
+	var Y = (0.215006425*rgb[0])+(0.885132479*rgb[1])+(-0.100138905*rgb[2]);
+	var Pb = (rgb[2]-Y)/2.200277811;
+	var Pr = (rgb[0]-Y)/1.569987151;
+	var m = Math.sqrt((Pb*Pb)+(Pr*Pr));
+	var h = Math.atan2(Pr,Pb)/(2*Math.PI); // converts coordinates to angle from x-axis. 0-deg = 0, 360-deg = 1
+	if (h < 0) {
+		h += 1;
+	}
+
+	var f = this.psstF.lumaLCub(h);
+	var y1 = this.psstY.lumaLLin(f);
+	var m1 = this.psstM.lumaLLin(f);
+	var c = this.psstC.lumaLCub(f);
+	var sat = this.psstSat.lumaLCub(f);
+	if (sat < 0) {
+		sat = 0;
+	}
+	var s = this.psstS.lumaLCub(f);
+	var o = this.psstO.lumaLCub(f);
+	var p = this.psstP.lumaLCub(f);
+	if (p < 0) {
+		p = 0;
+	}
+	f = (f+c)%1;
+	var y2,m2;
+	if (this.psstYC) {
+		y2 = this.psstY.lumaLLin(f);
+	} else {
+		y2 = y1;
+	}
+	if (this.psstMC) {
+		m2 = this.psstM.lumaLLin(f);
+	} else {
+		m2 = m1;
+	}
+	var M = m*sat*m2/m1;
+	var a = this.psstB.lumaLCub(f);
+	if (m > 0.005) {
+		Y = (Y*s/y1)+o;
+		Y = Math.pow((Y<0)?0:Y,p);
+		Y = (isNaN(Y)?0:Y);
+		Y *= y2;
+		Pb = M * Math.cos(a);
+		Pr = M * Math.sin(a);
+	} else {
+		var Y2 = (Y*s/y1)+o;
+		Y2 = Math.pow((Y2<0)?0:Y2,p);
+		Y2 = (isNaN(Y2)?0:Y2);
+		Y2 *= y2;
+		Y =  (((0.005-m) * Y) + (m * Y2))/0.005;
+		Pb = (((0.005-m) * Pb) + (m * M * Math.cos(a)))/0.005;
+		Pr = (((0.005-m) * Pr) + (m * M * Math.sin(a)))/0.005;
+	}
+	return [	(Pr * 1.569987151) + Y,
+				Y-(0.381363617*Pr) + (0.248927044*Pb),
+				(Pb * 2.200277811) + Y ];
+}
 LUTGamut.prototype.laCalc = function(p,t,i) {
- self.postMessage({msg:true,details:'input gamut'+i.gamut});
+// self.postMessage({msg:true,details:'input gamut'+i.gamut});
 		var o = new Float64Array(i.o);
 		var dim = i.dim;
 		var max = dim*dim*dim;
@@ -784,7 +1117,6 @@ LUTGamutTemperature.prototype.calc = function(rgb) {
 			(this.net[3]*rgb[0])+(this.net[4]*rgb[1])+(this.net[5]*rgb[2]),
 			(this.net[6]*rgb[0])+(this.net[7]*rgb[1])+(this.net[8]*rgb[2])];
 }
-
 function LUTGamutGreen() {
 	this.cur = 0;
 	this.names = [];
@@ -938,7 +1270,6 @@ LUTGamutGreen.prototype.calc = function(rgb) {
 			(this.net[3]*rgb[0])+(this.net[4]*rgb[1])+(this.net[5]*rgb[2]),
 			(this.net[6]*rgb[0])+(this.net[7]*rgb[1])+(this.net[8]*rgb[2])];
 }
-
 function LUTGamutMatrix(name,params) {
 	this.name = name;
 	this.matrix = params;
@@ -1246,7 +1577,7 @@ function sendMessage(d) {
 		postMessage(d);
 	}
 }
-importScripts('lut.js');
+importScripts('lut.js','ring.js');
 var gamuts = new LUTGamut();
 var trans = false;
 this.addEventListener('message', function(e) {

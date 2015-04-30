@@ -126,3 +126,7 @@ LUTCameraBox.prototype.changeShift = function() {
 	}
 
 }
+LUTCameraBox.prototype.getInfo = function(info) {
+	info.camera = this.cameraSelect.options[this.cameraSelect.selectedIndex].lastChild.nodeValue;
+	info.cineEI = parseFloat(this.shiftInput.value);
+}

@@ -21,6 +21,8 @@ function LUTMessage(inputs) {
 	// 6 - infobox
 	// 7 - LUTAnalyst
 	// 8 - preview
+	// 9 - twkHG
+	// 10 - twkLA
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -103,51 +105,6 @@ LUTMessage.prototype.gaSetParams = function() {
 		mlut: this.inputs.mlutCheck.checked,
 		isTrans: this.inputs.isTrans
 	};
-	if (this.inputs.tweaks.checked) {
-		d.tweaks = true;
-	} else {
-		d.tweaks = false;
-	}
-	if (this.inputs.tweakBlkCheck.checked) {
-		d.blackTweak = true;
-	} else {
-		d.blackTweak = false;
-	}
-	if (this.inputs.tweakHiCheck.checked) {
-		d.highTweak = true;
-	} else {
-		d.highTweak = false;
-	}
-	var blackLevel = parseFloat(this.inputs.tweakBlk.value);
-	if (!isNaN(blackLevel)) {
-		d.blackLevel = blackLevel/100;
-	}
-	var highRef = parseFloat(this.inputs.tweakHiRef.value);
-	if (!isNaN(highRef)) {
-		d.highRef = highRef/100;
-	}
-	var highMap = parseFloat(this.inputs.tweakHiMap.value);
-	if (!isNaN(highMap)) {
-		d.highMap = highMap/100;
-	}
-	if (this.inputs.tweakCDLCheck.checked) {
-		d.doASC = true;
-		var ascCDL = new Float64Array([
-			parseFloat(this.inputs.tweakCDLRSVal.value),
-			parseFloat(this.inputs.tweakCDLGSVal.value),
-			parseFloat(this.inputs.tweakCDLBSVal.value),
-			parseFloat(this.inputs.tweakCDLROVal.value),
-			parseFloat(this.inputs.tweakCDLGOVal.value),
-			parseFloat(this.inputs.tweakCDLBOVal.value),
-			parseFloat(this.inputs.tweakCDLRPVal.value),
-			parseFloat(this.inputs.tweakCDLGPVal.value),
-			parseFloat(this.inputs.tweakCDLBPVal.value),
-			parseFloat(this.inputs.tweakCDLSatVal.value)
-		]);
-		d.ascCDL = ascCDL.buffer;
-	} else {
-		d.doASC = false;
-	}
 	if (this.inputs.inRange[0].checked) {
 		d.inL = true;
 	} else {
@@ -158,6 +115,7 @@ LUTMessage.prototype.gaSetParams = function() {
 	} else {
 		d.outL = false;
 	}
+	this.ui[3].getTFParams(d);
 	var max = this.gas.length;
 	for (var i=0; i<max; i++) {
 		this.gas[i].postMessage({t: 0, d: d});
@@ -205,7 +163,7 @@ LUTMessage.prototype.gaRx = function(d) {
 	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
-console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
+//		console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 		this.gaTx(d.p,d.t,d.d);
 	} else if (d.v === this.gaV) {
 		switch(d.t) {
@@ -231,7 +189,7 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					this.gaL++;
 					if (this.gaL === this.gaT) {
 						this.gaL = 0;
-						this.ui[3].lutAnalystDone();
+						this.ui[10].doneStuff();
 						this.ui[6].updateGamma();
 					}
 					break;
@@ -260,7 +218,7 @@ console.log('Resending - ' + d.t + ' (Old Parameters) to ' + d.p);
 					break;
 		}
 	} else {
-		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
+//		console.log('Resending - ' + (d.t-20) + ' (Problem) for ' + d.p);
 		this.gaTx(d.p,d.t - 20,d);
 	}
 }
@@ -285,16 +243,21 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 	if (this.gaU === this.gaT) {
 		this.gaU = 0;
 		this.gtTx(8,15,d);
-		this.ui[3].blackHigh(d.blackDef,d.blackLevel,d.highRef,d.highDef,d.highMap,d.high709,d.changedGamma);
+		this.ui[3].setParams(d);
 		this.ui[6].updateGamma();
 		this.ui[8].isChanged(d.eiMult);
 	}
 }
 LUTMessage.prototype.gotGammaLists = function(d) {
+	this.inputs.addInput('gammaLA',d.LA);
+	this.inputs.addInput('gammaInList',d.inList);
+	this.inputs.addInput('gammaOutList',d.outList);
+	this.inputs.addInput('gammaLinList',d.linList);
+	this.inputs.addInput('gammaCatList',d.catList);
+
 	this.ui[2].gotGammaLists(d.inList,d.outList,d.linList); // Gamma Box
-	this.ui[3].gotGammaLists(d.inList,d.outList,d.linList,d.catList,d.LA); // Tweaks Box
+	this.ui[3].gotGammaLists(); // Tweaks Box
 	this.ui[4].gotGammaLists(d.catList); // LUT Box
-	this.ui[3].toggleTweakCheck();
 	this.gaSetParams();
 }
 LUTMessage.prototype.gotBaseIRE = function(d) {
@@ -357,76 +320,9 @@ LUTMessage.prototype.gtSetParams = function() {
 		v: this.gtV,
 		inGamut: parseInt(this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].value),
 		outGamut: parseInt(this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].value),
-		hgGamut: parseInt(this.inputs.tweakHGSelect.options[this.inputs.tweakHGSelect.selectedIndex].value),
-		hgLowStop: parseFloat(this.inputs.tweakHGLow.value),
-		hgHighStop: parseFloat(this.inputs.tweakHGHigh.value),
-		baseTemp: parseInt(this.inputs.tweakTempBase.value),
-		newTemp: parseInt(this.inputs.tweakTempNew.value),
-		greenTemp: parseInt(this.inputs.tweakGreenTemp.value),
-		greenMag: parseFloat(this.inputs.tweakGreenPMSlider.value),
 		isTrans: this.inputs.isTrans
 	};
-	if (this.inputs.tweaks.checked) {
-		d.tweaks = true;
-	} else {
-		d.tweaks = false;
-	}
-	if (this.inputs.tweakHGCheck.checked) {
-		d.doHG = true;
-	} else {
-		d.doHG = false;
-	}
-	if (this.inputs.tweakHGLinLog[0].checked) {
-		d.hgLin = true;
-	} else {
-		d.hgLin = false;
-	}
-	if (this.inputs.tweakTempCheck.checked) {
-		d.doTemp = true;
-		d.CAT = parseInt(this.inputs.tweakTempCATSelect.options[this.inputs.tweakTempCATSelect.selectedIndex].value);
-	} else {
-		d.doTemp = false;
-	}
-	if (this.inputs.tweakGreenCheck.checked) {
-		d.doGreen = true;
-		d.greenCAT = parseInt(this.inputs.tweakGreenCATSelect.options[this.inputs.tweakGreenCATSelect.selectedIndex].value);
-	} else {
-		d.doGreen = false;
-	}
-	if (this.inputs.tweakCDLCheck.checked) {
-		d.doASC = true;
-		var ascCDL = new Float64Array([
-			parseFloat(this.inputs.tweakCDLRSVal.value),
-			parseFloat(this.inputs.tweakCDLGSVal.value),
-			parseFloat(this.inputs.tweakCDLBSVal.value),
-			parseFloat(this.inputs.tweakCDLROVal.value),
-			parseFloat(this.inputs.tweakCDLGOVal.value),
-			parseFloat(this.inputs.tweakCDLBOVal.value),
-			parseFloat(this.inputs.tweakCDLRPVal.value),
-			parseFloat(this.inputs.tweakCDLGPVal.value),
-			parseFloat(this.inputs.tweakCDLBPVal.value),
-			parseFloat(this.inputs.tweakCDLSatVal.value)
-		]);
-		d.ascCDL = ascCDL.buffer;
-	} else {
-		d.doASC = false;
-	}
-	if (this.inputs.tweakFCCheck.checked) {
-		d.doFC = true;
-		d.fcChecks = [
-			this.inputs.tweakFCPurpleCheck.checked,
-			this.inputs.tweakFCBlueCheck.checked,
-			this.inputs.tweakFCGreenCheck.checked,
-			this.inputs.tweakFCPinkCheck.checked,
-			this.inputs.tweakFCOrangeCheck.checked,
-			this.inputs.tweakFCYellowCheck.checked,
-			this.inputs.tweakFCRedCheck.checked
-		];
-		d.fcBlue = parseFloat(this.inputs.tweakFCBlueWidth.value);
-		d.fcYellow = parseFloat(this.inputs.tweakFCYellowWidth.value);
-	} else {
-		d.doFC = false;
-	}
+	this.ui[3].getCSParams(d);
 	var max = this.gts.length;
 	for (var i=0; i<max; i++) {
 		this.gts[i].postMessage({t: 0, d: d});
@@ -474,7 +370,7 @@ LUTMessage.prototype.gtRx = function(d) {
 	} else if (d.err) {
 		console.log(d.details);
 	} else if (d.resend) {
-console.log('Resending - ' + d.t);
+//		console.log('Resending - ' + d.t);
 		if (d.t === 1) {
 			this.gaTx(d.p,d.t,{R:d.d.R,G:d.d.G,B:d.d.B,vals:d.d.vals,dim:d.d.dim});
 		} else {
@@ -506,8 +402,8 @@ console.log('Resending - ' + d.t);
 					this.gotIOGamutNames(d);
 					break;
 			case 31: // Get Chromatic Adaptation Transform options
-					this.ui[3].gotCATs(d.o[0]);
-					this.ui[3].gotGreenCATs(d.o[1]);
+//					this.ui[3].gotCATs(d.o[0]);
+//					this.ui[3].gotGreenCATs(d.o[1]);
 					break;
 			case 32: // Get preview colour correction
 					this.gaTx(d.p,12,d)
@@ -520,7 +416,7 @@ console.log('Resending - ' + d.t);
 					break;
 		}
 	} else {
-console.log('Resending - ' + (d.t-20));
+//		console.log('Resending - ' + (d.t-20));
 		this.gtTx(d.p,d.t - 20,d);
 	}
 }
@@ -529,14 +425,29 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 	if (this.gtU === this.gtT) {
 		this.gtU = 0;
 		this.gtTx(8,15,d);
+		this.ui[3].setParams(d);
 		this.ui[8].isChanged();
 	}
 }
 LUTMessage.prototype.gotGamutLists = function(d) {
+	this.inputs.addInput('gamutPass',d.pass);
+	this.inputs.addInput('gamutLA',d.LA);
+	this.inputs.addInput('gamutInList',d.inList);
+	this.inputs.addInput('gamutOutList',d.outList);
+	this.inputs.addInput('gamutLAList',d.laList);
 	this.ui[2].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Gamma Box
-	this.ui[3].gotGamutLists(d.laList,d.outList,d.pass,d.LA); // Tweaks Box
+	this.ui[3].gotGamutLists(); // Tweaks Box
 	this.gtSetParams();
 }
 LUTMessage.prototype.gotIOGamutNames = function(d) {
 	this.ui[d.p].gotIOGamutNames(d.inName,d.outName,d.hgName);
+}
+// Get Info For LUT Generation
+LUTMessage.prototype.getInfo = function(info) {
+	info.version = this.inputs.version;
+	info.date = this.inputs.date;
+	this.ui[4].getInfo(info); // LUT Box (Dimensions, MLUTs, etc..)
+	this.ui[1].getInfo(info); // Camera Box (Stop Correction)
+	this.ui[2].getInfo(info); // Gamma Box (Gamma In / Out, Gamut In / Out)
+	this.ui[3].getInfo(info); // Tweaks Box - notes for in the LUT file
 }

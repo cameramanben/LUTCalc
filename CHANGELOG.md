@@ -1,7 +1,22 @@
 LUTCalc Changelog
 =================
+v1.9 RC3
+--------
+* Tidied and made consistent the code for customisation tweaks. Each tweak is now an individual object file, following a consistent basic structure both at the UI stage and in the calculation code.
+* Added splash screen to immediately hide the Javascript warning and then hide the splash when the UI has loaded.
+* Added initial code for 'PSST-CDL' customisation; (P)rimary (S)econdary (S)kin (T)one colour decision list. Quickly allows complex adjustment to individual sectors of the vectorscope using controls familiar from the ASC-CDL.
+* Fixed False Colour display bug when yellow (near white clip) and red (white clip) are turned off.
+* Added option to False Colour to set the white clip level in stops above 18% gray.
+* Improved the coefficients used for S-Gamut3.cine luminance.
+* Initial tidying of UI control code to change from object.style.display approach over to object.className. Visuals are then completely controlled by style sheets, allowing fundamental reskinning for different platforms / applications.
+* Speedup in preview from increased use of transferrable objects.
+* Allow 1D LUTs to include the ASC-CDL customisation (minus the saturation control).
 
-v1.9 Beta RC1
+v1.9 RC2
+--------
+* Fixed bug which turned off customisations.
+
+v1.9 RC1
 -------------
 * Fixed 'Highlight Level' maps to box bug.
 * Allow black level and highlight level adjustment with log curves.
