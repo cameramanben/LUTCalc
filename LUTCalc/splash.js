@@ -12,7 +12,7 @@
 lutInputs.addInput('version','v1.9 RC 3');
 lutInputs.addInput('date','April 2015');
 var splash = document.getElementById('javascriptwarning');
-splash.innerHTML = '';
+splash.removeChild(splash.firstChild);
 splash.className = 'splash';
 splashText();
 

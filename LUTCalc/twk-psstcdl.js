@@ -228,6 +228,9 @@ TWKPSSTCDL.prototype.ui = function() {
 	this.baseBox.appendChild(document.createElement('br'));
 	// SOP Boxes
 	this.cssop = [];
+	this.beforeBar1 = [];
+	this.afterBar = [];
+	this.beforeBar2 = [];
 	for (var j=0; j<7; j++) {
 		this.cssop[j] = document.createElement('div');
 		if (j === this.channelSelect.options.selectedIndex) {
@@ -235,6 +238,16 @@ TWKPSSTCDL.prototype.ui = function() {
 		} else {
 			this.cssop[j].className = 'twk-tab-hide';
 		}
+		this.beforeBar1[j] = document.createElement('div');
+		this.beforeBar1[j].className = 'twk-psst-colour-bars-s-h';
+		this.cssop[j].appendChild(this.beforeBar1[j]);
+		this.afterBar[j] = document.createElement('div');
+		this.afterBar[j].className = 'twk-psst-colour-bars-l-h';
+		this.cssop[j].appendChild(this.afterBar[j]);
+		this.beforeBar2[j] = document.createElement('div');
+		this.beforeBar2[j].className = 'twk-psst-colour-bars-s-h';
+		this.cssop[j].appendChild(this.beforeBar2[j]);
+		this.cssop[j].appendChild(document.createElement('br'));
 		this.cssop[j].appendChild(document.createElement('label').appendChild(document.createTextNode('Colour')));
 		this.cssop[j].appendChild(this.cSlider[j]);
 		this.cssop[j].appendChild(this.cInput[j]);
@@ -379,6 +392,12 @@ TWKPSSTCDL.prototype.setParams = function(params) {
 			this.beforeBars1[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
 			this.afterBars[j].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
 			this.beforeBars2[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+			if (j%4 === 0) {
+				var k = parseInt(j/4);
+				this.beforeBar1[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+				this.afterBar[k].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
+				this.beforeBar2[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+			}
 		}
 		this.toggleTweaks();
 	}

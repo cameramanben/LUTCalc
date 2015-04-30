@@ -183,7 +183,7 @@ TWKLA.prototype.toggleTweaks = function() {
 }
 TWKLA.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value !== this.inputs.gammaLA) {
+		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) !== this.inputs.gammaLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.inputs.gammaLA;
 				laOption.innerHTML = 'LA - ' + this.title.value;
@@ -191,7 +191,7 @@ TWKLA.prototype.toggleTweak = function() {
 		} else {
 			this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value !== this.inputs.gamutLA) {
+		if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value) !== this.inputs.gamutLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.inputs.gamutLA;
 				laOption.innerHTML = 'LA - ' + this.title.value;
@@ -199,7 +199,7 @@ TWKLA.prototype.toggleTweak = function() {
 		} else {
 			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 		}
-		if (this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value !== this.inputs.gamutLA) {
+		if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) !== this.inputs.gamutLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.inputs.gamutLA;
 				laOption.innerHTML = 'LA - ' + this.title.value;
@@ -208,17 +208,17 @@ TWKLA.prototype.toggleTweak = function() {
 			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 		}
 	} else {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value === this.inputs.gammaLA) {
+		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) === this.inputs.gammaLA) {
 			this.inputs.outGamma.remove(this.inputs.outGamma.options.length - 1);
 			this.inputs.outGamma.options[0].selected = true;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value === this.inputs.gamutLA) {
+		if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value) === this.inputs.gamutLA) {
 			this.inputs.outGamut.remove(this.inputs.outGamut.options.length - 1);
 			this.inputs.outGamut.options[0].selected = true;
 		}
-		if (this.highGamutSelect.options[this.highGamutSelect.options.length - 1].value === this.inputs.gamutLA) {
-			this.highGamutSelect.remove(this.highGamutSelect.options.length - 1);
-			this.highGamutSelect.options[0].selected = true;
+		if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) !== this.inputs.gamutLA) {
+			this.inputs.twkHGSelect.remove(this.inputs.twkHGSelect.options.length - 1);
+			this.inputs.twkHGSelect.options[0].selected = true;
 		}
 	}
 }
@@ -239,12 +239,19 @@ TWKLA.prototype.getInfo = function(info) {
 TWKLA.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
-		here.messages.changeLA();
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
 	};}(this);
 	// Event responses for input changes or click should go here
-	this.fileInput.onchange = function(here){ return function(){
-		here.getFile();
-	};}(this);
+	if (this.inputs.isApp) {
+		this.fileInput.onclick = function(here){ return function(){
+			here.getFile();
+		};}(this);
+	} else {
+		this.fileInput.onchange = function(here){ return function(){
+			here.getFile();
+		};}(this);
+	}
 	this.gammaSelect.onchange = function(here){ return function(){
 		here.testGamma();
 	};}(this);
@@ -256,7 +263,8 @@ TWKLA.prototype.events = function() {
 	};}(this);
 	this.backButton.onclick = function(here){ return function(){
 		here.reset();
-		here.messages.changeLA();
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
 	};}(this);
 	this.storeButton.onclick = function(here){ return function(){
 		here.store(true);
@@ -373,13 +381,13 @@ TWKLA.prototype.reset = function() {
 	this.tweakCheck.checked = false;
 	this.tweakCheck.className = 'twk-checkbox-hide';
 	if (this.inputs.outGamma.options.length > 0 && this.inputs.outGamut.options.length > 0 && this.inputs.twkHGSelect.options.length > 0) {
-		if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value === this.inputs.gammaLA) {
+		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) === this.inputs.gammaLA) {
 			this.inputs.outGamma.options[0].selected = true;
 		}
-		if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value === this.inputs.gamutLA) {
+		if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value) === this.inputs.gamutLA) {
 			this.inputs.outGamut.options[0].selected = true;
 		}
-		if (this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value === this.inputs.gamutLA) {
+		if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) === this.inputs.gamutLA) {
 			this.inputs.twkHGSelect.options[0].selected = true;
 		}
 		this.toggleTweak();
@@ -400,7 +408,7 @@ TWKLA.prototype.reset = function() {
 	this.backButton.className = 'twk-button-hide';
 	this.storeButton.className = 'twk-button-hide';
 	this.storeBinButton.className = 'twk-button-hide';
-	this.doButton.style.className = 'twk-button-hide';
+	this.doButton.className = 'twk-button-hide';
 }
 TWKLA.prototype.store = function(cube) {
 	if (cube) {
@@ -425,13 +433,13 @@ TWKLA.prototype.store = function(cube) {
 }
 TWKLA.prototype.cleanTitle = function() {
 	this.title.value = this.title.value.replace(/[/"/']/gi, '');
-	if (this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value == this.inputs.gammaLA) {
+	if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) === this.inputs.gammaLA) {
 		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
-	if (this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value == this.inputs.gamutLA) {
+	if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value) === this.inputs.gamutLA) {
 		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
-	if (this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value == this.inputs.gamutLA) {
+	if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) === this.inputs.gamutLA) {
 		this.inputs.twkHGSelect.options[this.inputs.twkSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
 }

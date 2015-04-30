@@ -180,3 +180,22 @@ LUTGammaBox.prototype.oneOrThree = function() {
 		this.outGamutBox.style.display = 'block';
 	}
 }
+LUTGammaBox.prototype.getInfo = function(info) {
+	if (this.inGammaSelect.options[this.inGammaSelect.selectedIndex].value !== '9999') {
+		info.inGammaName = this.inGammaSelect.options[this.inGammaSelect.selectedIndex].lastChild.nodeValue;
+	} else {
+		info.inGammaName = this.inLinSelect.options[this.inputs.inLinSelect.selectedIndex].lastChild.nodeValue;
+	}
+	if (this.outGammaSelect.options[this.outGammaSelect.selectedIndex].value !== '9999') {
+		info.outGammaName = this.outGammaSelect.options[this.outGammaSelect.selectedIndex].lastChild.nodeValue;
+	} else {
+		info.outGammaName = this.outLinSelect.options[this.outLinSelect.selectedIndex].lastChild.nodeValue;
+	}
+	if (this.outGammaSelect.options[this.outGammaSelect.selectedIndex].lastChild.nodeValue === 'Null') {
+		info.nul = true;
+	} else {
+		info.nul = false;
+	}
+	info.inGamutName = this.inGamutSelect.options[this.inGamutSelect.selectedIndex].lastChild.nodeValue;
+	info.outGamutName = this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue;
+}
