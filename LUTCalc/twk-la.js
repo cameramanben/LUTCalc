@@ -440,6 +440,6 @@ TWKLA.prototype.cleanTitle = function() {
 		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
 	if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) === this.inputs.gamutLA) {
-		this.inputs.twkHGSelect.options[this.inputs.twkSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
+		this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
 }
