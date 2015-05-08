@@ -152,7 +152,7 @@ TWKFL.prototype.events = function() {
 		here.toggleTweak();
 		here.messages.gtSetParams();
 	};}(this);
-	this.flSlider.onchange = function(here){ return function(){
+	this.flSlider.oninput = function(here){ return function(){
 		here.testSlider();
 		here.messages.gtSetParams();
 	};}(this);

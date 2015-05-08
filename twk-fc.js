@@ -63,7 +63,7 @@ TWKFC.prototype.io = function() {
 	this.yellowInput.setAttribute('type','number');
 	this.yellowInput.setAttribute('step','any');
 	this.yellowInput.className = 'stopinput';
-	this.yellowInput.value = '0.26';
+	this.yellowInput.value = '0.5';
 	// Red - White Clip
 	this.redCheck = document.createElement('input');
 	this.redCheck.setAttribute('type','checkbox');
@@ -73,7 +73,7 @@ TWKFC.prototype.io = function() {
 	this.redInput.setAttribute('type','number');
 	this.redInput.setAttribute('step','any');
 	this.redInput.className = 'stopinput';
-	this.redInput.value = '5.95';
+	this.redInput.value = '6';
 }
 TWKFC.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -256,7 +256,7 @@ TWKFC.prototype.testYellow = function() {
 			this.yellowInput.value = '3';
 		 }
 	} else {
-		this.yellowInput.value = '0.26';
+		this.yellowInput.value = '0.5';
 	}
 }
 TWKFC.prototype.testRed = function() {
@@ -265,6 +265,6 @@ TWKFC.prototype.testRed = function() {
 			this.redInput.value = '3.5';
 		 }
 	} else {
-		this.redInput.value = '5.95';
+		this.redInput.value = '6';
 	}
 }

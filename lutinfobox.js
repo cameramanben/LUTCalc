@@ -63,16 +63,18 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.insGen);
 	this.createInfInfo();
 	this.instructionsBox.appendChild(this.insInf);
-	this.createCustGam();
-	this.instructionsBox.appendChild(this.custGam);
-	this.createCustBhi();
-	this.instructionsBox.appendChild(this.custBhi);
 	this.createCustCts();
 	this.instructionsBox.appendChild(this.custCts);
 	this.createCustFlc();
 	this.instructionsBox.appendChild(this.custFlc);
+	this.createCustPsst();
+	this.instructionsBox.appendChild(this.custPsst);
 	this.createCustCdl();
 	this.instructionsBox.appendChild(this.custCdl);
+	this.createCustGam();
+	this.instructionsBox.appendChild(this.custGam);
+	this.createCustBhi();
+	this.instructionsBox.appendChild(this.custBhi);
 	this.createCustFls();
 	this.instructionsBox.appendChild(this.custFls);
 	this.createCustLut();
@@ -127,6 +129,10 @@ LUTInfoBox.prototype.showCustFlcInfo = function() {
 	this.hideAll();
 	this.custFlc.style.display = 'block';
 }
+LUTInfoBox.prototype.showCustPsstInfo = function() {
+	this.hideAll();
+	this.custPsst.style.display = 'block';
+}
 LUTInfoBox.prototype.showCustCdlInfo = function() {
 	this.hideAll();
 	this.custCdl.style.display = 'block';
@@ -148,11 +154,12 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.insPre.style.display = 'none';
 	this.insGen.style.display = 'none';
 	this.insInf.style.display = 'none';
-	this.custGam.style.display = 'none';
-	this.custBhi.style.display = 'none';
 	this.custCts.style.display = 'none';
 	this.custFlc.style.display = 'none';
+	this.custPsst.style.display = 'none';
 	this.custCdl.style.display = 'none';
+	this.custGam.style.display = 'none';
+	this.custBhi.style.display = 'none';
 	this.custFls.style.display = 'none';
 	this.custLut.style.display = 'none';
 }
@@ -290,14 +297,6 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	header.setAttribute('class','imagemapimg');	
 	header.setAttribute('id','ins-cust-header');	
 	this.custscreen.appendChild(header);
-	this.insCustGam = document.createElement('div');
-	this.insCustGam.setAttribute('class','imagemapimg');	
-	this.insCustGam.setAttribute('id','ins-cust-gam');	
-	this.custscreen.appendChild(this.insCustGam);
-	this.insCustBhi = document.createElement('div');
-	this.insCustBhi.setAttribute('class','imagemapimg');	
-	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
-	this.custscreen.appendChild(this.insCustBhi);
 	this.insCustCts = document.createElement('div');
 	this.insCustCts.setAttribute('class','imagemapimg');	
 	this.insCustCts.setAttribute('id','ins-cust-cts');	
@@ -306,10 +305,22 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustFlc.setAttribute('class','imagemapimg');	
 	this.insCustFlc.setAttribute('id','ins-cust-flc');	
 	this.custscreen.appendChild(this.insCustFlc);
+	this.insCustPsst = document.createElement('div');
+	this.insCustPsst.setAttribute('class','imagemapimg');	
+	this.insCustPsst.setAttribute('id','ins-cust-psst');	
+	this.custscreen.appendChild(this.insCustPsst);
 	this.insCustCdl = document.createElement('div');
 	this.insCustCdl.setAttribute('class','imagemapimg');	
 	this.insCustCdl.setAttribute('id','ins-cust-cdl');	
 	this.custscreen.appendChild(this.insCustCdl);
+	this.insCustGam = document.createElement('div');
+	this.insCustGam.setAttribute('class','imagemapimg');	
+	this.insCustGam.setAttribute('id','ins-cust-gam');	
+	this.custscreen.appendChild(this.insCustGam);
+	this.insCustBhi = document.createElement('div');
+	this.insCustBhi.setAttribute('class','imagemapimg');	
+	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
+	this.custscreen.appendChild(this.insCustBhi);
 	this.insCustFls = document.createElement('div');
 	this.insCustFls.setAttribute('class','imagemapimg');	
 	this.insCustFls.setAttribute('id','ins-cust-fls');	
@@ -543,6 +554,31 @@ LUTInfoBox.prototype.createCustFlc = function() {
 	this.custFlc.style.display = 'none';
 	this.custFlc.appendChild(this.custFlcInfo);
 }
+LUTInfoBox.prototype.createCustPsst = function() {
+	this.custPsst = document.createElement('div');
+	this.custPsst.setAttribute('class','instructions');
+	this.custPsst.setAttribute('id','cust-psst');
+	this.custPsstBack = document.createElement('input');
+	this.custPsstBack.setAttribute('type','button');
+	this.custPsstBack.value = 'Back';
+	this.custPsst.appendChild(this.custPsstBack);
+	this.custPsstInfo = document.createElement('div');
+	this.custPsstInfo.setAttribute('class','infotext');
+	var psst1 = document.createElement('div');
+	psst1.setAttribute('class','infoimage');
+	psst1.setAttribute('id','ins-cust-psst-1');
+	this.custPsstInfo.appendChild(psst1);
+	var psst2 = document.createElement('div');
+	psst2.setAttribute('class','infoimage');
+	psst2.setAttribute('id','ins-cust-psst-2');
+	this.custPsstInfo.appendChild(psst2);
+	var psst3 = document.createElement('div');
+	psst3.setAttribute('class','infoimage');
+	psst3.setAttribute('id','ins-cust-psst-3');
+	this.custPsstInfo.appendChild(psst3);
+	this.custPsst.style.display = 'none';
+	this.custPsst.appendChild(this.custPsstInfo);
+}
 LUTInfoBox.prototype.createCustCdl = function() {
 	this.custCdl = document.createElement('div');
 	this.custCdl.setAttribute('class','instructions');
@@ -653,8 +689,8 @@ LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	infoBox.appendChild(para);
 }
 LUTInfoBox.prototype.gammaInfo = function() {
-	this.tableRefVals = [0,0.18,0.38,0.44,0.9,7.2,13.5];
-	this.tableIREVals = [];
+	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,13.5]);
+	this.tableIREVals = new Float64Array(7);
 	this.gammaInfoBox.setAttribute('class','graybox infobox');
 	this.addText(this.gammaInfoBox,'Output gamma including any customisations:');
 	var curires = document.createElement('table');
@@ -711,25 +747,26 @@ LUTInfoBox.prototype.gammaInfo = function() {
 	this.gammaInfoBox.appendChild(gamires);
 }
 LUTInfoBox.prototype.gammaChart = function() {
+	var m = 129;
+	var d = m - 1;
+	var k;
 	this.gammaInName = '';
 	this.gammaOutName = '';
-	this.chartRefXs = [];
-	this.chartRefIns = [];
-	this.chartRefOuts = [];
-	for (var i=0; i<65; i++) {
-		this.chartRefXs[i] = 14*parseFloat(i)/64;
+	this.refX = new Float64Array(m);
+	this.stopX = new Float64Array(m);
+	this.lutIn = new Float64Array(m);
+	for (var j=0; j<m; j++) {
+		k = j/d;
+		this.refX[j] = 14*k;
+		this.stopX[j] = (16*k)-8;
+		this.lutIn[j] = k;
 	}
-	this.chartStopXs = [];
-	this.chartStopIns = [];
-	this.chartStopOuts = [];
-	for (var i=0; i<65; i++) {
-		this.chartStopXs[i] = (parseFloat(i)/4)-8;
-	}
-	this.chartLutXs = [];
-	this.chartLutOuts = [];
-	for (var i=0; i<65; i++) {
-		this.chartLutXs[i] = parseFloat(i)/64;
-	}
+	this.refIn = new Float64Array(m);
+	this.refOut = new Float64Array(m);
+	this.stopIn = new Float64Array(m);
+	this.stopOut = new Float64Array(m);
+	this.lutOut = new Float64Array(m);
+
 	this.gammaChartBox.setAttribute('class','graybox infobox');
 	this.chartType = [];
 	this.chartType[0] = this.createRadioElement('charttype', false);
@@ -1057,6 +1094,8 @@ LUTInfoBox.prototype.setupEvents = function() {
 	this.custCtsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
 	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
+	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustCdl.onclick = function(here){ return function(){ here.showCustCdlInfo(); };}(this);
 	this.custCdlBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustFls.onclick = function(here){ return function(){ here.showCustFlsInfo(); };}(this);
@@ -1155,10 +1194,10 @@ LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
 	this.refChart.rec.fillText('In: ' + this.gammaInName, 200,365);
 	this.refChart.rec.lineWidth = 4;
-	this.refChart.rec.moveTo(this.refChart.x0,this.refChart.y0 - (this.chartRefIns[0] * this.stopChart.dY));
-	var max = this.chartRefXs.length;
+	this.refChart.rec.moveTo(this.refChart.x0,this.refChart.y0 - (this.refIn[0] * this.stopChart.dY));
+	var max = this.refX.length;
 	for (var i=1; i<max; i++) {
-		this.refChart.rec.lineTo(this.refChart.x0 + (this.chartRefXs[i] * this.refChart.dX),this.refChart.y0 - (this.chartRefIns[i] * this.refChart.dY));
+		this.refChart.rec.lineTo(this.refChart.x0 + (this.refX[i] * this.refChart.dX),this.refChart.y0 - (this.refIn[i] * this.refChart.dY));
 	}
 	this.refChart.rec.stroke();
 	this.refChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -1169,9 +1208,9 @@ LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
 	this.refChart.out.fillText('Out: ' + this.gammaOutName, 200,415);
 	this.refChart.out.lineWidth = 4;
-	this.refChart.out.moveTo(this.refChart.x0,this.refChart.y0 - (this.chartRefOuts[0] * this.stopChart.dY));
+	this.refChart.out.moveTo(this.refChart.x0,this.refChart.y0 - (this.refOut[0] * this.stopChart.dY));
 	for (var i=1; i<max; i++) {
-		this.refChart.out.lineTo(this.refChart.x0 + (this.chartRefXs[i] * this.refChart.dX),this.refChart.y0 - (this.chartRefOuts[i] * this.refChart.dY));
+		this.refChart.out.lineTo(this.refChart.x0 + (this.refX[i] * this.refChart.dX),this.refChart.y0 - (this.refOut[i] * this.refChart.dY));
 	}
 	this.refChart.out.stroke();
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
@@ -1188,10 +1227,10 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.fillStyle = 'rgba(240, 0, 0, 0.75)';
 	this.stopChart.rec.fillText('In: ' + this.gammaInName, 140,85);
 	this.stopChart.rec.lineWidth = 4;
-	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.chartStopIns[0] * this.stopChart.dY));
-	var max = this.chartStopXs.length;
+	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.stopIn[0] * this.stopChart.dY));
+	var max = this.stopX.length;
 	for (var i=1; i<max; i++) {
-		this.stopChart.rec.lineTo(this.stopChart.x0 + ((this.chartStopXs[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.chartStopIns[i] * this.stopChart.dY));
+		this.stopChart.rec.lineTo(this.stopChart.x0 + ((this.stopX[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.stopIn[i] * this.stopChart.dY));
 	}
 	this.stopChart.rec.stroke();
 	this.stopChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -1202,9 +1241,9 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.out.fillStyle = 'rgba(0, 0, 240, 0.75)';
 	this.stopChart.out.fillText('Out: ' + this.gammaOutName, 140,135);
 	this.stopChart.out.lineWidth = 4;
-	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.chartStopOuts[0] * this.stopChart.dY));
+	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.stopOut[0] * this.stopChart.dY));
 	for (var i=1; i<max; i++) {
-		this.stopChart.out.lineTo(this.stopChart.x0 + ((this.chartStopXs[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.chartStopOuts[i] * this.stopChart.dY));
+		this.stopChart.out.lineTo(this.stopChart.x0 + ((this.stopX[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.stopOut[i] * this.stopChart.dY));
 	}
 	this.stopChart.out.stroke();
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
@@ -1221,10 +1260,10 @@ LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	this.lutChart.out.fillStyle = 'rgba(0, 0, 0, 1)';
 	this.lutChart.out.fillText(this.gammaInName + ' -> ' + this.gammaOutName, 220,90);
 	this.lutChart.out.lineWidth = 4;
-	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.chartLutOuts[0] * this.lutChart.dY));
-	var max = this.chartLutXs.length;
+	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.lutOut[0] * this.lutChart.dY));
+	var max = this.lutIn.length;
 	for (var i=1; i<max; i++) {
-		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.chartLutXs[i]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (this.chartLutOuts[i] * this.lutChart.dY));
+		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.lutIn[i]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (this.lutOut[i] * this.lutChart.dY));
 	}
 	this.lutChart.out.stroke();
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
@@ -1233,20 +1272,18 @@ LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 }
 LUTInfoBox.prototype.updateGamma = function() {
 	this.message.gaTx(this.p,10,null);
-	this.message.gaTx(this.p,11,{
-		refX: this.chartRefXs,
-		stopX: this.chartStopXs,
-		lutX: this.chartLutXs,
-		tableX: this.tableRefVals
-	});
+	this.message.gaTx(this.p,11,null);
 }
 LUTInfoBox.prototype.gotChartVals = function(d) {
-	this.chartRefIns = d.chartRefIns;
-	this.chartRefOuts = d.chartRefOuts;
-	this.chartStopIns = d.chartStopIns;
-	this.chartStopOuts = d.chartStopOuts;
-	this.chartLutOuts = d.chartLutOuts;
-	this.tableIREVals = d.tableIREVals;
+	this.refX = new Float64Array(d.refX);
+	this.refIn = new Float64Array(d.refIn);
+	this.refOut = new Float64Array(d.refOut);
+	this.stopX = new Float64Array(d.stopX);
+	this.stopIn = new Float64Array(d.stopIn);
+	this.stopOut = new Float64Array(d.stopOut);
+	this.lutIn = new Float64Array(d.lutIn);
+	this.lutOut = new Float64Array(d.lutOut);
+	this.tableIREVals = new Float64Array(d.table);
 	this.updateRefChart();
 	this.updateStopChart();
 	this.updateLutChart();

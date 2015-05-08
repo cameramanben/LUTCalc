@@ -260,7 +260,7 @@ TWKASCCDL.prototype.events = function() {
 	this.channelSelect.onchange = function(here){ return function(){
 		here.changeChannel();
 	};}(this);
-	this.satSlider.onchange = function(here){ return function(){
+	this.satSlider.oninput = function(here){ return function(){
 		here.testSat(true);
 		here.messages.gaSetParams();
 		here.messages.gtSetParams();
@@ -276,7 +276,7 @@ TWKASCCDL.prototype.events = function() {
 		here.messages.gtSetParams();
 	};}(this);
 	for (var j=0; j<4; j++) {
-		this.sSlider[j].onchange = function(i){ return function(){
+		this.sSlider[j].oninput = function(i){ return function(){
 			i[0].testS(i[1],true);
 			i[0].messages.gaSetParams();
 			i[0].messages.gtSetParams();
@@ -296,7 +296,7 @@ TWKASCCDL.prototype.events = function() {
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);
-		this.oSlider[j].onchange = function(i){ return function(){
+		this.oSlider[j].oninput = function(i){ return function(){
 			i[0].testO(i[1],true);
 			i[0].messages.gaSetParams();
 			i[0].messages.gtSetParams();
@@ -316,7 +316,7 @@ TWKASCCDL.prototype.events = function() {
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);
-		this.pSlider[j].onchange = function(i){ return function(){
+		this.pSlider[j].oninput = function(i){ return function(){
 			i[0].testP(i[1],true);
 			i[0].messages.gaSetParams();
 			i[0].messages.gtSetParams();
@@ -332,7 +332,7 @@ TWKASCCDL.prototype.events = function() {
 			i[0].messages.gtSetParams();
 		};}([this,j]);
 		this.pAllReset[j].onclick = function(here){ return function(){
-			here.resetP();
+			here.resetAllP();
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);

@@ -37,6 +37,8 @@
 #ins-cust-cts:hover {background-image: url('pngs/cust-cts-g.png');margin:0;padding:0;background-size:21em 1.35em;width:21em;height:1.35em;}
 #ins-cust-flc {background-image: url('pngs/cust-flc.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-flc:hover {background-image: url('pngs/cust-flc-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
+#ins-cust-psst {background-image: url('pngs/cust-psst.png');margin:0;padding:0;background-size:21em 1.467em;width:21em;height:1.467em;}
+#ins-cust-psst:hover {background-image: url('pngs/cust-psst-g.png');margin:0;padding:0;background-size:21em 1.467em;width:21em;height:1.467em;}
 #ins-cust-cdl {background-image: url('pngs/cust-cdl.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-cdl:hover {background-image: url('pngs/cust-cdl-g.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
 #ins-cust-fls {background-image: url('pngs/cust-fls.png');margin:0;padding:0;background-size:21em 1.395em;width:21em;height:1.395em;}
@@ -53,6 +55,9 @@
 #ins-cust-flc-1 {display:block;background-image: url('pngs/cust-flc-1.png');margin:0px auto;padding:0;background-size:21em 5.074em;width:21em;height:5.074em;}
 #ins-cust-flc-2 {display:block;background-image: url('pngs/cust-flc-2.png');margin:0px auto;padding:0;background-size:21em 9.176em;width:21em;height:9.176em;}
 #ins-cust-cdl-1 {display:block;background-image: url('pngs/cust-cdl-1.png');margin:0px auto;padding:0;background-size:21em 8.426em;width:21em;height:8.426em;}
+#ins-cust-psst-1 {display:block;background-image: url('pngs/cust-psst-1.png');margin:0px auto;padding:0;background-size:21em 13.474em;width:21em;height:13.474em;}
+#ins-cust-psst-2 {display:block;background-image: url('pngs/cust-psst-2.png');margin:0px auto;padding:0;background-size:21em 15.322em;width:21em;height:15.322em;}
+#ins-cust-psst-3 {display:block;background-image: url('pngs/cust-psst-3.png');margin:0px auto;padding:0;background-size:21em 3.785em;width:21em;height:3.785em;}
 #ins-cust-fls-1 {display:block;background-image: url('pngs/cust-fls-1.png');margin:0px auto;padding:0;background-size:21em 14.56em;width:21em;height:14.56em;}
 #ins-cust-lut-1 {display:block;background-image: url('pngs/cust-lut-1.png');margin:0px auto;padding:0;background-size:21em 4.059em;width:21em;height:4.059em;}
 #ins-cust-lut-2 {display:block;background-image: url('pngs/cust-lut-2.png');margin:0px auto;padding:0;background-size:21em 8.162em;width:21em;height:8.162em;}

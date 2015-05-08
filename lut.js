@@ -122,11 +122,7 @@ LUTs.prototype.getRGB = function() {
 			this.C[1].buffer,
 			this.C[2].buffer];
 }
-
 LUTs.prototype.f = function(L) {
-	return this.lumaLCub(L);
-}
-LUTs.prototype.lumaLCub = function(L) {
 	var max = this.s - 1;
 	L = L * max;
 	if (L < 0) {
@@ -136,28 +132,61 @@ LUTs.prototype.lumaLCub = function(L) {
 		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
 		return this.L[max] + ((L - max) * dy);
 	} else {
-		var base = Math.floor(L);
-		var p0 = this.L[base];
-		var p1 = this.L[base + 1];
+		var f = Math.floor(L);
+		var p0 = this.L[f];
+		var p1 = this.L[f + 1];
 		var d0,d1;
-		if (base == 0) {
+		if (f === 0) {
 			d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 		} else {
-			d0 = (this.L[base + 1] - this.L[base - 1])/2;
+			d0 = (this.L[f + 1] - this.L[f - 1])/2;
 		}
-		if (base == max - 1) {
+		if (f === max - 1) {
 			d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
 		} else {
-			d1 = (this.L[base + 2] - this.L[base])/2;
+			d1 = (this.L[f + 2] - this.L[f])/2;
 		}
 		var a = (2 * p0) + d0 - (2 * p1) + d1;
 		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
 		var c = d0;
 		var d = p0;
-		var l = L - base;
-		return (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
+		L -= f;
+		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 }
+LUTs.prototype.lLCub = function(L) {
+	var max = this.s - 1;
+	L = L * max;
+	if (L < 0) {
+		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+		return this.L[0] + (L * dy);
+	} else if (L >= max) {
+		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+		return this.L[max] + ((L - max) * dy);
+	} else {
+		var f = Math.floor(L);
+		var p0 = this.L[f];
+		var p1 = this.L[f + 1];
+		var d0,d1;
+		if (f === 0) {
+			d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+		} else {
+			d0 = (this.L[f + 1] - this.L[f - 1])/2;
+		}
+		if (f === max - 1) {
+			d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+		} else {
+			d1 = (this.L[f + 2] - this.L[f])/2;
+		}
+		var a = (2 * p0) + d0 - (2 * p1) + d1;
+		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+		var c = d0;
+		var d = p0;
+		L -= f;
+		return (((((a * L) + b) * L) + c) * L) + d;
+	}
+}
+/*
 LUTs.prototype.lumaLLin = function(L) {
 	var max = this.s - 1;
 	L = L * max;
@@ -173,8 +202,8 @@ LUTs.prototype.lumaLLin = function(L) {
 		return (this.L[base] * (1 - dy)) + (this.L[base + 1] * dy); 
 	}
 }
-
-LUTs.prototype.lumaRGBCub = function(L) {
+*/
+LUTs.prototype.lRCub = function(L) {
 	var max = this.s - 1;
 	L = L * max;
 	var out = new Float64Array(3);
@@ -284,335 +313,329 @@ LUTs.prototype.lumaRGBCub = function(L) {
 		return out;
 	}
 }
-LUTs.prototype.lumaRGBLin = function(L) {
+LUTs.prototype.lLsCub = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
 	var max = this.s - 1;
-	L = L * max;
-	var out = new Float64Array(3);
-	if (this.d === 1) {
-		if (!this.rgbl) {
-			if (L < 0) {
-				var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				out[0] = this.L[0] + (L * dy);
-			} else if (L >= max) {
-				var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-				out[0] = this.L[max] + ((L - max) * dy);
-			} else {
-				var base = Math.floor(L);
-				var dy = L - base;
-				out[0] = (this.L[base] * (1 - dy)) + (this.L[base + 1] * dy);
-			}
-			out[1] = out[0];
-			out[2] = out[0];
-			return out;
+	var dy, f, d0, d1, Y, a, b, c, d;
+	for (var j=0; j<m; j++) {
+		o[j] *= max;
+		if (o[j] < 0) {
+			dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+			o[j] =  this.L[0] + (o[j] * dy);
+		} else if (o[j] >= max) {
+			dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+			o[j] = this.L[max] + ((o[j] - max) * dy);
 		} else {
-			var C;
-			for (var j = 0; j < 3; j++) {
-				C = this.C[j];
-				if (L < 0) {
-					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					out[j] = C[0] + (L * dy);
-				} else if (L >= max) {
-					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					out[j] = C[max] + ((L - max) * dy);
-				} else {
-					var base = Math.floor(L);
-					var dy = L - base;
-					out[j] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
-				}
-			}
-			return out;
-		}
-	} else {
-		var C;
-		for (var j=0; j<3; j++) {
-			C=this.C[j]
-			if (L < 0) {
-				var dy = ((4 * C[1+(s*(1+s))]) - (3 * C[0]) - C[2+(s*(2+(s*2)))])/2;
-				out[j] = C[0] + (L * dy);
-			} else if (L >= max) {
-				var dy = (0.5 * C[max-2+(s*(max-2+(s*(max-2))))]) - (2 * C[max-1+(s*(max-1+(s*(max-1))))]) + (1.5 * C[max+(s*(max+(s*max)))]);
-				out[j] = C[max+(s*(max+(s*max)))] + ((L - max) * dy);
+			f = Math.floor(o[j]);
+			p0 = this.L[f];
+			p1 = this.L[f + 1];
+			if (f === 0) {
+				d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 			} else {
-				var base = Math.floor(L);
-				var dy = L - base;
-				out[j] = (C[base+(s*(base+(s*base)))] * (1 - dy)) + (C[base+1+(s*(base+1+(s*(base+1))))] * dy);
+				d0 = (this.L[f + 1] - this.L[f - 1])/2;
 			}
+			if (f === (max - 1)) {
+				d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+			} else {
+				d1 = (this.L[f + 2] - this.L[f])/2;
+			}
+			a = (2 * p0) + d0 - (2 * p1) + d1;
+			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+			c = d0;
+			d = p0;
+			Y = o[j] - f;
+			o[j] = (((((a * Y) + b) * Y) + c) * Y) + d;
 		}
-		return out;
 	}
 }
-
-LUTs.prototype.rgbLCub = function(rgb) {
-	// Let rgbRGBCub sort things out then just calculate Lout using Rec709 coefficients
-	var out = this.rgbRGBCub(rgb);
-	return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
+LUTs.prototype.lLsLin = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var max = this.s - 1;
+	var dy;
+	for (var j=0; j<m; j++) {
+		o[j] *= max;
+		if (o[j] < 0) {
+			dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+			o[j] = this.L[0] + (o[j] * dy);
+		} else if (o[j] >= max) {
+			dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+			o[j] = this.L[max] + ((o[j] - max) * dy);
+		} else {
+			f = Math.floor(o[j]);
+			dy = o[j] - f;
+			o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
+		}
+	}
 }
-LUTs.prototype.rgbLLin = function(rgb) {
-	// Let rgbRGBLin sort things out then just calculate Lout using Rec709 coefficients
-	var out = this.rgbRGBLin(rgb);
-	return (0.2126*out[0]) + (0.7152*out[1]) + (0.0722*out[2]);
-}
-
-LUTs.prototype.rgbRGBCub = function(rgb) {
-	var out = new Float64Array(3);
+LUTs.prototype.rRsCub = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
 	// 1D case where R,G & B have the same gammas
 	if (this.d === 1 && !this.rgbl) {
-		out[0] = this.lumaLCub(rgb[0]);
-		out[1] = this.lumaLCub(rgb[1]);
-		out[2] = this.lumaLCub(rgb[2]);
-		return out;
+		this.lLsCub(buff);
 	// Generalised 1D case (R, G & B can have differing gammas
-	} else if (this.d == 1) {
+	} else if (this.d === 1) {
 		var max = this.s - 1;
 		// Loop through each ouput colour channel in turn
-		var C;
-		for (var j=0; j<3; j++) {
-			C = this.C[j];
-			// Scale basic luma (0-1.0) range to array dimension
-			var l = rgb[j] * max;
-			// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
-			// Then linearly scale from the array's 0 value
-			if (l < 0) {
-				var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-				out[j] = C[0] + (l * dy);
-			// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
-			// Then linearly scale from the array's last value
-			} else if (l >= max) {
-				var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-				out[i] = C[max] + ((l - max) * dy);
-			// Otherwise, cubic interpolate the output value from the LUT array
-			} else {
-				var base = Math.floor(l);
-				var p0 = C[base];
-				var p1 = C[base + 1];
-				var d0,d1;
-				// First and last gradients calculated fitting three points to quadratics
-				if (base == 0) {
-					d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+		var C, Y, dy;
+		for (var k=0; k<3; k++) {
+			C = this.C[k];
+			for (var j=0; j<m; j += 3) {
+				// Scale basic luma (0-1.0) range to array dimension
+				Y = o[j+k] * max;
+				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
+				// Then linearly scale from the array's 0 value
+				if (Y < 0) {
+					dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+					o[j+k] = C[0] + (Y * dy);
+				// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
+				// Then linearly scale from the array's last value
+				} else if (Y >= max) {
+					dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
+					o[j+k] = C[max] + ((Y - max) * dy);
+				// Otherwise, cubic interpolate the output value from the LUT array
 				} else {
-					d0 = (C[base + 1] - C[base - 1])/2;
+					var base = Math.floor(Y);
+					var p0 = C[base];
+					var p1 = C[base + 1];
+					var d0,d1;
+					// First and last gradients calculated fitting three points to quadratics
+					if (base === 0) {
+						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+					} else {
+						d0 = (C[base + 1] - C[base - 1])/2;
+					}
+					if (base === max - 1) {
+						d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
+					} else {
+						d1 = (C[base + 2] - C[base])/2;
+					}
+					// Cubic polynomial - f(x) - parameters from known f(0), f'(0), f(1), f'(1)
+					var a = (2 * p0) + d0 - (2 * p1) + d1;
+					var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+					var c = d0;
+					var d = p0;
+					Y = Y - base;
+					// Basic cubic polynomial calculation
+					o[j+k] = (((((a * Y) + b) * Y) + c) * Y) + d;
 				}
-				if (base == max - 1) {
-					d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
-				} else {
-					d1 = (C[base + 2] - C[base])/2;
-				}
-				// Cubic polynomial - f(x) - parameters from known f(0), f'(0), f(1), f'(1)
-				var a = (2 * p0) + d0 - (2 * p1) + d1;
-				var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-				var c = d0;
-				var d = p0;
-				l = l - base;
-				// Basic cubic polynomial calculation
-				out[j] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
 			}
 		}
-		return out;
+	// 3D LUT Case
 	} else {
 		var max = this.s - 1;
-		var input = [];
+		var i = new Float64Array(3);
 		var clip = max * 0.999999999999;
-		var rL = false;
-		var gL = false;
-		var bL = false;
-		var rH = false;
-		var gH = false;
-		var bH = false;
-		// Scale basic RGB (0-1.0) range to array dimension
-		input[0] = rgb[0] * max;
-		input[1] = rgb[1] * max;
-		input[2] = rgb[2] * max;
-		// If 0 > input >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
-		if (input[0] < 0) {
-			input[0] = 0;
-			rL = true;
-		} else if (input [0] >= max) {
-			input[0] = clip;
-			rH = true;
+		var rL,gL,bL,rH,gH,bH;
+		var p0,p1,p2,dy;
+		for (var j=0; j<m; j += 3) {
+			// Scale basic RGB (0-1.0) range to array dimension
+			i[0] = o[ j ] * max;
+			i[1] = o[j+1] * max;
+			i[2] = o[j+2] * max;
+			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
+			rL = false;
+			gL = false;
+			bL = false;
+			rH = false;
+			gH = false;
+			bH = false;
+			if (i[0] < 0) {
+				i[0] = 0;
+				rL = true;
+			} else if (i [0] >= max) {
+				i[0] = clip;
+				rH = true;
+			}
+			if (i[1] < 0) {
+				i[1] = 0;
+				gL = true;
+			} else if (i [1] >= max) {
+				i[1] = clip;
+				gH = true;
+			}
+			if (i[2] < 0) {
+				i[2] = 0;
+				bL = true;
+			} else if (i [2] >= max) {
+				i[2] = clip;
+				bH = true;
+			}
+// If any of the i channels were clipped, replace their output value with linear extrapolation from the edge point
+			if (rL) {
+				p0 = this.tC(this.C[0], max, [0,i[1],i[2]]);
+				p1 = this.tC(this.C[0], max, [1,i[1],i[2]]);
+				p2 = this.tC(this.C[0], max, [2,i[1],i[2]]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[ j ] = p0 + (o[ j ] * max * dy);
+			} else if (rH) {
+				p0 = this.tC(this.C[0], max, [clip - 2,i[1],i[2]]);
+				p1 = this.tC(this.C[0], max, [clip - 1,i[1],i[2]]);
+				p2 = this.tC(this.C[0], max, [clip,i[1],i[2]]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[ j ] = p2 + ((o[ j ] - 1) * max * dy);
+			} else {
+				o[ j ] = this.tC(this.C[0], max, i);
+			}
+			if (gL) {
+				p0 = this.tC(this.C[1], max, [i[0],0,i[2]]);
+				p1 = this.tC(this.C[1], max, [i[0],1,i[2]]);
+				p2 = this.tC(this.C[1], max, [i[0],2,i[2]]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[j+1] = p0 + (o[j+1] * max * dy);
+			} else if (gH) {
+				p0 = this.tC(this.C[1], max, [i[0],clip - 2,i[2]]);
+				p1 = this.tC(this.C[1], max, [i[0],clip - 1,i[2]]);
+				p2 = this.tC(this.C[1], max, [i[0],clip,i[2]]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[j+1] = p2 + ((o[j+1] - 1) * max * dy);
+			} else {
+				o[j+1] = this.tC(this.C[1], max, i);
+			}
+			if (bL) {
+				p0 = this.tC(this.C[2], max, [i[0],i[1],0]);
+				p1 = this.tC(this.C[2], max, [i[0],i[1],1]);
+				p2 = this.tC(this.C[2], max, [i[0],i[1],2]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[j+2] = p0 + (o[j+2] * max * dy);
+			} else if (bH) {
+				p0 = this.tC(this.C[2], max, [i[0],i[1],clip - 2]);
+				p1 = this.tC(this.C[2], max, [i[0],i[1],clip - 1]);
+				p2 = this.tC(this.C[2], max, [i[0],i[1],clip]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[j+2] = p2 + ((o[j+2] - 1) * max * dy);
+			} else {
+				o[j+2] = this.tC(this.C[2], max, i);
+			}
 		}
-		if (input[1] < 0) {
-			input[1] = 0;
-			gL = true;
-		} else if (input [1] >= max) {
-			input[1] = clip;
-			gH = true;
-		}
-		if (input[2] < 0) {
-			input[2] = 0;
-			bL = true;
-		} else if (input [2] >= max) {
-			input[2] = clip;
-			bH = true;
-		}
-		// Now get tricubic interpolated value from prepared input values
-		out[0] = this.triCubic(this.C[0], max, input);
-		out[1] = this.triCubic(this.C[1], max, input);
-		out[2] = this.triCubic(this.C[2], max, input);
-		// If any of the input channels were clipped, replace their output value with linear extrapolation from the edge point
-		if (rL) {
-			var p0 = this.triCubic(this.C[0], max, [0,input[1],input[2]]);
-			var p1 = this.triCubic(this.C[0], max, [1,input[1],input[2]]);
-			var p2 = this.triCubic(this.C[0], max, [2,input[1],input[2]]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[0] = p0 + (rgb[0] * max * dy);
-		} else if (rH) {
-			var p0 = this.triCubic(this.C[0], max, [clip - 2,input[1],input[2]]);
-			var p1 = this.triCubic(this.C[0], max, [clip - 1,input[1],input[2]]);
-			var p2 = this.triCubic(this.C[0], max, [clip,input[1],input[2]]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[0] = p2 + ((rgb[0] - 1) * max * dy);
-		}
-		if (gL) {
-			var p0 = this.triCubic(this.C[1], max, [input[0],0,input[2]]);
-			var p1 = this.triCubic(this.C[1], max, [input[0],1,input[2]]);
-			var p2 = this.triCubic(this.C[1], max, [input[0],2,input[2]]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[1] = p0 + (rgb[1] * max * dy);
-		} else if (gH) {
-			var p0 = this.triCubic(this.C[1], max, [input[0],clip - 2,input[2]]);
-			var p1 = this.triCubic(this.C[1], max, [input[0],clip - 1,input[2]]);
-			var p2 = this.triCubic(this.C[1], max, [input[0],clip,input[2]]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[1] = p2 + ((rgb[1] - 1) * max * dy);
-		}
-		if (bL) {
-			var p0 = this.triCubic(this.C[2], max, [input[0],input[1],0]);
-			var p1 = this.triCubic(this.C[2], max, [input[0],input[1],1]);
-			var p2 = this.triCubic(this.C[2], max, [input[0],input[1],2]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[2] = p0 + (rgb[2] * max * dy);
-		} else if (bH) {
-			var p0 = this.triCubic(this.C[2], max, [input[0],input[1],clip - 2]);
-			var p1 = this.triCubic(this.C[2], max, [input[0],input[1],clip - 1]);
-			var p2 = this.triCubic(this.C[2], max, [input[0],input[1],clip]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[2] = p2 + ((rgb[2] - 1) * max * dy);
-		}
-		// Return the calculated value
-		return out;
 	}
 }
-LUTs.prototype.rgbRGBLin = function(rgb) {
-	var out = new Float64Array(3);
+LUTs.prototype.rRsLin = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
 	// 1D case where R,G & B have the same gammas
 	if (this.d === 1 && !this.rgbl) {
-		out[0] = this.lumaLLin(rgb[0]);
-		out[1] = this.lumaLLin(rgb[1]);
-		out[2] = this.lumaLLin(rgb[2]);
-		return out;
+		this.lLsLin(buff);
 	// Generalised 1D case (R, G & B can have differing gammas
-	} else if (this.d == 1) {
+	} else if (this.d === 1) {
 		var max = this.s - 1;
 		// Loop through each ouput colour channel in turn
-		var C;
-		for (var j=0; j<3; j++) {
-			C=this.C[j];
-			// Scale basic luma (0-1.0) range to array dimension
-			var l = rgb[j] * max;
-			// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
-			// Then linearly scale from the array's 0 value
-			if (l < 0) {
-				var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-				out[j] = C[0] + (l * dy);
-			// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
-			// Then linearly scale from the array's last value
-			} else if (l >= max) {
-				var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-				out[i] = C[max] + ((l - max) * dy);
-			// Otherwise, cubic interpolate the output value from the LUT array
-			} else {
-				var base = Math.floor(l);
-				var dy = l - base;
-				out[i] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
+		var C, Y, dy;
+		for (var k=0; k<3; k++) {
+			C = this.C[k];
+			for (var j=0; j<m; j += 3) {
+				// Scale basic luma (0-1.0) range to array dimension
+				Y = o[j+k] * max;
+				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
+				// Then linearly scale from the array's 0 value
+				if (Y < 0) {
+					dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
+					o[j+k] = C[0] + (Y * dy);
+				// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
+				// Then linearly scale from the array's last value
+				} else if (Y >= max) {
+					dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
+					o[j+k] = C[max] + ((Y - max) * dy);
+				// Otherwise, cubic interpolate the output value from the LUT array
+				} else {
+					var base = Math.floor(Y);
+					dy = Y - base;
+					o[j+k] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
+				}
 			}
 		}
-		return out;
+	// 3D LUT Case
 	} else {
 		var max = this.s - 1;
-		var input = [];
+		var i = [];
 		var clip = max * 0.999999999999;
-		var rL = false;
-		var gL = false;
-		var bL = false;
-		var rH = false;
-		var gH = false;
-		var bH = false;
-		// Scale basic RGB (0-1.0) range to array dimension
-		input[0] = rgb[0] * max;
-		input[1] = rgb[1] * max;
-		input[2] = rgb[2] * max;
-		// If 0 > input >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
-		if (input[0] < 0) {
-			input[0] = 0;
-			rL = true;
-		} else if (input [0] >= max) {
-			input[0] = clip;
-			rH = true;
+		var rL,gL,bL,rH,gH,bH;
+		var p0,p1,p2,dy;
+		for (var j=0; j<m; j += 3) {
+			// Scale basic RGB (0-1.0) range to array dimension
+			i[0] = o[ j ] * max;
+			i[1] = o[j+1] * max;
+			i[2] = o[j+2] * max;
+			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
+			rL = false;
+			gL = false;
+			bL = false;
+			rH = false;
+			gH = false;
+			bH = false;
+			if (i[0] < 0) {
+				i[0] = 0;
+				rL = true;
+			} else if (i [0] >= max) {
+				i[0] = clip;
+				rH = true;
+			}
+			if (i[1] < 0) {
+				i[1] = 0;
+				gL = true;
+			} else if (i [1] >= max) {
+				i[1] = clip;
+				gH = true;
+			}
+			if (i[2] < 0) {
+				i[2] = 0;
+				bL = true;
+			} else if (i [2] >= max) {
+				i[2] = clip;
+				bH = true;
+			}
+// If any of the i channels were clipped, replace their output value with linear extrapolation from the edge point
+			if (rL) {
+				p0 = this.tL(this.C[0], max, [0,i[1],i[2]]);
+				p1 = this.tL(this.C[0], max, [1,i[1],i[2]]);
+				p2 = this.tL(this.C[0], max, [2,i[1],i[2]]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[ j ] = p0 + (o[ j ] * max * dy);
+			} else if (rH) {
+				p0 = this.tL(this.C[0], max, [clip - 2,i[1],i[2]]);
+				p1 = this.tL(this.C[0], max, [clip - 1,i[1],i[2]]);
+				p2 = this.tL(this.C[0], max, [clip,i[1],i[2]]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[ j ] = p2 + ((o[ j ] - 1) * max * dy);
+			} else {
+				o[ j ] = this.tL(this.C[0], max, i);
+			}
+			if (gL) {
+				p0 = this.tL(this.C[1], max, [i[0],0,i[2]]);
+				p1 = this.tL(this.C[1], max, [i[0],1,i[2]]);
+				p2 = this.tL(this.C[1], max, [i[0],2,i[2]]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[j+1] = p0 + (o[j+1] * max * dy);
+			} else if (gH) {
+				p0 = this.tL(this.C[1], max, [i[0],clip - 2,i[2]]);
+				p1 = this.tL(this.C[1], max, [i[0],clip - 1,i[2]]);
+				p2 = this.tL(this.C[1], max, [i[0],clip,i[2]]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[j+1] = p2 + ((o[j+1] - 1) * max * dy);
+			} else {
+				o[j+1] = this.tL(this.C[1], max, i);
+			}
+			if (bL) {
+				p0 = this.tL(this.C[2], max, [i[0],i[1],0]);
+				p1 = this.tL(this.C[2], max, [i[0],i[1],1]);
+				p2 = this.tL(this.C[2], max, [i[0],i[1],2]);
+				dy = ((4 * p1) - (3 * p0) - p2)/2;
+				o[j+2] = p0 + (o[j+2] * max * dy);
+			} else if (bH) {
+				p0 = this.tL(this.C[2], max, [i[0],i[1],clip - 2]);
+				p1 = this.tL(this.C[2], max, [i[0],i[1],clip - 1]);
+				p2 = this.tL(this.C[2], max, [i[0],i[1],clip]);
+				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
+				o[j+2] = p2 + ((o[j+2] - 1) * max * dy);
+			} else {
+				o[j+2] = this.tL(this.C[2], max, i);
+			}
 		}
-		if (input[1] < 0) {
-			input[1] = 0;
-			gL = true;
-		} else if (input [1] >= max) {
-			input[1] = clip;
-			gH = true;
-		}
-		if (input[2] < 0) {
-			input[2] = 0;
-			bL = true;
-		} else if (input [2] >= max) {
-			input[2] = clip;
-			bH = true;
-		}
-		// Now get tricubic interpolated value from prepared input values
-		out[0] = this.triLin(this.C[0], max, input);
-		out[1] = this.triLin(this.C[1], max, input);
-		out[2] = this.triLin(this.C[2], max, input);
-		// If any of the input channels were clipped, replace their output value with linear extrapolation from the edge point
-		if (rL) {
-			var p0 = this.triLin(this.C[0], max, [0,input[1],input[2]]);
-			var p1 = this.triLin(this.C[0], max, [1,input[1],input[2]]);
-			var p2 = this.triLin(this.C[0], max, [2,input[1],input[2]]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[0] = p0 + (rgb[0] * max * dy);
-		} else if (rH) {
-			var p0 = this.triLin(this.C[0], max, [clip - 2,input[1],input[2]]);
-			var p1 = this.triLin(this.C[0], max, [clip - 1,input[1],input[2]]);
-			var p2 = this.triLin(this.C[0], max, [clip,input[1],input[2]]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[0] = p2 + ((rgb[0] - 1) * max * dy);
-		}
-		if (gL) {
-			var p0 = this.triLin(this.C[1], max, [input[0],0,input[2]]);
-			var p1 = this.triLin(this.C[1], max, [input[0],1,input[2]]);
-			var p2 = this.triLin(this.C[1], max, [input[0],2,input[2]]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[1] = p0 + (rgb[1] * max * dy);
-		} else if (gH) {
-			var p0 = this.triLin(this.C[1], max, [input[0],clip - 2,input[2]]);
-			var p1 = this.triLin(this.C[1], max, [input[0],clip - 1,input[2]]);
-			var p2 = this.triLin(this.C[1], max, [input[0],clip,input[2]]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[1] = p2 + ((rgb[1] - 1) * max * dy);
-		}
-		if (bL) {
-			var p0 = this.triLin(this.C[2], max, [input[0],input[1],0]);
-			var p1 = this.triLin(this.C[2], max, [input[0],input[1],1]);
-			var p2 = this.triLin(this.C[2], max, [input[0],input[1],2]);
-			var dy = ((4 * p1) - (3 * p0) - p2)/2;
-			out[2] = p0 + (rgb[2] * max * dy);
-		} else if (bH) {
-			var p0 = this.triLin(this.C[2], max, [input[0],input[1],clip - 2]);
-			var p1 = this.triLin(this.C[2], max, [input[0],input[1],clip - 1]);
-			var p2 = this.triLin(this.C[2], max, [input[0],input[1],clip]);
-			var dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-			out[2] = p2 + ((rgb[2] - 1) * max * dy);
-		}
-		// Return the calculated value
-		return out;
 	}
 }
-
-LUTs.prototype.triCubic = function(C, max, RGB) {
+LUTs.prototype.tC = function(C, max, RGB) {
 	var rB = Math.floor(RGB[0]);
 	var r = RGB[0] - rB;
 	var gB = Math.floor(RGB[1]);
@@ -1099,7 +1122,7 @@ LUTs.prototype.triCubic = function(C, max, RGB) {
 	b = - (3 * Po) - (2 * bDo) + (3 * Pb) - bDb;
 	return ((a * bl * bl * bl) + (b * bl * bl) + (bDo * bl) + Po); // P
 }
-LUTs.prototype.triLin = function(C, max, RGB) {
+LUTs.prototype.tL = function(C, max, RGB) {
 	var rB = Math.floor(RGB[0]);
 	var r = RGB[0] - rB;
 	var gB = Math.floor(RGB[1]);

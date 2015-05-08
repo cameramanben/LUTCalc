@@ -91,7 +91,7 @@ LUTAnalyst.prototype.getCS = function() {
 	if (this.inputs.laDim[0].checked) {
 		dim = 33;
 	} else {
-		dim = 65
+		dim = 65;
 	}
 	this.message.gaTx(this.p,2,{
 		dim: dim,
@@ -100,14 +100,12 @@ LUTAnalyst.prototype.getCS = function() {
 		gamut: this.gamutIn
 	});
 }
-LUTAnalyst.prototype.gotInputVals = function(values,dim) {
-	var vals = new Float64Array(values);
+LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 	if (this.pass === 0) { // Transfer function pass
-		var max = vals.length;
-		var C = new Float64Array(max);
+		var C = new Float64Array(buff);
+		var max = C.length;
+		this.inLUT.lLsCub(buff);
 		for (var j=0; j<max; j++) {
-			var L = vals[j];
-			C[j] = this.inLUT.lumaLCub(L);
 			if (this.legOut) {
 				C[j] = ((C[j]*876)+64)/1023;
 			}
@@ -119,7 +117,7 @@ LUTAnalyst.prototype.gotInputVals = function(values,dim) {
 			s: max,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [C.buffer,C.buffer,C.buffer]
+			C: [buff]
 		});
 		this.pass = 1;
 		this.getCS();
@@ -129,20 +127,19 @@ LUTAnalyst.prototype.gotInputVals = function(values,dim) {
 		var R = new Float64Array(max);
 		var G = new Float64Array(max);
 		var B = new Float64Array(max);
+		var rgb = new Float64Array(buff);
+		this.inLUT.rRsCub(buff);
 		for (var j=0; j<max; j++) {
-			var rgb = this.inLUT.rgbRGBCub([
-									vals[j*3],
-									vals[(j*3)+1],
-									vals[(j*3)+2]
-								]);
+			k = j*3;
 			if (this.legOut) {
-				rgb[0] = ((rgb[0]*876)+64)/1023;
-				rgb[1] = ((rgb[1]*876)+64)/1023;
-				rgb[2] = ((rgb[2]*876)+64)/1023;
+				R[j] = this.revTF((j%dim) / (dim-1)				, ((rgb[ k ]*876)+64)/1023);
+				G[j] = this.revTF(((j/dim)%dim) / (max-1)		, ((rgb[k+1]*876)+64)/1023);
+				B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, ((rgb[k+2]*876)+64)/1023);
+			} else {
+				R[j] = this.revTF((j%dim) / (dim-1)				, rgb[ k ]);
+				G[j] = this.revTF(((j/dim)%dim) / (max-1)		, rgb[k+1]);
+				B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, rgb[k+2]);
 			}
-			R[j] = this.revTF((j%dim) / (dim-1)				, rgb[0]);
-			G[j] = this.revTF(((j/dim)%dim) / (max-1)		, rgb[1]);
-			B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, rgb[2]);
 		}
 		var minMax = this.brent.getMinMax();
 		var a = minMax.a;

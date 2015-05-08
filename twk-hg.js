@@ -179,9 +179,11 @@ TWKHG.prototype.events = function() {
 	};}(this);
 	this.linOpt.onchange = function(here){ return function(){
 		here.toggleLinLog();
+		here.messages.gtSetParams();
 	};}(this);
 	this.logOpt.onchange = function(here){ return function(){
 		here.toggleLinLog();
+		here.messages.gtSetParams();
 	};}(this);
 	this.linLow.onchange = function(here){ return function(){
 		here.testLinLow();
@@ -269,7 +271,7 @@ TWKHG.prototype.testLogLow = function() {
 		if (parseFloat(this.logLow.value) >= parseFloat(this.logHigh.value)) {
 			this.logLow.value = (parseFloat(this.logHigh.value) - 0.1).toFixed(4).toString();
 		}
-		this.linLow.value = (Math.round(Math.pow(2,parseFloat(this.logLow.value)*18))).toString();
+		this.linLow.value = (Math.round(Math.pow(2,parseFloat(this.logLow.value))*18)).toString();
 	} else {
 		this.linLow.value = '18';
 		this.logLow.value = '0';
@@ -281,7 +283,7 @@ TWKHG.prototype.testLogHigh = function() {
 		if (parseFloat(this.logHigh.value) <= parseFloat(this.logLow.value)) {
 			this.logHigh.value = (parseFloat(this.logLow.value) + 0.1).toFixed(4).toString();
 		}
-		this.linHigh.value = (Math.round(Math.pow(2,parseFloat(this.logHigh.value)*18))).toString();
+		this.linHigh.value = (Math.round(Math.pow(2,parseFloat(this.logHigh.value))*18)).toString();
 	} else {
 		this.linHigh.value = '90';
 		this.logHigh.value = (Math.log(5)/Math.LN2).toFixed(4).toString();
