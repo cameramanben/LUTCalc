@@ -47,42 +47,71 @@ Ring.prototype.setL = function(bufL) {
 Ring.prototype.getL = function() {
 	return this.L.buffer;
 }
-
 Ring.prototype.f = function(L) {
-	return this.lumaLCub(L);
-}
-Ring.prototype.lumaLCub = function(L) {
 	var top = (this.s - 1);
 	L = L%1;
 	if (L<0) {
 		L += 1;
 	}
 	L = L * top;
-	var base = Math.floor(L);
+	var f = Math.floor(L);
 	var p0,p1;
 	var d0,d1;
-	p0 = this.L[base];
-	if (base === top) {
+	p0 = this.L[f];
+	if (f === top) {
 		p1 = this.L[0] + this.step;
-		d0 = (this.L[0] + this.step - this.L[base-1])/2;
-	} else if (base === 0) {
-		p1 = this.L[base+1];
-		d0 = (this.L[base+1] - this.L[top] + this.step)/2;
+		d0 = (this.L[0] + this.step - this.L[f-1])/2;
+	} else if (f === 0) {
+		p1 = this.L[f+1];
+		d0 = (this.L[f+1] - this.L[top] + this.step)/2;
 	} else {
-		p1 = this.L[base+1];
-		d0 = (this.L[base+1] - this.L[base - 1])/2;
+		p1 = this.L[f+1];
+		d0 = (this.L[f+1] - this.L[f - 1])/2;
 	}
-	if (base > top-2) {
-		d1 = (this.L[(base + 2)%top] + this.step - this.L[base])/2;
+	if (f > top-2) {
+		d1 = (this.L[(f + 2)%top] + this.step - this.L[f])/2;
 	} else {
-		d1 = (this.L[base + 2] - this.L[base])/2;
+		d1 = (this.L[f + 2] - this.L[f])/2;
 	}
 	var a = (2 * p0) + d0 - (2 * p1) + d1;
 	var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
 	var c = d0;
 	var d = p0;
-	var l = L - base;
-	return (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
+	L -= f;
+	return (((((a * L) + b) * L) + c) * L) + d;
+}
+Ring.prototype.lLCub = function(L) {
+	var top = (this.s - 1);
+	L = L%1;
+	if (L<0) {
+		L += 1;
+	}
+	L = L * top;
+	var f = Math.floor(L);
+	var p0,p1;
+	var d0,d1;
+	p0 = this.L[f];
+	if (f === top) {
+		p1 = this.L[0] + this.step;
+		d0 = (this.L[0] + this.step - this.L[f-1])/2;
+	} else if (f === 0) {
+		p1 = this.L[f+1];
+		d0 = (this.L[f+1] - this.L[top] + this.step)/2;
+	} else {
+		p1 = this.L[f+1];
+		d0 = (this.L[f+1] - this.L[f - 1])/2;
+	}
+	if (f > top-2) {
+		d1 = (this.L[(f + 2)%top] + this.step - this.L[f])/2;
+	} else {
+		d1 = (this.L[f + 2] - this.L[f])/2;
+	}
+	var a = (2 * p0) + d0 - (2 * p1) + d1;
+	var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+	var c = d0;
+	var d = p0;
+	L -= f;
+	return (((((a * L) + b) * L) + c) * L) + d;
 }
 Ring.prototype.lumaLLin = function(L) {
 	var top = this.s - 1;
@@ -91,11 +120,11 @@ Ring.prototype.lumaLLin = function(L) {
 		L += 1;
 	}
 	L = L * top;
-	var base = Math.floor(L);
-	var dy = L - base;
-	if (base === top) {
-		return (this.L[base] * (1 - dy)) + ((this.L[0]+this.step) * dy);
+	var f = Math.floor(L);
+	var dy = L - f;
+	if (f === top) {
+		return (this.L[f] * (1 - dy)) + ((this.L[0]+this.step) * dy);
 	} else {
-		return (this.L[base] * (1 - dy)) + (this.L[base + 1] * dy);
+		return (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
 	}
 }

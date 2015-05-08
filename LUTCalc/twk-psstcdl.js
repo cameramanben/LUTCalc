@@ -420,7 +420,7 @@ TWKPSSTCDL.prototype.events = function() {
 		here.changeChannel();
 	};}(this);
 	for (var j=0; j<7; j++) {
-		this.cSlider[j].onchange = function(i){ return function(){
+		this.cSlider[j].oninput = function(i){ return function(){
 			i[0].testC(i[1],true);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -436,7 +436,7 @@ TWKPSSTCDL.prototype.events = function() {
 			i[0].resetAllC();
 			i[0].messages.gtSetParams();
 		};}([this]);
-		this.satSlider[j].onchange = function(i){ return function(){
+		this.satSlider[j].oninput = function(i){ return function(){
 			i[0].testSat(i[1],true);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -452,7 +452,7 @@ TWKPSSTCDL.prototype.events = function() {
 			i[0].resetAllSat();
 			i[0].messages.gtSetParams();
 		};}([this]);
-		this.sSlider[j].onchange = function(i){ return function(){
+		this.sSlider[j].oninput = function(i){ return function(){
 			i[0].testS(i[1],true);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -468,7 +468,7 @@ TWKPSSTCDL.prototype.events = function() {
 			i[0].resetAllS();
 			i[0].messages.gtSetParams();
 		};}([this]);
-		this.oSlider[j].onchange = function(i){ return function(){
+		this.oSlider[j].oninput = function(i){ return function(){
 			i[0].testO(i[1],true);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -484,7 +484,7 @@ TWKPSSTCDL.prototype.events = function() {
 			i[0].resetAllO();
 			i[0].messages.gtSetParams();
 		};}([this]);
-		this.pSlider[j].onchange = function(i){ return function(){
+		this.pSlider[j].oninput = function(i){ return function(){
 			i[0].testP(i[1],true);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -511,7 +511,7 @@ TWKPSSTCDL.prototype.events = function() {
 		here.updateRef();
 	};}(this);
 	for (var j=0; j<28; j++) {
-		this.rSlider[j].onchange = function(i){ return function(){
+		this.rSlider[j].oninput = function(i){ return function(){
 			i[0].testR(i[1]);
 			i[0].messages.gtSetParams();
 		};}([this,j]);
@@ -693,7 +693,7 @@ TWKPSSTCDL.prototype.updateR = function(control) {
 	var ring = this.baseRings[control];
 	for (var j=0; j<29; j++) {
 		if (j%4 === 0 || !locks[j]) {
-			vals[j] = ring.lumaLCub(j/28);
+			vals[j] = ring.lLCub(j/28);
 			if ((control === 1 || control === 4) && vals[j] < 0) {
 				vals[j] = 0;
 			}

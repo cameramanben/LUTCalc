@@ -154,7 +154,7 @@ TWKCT.prototype.events = function() {
 		here.toggleTweak();
 		here.messages.gtSetParams();
 	};}(this);
-	this.ctSlider.onchange = function(here){ return function(){
+	this.ctSlider.oninput = function(here){ return function(){
 		here.testSlider();
 		here.messages.gtSetParams();
 	};}(this);

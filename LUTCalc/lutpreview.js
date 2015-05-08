@@ -17,6 +17,7 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.file = file;
 	this.p = 8;
 	this.message.addUI(this.p,this);
+	this.upd = 0;
 	this.main = document.getElementById('main');
 	this.right = document.getElementById('right');
 	this.preButton = document.createElement('input');
@@ -434,124 +435,127 @@ LUTPreview.prototype.isChanged = function(eiMult) {
 	}
 }
 LUTPreview.prototype.gotLine = function(data) {
-	var raster8 = new Uint8Array(data.o);
-	this.pData.data.set(raster8,data.line*this.width*4);
-	var raster = new Float64Array(data.f);
-	var l = raster.length;
-	if (this.vscope) {
-		var Kb = 0.0722;
-		var Kr = 0.2126;
-		var Y,Pb, Pr;
-		var s = this.vscale;
-		var k=0;
-		for (var j=0; j<l; j += 3) {
-			r = Math.max(0,(raster[ j ]));
-			g = Math.max(0,(raster[j+1]));
-			b = Math.max(0,(raster[j+2]));
-			Y = (Kr*r) + ((1-Kr-Kb)*g) + (Kb*b);
-			Pb = 0.5*(b-Y)/(1-Kb);
-			Pr = 0.5*(r-Y)/(1-Kr);
-        	p = (
-        			((480 + Math.round(s * Pb))) +
-        			((270 - Math.round(s * Pr))*960)
-        		) * 4;
-
-			this.vData.data[ p ] = Math.max(64,raster8[ k ]);
-			this.vData.data[p+1] = Math.max(64,raster8[k+1]);
-			this.vData.data[p+2] = Math.max(64,raster8[k+2]);
-			this.vData.data[p+3] = 255;
-
-			this.vData.data[p+4] = Math.max(64,raster8[ k ]);
-			this.vData.data[p+5] = Math.max(64,raster8[k+1]);
-			this.vData.data[p+6] = Math.max(64,raster8[k+2]);
-			this.vData.data[p+7] = 255;
-
-			this.vData.data[p+3840] = Math.max(64,raster8[ k ]);
-			this.vData.data[p+3841] = Math.max(64,raster8[k+1]);
-			this.vData.data[p+3842] = Math.max(64,raster8[k+2]);
-			this.vData.data[p+3843] = 255;
-
-			this.vData.data[p+3844] = Math.max(64,raster8[ k ]);
-			this.vData.data[p+3845] = Math.max(64,raster8[k+1]);
-			this.vData.data[p+3846] = Math.max(64,raster8[k+2]);
-			this.vData.data[p+3847] = 255;
-
-			k += 4;
-		}
-	}
-	if (this.wform) {
-		var x,y,p;
-		var k = 0;
-		for (var j=0; j<l; j += 3) {
-			x = (j%2880)/3;
-			y = 555-Math.round(((((0.2126*raster[ j ])+(0.7152*raster[j+1])+(0.0722*raster[j+2]))*876)+64)*550/1023);
-			p = (3840*y) + (4*x);
-
-			this.wData.data[ p ] = Math.max(80,raster8[ k ]);
-			this.wData.data[p+1] = Math.max(80,raster8[k+1]);
-			this.wData.data[p+2] = Math.max(80,raster8[k+2]);
-			this.wData.data[p+3] = 255;
-			
-			k += 4;
-		}
-	}
-	if (this.parade) {
-		var x,r,g,b;
-		var k = 0;
-		for (var j=0; j<l; j += 3) {
-			x = 4*Math.round((j%2880)/9);
-			r = (3840*(555 - Math.round(((raster[ j ]*876)+64)*550/1023))) + x;
-			g = (3840*(555 - Math.round(((raster[j+1]*876)+64)*550/1023))) + x + 1280;
-			b = (3840*(555 - Math.round(((raster[j+2]*876)+64)*550/1023))) + x + 2560;
-
-			this.rgbData.data[ r ] = 200;
-			this.rgbData.data[r+1] = 0;
-			this.rgbData.data[r+2] = 0;
-			this.rgbData.data[r+3] = 255;
-
-			this.rgbData.data[ g ] = 0;
-			this.rgbData.data[g+1] = 200;
-			this.rgbData.data[g+2] = 0;
-			this.rgbData.data[g+3] = 255;
-			
-			this.rgbData.data[ b ] = 0;
-			this.rgbData.data[b+1] = 0;
-			this.rgbData.data[b+2] = 200;
-			this.rgbData.data[b+3] = 255;
-
-			k += 4;
-		}
-	}
-	if (this.line === this.height-1) {
-		this.pCtx.putImageData(this.pData,0,0);
-		if (this.wform) {
-			this.wCtx.putImageData(this.wData,0,0);
-			this.drawWaveform();
-		}
+	if (data.upd === this.upd) {
+		var raster8 = new Uint8Array(data.o);
+		this.pData.data.set(raster8,data.line*this.width*4);
+		var raster = new Float64Array(data.f);
+		var l = raster.length;
 		if (this.vscope) {
-			this.vCtx.putImageData(this.vData,0,0);
-			this.drawVectorScope();
+			var Kb = 0.0722;
+			var Kr = 0.2126;
+			var Y,Pb, Pr;
+			var s = this.vscale;
+			var k=0;
+			for (var j=0; j<l; j += 3) {
+				r = Math.max(0,(raster[ j ]));
+				g = Math.max(0,(raster[j+1]));
+				b = Math.max(0,(raster[j+2]));
+				Y = (Kr*r) + ((1-Kr-Kb)*g) + (Kb*b);
+				Pb = 0.5*(b-Y)/(1-Kb);
+				Pr = 0.5*(r-Y)/(1-Kr);
+	        	p = (
+	        			((480 + Math.round(s * Pb))) +
+	        			((270 - Math.round(s * Pr))*960)
+	        		) * 4;
+	
+				this.vData.data[ p ] = Math.max(64,raster8[ k ]);
+				this.vData.data[p+1] = Math.max(64,raster8[k+1]);
+				this.vData.data[p+2] = Math.max(64,raster8[k+2]);
+				this.vData.data[p+3] = 255;
+	
+				this.vData.data[p+4] = Math.max(64,raster8[ k ]);
+				this.vData.data[p+5] = Math.max(64,raster8[k+1]);
+				this.vData.data[p+6] = Math.max(64,raster8[k+2]);
+				this.vData.data[p+7] = 255;
+	
+				this.vData.data[p+3840] = Math.max(64,raster8[ k ]);
+				this.vData.data[p+3841] = Math.max(64,raster8[k+1]);
+				this.vData.data[p+3842] = Math.max(64,raster8[k+2]);
+				this.vData.data[p+3843] = 255;
+	
+				this.vData.data[p+3844] = Math.max(64,raster8[ k ]);
+				this.vData.data[p+3845] = Math.max(64,raster8[k+1]);
+				this.vData.data[p+3846] = Math.max(64,raster8[k+2]);
+				this.vData.data[p+3847] = 255;
+	
+				k += 4;
+			}
+		}
+		if (this.wform) {
+			var x,y,p;
+			var k = 0;
+			for (var j=0; j<l; j += 3) {
+				x = (j%2880)/3;
+				y = 555-Math.round(((((0.2126*raster[ j ])+(0.7152*raster[j+1])+(0.0722*raster[j+2]))*876)+64)*550/1023);
+				p = (3840*y) + (4*x);
+	
+				this.wData.data[ p ] = Math.max(80,raster8[ k ]);
+				this.wData.data[p+1] = Math.max(80,raster8[k+1]);
+				this.wData.data[p+2] = Math.max(80,raster8[k+2]);
+				this.wData.data[p+3] = 255;
+				
+				k += 4;
+			}
 		}
 		if (this.parade) {
-			this.rgbCtx.putImageData(this.rgbData,0,0);
-			this.drawParade();
+			var x,r,g,b;
+			var k = 0;
+			for (var j=0; j<l; j += 3) {
+				x = 4*Math.round((j%2880)/9);
+				r = (3840*(555 - Math.round(((raster[ j ]*876)+64)*550/1023))) + x;
+				g = (3840*(555 - Math.round(((raster[j+1]*876)+64)*550/1023))) + x + 1280;
+				b = (3840*(555 - Math.round(((raster[j+2]*876)+64)*550/1023))) + x + 2560;
+	
+				this.rgbData.data[ r ] = 200;
+				this.rgbData.data[r+1] = 0;
+				this.rgbData.data[r+2] = 0;
+				this.rgbData.data[r+3] = 255;
+	
+				this.rgbData.data[ g ] = 0;
+				this.rgbData.data[g+1] = 200;
+				this.rgbData.data[g+2] = 0;
+				this.rgbData.data[g+3] = 255;
+				
+				this.rgbData.data[ b ] = 0;
+				this.rgbData.data[b+1] = 0;
+				this.rgbData.data[b+2] = 200;
+				this.rgbData.data[b+3] = 255;
+	
+				k += 4;
+			}
 		}
-		this.line = 0;
-		if (this.show && this.changed) {
-			this.refresh();
-		}
-	} else if (this.show) {
-		this.line++;
-		var input = {line: this.line, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']}
-		if (this.inputs.d[0].checked) {
-			this.message.gaTx(this.p,12,input);
-		} else {
-			this.message.gtTx(this.p,12,input);
+		if (this.line === this.height-1) {
+			this.pCtx.putImageData(this.pData,0,0);
+			if (this.wform) {
+				this.wCtx.putImageData(this.wData,0,0);
+				this.drawWaveform();
+			}
+			if (this.vscope) {
+				this.vCtx.putImageData(this.vData,0,0);
+				this.drawVectorScope();
+			}
+			if (this.parade) {
+				this.rgbCtx.putImageData(this.rgbData,0,0);
+				this.drawParade();
+			}
+			this.line = 0;
+			if (this.show && this.changed) {
+				this.refresh();
+			}
+		} else if (this.show) {
+			this.line++;
+			var input = {line: this.line, upd: data.upd, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']}
+			if (this.inputs.d[0].checked) {
+				this.message.gaTx(this.p,12,input);
+			} else {
+				this.message.gtTx(this.p,12,input);
+			}
 		}
 	}
 }
 LUTPreview.prototype.refresh = function() {
 	if (typeof this.pre !== 'undefined') {
+// console.log('refresh');
 		this.changed = false;
 		if (this.wform) {
 			this.clearWaveform();
@@ -563,9 +567,10 @@ LUTPreview.prototype.refresh = function() {
 			this.clearParade();
 		}
 		var max = Math.max(this.message.getGammaThreads(),this.message.getGamutThreads());
+		this.upd++;
 		for (var j=0; j<max; j++) {
 			this.line = j;
-			var input = {line: this.line, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']};
+			var input = {line: this.line, upd:this.upd, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), eiMult: this.eiMult, to: ['o']};
 			if (this.inputs.d[0].checked) {
 				this.message.gaTx(this.p,12,input);
 			} else {

@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "1.9.9.3",
+	"version": "1.9.9.4",
 	"manifest_version": 2,
 	"app": {
 		"background": {
