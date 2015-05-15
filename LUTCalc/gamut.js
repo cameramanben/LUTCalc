@@ -43,7 +43,7 @@ function LUTGamut() {
 	]);
 	this.initPSSTCDL();
 	this.fcVals = new Float64Array([
-		0.000195313,// Purple - Black Clip (18%-10 stops)
+		0.00078125,// Purple - Black Clip (18%-8 stops)
 		0.002915728,// Blue - Just Above Black Clip (18%-6.1 stops)
 		0.174110113,// Green - 18%-0.2 Stop
 		0.229739671,// Green - 18%+0.2 stop
@@ -177,6 +177,7 @@ LUTGamut.prototype.setParams = function(params) {
 		out.details = 'Missing version no.';
 		return out;
 	}
+	out.to = [];
 	if (typeof params.inGamut === 'number') {
 		this.curIn = params.inGamut;
 		out.inGamut = this.curIn;
@@ -309,9 +310,6 @@ LUTGamut.prototype.setPSSTCDL = function(params) {
 		}
 	}
 	out.doPSSTCDL = this.doPSSTCDL;
-	var colours = this.psstColours();
-	out.before = colours[0];
-	out.after = colours[1];
 	return out;
 }
 LUTGamut.prototype.initPSSTCDL = function() {
@@ -325,7 +323,9 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,
 			0,0,0,0,0
-		]).buffer
+		]).buffer,
+		p: false,
+		mod: 1
 	});
 	this.psstSat = new Ring();
   	this.psstSat.setDetails({
@@ -335,7 +335,8 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1
-		]).buffer
+		]).buffer,
+		p: false
 	});
 	this.psstS = new Ring();
   	this.psstS.setDetails({
@@ -345,7 +346,8 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1
-		]).buffer
+		]).buffer,
+		p: false
 	});
 	this.psstO = new Ring();
   	this.psstO.setDetails({
@@ -355,7 +357,8 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,
 			0,0,0,0,0
-		]).buffer
+		]).buffer,
+		p: false
 	});
 	this.psstP = new Ring();
   	this.psstP.setDetails({
@@ -365,28 +368,29 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1,1,1,1,
 			1,1,1,1,1
-		]).buffer
+		]).buffer,
+		p: false
 	});
 	this.psstF = new Ring();
   	this.psstF.setDetails({
 		title: 'Forward',
 		L: new Float64Array([
-			-0.0028437108057906, 0.0217509908959666, 0.0426184360709402, 0.0603428523944989, 0.0764816122134266, 0.0917463168369441, 0.1065668410326033, 0.1212649999280322,
-			0.1361363490437190, 0.1511109410328256, 0.1648547055969203, 0.1777454924921576, 0.1901620979455846, 0.2023701797333424, 0.2145937192915353, 0.2270596489283724,
-			0.2400441513238478, 0.2539517499055087, 0.2695133437033267, 0.2885617923664405, 0.3219041368998800, 0.3994432333100958, 0.4288190486329172, 0.4470884929301811,
-			0.4622857285205499, 0.4759707517871447, 0.4888079771255906, 0.5011773495968661, 0.5133459383909105, 0.5255401578610300, 0.5379913701564463, 0.5509844953157412,
-			0.5649433872473982, 0.5804536167387638, 0.5973512199438162, 0.6154550932732965, 0.6344220433169508, 0.6536820385912178, 0.6725743169054769, 0.6905508135209670,
-			0.7072970183401782, 0.7228742620103190, 0.7380301733880786, 0.7528476110622890, 0.7673149309230866, 0.7814256216339061, 0.7951775474029965, 0.8085721944100663,
-			0.8216139620033774, 0.8343095235141760, 0.8466672682495552, 0.8586914910329637, 0.8700805550365486, 0.8808476809327246, 0.8911878536452609, 0.9012389471079286,
-			0.9111074147573467, 0.9208825036358199, 0.9306453898874293, 0.9404762293861584, 0.9504609598089224, 0.9606995585648375, 0.9713182420267510, 0.9824905698927122,
-			0.9944795927849286
-		]).buffer
+			-0.0055680613049733, 0.0147567006859568, 0.0360169771021452, 0.0535793151307733, 0.0693203212902730, 0.0840226039284331, 0.0981237435904306, 0.1119212032110224, 0.1256547973468163,
+			0.1395532125960851, 0.1532401783604684, 0.1657675172633559, 0.1775709068913177, 0.1889505001250262, 0.2001195960344167, 0.2112553615444404, 0.2225296284119030, 0.2341370761420996,
+			0.2463352166687472, 0.2595247516121330, 0.2744679542490435, 0.2933226298747170, 0.3287624039244701, 0.4006899403301722, 0.4276051836096898, 0.4447257669774564, 0.4589794729871186,
+			0.4717842618396581, 0.4837468755866364, 0.4952093965712169, 0.5064034638133755, 0.5175127750345129, 0.5287073445057027, 0.5401709526670702, 0.5521354485080856, 0.5649433872473982,
+			0.5790664946157549, 0.5943630562521310, 0.6106992294013223, 0.6278535155401859, 0.6454346342920819, 0.6629428672584311, 0.6798980496803277, 0.6959546592769115, 0.7109387359446133,
+			0.7250595197384678, 0.7388861383721239, 0.7524290718192624, 0.7656794919842305, 0.7786321731846290, 0.7912850081995813, 0.8036385234867822, 0.8156954169692322, 0.8274601335361318,
+			0.8389384865889260, 0.8501373282818123, 0.8610305673915334, 0.8713278932938635, 0.8811222152662231, 0.8905607266992966, 0.8997506931596154, 0.9087763237074914, 0.9177085173613044,
+			0.9266112386118773, 0.9355463557017536, 0.9445780422438698, 0.9537776636588980, 0.9632302573886129, 0.9730445071993322, 0.9833701078985294, 0.9944319386952867
+		]).buffer,
+		p: true
 	});
 	this.psstB = new Ring();
   	this.psstB.setDetails({
 		title: 'Back',
 		L: new Float64Array([
-			0.021551968,
+			0.042311434,
 			0.828850698,
 			1.852489293,
 			2.158688535,
@@ -394,35 +398,39 @@ LUTGamut.prototype.initPSSTCDL = function() {
 			3.970443351,
 			4.994081951,
 			6.325496742
-		]).buffer
+		]).buffer,
+		p: true
 	});
 	this.psstY = new Ring();
   	this.psstY.setDetails({
 		title: 'Luma',
 		L: new Float64Array([
-			0.072199998,
-			0.284799997,
-			0.212599999,
-			0.377081946,
+			0.0722,
+			0.2848,
+			0.2126,
+			0.6,
+//			0.3082,
 			0.9278,
-			0.715200001,
-			0.787399999,
-			0.072199998
-		]).buffer
+			0.7152,
+			0.7874,
+			0.0722
+		]).buffer,
+		p: false
 	});
 	this.psstM = new Ring();
   	this.psstM.setDetails({
 		title: 'CbCr Magnitude',
 		L: new Float64Array([
-			0.419009123,
-			0.394086142,
-			0.287167418,
-			0.300796819,
-			0.346430744,
-			0.394086141,
-			0.287167418,
-			0.346430745
-		]).buffer
+			0.346430745,0.342962699,0.33969838,0.337347957,0.336560982,0.337917133,0.341937773,0.349106433,0.359887984,
+			0.374737194,0.394086142,0.361208741,0.334229968,0.31322564,0.297800651,0.287381612,0.281345482,0.279049081,
+			0.279803042,0.282820273,0.287167419,0.2780547,0.272555398,0.269216643,0.267119872,0.265609644,0.264162578,
+			0.262344581,0.259835788,0.256508476,0.252538822,0.248681245,0.245993008,0.245298419,0.247291756,0.252580435,
+			0.261730792,0.275291255,0.293766309,0.317502734,0.346430744,0.340484523,0.337392505,0.336559654,0.337660332,
+			0.340582153,0.345407661,0.352427205,0.362187055,0.375589699,0.394086141,0.362588341,0.337932638,0.318643857,
+			0.303748703,0.292615326,0.284863469,0.280318319,0.278996163,0.281119417,0.287167418,0.269072329,0.25607167,
+			0.248148933,0.24525667,0.247440263,0.254900418,0.268012927,0.287301219,0.313327834,0.346430745
+		]).buffer,
+		p: false
 	});
 }
 LUTGamut.prototype.setHG = function(params) {
@@ -488,7 +496,7 @@ LUTGamut.prototype.setFC = function(params) {
 			if (typeof p.fcs !== 'undefined') {
 				var fcs = p.fcs;
 				if (fcs[0]) { 
-					this.fcVals[0] = Math.pow(2,-10)*0.2; // default 10 stops below 18% gray
+					this.fcVals[0] = Math.pow(2,-8)*0.2; // default 8 stops below 18% gray
 					this.doFCPurple = true;
 					noFCs = false;
 				}
@@ -633,14 +641,17 @@ LUTGamut.prototype.calc = function(p,t,i,g) {
 					h += 1;
 				}
 				f = this.psstF.lLCub(h);
-				y1 = this.psstY.lumaLLin(f);
-				m1 = this.psstM.lumaLLin(f);
+				y1 = this.psstY.lLLin(f);
+				m1 = this.psstM.lLLin(f);
 				col = this.psstC.lLCub(f);
 				sat = this.psstSat.lLCub(f);
 				if (sat < 0) {
 					sat = 0;
 				}
 				S = this.psstS.lLCub(f);
+				if (S < 0) {
+					S = 0;
+				}
 				O = this.psstO.lLCub(f);
 				P = this.psstP.lLCub(f);
 				if (P < 0) {
@@ -648,12 +659,12 @@ LUTGamut.prototype.calc = function(p,t,i,g) {
 				}
 				f = (f+col)%1;
 				if (this.psstYC) {
-					y2 = this.psstY.lumaLLin(f);
+					y2 = this.psstY.lLLin(f);
 				} else {
 					y2 = y1;
 				}
 				if (this.psstMC) {
-					m2 = this.psstM.lumaLLin(f);
+					m2 = this.psstM.lLLin(f);
 				} else {
 					m2 = m1;
 				}
@@ -742,26 +753,34 @@ LUTGamut.prototype.previewLin = function(p,t,i) {
 	out.to = ['i','o'];
 	return out;
 }
-LUTGamut.prototype.psstColours = function() {
+LUTGamut.prototype.psstColours = function(p,t) {
+	var out = { p: p, t: t+20, v: this.ver };
 	var bef64 = new Float64Array(84);
 	var aft64 = new Float64Array(84);
-	var before = new Uint8Array(84);
-	var after = new Uint8Array(84);
 	var f,a,m1,m2,M,Y,c,sat,Pb,Pr;
 	var i=0;
 	for (var j=0; j<84; j += 3) {
 		f = i;
 		i += 1/28;
 		a = this.psstB.lLCub(f);
-		m1 = this.psstM.lumaLLin(f);
+		m1 = this.psstM.lLLin(f);
 		c = this.psstC.lLCub(f);
 		sat = this.psstSat.lLCub(f);
 		if (sat < 0) {
 			sat = 0;
 		}
+		S = this.psstS.lLCub(f);
+		if (S < 0) {
+			S = 0;
+		}
+		O = this.psstO.lLCub(f);
+		P = this.psstP.lLCub(f);
+		if (P < 0) {
+			P = 0;
+		}
 		M = 0.5 * m1;
-		y1 = this.psstY.lumaLLin(f);
-		Y = y1;
+		y1 = this.psstY.lLLin(f);
+		Y = 0.7*y1;
 		Pb = M * Math.cos(a);
 		Pr = M * Math.sin(a);
 		bef64[ j ] = (Pr * 1.569987151) + Y;
@@ -769,19 +788,21 @@ LUTGamut.prototype.psstColours = function() {
 		bef64[j+2] = (Pb * 2.200277811) + Y;
 		f = (f+c%1);
 		if (this.psstYC) {
-			y2 = this.psstY.lumaLLin(f);
+			y2 = this.psstY.lLLin(f);
 		} else {
 			y2 = y1;
 		}
 		if (this.psstMC) {
-			m2 = this.psstM.lumaLLin(f);
+			m2 = this.psstM.lLLin(f);
 		} else {
 			m2 = m1;
 		}
-		m2 = this.psstM.lumaLLin(f);
-		a = this.psstB.lLCub(f);
 		M = M * m2 * sat / m1;
-		Y = Y * y2 / y1 ;
+		a = this.psstB.lLCub(f);
+		Y = (Y*S/y1)+O;
+		Y = Math.pow((Y<0)?0:Y,P);
+		Y = (isNaN(Y)?0:Y);
+		Y *= y2;
 		Pb = M * Math.cos(a);
 		Pr = M * Math.sin(a);
 		aft64[ j ] = (Pr * 1.569987151) + Y;
@@ -790,11 +811,10 @@ LUTGamut.prototype.psstColours = function() {
 	}
 	this.outGamuts[this.curOut].lc(bef64.buffer);
 	this.outGamuts[this.curOut].lc(aft64.buffer);
-	for (var j=0; j<84; j++) {
-		before[j] = Math.min(255,Math.max(0,bef64[j]*255));
-		after[j] = Math.min(255,Math.max(0,aft64[j]*255));
-	}
-	return [before.buffer,after.buffer];
+	out.b = bef64.buffer
+	out.a = aft64.buffer
+	out.to = ['b','a'];
+	return out;
 }
 LUTGamut.prototype.laCalc = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
@@ -1502,6 +1522,8 @@ this.addEventListener('message', function(e) {
 			case 14:sendMessage(gamuts.previewLin(d.p,d.t,d.d));
 					break;
 			case 15:sendMessage(gamuts.getPrimaries(d.p,d.t));
+					break;
+			case 16:sendMessage(gamuts.psstColours(d.p,d.t));
 					break;
 		}
 	}

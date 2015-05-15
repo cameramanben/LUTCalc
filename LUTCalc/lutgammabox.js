@@ -184,7 +184,7 @@ LUTGammaBox.prototype.getInfo = function(info) {
 	if (this.inGammaSelect.options[this.inGammaSelect.selectedIndex].value !== '9999') {
 		info.inGammaName = this.inGammaSelect.options[this.inGammaSelect.selectedIndex].lastChild.nodeValue;
 	} else {
-		info.inGammaName = this.inLinSelect.options[this.inputs.inLinSelect.selectedIndex].lastChild.nodeValue;
+		info.inGammaName = this.inLinSelect.options[this.inLinSelect.selectedIndex].lastChild.nodeValue;
 	}
 	if (this.outGammaSelect.options[this.outGammaSelect.selectedIndex].value !== '9999') {
 		info.outGammaName = this.outGammaSelect.options[this.outGammaSelect.selectedIndex].lastChild.nodeValue;

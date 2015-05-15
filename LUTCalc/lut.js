@@ -187,7 +187,7 @@ LUTs.prototype.lLCub = function(L) {
 	}
 }
 /*
-LUTs.prototype.lumaLLin = function(L) {
+LUTs.prototype.lLLin = function(L) {
 	var max = this.s - 1;
 	L = L * max;
 	if (L < 0) {

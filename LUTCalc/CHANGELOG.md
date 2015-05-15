@@ -1,5 +1,18 @@
 LUTCalc Changelog
 =================
+v1.9 RC5
+--------
+* Added sensor black and white clip and 18% gray (when exposure compensation is applied) to Stop/IRE chart.
+* Various bug fixes to PSST-CDL controls.
+* Refined PSST-CDL parameters.
+* Added PSST-CDL instructions.
+* Fixed bug where Linear / Rec709 input gamma options were not generating LUTs.
+
+v1.9 RC4
+--------
+* Preview speedups.
+* Bug Fixes.
+
 v1.9 RC3
 --------
 * Tidied and made consistent the code for customisation tweaks. Each tweak is now an individual object file, following a consistent basic structure both at the UI stage and in the calculation code.

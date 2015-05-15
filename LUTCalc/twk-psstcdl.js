@@ -367,15 +367,16 @@ TWKPSSTCDL.prototype.getCSParams = function(params) {
 		var c = new Float64Array(29);
 		for (var j=0; j<29; j++) {
 			c[j] = this.vals[0][j]%1;
-			if (c[j] < 0) {
-				c[j] += 1;
-			}
+//			if (c[j] < 0) {
+//				c[j] += 1;
+//			}
 		}
 		out.c = c.buffer;
-		out.sat = this.vals[1].buffer;
-		out.s = this.vals[2].buffer;
-		out.o = this.vals[3].buffer;
-		out.p = this.vals[4].buffer;
+// console.log(c);
+		out.sat = this.vals[1].buffer.slice(0);
+		out.s = this.vals[2].buffer.slice(0);
+		out.o = this.vals[3].buffer.slice(0);
+		out.p = this.vals[4].buffer.slice(0);
 		out.chromaScale = this.chromaScaleCheck.checked;
 		out.lumaScale = this.lumaScaleCheck.checked;
 	} else {
@@ -385,22 +386,24 @@ TWKPSSTCDL.prototype.getCSParams = function(params) {
 }
 TWKPSSTCDL.prototype.setParams = function(params) {
 	if (typeof params.twkPSSTCDL !== 'undefined') {
-		var p = params.twkPSSTCDL;
-		var before = new Uint8Array(p.before);
-		var after = new Uint8Array(p.after);
-		for (var j=0; j<28; j++) {
-			this.beforeBars1[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
-			this.afterBars[j].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
-			this.beforeBars2[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
-			if (j%4 === 0) {
-				var k = parseInt(j/4);
-				this.beforeBar1[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
-				this.afterBar[k].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
-				this.beforeBar2[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
-			}
-		}
 		this.toggleTweaks();
 	}
+}
+TWKPSSTCDL.prototype.psstColours = function(p) {
+	var before = new Uint8Array(p.b);
+	var after = new Uint8Array(p.a);
+	for (var j=0; j<28; j++) {
+		this.beforeBars1[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+		this.afterBars[j].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
+		this.beforeBars2[j].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+		if (j%4 === 0) {
+			var k = parseInt(j/4);
+			this.beforeBar1[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+			this.afterBar[k].style.backgroundColor = 'rgb(' + after[j*3] + ',' + after[(j*3)+1] + ',' + after[(j*3)+2]+')';
+			this.beforeBar2[k].style.backgroundColor = 'rgb(' + before[j*3] + ',' + before[(j*3)+1] + ',' + before[(j*3)+2]+')';
+		}
+	}
+	this.toggleTweaks();
 }
 TWKPSSTCDL.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
@@ -587,8 +590,12 @@ TWKPSSTCDL.prototype.initVals = function() {
 		var ring = new Ring();
   		ring.setDetails({
 			title: '',
-			L: baseRow.buffer
+			L: baseRow.buffer,
+			p: false
 		});
+		if (j === 0) {
+			ring.mod = 1;
+		}
 		this.baseRings[j] = ring;
 	}
 }
@@ -680,11 +687,24 @@ TWKPSSTCDL.prototype.testR = function(colour) {
 			vals[colour] = (c3*Math.exp((c1*parseFloat(this.rSlider[colour].value))+c2)) + c4;
 	}
 	if (colour%4 === 0) {
-		this.baseVals[control][parseInt(colour/4)] = vals[colour];
+		var baseCol = parseInt(colour/4)
+		this.baseVals[control][baseCol] = vals[colour];
+		switch (control) {
+			case 0: this.updateC(baseCol);
+				break;
+			case 1: this.updateSat(baseCol);
+				break;
+			case 2: this.updateS(baseCol);
+				break;
+			case 3: this.updateO(baseCol);
+				break;
+			case 4: this.updateP(baseCol);
+				break;
+		}
 	}
 	if (colour === 0) {
 		vals[28] = vals[0];
-		this.baseVals[control][28] = vals[0];
+		this.baseVals[control][7] = vals[0];
 	}
 }
 TWKPSSTCDL.prototype.updateR = function(control) {
@@ -705,8 +725,8 @@ TWKPSSTCDL.prototype.updateRef = function() {
 	var min,max,step;
 	switch (control) {
 		case 0: // Colour Shift
-			min = -3.5;
-			max = 3.5;
+			min = -7;
+			max = 7;
 			break;
 		case 1: // Saturation
 			min = 0;
@@ -769,6 +789,34 @@ TWKPSSTCDL.prototype.resetR = function() {
 			locks[j] = false;
 		}
 	}
+	for (var j=0; j<8; j++) {
+		if (j !== 7) {
+			switch (control) {
+				case 0:
+					this.baseVals[0][j] = 0;
+					this.updateC(j);
+					break;
+				case 1:
+					this.baseVals[1][j] = 1;
+					this.updateSat(j);
+					break;
+				case 2:
+					this.baseVals[2][j] = 1;
+					this.updateS(j);
+					break;
+				case 3:
+					this.baseVals[3][j] = 0;
+					this.updateO(j);
+					break;
+				case 4:
+					this.baseVals[4][j] = 1;
+					this.updateP(j);
+					break;
+			}
+		} else {
+			this.baseVals[control][7] = this.baseVals[control][0];
+		}
+	}
 	this.updateRef();
 }
 TWKPSSTCDL.prototype.testC = function(chan,slider) {
@@ -790,6 +838,12 @@ TWKPSSTCDL.prototype.testC = function(chan,slider) {
 		this.baseVals[0][7] = this.baseVals[0][0];
 	}
 	this.updateR(0);
+}
+TWKPSSTCDL.prototype.updateC = function(chan) {
+	var val = this.cInput[chan];
+	var sli = this.cSlider[chan];
+	val.value = (this.baseVals[0][chan]*7).toString();
+	sli.value = (this.baseVals[0][chan]*7).toString();
 }
 TWKPSSTCDL.prototype.resetC = function(chan) {
 	this.cSlider[chan].value = '0';
@@ -831,6 +885,12 @@ TWKPSSTCDL.prototype.testSat = function(chan,slider) {
 		this.baseVals[1][7] = this.baseVals[1][0];
 	}
 	this.updateR(1);
+}
+TWKPSSTCDL.prototype.updateSat = function(chan) {
+	var val = this.satInput[chan];
+	var sli = this.satSlider[chan];
+	val.value = this.baseVals[1][chan].toString();
+	sli.value = this.baseVals[1][chan].toString();
 }
 TWKPSSTCDL.prototype.resetSat = function(chan) {
 	this.satSlider[chan].value = '1';
@@ -876,10 +936,20 @@ TWKPSSTCDL.prototype.testS = function(chan,slider) {
 	}
 	this.updateR(2);
 }
+TWKPSSTCDL.prototype.updateS = function(chan) {
+	var val = this.sInput[chan];
+	var sli = this.sSlider[chan];
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	val.value = this.baseVals[2][chan].toString();
+	sli.value = ((Math.log((this.baseVals[2][chan]-c4)/c3)-c2)/c1).toString();
+}
 TWKPSSTCDL.prototype.resetS = function(chan) {
 	this.sSlider[chan].value = '1';
 	this.sInput[chan].value = '1';
-	this.baseVals[2][chan+1] = 1;
+	this.baseVals[2][chan] = 1;
 	if (chan === 0) {
 		this.baseVals[2][7] = 1;
 	}
@@ -913,6 +983,12 @@ TWKPSSTCDL.prototype.testO = function(chan,slider) {
 		this.baseVals[3][7] = this.baseVals[3][0];
 	}
 	this.updateR(3);
+}
+TWKPSSTCDL.prototype.updateO = function(chan) {
+	var val = this.oInput[chan];
+	var sli = this.oSlider[chan];
+	val.value = this.baseVals[3][chan].toString();
+	sli.value = this.baseVals[3][chan].toString();
 }
 TWKPSSTCDL.prototype.resetO = function(chan) {
 	this.oSlider[chan].value = '0';
@@ -957,6 +1033,16 @@ TWKPSSTCDL.prototype.testP = function(chan,slider) {
 		this.baseVals[4][7] = this.baseVals[4][0];
 	}
 	this.updateR(4);
+}
+TWKPSSTCDL.prototype.updateP = function(chan) {
+	var val = this.pInput[chan];
+	var sli = this.pSlider[chan];
+	var c1 = 2.197297305
+	var c2 = -0.397418168;
+	var c3 = 0.185969287;
+	var c4 = -0.124947425;
+	val.value = this.baseVals[4][chan].toString();
+	sli.value = ((Math.log((this.baseVals[4][chan]-c4)/c3)-c2)/c1).toString();
 }
 TWKPSSTCDL.prototype.resetP = function(chan) {
 	this.pSlider[chan].value = '1';
