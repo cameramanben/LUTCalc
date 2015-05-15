@@ -450,6 +450,7 @@ LUTInfoBox.prototype.createInfInfo = function() {
 	this.addInfo(this.insInfInfo,false,'Charts','This provides three different ways of comparing input and output levels:');
 	this.addInfo(this.insInfInfo,true,'Reflected/IRE','Reflectance levels of the scene (eg 18% gray, 90% white) against % IRE. The simplest chart, but as the x-axis is linear it is hard to read anything meaningful from it.');
 	this.addInfo(this.insInfInfo,true,'Stop/IRE','Shows the output level against input stops. Clearly shows the difference between linear/gamma (keep increasing in slope), log curves (tend towards a straight line slope in the highlights and curves with knee (tend towards a horizontal line in the highlights). Also gives a good idea of dynamic range in stops.');
+	this.addInfo(this.insInfInfo,true,null,'Areas beyond the range of the chosen camera are shaded. When the CineEI ISO is changed or Stop Correction is applied the level of 18% gray in the underlying recording is shown with a pink vertical line.');
 	this.addInfo(this.insInfInfo,true,'LUT In/LUT Out','similar to Stop/IRE, but better shows true black (black is technically minus infinity stops, so Stop/IRE never quite shows it).');
 	this.addInfo(this.insInfInfo,false,null,'The charts tab also includes a table of % IRE and 10-bit values for the current curve.');
 	this.insInf.style.display = 'none';
@@ -498,7 +499,7 @@ LUTInfoBox.prototype.createCustBhi = function() {
 	this.custBhiInfo.appendChild(bhi2);
 	this.addInfo(this.custBhiInfo,false,'Highlight Level','this will give the % IRE level of a selectable reflectance percentage (initially 90% white) for the output curve. Also shown is the equivalent % IRE in the Rec709 display gamma.');
 	this.addInfo(this.custBhiInfo,false,null,'The output level can then be altered and LUTCalc will scale the output curve.');
-	this.addInfo(this.custBhiInfo,false,null,'As with Black Level it does not currently consider ASC-CDL adjustments in calculating the base level.');
+	this.addInfo(this.custBhiInfo,false,null,'As with Black Level, Highlight Level incorporates ASC-CDL adjustments, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
 	this.addInfo(this.custBhiInfo,false,null,'Black and Highlight Level adjustments work together, for example to adjust the LC709 and LC709A curves from being legal range - peaking just below 100% - to extended range (Reflected 1350% maps to 108.9%) without changing the black level.');
 	this.custBhi.style.display = 'none';
 	this.custBhi.appendChild(this.custBhiInfo);
@@ -568,10 +569,25 @@ LUTInfoBox.prototype.createCustPsst = function() {
 	psst1.setAttribute('class','infoimage');
 	psst1.setAttribute('id','ins-cust-psst-1');
 	this.custPsstInfo.appendChild(psst1);
+	this.addInfo(this.custPsstInfo,false,null,'PSST-CDL is intended to take the controls provided by ASC-CDL and apply them selectively to portions of the YPbPr colour wheel.');
+	this.addInfo(this.custPsstInfo,false,null,"PSST stands for (P)rimary, (S)econdary and (S)kin (T)one. The default window allows adjustment to reds, greens and blues (primaries), magentas, yellows and cyans (secondaries) and skin tone (based on a combination of a Vectorscope 'I'-line and colour chart 'Light Skin' and 'Dark Skin' values). Adjustments are blended between the colours.");
+	this.addInfo(this.custPsstInfo,true,'Colour',"Similar to the 'Hue' in HSV and HSL, Colour here is the offset from the chosen base colour. PSST separates each base colour by a value of 1, so red to skin tone is 1, red to green is 3 and magenta to cyan in 5.");
+	this.addInfo(this.custPsstInfo,true,null,'7 equates to a complete circuit (blue -> blue) and negative values are allowed (blue to green is 6 or -1).');
+	this.addInfo(this.custPsstInfo,true,'Saturation','Adjusts the colour intensity within the chosen colour range. 1 is the default, 0 is a Rec709 grayscale.');
+	this.addInfo(this.custPsstInfo,true,'Slope','Analogous to gain, an input value is multiplied by this. Defined as any value from 0 (a flat line) up, the default value is 1.0.');
+	this.addInfo(this.custPsstInfo,true,null,'LUTCalc applies the PSST-CDL on linear data, so slope behaves like an exposure adjustment. 0.5 = one stop down, 0.25 = two stops. 2 = one stop up, 4 = two stops.');
+	this.addInfo(this.custPsstInfo,true,'Offset',"a value simply added or subtracted from an input value, carried out after the slope");
+	this.addInfo(this.custPsstInfo,true,'Power',"Analogous to 'gamma', once an input value has had the slope and offset applied, it is raised to the power of the power parameter. The range is any value from zero up.");
+	this.addInfo(this.custPsstInfo,false,null,"The seven base colours allow for some interesting effects, but for greater control PSST-CDL can specify adjustments for intermediate colours. This is done by clicking 'Refinements'");
 	var psst2 = document.createElement('div');
 	psst2.setAttribute('class','infoimage');
 	psst2.setAttribute('id','ins-cust-psst-2');
 	this.custPsstInfo.appendChild(psst2);
+	this.addInfo(this.custPsstInfo,false,null,'The Refinements window shows a set of vertical sliders which can be used to make adjustments to both the seven base colours and intermediate colours. Rather like a graphic equalizer.');
+	this.addInfo(this.custPsstInfo,false,null,"The initial intermediate values are interpolated from any adjustments made in the 'Base Adjustments' window.");
+	this.addInfo(this.custPsstInfo,false,null,'Refinements defaults to adjusting Saturation, but this can be changed to Colour, Slope, Offset or Power.');
+	this.addInfo(this.custPsstInfo,false,null,'To fix an intermediate value, click on the checkbox beneath the slider. A ticked checkbox will not be interpolated by Base Adjustment changes.');
+	this.addInfo(this.custPsstInfo,false,null,'The spectrum background displays the effect of PSST adjustments in the current colour space (top and bottom before, centre after).');
 	var psst3 = document.createElement('div');
 	psst3.setAttribute('class','infoimage');
 	psst3.setAttribute('id','ins-cust-psst-3');
@@ -866,9 +882,14 @@ LUTInfoBox.prototype.buildChart = function() {
 	outCanvas1.id = 'outcanvas1';
 	outCanvas1.width = canvas1.width;
 	outCanvas1.height = canvas1.height;
+	var clipCanvas1 = document.createElement('canvas');
+	clipCanvas1.id = 'clipcanvas1';
+	clipCanvas1.width = canvas1.width;
+	clipCanvas1.height = canvas1.height;
 	this.refChart = {};
 	this.refChart.rec = recCanvas1.getContext('2d');
 	this.refChart.out = outCanvas1.getContext('2d');
+	this.refChart.clip = clipCanvas1.getContext('2d');
 	this.refChart.width = canvas1.width;
 	this.refChart.w = w;
 	this.refChart.x0 = x0;
@@ -879,11 +900,13 @@ LUTInfoBox.prototype.buildChart = function() {
 	this.refChart.yMax = yMax;
 	this.refChart.dY = yA;
 	this.gammaChartBox.appendChild(canvas1);
+	this.gammaChartBox.appendChild(clipCanvas1);
 	this.gammaChartBox.appendChild(recCanvas1);
 	this.gammaChartBox.appendChild(outCanvas1);
 	canvas1.style.display = 'none';
 	recCanvas1.style.display = 'none';
 	outCanvas1.style.display = 'none';
+	clipCanvas1.style.display = 'none';
 	// Stop Against IRE
 	var canvas2 = document.createElement('canvas');
 	canvas2.id = 'chartcanvas2';
@@ -937,9 +960,14 @@ LUTInfoBox.prototype.buildChart = function() {
 	outCanvas2.id = 'outcanvas2';
 	outCanvas2.width = canvas2.width;
 	outCanvas2.height = canvas2.height;
+	var clipCanvas2 = document.createElement('canvas');
+	clipCanvas2.id = 'clipcanvas2';
+	clipCanvas2.width = canvas2.width;
+	clipCanvas2.height = canvas2.height;
 	this.stopChart = {};
 	this.stopChart.rec = recCanvas2.getContext('2d');
 	this.stopChart.out = outCanvas2.getContext('2d');
+	this.stopChart.clip = clipCanvas2.getContext('2d');
 	this.stopChart.width = canvas2.width;
 	this.stopChart.w = w;
 	this.stopChart.x0 = x0;
@@ -950,11 +978,13 @@ LUTInfoBox.prototype.buildChart = function() {
 	this.stopChart.yMax = yMax;
 	this.stopChart.dY = yA;
 	this.gammaChartBox.appendChild(canvas2);
+	this.gammaChartBox.appendChild(clipCanvas2);
 	this.gammaChartBox.appendChild(recCanvas2);
 	this.gammaChartBox.appendChild(outCanvas2);
 	canvas2.style.display = 'block';
 	recCanvas2.style.display = 'block';
 	outCanvas2.style.display = 'block';
+	clipCanvas2.style.display = 'block';
 	// LUT In Against LUT Out
 	var canvas3 = document.createElement('canvas');
 	canvas3.id = 'chartcanvas3';
@@ -1142,27 +1172,33 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('chartcanvas1').style.display = 'block';
 		document.getElementById('reccanvas1').style.display = 'block';
 		document.getElementById('outcanvas1').style.display = 'block';
+		document.getElementById('clipcanvas1').style.display = 'block';
 		document.getElementById('chartcanvas2').style.display = 'none';
 		document.getElementById('reccanvas2').style.display = 'none';
 		document.getElementById('outcanvas2').style.display = 'none';
+		document.getElementById('clipcanvas2').style.display = 'none';
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
 	} else if (this.chartType[1].checked) {
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
 		document.getElementById('outcanvas1').style.display = 'none';
+		document.getElementById('clipcanvas1').style.display = 'none';
 		document.getElementById('chartcanvas2').style.display = 'block';
 		document.getElementById('reccanvas2').style.display = 'block';
 		document.getElementById('outcanvas2').style.display = 'block';
+		document.getElementById('clipcanvas2').style.display = 'block';
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
 	} else{
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
 		document.getElementById('outcanvas1').style.display = 'none';
+		document.getElementById('clipcanvas1').style.display = 'none';
 		document.getElementById('chartcanvas2').style.display = 'none';
 		document.getElementById('reccanvas2').style.display = 'none';
 		document.getElementById('outcanvas2').style.display = 'none';
+		document.getElementById('clipcanvas2').style.display = 'none';
 		document.getElementById('chartcanvas3').style.display = 'block';
 		document.getElementById('outcanvas3').style.display = 'block';
 	}
@@ -1186,6 +1222,7 @@ LUTInfoBox.prototype.gotIOGammaNames = function(d) {
 LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.height);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.height);
+	this.refChart.clip.clearRect(0, 0, this.refChart.width, this.refChart.height);
 	this.refChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	this.refChart.rec.textBaseline = 'middle';
 	this.refChart.rec.textAlign = 'left';
@@ -1215,10 +1252,18 @@ LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.out.stroke();
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
+//	this.refChart.clip.beginPath();
+//	this.refChart.clip.strokeStyle='rgba(128, 128, 128, 0.2)';	
+//	this.refChart.clip.fillStyle = 'rgba(128, 128, 128, 0.2)';
+//	this.refChart.clip.lineWidth = 0;
+//	var wclip = Math.pow(2,this.inputs.wclip) * 0.2;
+//	this.refChart.clip.fillRect(this.refChart.x0 + (wclip * this.refChart.dX), this.refChart.yMax, (14-wclip) * this.refChart.dX, this.refChart.y0 - this.refChart.yMax);
+//	this.refChart.clip.stroke();
 }
 LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.stopChart.clip.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.rec.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	this.stopChart.rec.textBaseline = 'middle';
 	this.stopChart.rec.textAlign = 'left';
@@ -1248,6 +1293,25 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.out.stroke();
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
+	this.stopChart.clip.beginPath();
+	this.stopChart.clip.strokeStyle='rgba(128, 128, 128, 0.1)';	
+	this.stopChart.clip.fillStyle = 'rgba(128, 128, 128, 0.1)';
+	this.stopChart.clip.lineWidth = 0;
+	var wclip = this.inputs.wclip;
+	this.stopChart.clip.fillRect(this.stopChart.x0 + ((wclip+8) * this.stopChart.dX), this.stopChart.yMax, (8-wclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
+	var bclip = this.inputs.bclip;
+	this.stopChart.clip.fillRect(this.stopChart.x0, this.stopChart.yMax, (8+bclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
+	this.stopChart.clip.stroke();
+	var stopZero = parseFloat(this.inputs.stopShift.value);
+	if (Math.abs(stopZero) > 0.001) {
+		stopZero = 8 - stopZero;
+		this.stopChart.clip.beginPath();
+		this.stopChart.clip.strokeStyle='rgba(240, 180, 180, 0.75)';	
+		this.stopChart.clip.lineWidth = 5;
+		this.stopChart.clip.moveTo(this.stopChart.x0 + (stopZero*this.stopChart.dX), this.stopChart.yMax);
+		this.stopChart.clip.lineTo(this.stopChart.x0 + (stopZero*this.stopChart.dX), this.stopChart.y0);
+		this.stopChart.clip.stroke();
+	}
 }
 LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	var xMin = this.lutChart.x0 + (64*876/1023);

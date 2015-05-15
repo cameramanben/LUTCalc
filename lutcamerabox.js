@@ -17,6 +17,8 @@ function LUTCameraBox(fieldset, inputs, message) {
 	this.cameras = [];
 	this.cameraList();
 	this.current = 0;
+	this.inputs.addInput('bclip',this.cameras[this.current].bclip);
+	this.inputs.addInput('wclip',this.cameras[this.current].wclip);
 	this.cameraSelect = document.createElement('select');
 	this.cameraOptions();
 	this.cameraSelect.options[this.current].selected = true;
@@ -65,14 +67,15 @@ LUTCameraBox.prototype.buildBox = function() {
 // Set Up Data
 LUTCameraBox.prototype.cameraList = function() {
 // Type: 0 == CineEI, 1 == Variable Parameters (Arri), 2 == Baked In Gain (Canon)
-	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine"});
-	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine"});
-	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine"});
-	this.cameras.push({make:"Sony",model:"a7s",iso:3200,type:2,defgamma:"S-Log2",defgamut:"S-Gamut"});
-	this.cameras.push({make:"Sony",model:"PMW-F3",iso:800,type:0,defgamma:"S-Log",defgamut:"S-Gamut"});
-	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"S-Gamut"});
-	this.cameras.push({make:"Arri",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut"});
-	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP Lock Gamut"});
+	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"a7s",iso:3200,type:2,defgamma:"S-Log2",defgamut:"S-Gamut",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"F65",iso:800,type:0,defgamma:"S-Log3",defgamut:"S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"PMW-F3",iso:800,type:0,defgamma:"S-Log",defgamut:"S-Gamut",bclip:-6.6,wclip:5.5});
+	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"S-Gamut",bclip:-6.6,wclip:5.5});
+	this.cameras.push({make:"Arri",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut",bclip:-6.6,wclip:7.4});
+	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP Lock Gamut",bclip:-6.7,wclip:5.3});
 }
 LUTCameraBox.prototype.cameraOptions = function() {
 	var max = this.cameras.length;
@@ -88,6 +91,8 @@ LUTCameraBox.prototype.changeCamera = function() {
 	this.current = this.cameraSelect.options.selectedIndex;
 	this.inputs.defGammaIn = this.cameras[this.current].defgamma;
 	this.inputs.defGamutIn = this.cameras[this.current].defgamut;
+	this.inputs.bclip = this.cameras[this.current].bclip;
+	this.inputs.wclip = this.cameras[this.current].wclip;
 	this.nativeLabel.innerHTML = this.cameras[this.current].iso.toString();
 	this.cineeiInput.value = this.cameras[this.current].iso.toString();
 	this.shiftInput.value = '0';

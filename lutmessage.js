@@ -216,6 +216,9 @@ LUTMessage.prototype.gaRx = function(d) {
 			case 35: // Get primaries of current colour space for preview
 					this.ui[d.p].updatePrimaries(d.o);
 					break;
+			case 36: // Get PSST-CDL colours
+					this.ui[3].psstColours(d);
+					break;
 		}
 	}
 }
@@ -239,7 +242,8 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 	this.gaU++;
 	if (this.gaU === this.gaT) {
 		this.gaU = 0;
-		this.gtTx(8,15,d);
+		this.gtTx(3,16,{});
+		this.gtTx(8,15,{});
 		this.ui[3].setParams(d);
 		this.ui[6].updateGamma();
 		this.ui[8].isChanged(d.eiMult);
@@ -411,6 +415,9 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 35: // Get primaries of current colour space for preview
 					this.gaTx(d.p,15,d)
 					break;
+			case 36: // Get PSST-CDL colours
+					this.gaTx(3,16,{b:d.b,a:d.a,to:['b','a']})
+					break;
 		}
 	}
 }
@@ -418,7 +425,8 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 	this.gtU++;
 	if (this.gtU === this.gtT) {
 		this.gtU = 0;
-		this.gtTx(8,15,d);
+		this.gtTx(3,16,{});
+		this.gtTx(8,15,{});
 		this.ui[3].setParams(d);
 		this.ui[8].isChanged();
 	}

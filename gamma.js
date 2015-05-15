@@ -1082,9 +1082,6 @@ out.curOut = this.curOut;
 	if (this.nul) {
 		this.gammas[this.curIn].linToL(table.buffer);
 	} else {
-		for (var j=0; j<7; j++) {
-			table[j] *= this.eiMult;
-		}
 		if (this.doASCCDL) {
 			this.ASCCDL(table.buffer);
 		}
@@ -1141,6 +1138,32 @@ LUTGamma.prototype.ASCCDL = function(buff) {
 		c[j] = ((isNaN(r)?0:r)+(isNaN(g)?0:g)+(isNaN(b)?0:b));
 	}
 }
+LUTGamma.prototype.psstColours = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver };
+	var b = new Float64Array(i.b);
+	var a = new Float64Array(i.a);
+	var m = a.length;
+	var before = new Uint8Array(m);
+	var after = new Uint8Array(m);
+	this.gammas[this.curOut].linToL(i.b);
+	this.gammas[this.curOut].linToL(i.a);
+// self.postMessage({msg:true,details:'gamma'+this.curOut});
+	if (this.doBlkHi) {
+		for (var j=0; j<m; j++) {
+			before[j] = Math.min(255,Math.max(0,Math.round(((b[ j ] * this.al) + this.bl)*255)));
+			after[j] = Math.min(255,Math.max(0,Math.round(((a[ j ] * this.al) + this.bl)*255)));
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			before[j] = Math.min(255,Math.max(0,Math.round(b[ j ]*255)));
+			after[j] = Math.min(255,Math.max(0,Math.round(a[ j ]*255)));
+		}
+	}
+	out.b = before.buffer;
+	out.a = after.buffer;
+	out.to = ['b','a'];
+	return out;
+}
 // Gamma calculation objects
 function LUTGammaLog(name,params) {
 	this.name = name;
@@ -1151,7 +1174,6 @@ function LUTGammaLog(name,params) {
 LUTGammaLog.prototype.changeISO = function(iso) {
 	this.iso = iso;
 }
-
 LUTGammaLog.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1908,6 +1930,8 @@ addEventListener('message', function(e) {
 			case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
 					break;
 			case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
+					break;
+			case 16:sendMessage(gammas.psstColours(d.p,d.t,d.d));
 					break;
 		}
 	}

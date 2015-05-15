@@ -312,8 +312,10 @@ background:transparent;
 #chartcanvas3 {display:block;width:28em;height:15em; z-index: 1;}
 #reccanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
 #outcanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#clipcanvas1 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 1;}
 #reccanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
 #outcanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
+#clipcanvas2 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 1;}
 #reccanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 2;}
 #outcanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 3;}
 #chartreclabel {color:red; margin-right:10px;}
