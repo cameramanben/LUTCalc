@@ -367,7 +367,7 @@ LUTInfoBox.prototype.createLutInfo = function() {
 	this.addInfo(this.insLutInfo,false,null,'LUTCalc will generally default to data in, legal out, though if both the input and output gammas are log curves then it will set data in data out, on the assumption that further LUTs or corrections will be applied.');
 	this.addInfo(this.insLutInfo,false,null,'It has also been suggested that the Lumetri plugin in Adobe Premiere CC expects data in, data out in order to give the correct look. The best suggestion is to test and compare in the software to be used in post.');
 	this.addInfo(this.insLutInfo,false,null,'The final two options relate to clipping output levels.');
-	this.addInfo(this.insLutInfo,true,'Camera MLUT (3D, Clip To 0-1.09)','Sony MLUTs expect output values to be within the range 0-1.09, with the ranges data in and legal out. This option ensures that everything is set correctly.');
+	this.addInfo(this.insLutInfo,true,'Sony MLUT (3D, Clip To 0-1.09)','Sony MLUTs expect output values to be within the range 0-1.09, with the ranges data in and legal out. This option ensures that everything is set correctly.');
 	this.addInfo(this.insLutInfo,true,'Clip To 0-1.0','The cube file spec allows for output values beyond 0-1. This allows limited dynamic range conversions such as linear or Rec709 to be performed non destructively, ie the overexposed data can still be pulled back into range.');
 	this.addInfo(this.insLutInfo,true,null,'Some software does not handle out of range values correctly, so this option hard clips from 0-1.0. This does mean that data outside of that range is lost.');
 	this.insLut.style.display = 'none';
@@ -569,8 +569,8 @@ LUTInfoBox.prototype.createCustPsst = function() {
 	psst1.setAttribute('class','infoimage');
 	psst1.setAttribute('id','ins-cust-psst-1');
 	this.custPsstInfo.appendChild(psst1);
-	this.addInfo(this.custPsstInfo,false,null,'PSST-CDL is intended to take the controls provided by ASC-CDL and apply them selectively to portions of the YPbPr colour wheel.');
-	this.addInfo(this.custPsstInfo,false,null,"PSST stands for (P)rimary, (S)econdary and (S)kin (T)one. The default window allows adjustment to reds, greens and blues (primaries), magentas, yellows and cyans (secondaries) and skin tone (based on a combination of a Vectorscope 'I'-line and colour chart 'Light Skin' and 'Dark Skin' values). Adjustments are blended between the colours.");
+	this.addInfo(this.custPsstInfo,false,null,'PSST-CDL is intended to take the controls provided by ASC-CDL and apply them selectively to specific ranges of colours on the vectorscope.');
+	this.addInfo(this.custPsstInfo,false,null,"PSST stands for (P)rimary, (S)econdary and (S)kin (T)one. The default window allows adjustment to reds, greens and blues (primaries), magentas, yellows and cyans (secondaries) and skin tone (based on a combination of a Vectorscope 'I'-line and colour chart 'Light Skin' and 'Dark Skin' values). Adjustments are interpolated between these base colours.");
 	this.addInfo(this.custPsstInfo,true,'Colour',"Similar to the 'Hue' in HSV and HSL, Colour here is the offset from the chosen base colour. PSST separates each base colour by a value of 1, so red to skin tone is 1, red to green is 3 and magenta to cyan in 5.");
 	this.addInfo(this.custPsstInfo,true,null,'7 equates to a complete circuit (blue -> blue) and negative values are allowed (blue to green is 6 or -1).');
 	this.addInfo(this.custPsstInfo,true,'Saturation','Adjusts the colour intensity within the chosen colour range. 1 is the default, 0 is a Rec709 grayscale.');
@@ -592,6 +592,9 @@ LUTInfoBox.prototype.createCustPsst = function() {
 	psst3.setAttribute('class','infoimage');
 	psst3.setAttribute('id','ins-cust-psst-3');
 	this.custPsstInfo.appendChild(psst3);
+	this.addInfo(this.custPsstInfo,false,null,'The primaries and secondaries on a Rec709 vectorscope take the shape of a squashed hexagon, ie the distance from the centre (grayscale) to the edges (100% saturation) varies with colour. Equally, the luma (Y) value of a full saturation varies with colour, reflecting the sensitivity of human vision.');
+	this.addInfo(this.custPsstInfo,false,null,'By default, when a PSST colour shift is applied, PSST-CDL will attempt to scale the magnitude on the vectorscope to match the difference between the values for the initial and final colours. For a full match, the Y value would also need to be scaled. However this tends to produce extreme results on real images, so is off by default.');
+	this.addInfo(this.custPsstInfo,false,null,'The advanced settings in PSST-CDL allow these two scalings to be turned on or off.');
 	this.custPsst.style.display = 'none';
 	this.custPsst.appendChild(this.custPsstInfo);
 }
@@ -913,7 +916,7 @@ LUTInfoBox.prototype.buildChart = function() {
 	var ctx2 = canvas2.getContext('2d');
 	canvas2.width = cwidth;
 	canvas2.height = cheight;
-	dX = (w - x0)/16;
+	dX = (w - x0)/18;
 	ctx2.fillStyle = 'black';
 	ctx2.font = point + 'pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	ctx2.textBaseline = 'middle';
@@ -927,8 +930,8 @@ LUTInfoBox.prototype.buildChart = function() {
 	ctx2.fillText('-7.3%', x0 * 0.9,h - yMin);
 	ctx2.moveTo(x0,y0);
 	ctx2.lineTo(w,y0);
-	ctx2.moveTo(x0 + (dX*8),yMax);
-	ctx2.lineTo(x0 + (dX*8),h - yMin);
+	ctx2.moveTo(x0 + (dX*9),yMax);
+	ctx2.lineTo(x0 + (dX*9),h - yMin);
 	ctx2.stroke();
 	ctx2.beginPath();
 	ctx2.strokeStyle='rgba(240, 176, 176, 0.5)';
@@ -946,8 +949,8 @@ LUTInfoBox.prototype.buildChart = function() {
 		ctx2.moveTo(x0,y0 - (yA*i/10));
 		ctx2.lineTo(w,y0 - (yA*i/10));
 	}
-	for (var i=0; i<17; i++){
-		ctx2.fillText(parseInt(i-8).toString(), x0 + (i*dX) + (w/150),y0 + (1.75*yB));
+	for (var i=0; i<19; i++){
+		ctx2.fillText(parseInt(i-9).toString(), x0 + (i*dX) + (w/150),y0 + (1.75*yB));
 		ctx2.moveTo(x0 + (dX*i),yMax);
 		ctx2.lineTo(x0 + (dX*i),h - yMin);
 	}
@@ -1252,13 +1255,6 @@ LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.out.stroke();
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
-//	this.refChart.clip.beginPath();
-//	this.refChart.clip.strokeStyle='rgba(128, 128, 128, 0.2)';	
-//	this.refChart.clip.fillStyle = 'rgba(128, 128, 128, 0.2)';
-//	this.refChart.clip.lineWidth = 0;
-//	var wclip = Math.pow(2,this.inputs.wclip) * 0.2;
-//	this.refChart.clip.fillRect(this.refChart.x0 + (wclip * this.refChart.dX), this.refChart.yMax, (14-wclip) * this.refChart.dX, this.refChart.y0 - this.refChart.yMax);
-//	this.refChart.clip.stroke();
 }
 LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
@@ -1275,7 +1271,7 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.stopIn[0] * this.stopChart.dY));
 	var max = this.stopX.length;
 	for (var i=1; i<max; i++) {
-		this.stopChart.rec.lineTo(this.stopChart.x0 + ((this.stopX[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.stopIn[i] * this.stopChart.dY));
+		this.stopChart.rec.lineTo(this.stopChart.x0 + ((this.stopX[i] + 9) * this.stopChart.dX),this.stopChart.y0 - (this.stopIn[i] * this.stopChart.dY));
 	}
 	this.stopChart.rec.stroke();
 	this.stopChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
@@ -1288,7 +1284,7 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.out.lineWidth = 4;
 	this.stopChart.out.moveTo(this.stopChart.x0,this.stopChart.y0 - (this.stopOut[0] * this.stopChart.dY));
 	for (var i=1; i<max; i++) {
-		this.stopChart.out.lineTo(this.stopChart.x0 + ((this.stopX[i] + 8) * this.stopChart.dX),this.stopChart.y0 - (this.stopOut[i] * this.stopChart.dY));
+		this.stopChart.out.lineTo(this.stopChart.x0 + ((this.stopX[i] + 9) * this.stopChart.dX),this.stopChart.y0 - (this.stopOut[i] * this.stopChart.dY));
 	}
 	this.stopChart.out.stroke();
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.yMax);
@@ -1298,13 +1294,13 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.clip.fillStyle = 'rgba(128, 128, 128, 0.1)';
 	this.stopChart.clip.lineWidth = 0;
 	var wclip = this.inputs.wclip;
-	this.stopChart.clip.fillRect(this.stopChart.x0 + ((wclip+8) * this.stopChart.dX), this.stopChart.yMax, (8-wclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
+	this.stopChart.clip.fillRect(this.stopChart.x0 + ((wclip+9) * this.stopChart.dX), this.stopChart.yMax, (9-wclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
 	var bclip = this.inputs.bclip;
-	this.stopChart.clip.fillRect(this.stopChart.x0, this.stopChart.yMax, (8+bclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
+	this.stopChart.clip.fillRect(this.stopChart.x0, this.stopChart.yMax, (9+bclip) * this.stopChart.dX, this.stopChart.y0 - this.stopChart.yMax);
 	this.stopChart.clip.stroke();
 	var stopZero = parseFloat(this.inputs.stopShift.value);
 	if (Math.abs(stopZero) > 0.001) {
-		stopZero = 8 - stopZero;
+		stopZero = 9 - stopZero;
 		this.stopChart.clip.beginPath();
 		this.stopChart.clip.strokeStyle='rgba(240, 180, 180, 0.75)';	
 		this.stopChart.clip.lineWidth = 5;

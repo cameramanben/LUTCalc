@@ -32,7 +32,13 @@ LUTAnalyst.prototype.setLUT = function(lut) {
 					break;
 	}
 }
-LUTAnalyst.prototype.getTitle = function() {
+LUTAnalyst.prototype.getTitle = function(lut) {
+	switch(lut) {
+		case 'in':  this.title = this.inLUT.getTitle();
+					break;
+		case 'tf':  this.title = this.tf.getTitle();
+					break;
+	}
 	return this.title;
 }
 LUTAnalyst.prototype.reset = function() {

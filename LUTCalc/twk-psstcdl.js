@@ -367,12 +367,8 @@ TWKPSSTCDL.prototype.getCSParams = function(params) {
 		var c = new Float64Array(29);
 		for (var j=0; j<29; j++) {
 			c[j] = this.vals[0][j]%1;
-//			if (c[j] < 0) {
-//				c[j] += 1;
-//			}
 		}
 		out.c = c.buffer;
-// console.log(c);
 		out.sat = this.vals[1].buffer.slice(0);
 		out.s = this.vals[2].buffer.slice(0);
 		out.o = this.vals[3].buffer.slice(0);

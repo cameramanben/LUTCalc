@@ -9,11 +9,13 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function TWKLA(tweaksBox, inputs, messages, files) {
+function TWKLA(tweaksBox, inputs, messages, files, formats) {
 	this.tweaksBox = tweaksBox;
 	this.inputs = inputs;
 	this.messages = messages;
 	this.files = files;
+	this.formats = formats;
+	this.validExts = this.formats.validExts();
 	this.p = 10;
 	this.messages.addUI(this.p,this);
 	this.io();
@@ -296,7 +298,7 @@ TWKLA.prototype.createRadioElement = function(name, checked) {
 TWKLA.prototype.getFile = function() {
 	var validExts = [];
 	if (this.newOpt.checked) {
-		validExts = ['cube'];
+		validExts = this.validExts.slice(0);
 	} else {
 		validExts = ['lacube','labin'];
 	}
@@ -318,13 +320,9 @@ TWKLA.prototype.gotFile = function() {
 	if (this.newOpt.checked) {
 		this.analysisBox.className = 'twk-tab';
 		this.inputs.lutAnalyst.reset();
-		var parsed = false;
-		switch (this.inputs.laFileData.format) {
-			case 'cube': parsed = this.files.parseCubeLA('laFileData', 'in');
-						break;
-		}
+		var parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.inLUT);
 		if (parsed) {
-			this.title.value = this.inputs.lutAnalyst.getTitle();
+			this.title.value = this.inputs.lutAnalyst.getTitle('in');
 			this.doButton.className = 'twk-button';
 			if (this.inputs.lutAnalyst.is3D()) {
 				this.gamutBox.className = 'twk-tab';
@@ -339,13 +337,13 @@ TWKLA.prototype.gotFile = function() {
 		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		switch (this.inputs.laFileData.format) {
-			case 'lacube': parsed = this.files.parseLACube('laFileData');
-						break;
-			case 'labin': parsed = this.files.parseLABin('laFileData');
-						break;
+			case 'lacube': parsed = this.inputs.laCube.parse(this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.tf, this.inputs.lutAnalyst.cs);
+						   break;
+			case 'labin': parsed = this.inputs.laBin.parse(this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst.tf, this.inputs.lutAnalyst.cs);
+						  break;
 		}
 		if (parsed) {
-			this.title.value = this.inputs.lutAnalyst.getTitle();
+			this.title.value = this.inputs.lutAnalyst.getTitle('tf');
 			this.inputs.lutAnalyst.updateLATF();
 			this.inputs.lutAnalyst.updateLACS();
 			this.tweakCheck.checked = true;
@@ -412,16 +410,24 @@ TWKLA.prototype.reset = function() {
 }
 TWKLA.prototype.store = function(cube) {
 	if (cube) {
-		this.files.buildLALut(
+		this.files.save(
+			this.inputs.laCube.build(
+				this.title.value,
+				this.inputs.lutAnalyst.getL(),
+				this.inputs.lutAnalyst.getRGB()
+			),
 			this.title.value,
-			this.inputs.lutAnalyst.getL(),
-			this.inputs.lutAnalyst.getRGB()
+			'lacube'
 		);
 	} else {
-		this.files.buildLABinary(
+		this.files.saveBinary(
+			this.inputs.laBin.build(
+				this.title.value,
+				this.inputs.lutAnalyst.getL(),
+				this.inputs.lutAnalyst.getRGB()
+			),
 			this.title.value,
-			this.inputs.lutAnalyst.getL(),
-			this.inputs.lutAnalyst.getRGB()
+			'labin'
 		);
 	}
 /*

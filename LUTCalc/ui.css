@@ -21,7 +21,10 @@ select { margin-left:0.5em; margin-right:0.5em; }
 }
 /* Main Section
 -------------------------------------------------------------------------------*/
-body {text-align:center;margin: 0px auto;}
+body {
+	text-align:center;
+	margin: 0px auto;
+}
 #javascriptwarning { margin-top:1em; display: block; }
 .splash {
 	position:absolute;
@@ -54,17 +57,30 @@ text-shadow:
     0 0 6px #000000,
     0 0 8px #505050;
 }
-#main { padding-right:0.2em; width:69em;margin: 0px auto;}
-#lutcalcform {margin: 0px auto;}
-#left { float:left;}
-#right {float:right;overflow:auto;width:35em;height:39.5em;padding-right:1em;}
+#main {
+	padding-right:0.2em;
+	width:69em;
+	margin: 0px auto;
+}
+#lutcalcform {
+	margin: 0px auto;
+}
+#left {
+	float:left;
+}
+#right {
+	float:right;
+	overflow:auto;
+	width:35em;
+	padding-right:1em;
+}
 /* Footer
 -------------------------------------------------------------------------------*/
 #footer {
 	width:100%;
 	text-align: center;
 	clear:both;
-	margin-top:0.5em;
+	margin-top:0.9em;
 	padding-top: 0.1em;
 	padding-bottom: 0.2em;
 	color: #ffff00;

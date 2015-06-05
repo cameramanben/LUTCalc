@@ -9,13 +9,14 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTTweaksBox(fieldset, inputs, messages, files) {
+function LUTTweaksBox(fieldset, inputs, messages, files, formats) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
 	this.messages = messages;
 	this.p = 3;
 	this.messages.addUI(this.p,this);
 	this.files = files;
+	this.formats = formats;
 	this.tweaksList = [];
 	this.gaLists = false;
 	this.gtLists = false;
@@ -43,6 +44,7 @@ LUTTweaksBox.prototype.ui = function() {
 	this.holder = document.createElement('div');
 	this.holder.id = 'tweaksholder';
 	this.box.appendChild(this.holder);
+	maxHeights();
 
 	this.tweaksList.push(new TWKCT(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKFL(this.holder, this.inputs, this.messages));
@@ -53,7 +55,7 @@ LUTTweaksBox.prototype.ui = function() {
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKFC(this.holder, this.inputs, this.messages));
 	this.LA = this.tweaksList.length;
-	this.tweaksList.push(new TWKLA(this.holder, this.inputs, this.messages, this.files));
+	this.tweaksList.push(new TWKLA(this.holder, this.inputs, this.messages, this.files, this.formats));
 
 }
 LUTTweaksBox.prototype.events = function() {
@@ -130,4 +132,14 @@ LUTTweaksBox.prototype.followUp = function(tweak, input) {
 				break;
 		default:break;
 	}
+}
+LUTTweaksBox.prototype.getHeight = function() {
+	return this.box.clientHeight;
+}
+LUTTweaksBox.prototype.setMaxHeight = function(height) {
+	height -= 96;
+	if (height < 150) {
+		height = 150;
+	}
+	this.holder.style.maxHeight = height.toString() + 'px';
 }

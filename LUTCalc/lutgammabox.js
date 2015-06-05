@@ -199,3 +199,6 @@ LUTGammaBox.prototype.getInfo = function(info) {
 	info.inGamutName = this.inGamutSelect.options[this.inGamutSelect.selectedIndex].lastChild.nodeValue;
 	info.outGamutName = this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue;
 }
+LUTGammaBox.prototype.getHeight = function() {
+	return this.box.clientHeight;
+}

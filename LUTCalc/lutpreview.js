@@ -37,7 +37,7 @@ function LUTPreview(fieldset,inputs,message,file) {
 	this.fileInput = document.createElement('input');
 	this.inputs.addInput('preFileInput',this.fileInput);
 	this.inputs.addInput('preFileData',{});
-	this.hdrDefault = true;
+	this.preOpt = 0;
 	this.width = 960;
 	this.height = 540;
 	this.rastSize = this.width*8*3;
@@ -169,7 +169,7 @@ LUTPreview.prototype.buildBox = function() {
 	this.box.appendChild(this.rgbCan);
 
 	this.buildPopup();
-	this.loadDefault(true);
+	this.loadDefault(0);
 }
 LUTPreview.prototype.buildPopup = function() {
 	this.preCSBoxHolder = document.createElement('div');
@@ -317,16 +317,25 @@ LUTPreview.prototype.toggleSize = function() {
 	}
 }
 LUTPreview.prototype.toggleDefault = function() {
-	if (this.hdrDefault) {
-		this.changed = true;
-		this.drButton.value = 'High Contrast';
-		this.hdrDefault = false;
-		this.loadDefault(false);
-	} else {
-		this.changed = true;
-		this.drButton.value = 'Low Contrast';
-		this.hdrDefault = true;
-		this.loadDefault(true);
+	switch(this.preOpt) {
+		case 0:
+			this.changed = true;
+			this.preOpt = 1;
+			this.drButton.value = 'Rec709 Gamut';
+			this.loadDefault(1);
+			break;
+		case 1:
+			this.changed = true;
+			this.preOpt = 2;
+			this.drButton.value = 'High Contrast';
+			this.loadDefault(2);
+			break;
+		case 2:
+			this.changed = true;
+			this.preOpt = 0;
+			this.drButton.value = 'Low Contrast';
+			this.loadDefault(0);
+			break;	
 	}
 }
 LUTPreview.prototype.toggleWaveform = function() {
@@ -363,7 +372,7 @@ LUTPreview.prototype.toggleParade = function() {
 	}
 }
 
-LUTPreview.prototype.loadDefault = function(hdr) {
+LUTPreview.prototype.loadDefault = function(opt) {
 	this.gotMSB = false;
 	this.gotLSB = false;
 	var msb = new Image();
@@ -392,12 +401,19 @@ LUTPreview.prototype.loadDefault = function(hdr) {
 		box: this,
 		lsb: lsb
 	});
-	if (hdr) {
-		msb.src = "HDRPreviewMSB.png";
-		lsb.src = "HDRPreviewLSB.png";
-	} else {
-		msb.src = "LDRPreviewMSB.png";
-		lsb.src = "LDRPreviewLSB.png";
+	switch(opt) {
+		case 0:
+			msb.src = "HDRPreviewMSB.png";
+			lsb.src = "HDRPreviewLSB.png";
+			break;
+		case 1:
+			msb.src = "LDRPreviewMSB.png";
+			lsb.src = "LDRPreviewLSB.png";
+			break;
+		case 2:
+			msb.src = "CWMSB.png";
+			lsb.src = "CWLSB.png";
+			break;
 	}
 }
 LUTPreview.prototype.loadedDefault = function() {
@@ -555,7 +571,6 @@ LUTPreview.prototype.gotLine = function(data) {
 }
 LUTPreview.prototype.refresh = function() {
 	if (typeof this.pre !== 'undefined') {
-// console.log('refresh');
 		this.changed = false;
 		if (this.wform) {
 			this.clearWaveform();

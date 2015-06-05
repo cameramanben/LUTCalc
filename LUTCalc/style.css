@@ -19,6 +19,7 @@
 	border-radius:0.25em;
 /*	-moz-border-radius:5px; */
 }
+.graybox-hide { display: none; }
 .whitebox {
 	display: inline-block;
 	margin:0 0.15em 0.2em 0.15em;
@@ -29,6 +30,9 @@
 	border-radius:0.25em;
 /*	-moz-border-radius:5px; */
 }
+.whitebox-hide { display: none; }
+.emptybox { display: inline-block; }
+.emptybox-hide { display: none; }
 .popup	{
 	position: relative;
 	left: -15em;	
@@ -43,9 +47,18 @@
 	width: 30em; margin: 0px auto; margin-top: 0.5em;margin-bottom:0.5em;
 }
 .popupholder { position:fixed; top: 10em; left: 50%;
-}	
+}
+/* LUT options */
+.lut-opt { display: inline; }
+.lut-opt-hide { display: none; }
 /* Tweaks */
-#tweaksholder {margin:0;padding:0;overflow:auto;max-height:19.6em;font-size:90%;}
+#tweaksholder {
+	margin:0;
+	padding:0;
+	overflow:auto;
+/*	max-height:19.6em; */
+	font-size:90%;
+}
 .tweakholder {
 	display: block;
 	margin:0 0.15em 0.2em 0.15em;
