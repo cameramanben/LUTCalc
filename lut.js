@@ -36,6 +36,9 @@ LUTs.prototype.is3D = function() {
 		return false;
 	}
 }
+LUTs.prototype.getTitle = function() {
+	return this.title;
+}
 LUTs.prototype.getDetails = function() {
 	var out = {
 			title: this.title,
@@ -186,23 +189,6 @@ LUTs.prototype.lLCub = function(L) {
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 }
-/*
-LUTs.prototype.lLLin = function(L) {
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		return this.L[0] + (L * dy);
-	} else if (L >= max) {
-		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-		return this.L[max] + ((L - max) * dy);
-	} else {
-		var base = Math.floor(L);
-		var dy = L - base;
-		return (this.L[base] * (1 - dy)) + (this.L[base + 1] * dy); 
-	}
-}
-*/
 LUTs.prototype.lRCub = function(L) {
 	var max = this.s - 1;
 	L = L * max;

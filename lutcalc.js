@@ -10,7 +10,8 @@
 * Github: https://github.com/cameramanben/LUTCalc
 */
 // Declare variables
-var lutCalcForm,
+var titFootHeight,
+	lutCalcForm,
 	lutTests,
 	lutMessage,
 	lutFile,
@@ -25,6 +26,7 @@ var lutCalcForm,
 document.addEventListener("DOMContentLoaded", function() {
 // return window.lutCalcApp.logOSX('started');
 	// Housekeeping
+	titFootHeight = parseInt(document.getElementById('titlebar').clientHeight) + parseInt(document.getElementById('footer').clientHeight);
 	lutCalcForm = document.getElementById('lutcalcform');
 	// Browser feature tests
 	lutTests = new LUTTests(lutInputs);
@@ -32,23 +34,23 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutMessage = new LUTMessage(lutInputs);
 	lutTests.isTransTest(lutMessage.getWorker());
 	lutFile = new LUTFile(lutInputs);
+	lutFormats = new LUTFormats(lutInputs, lutMessage, lutFile);
 	document.getElementById('version').appendChild(document.createTextNode(lutInputs.version));
 	// Create HTML Structure
 	left = fieldSet(lutCalcForm,false,'left');
 	lutCameraBox = new LUTCameraBox(fieldSet(left,true), lutInputs, lutMessage);
 	lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutMessage);
-	lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, lutFile);
+	lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, lutFile, lutFormats);
 	right = fieldSet(lutCalcForm,false,'right');
 	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
-	lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage);
-	lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile);
+	lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage, lutFormats);
+	lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile, lutFormats);
 	lutPreview.setUIs(lutGenerate.getBox(),lutBox.getFieldSet());
 	lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
 	// Set Up Data
 	lutMessage.gaTx(0,5,{});
 	lutMessage.gtTx(0,5,{});
 	lutMessage.gtTx(0,11,{});
-	lutBox.oneOrThree();
 	lutGammaBox.oneOrThree();
 	// Set Up Form Input Events
 	//		Camera Box
@@ -93,29 +95,46 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutGammaBox.changeOutGamut();
 		lutMessage.gtSetParams();
 	}
+	//		Formats
+	lutInputs.lutUsage[0].onclick = function(){
+		lutFormats.gradeMLUT();
+		lutGammaBox.oneOrThree();
+		lutTweaksBox.toggleTweaks();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.lutUsage[1].onclick = function(){
+		lutFormats.gradeMLUT();
+		lutGammaBox.oneOrThree();
+		lutTweaksBox.toggleTweaks();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.gradeSelect.onchange = function(){
+		lutFormats.updateOptions();
+		lutGammaBox.oneOrThree();
+		lutTweaksBox.toggleTweaks();
+		lutMessage.gaSetParams();
+	}
+	lutInputs.mlutSelect.onchange = function(){
+		lutFormats.updateOptions();
+		lutGammaBox.oneOrThree();
+		lutTweaksBox.toggleTweaks();
+		lutMessage.gaSetParams();
+	}
 	//		LUT Box
 	lutInputs.name.onchange = function(){
 		lutBox.cleanName();
 		lutFile.filename();
 	}
-	lutInputs.mlutCheck.onchange = function(){
-		lutBox.toggleMLUT();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gaSetParams();
-	}
 	lutInputs.clipCheck.onchange = function(){
 		lutMessage.gaSetParams();
 	}
 	lutInputs.d[0].onchange = function(){
-		lutBox.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweaks();
 		lutMessage.gtSetParams();
 		lutMessage.gaSetParams();
 	}
 	lutInputs.d[1].onchange = function(){
-		lutBox.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweaks();
 		lutMessage.gtSetParams();
@@ -195,8 +214,23 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInfoBox.gammaChartBut.onclick = function(){
 		lutInfoBox.gammaChartOpt();
 	}
-
+	window.onresize = function(){
+		maxHeights();
+	}
 });
+// Window resize adjustments
+function maxHeights() {
+	var winHeight = isNaN(window.innerHeight) ? window.clientHeight : window.innerHeight;
+	var mainHeight = winHeight - titFootHeight - 12;
+	var camGam = parseInt(lutCameraBox.getHeight()) + parseInt(lutGammaBox.getHeight());
+	var tweakHeight = mainHeight - camGam;
+	lutTweaksBox.setMaxHeight(tweakHeight);
+	if (mainHeight < 420) {
+		mainHeight = 420;
+	}
+	left.style.height = mainHeight.toString() + 'px';
+	right.style.height = mainHeight.toString() + 'px';
+}
 // Functions available to native apps
 function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
 	lutInputs[destination].format = format;

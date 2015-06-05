@@ -9,7 +9,7 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTGenerateBox(fieldset, inputs, message, file) {
+function LUTGenerateBox(fieldset, inputs, message, file, formats) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
 	this.message = message;
@@ -19,6 +19,7 @@ function LUTGenerateBox(fieldset, inputs, message, file) {
 	this.dimension = 0;
 	this.lut;
 	this.file = file;
+	this.formats = formats;
 	this.gamutInName = '';
 	this.gamutOutName = '';
 	this.gamutHGName = '';
@@ -35,11 +36,6 @@ LUTGenerateBox.prototype.getBox = function() {
 }
 LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
 	this.baseIRE = baseIRE;
-}
-LUTGenerateBox.prototype.getInfo = function() {
-	var info = {};
-	this.message.getInfo(info);
-	return info;
 }
 LUTGenerateBox.prototype.generate = function() {
 	if (this.inputs.d[0].checked) {
@@ -94,7 +90,7 @@ LUTGenerateBox.prototype.got1D = function(d) {
 	this.lT += d.vals;
 	if (this.lT === this.dimension) {
 		this.lT = 0;
-		this.output();
+		this.formats.output(this.lut.buffer);
 	}
 }
 LUTGenerateBox.prototype.got3D = function(d) {
@@ -103,60 +99,6 @@ LUTGenerateBox.prototype.got3D = function(d) {
 	this.lT++;
 	if (this.lT === this.dimension) {
 		this.lT = 0;
-		this.output();
+		this.formats.output(this.lut.buffer);
 	}
-}
-LUTGenerateBox.prototype.output = function() {
-		var max = this.lut.length / 3;
-		var d = '';
-		for (var j=0; j<max; j++) {
-			d += this.lut[(j*3)].toFixed(6).toString() + ' ' + this.lut[(j*3)+1].toFixed(6).toString() + ' ' + this.lut[(j*3)+2].toFixed(6).toString() + "\n";
-		}
-		this.file.save(this.header() + d, this.inputs.name.value, 'cube');
-}
-LUTGenerateBox.prototype.fixedString = function(rgb) {
-	return [parseFloat(rgb[0]).toFixed(10).toString(),
-			parseFloat(rgb[1]).toFixed(10).toString(),
-			parseFloat(rgb[2]).toFixed(10).toString()];
-}
-LUTGenerateBox.prototype.header = function() {
-	var info = this.getInfo();
-	var out = 'TITLE "' + info.name + '"' + "\n";
-	if (info.oneD) {
-		out += 'LUT_1D_SIZE ' + this.dimension.toString() + "\n";
-	} else {
-		out += 'LUT_3D_SIZE ' + this.dimension.toString() + "\n";
-	}
-	if (info.nul) {
-		out += '# Null LUT';
-	} else {
-		out += '# ';
-		if (info.mlut) {
-			out += 'MLUT - *** Clipped To 0-1.0947 *** - ';
-		}
-		if (info.doFC) {
-			out += '*** FALSE COLOUR - DO NOT BAKE IN *** ';
-		}
-		if (info.oneD) {
-			out += info.inGammaName + ' -> ' + info.outGammaName;
-		} else if (this.doHG) {
-			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName + '(' + info.hgGamutName + ' in the highlights)';
-		} else {
-			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName;
-		}
-		out += ', CineEI Shift ' + info.cineEI.toFixed(2).toString();
-		out += ', Black Level ' + info.blackLevel + '% IRE';
-		if (info.legalIn) {
-			out += ', Legal Input -> ';
-		} else {
-			out += ', Data Input -> ';
-		}
-		if (info.legalOut) {
-			out += 'Legal Output';
-		} else {
-			out += 'Data Output';
-		}
-	}
-	out += ' - ' + 'Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
-	return out;
 }

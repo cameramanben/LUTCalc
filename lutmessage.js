@@ -102,7 +102,6 @@ LUTMessage.prototype.gaSetParams = function() {
 		camType: parseInt(this.inputs.cameraType.value),
 		stopShift: parseFloat(this.inputs.stopShift.value),
 		clip: this.inputs.clipCheck.checked,
-		mlut: this.inputs.mlutCheck.checked,
 		isTrans: this.inputs.isTrans
 	};
 	if (this.inputs.inRange[0].checked) {
@@ -114,6 +113,10 @@ LUTMessage.prototype.gaSetParams = function() {
 		d.outL = true;
 	} else {
 		d.outL = false;
+	}
+	if (typeof this.inputs.bClip !== 'undefined') {
+		d.bClip = this.inputs.bClip;
+		d.wClip = this.inputs.wClip;
 	}
 	this.ui[3].getTFParams(d);
 	var max = this.gas.length;

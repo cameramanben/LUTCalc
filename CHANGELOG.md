@@ -1,5 +1,16 @@
 LUTCalc Changelog
 =================
+v1.9 RC7
+--------
+* Simplified output range choices with usage and application selections. The user can choose to build a LUT intended for post grading, or one for use in a camera or on set (MLUT), and then choose the particular grading application or camera and LUTCalc will offer appropriate settings and save to the correct file format.
+* Generalised LUT reading / writing code. LUTAnalyst can now understand .cubes, DaVinci .iluts and .oluts and Panasonic .vlts. LUTCalc can construct LUT files in these formats, and it is now straightforward to add more.
+* Bugfix to PSST-CDL interpolation code - adjustments should now appear more logical.
+v1.9 RC6
+--------
+* Added an approximation of the forthcoming Canon Log 2 curve in the C300 mkII. This is derived from data in a chart shown in Canon's 'Introducing the Canon EOS C300 Mark II' video, hence is only an approximation. It appears to be very similar to Arri's LogC, with slightly lower-contrast shadows.
+* Scrollbars now more smoothly adapt to display size, appearing only when the browser window cannot fit all information.
+* The default previews now include a Rec709 colourwheel. This displays the range of colours available with the Rec709 gamut in an arrangement akin to a completely full vectorscope. The default previews cycle: High Contrast -> Low Contrast -> Rec709 Gamut -> back to High Contrast.
+
 v1.9 RC5
 --------
 * Added sensor black and white clip and 18% gray (when exposure compensation is applied) to Stop/IRE chart.

@@ -76,6 +76,8 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Arri",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut",bclip:-6.6,wclip:7.4});
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP Lock Gamut",bclip:-6.7,wclip:5.3});
+	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon Log 2 (Approx)",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
+	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
 }
 LUTCameraBox.prototype.cameraOptions = function() {
 	var max = this.cameras.length;
@@ -134,4 +136,7 @@ LUTCameraBox.prototype.changeShift = function() {
 LUTCameraBox.prototype.getInfo = function(info) {
 	info.camera = this.cameraSelect.options[this.cameraSelect.selectedIndex].lastChild.nodeValue;
 	info.cineEI = parseFloat(this.shiftInput.value);
+}
+LUTCameraBox.prototype.getHeight = function() {
+	return this.box.clientHeight;
 }

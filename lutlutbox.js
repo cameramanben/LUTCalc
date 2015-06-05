@@ -9,54 +9,80 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTLutBox(fieldset, inputs, message) {
+function LUTLutBox(fieldset, inputs, message, formats) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
 	this.catList = [];
 	this.message = message;
 	this.p = 4;
 	this.message.addUI(this.p,this);
+	this.formats = formats;
 	this.fieldSet = fieldset;
+	this.io();
+	this.ui();
+	fieldset.appendChild(this.box);
+}
+LUTLutBox.prototype.getFieldSet = function() {
+	return this.fieldSet;
+}
+LUTLutBox.prototype.io = function() {
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
 	this.lutOneD = this.createRadioElement('dims', false);
 	this.lutThreeD = this.createRadioElement('dims', true);
-	this.inputs.addInput('d',[this.lutOneD,this.lutThreeD]);	
-	this.lutOne1024 = this.createRadioElement('dimension', true);
-	this.lutOne1024.value = '1024';
-	this.lutOne4096 = this.createRadioElement('dimension', false);
-	this.lutOne4096.value = '4096';
-	this.lutThree17 = this.createRadioElement('dimension', false);
-	this.lutThree17.value = '17';
-	this.lutThree33 = this.createRadioElement('dimension', false);
-	this.lutThree33.value = '33';
-	this.lutThree65 = this.createRadioElement('dimension', false);
-	this.lutThree65.value = '65';
-	this.inputs.addInput('dimension',[this.lutOne1024,this.lutOne4096,this.lutThree17,this.lutThree33,this.lutThree65]);	
+	this.inputs.addInput('d',[this.lutOneD,this.lutThreeD]);
+	this.oneD = document.createElement('span');
+	this.inputs.addInput('oneDBox',this.oneD);
+	this.threeD = document.createElement('span');
+	this.inputs.addInput('threeDBox',this.threeD);
+	this.lutOne = [];
+	this.lutOneLabel = [];
+	this.lutOne[0] = this.createRadioElement('dimension', true);
+	this.lutOne[0].value = '1024';
+	this.lutOneLabel[0] = document.createElement('label');
+	this.lutOneLabel[0].appendChild(document.createTextNode('1024'));
+	this.lutOne[1] = this.createRadioElement('dimension', false);
+	this.lutOne[1].value = '4096';
+	this.lutOneLabel[1] = document.createElement('label');
+	this.lutOneLabel[1].appendChild(document.createTextNode('4096'));
+	this.lutThree = [];
+	this.lutThreeLabel = [];
+	this.lutThree[0] = this.createRadioElement('dimension', false);
+	this.lutThree[0].value = '17';
+	this.lutThreeLabel[0] = document.createElement('label');
+	this.lutThreeLabel[0].appendChild(document.createTextNode('17x17x17'));
+	this.lutThree[1] = this.createRadioElement('dimension', false);
+	this.lutThree[1].value = '33';
+	this.lutThree[1].checked = true;
+	this.lutThreeLabel[1] = document.createElement('label');
+	this.lutThreeLabel[1].appendChild(document.createTextNode('33x33x33'));
+	this.lutThree[2] = this.createRadioElement('dimension', false);
+	this.lutThree[2].value = '65';
+	this.lutThreeLabel[2] = document.createElement('label');
+	this.lutThreeLabel[2].appendChild(document.createTextNode('65x65x65'));
+	this.inputs.addInput('dimension',[this.lutOne[0],this.lutOne[1],this.lutThree[0],this.lutThree[1],this.lutThree[2]]);	
+	this.inputs.addInput('dimensionLabel',[this.lutOneLabel[0],this.lutOneLabel[1],this.lutThreeLabel[0],this.lutThreeLabel[1],this.lutThreeLabel[2]]);	
 	this.lutInLegal = this.createRadioElement('inrange', false);
 	this.lutInData = this.createRadioElement('inrange', true);
 	this.inputs.addInput('inRange',[this.lutInLegal,this.lutInData]);	
 	this.lutOutLegal = this.createRadioElement('outrange', false);
 	this.lutOutData = this.createRadioElement('outrange', true);
 	this.inputs.addInput('outRange',[this.lutOutLegal,this.lutOutData]);	
-	this.lutMLUTCheck = document.createElement('input');
-	this.inputs.addInput('mlutCheck',this.lutMLUTCheck);
+	this.gradeOpt = this.createRadioElement('lutusage', true);
+	this.mlutOpt = this.createRadioElement('lutusage', false);
+	this.inputs.addInput('lutUsage',[this.gradeOpt,this.mlutOpt]);
 	this.lutClipCheck = document.createElement('input');
 	this.inputs.addInput('clipCheck',this.lutClipCheck);
-	this.buildBox();
-	fieldset.appendChild(this.box);
 }
-LUTLutBox.prototype.getFieldSet = function() {
-	return this.fieldSet;
-}
-// Construct the UI Box
-LUTLutBox.prototype.buildBox = function() {
+LUTLutBox.prototype.ui = function() {
+	// LUT title / filename
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Title / Filename')));
 	this.lutName.setAttribute('type','text');
 	this.lutName.setAttribute('class','textinput');
 	this.lutName.value = 'Custom LUT';
 	this.box.appendChild(this.lutName);
 	this.box.appendChild(document.createElement('br'));
+	// 1D or 3D
 	this.dims = document.createElement('span');
 	this.dims.setAttribute('class','graybox');
 	this.dims.appendChild(this.lutOneD);
@@ -64,23 +90,24 @@ LUTLutBox.prototype.buildBox = function() {
 	this.dims.appendChild(this.lutThreeD);
 	this.dims.appendChild(document.createElement('label').appendChild(document.createTextNode('3D')));
 	this.box.appendChild(this.dims);
-	this.oneD = document.createElement('span');
-	this.oneD.setAttribute('class','graybox');
-	this.oneD.appendChild(this.lutOne1024);
-	this.oneD.appendChild(document.createElement('label').appendChild(document.createTextNode('1024')));
-	this.oneD.appendChild(this.lutOne4096);
-	this.oneD.appendChild(document.createElement('label').appendChild(document.createTextNode('4096')));
+	// 1D size options
+	this.oneD.setAttribute('class','graybox-hide');
+	this.oneD.appendChild(this.lutOne[0]);
+	this.oneD.appendChild(this.lutOneLabel[0]);
+	this.oneD.appendChild(this.lutOne[1]);
+	this.oneD.appendChild(this.lutOneLabel[1]);
 	this.box.appendChild(this.oneD);
-	this.threeD = document.createElement('span');
+	// 3D size options
 	this.threeD.setAttribute('class','graybox');
-	this.threeD.appendChild(this.lutThree17);
-	this.threeD.appendChild(document.createElement('label').appendChild(document.createTextNode('17x17x17')));
-	this.threeD.appendChild(this.lutThree33);
-	this.threeD.appendChild(document.createElement('label').appendChild(document.createTextNode('33x33x33')));
-	this.threeD.appendChild(this.lutThree65);
-	this.threeD.appendChild(document.createElement('label').appendChild(document.createTextNode('65x65x65')));
+	this.threeD.appendChild(this.lutThree[0]);
+	this.threeD.appendChild(this.lutThreeLabel[0]);
+	this.threeD.appendChild(this.lutThree[1]);
+	this.threeD.appendChild(this.lutThreeLabel[1]);
+	this.threeD.appendChild(this.lutThree[2]);
+	this.threeD.appendChild(this.lutThreeLabel[2]);
 	this.box.appendChild(this.threeD);
 	this.box.appendChild(document.createElement('br'));
+	// Input / output ranges
 	this.lutRange = document.createElement('div');
 	this.lutRange.setAttribute('class','graybox');
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Range:')));
@@ -96,21 +123,31 @@ LUTLutBox.prototype.buildBox = function() {
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
 	this.box.appendChild(this.lutRange);
 	this.box.appendChild(document.createElement('br'));
-	this.lutMLUT = document.createElement('div');
-	this.lutMLUT.setAttribute('class','graybox');
-	this.lutMLUT.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera MLUT (3D, Clip To 0-1.09)')));
-	this.lutMLUTCheck.setAttribute('type','checkbox');
-	this.lutMLUTCheck.checked = false;
-	this.lutMLUT.appendChild(this.lutMLUTCheck);
-	this.box.appendChild(this.lutMLUT);
+	// Grading LUT / MLUT radio boxes
+	this.lutUsage = document.createElement('div');
+	this.lutUsage.setAttribute('class','graybox');
+	this.lutUsage.appendChild(this.gradeOpt);
+	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Grading LUT')));
+	this.lutUsage.appendChild(this.mlutOpt);
+	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera LUT (MLUT)')));
+	this.lutUsage.appendChild(document.createElement('br'));
+	this.box.appendChild(this.lutUsage);
+	// LUT type selections
+	this.lutType = document.createElement('div');
+	this.lutType.setAttribute('class','emptybox');
+	this.lutType.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Type')));
+	this.lutType.appendChild(this.inputs.gradeSelect);
+	this.lutType.appendChild(this.inputs.mlutSelect);
+	this.lutUsage.appendChild(this.lutType);
+	// 0-1.0 hard clip checkbox
 	this.lutClip = document.createElement('div');
-	this.lutClip.setAttribute('class','graybox');
-	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Clip To 0-1.0')));
+	this.lutClip.setAttribute('class','emptybox');
+	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip 0-1.0')));
 	this.lutClipCheck.setAttribute('type','checkbox');
 	this.lutClipCheck.checked = false;
 	this.lutClip.appendChild(this.lutClipCheck);
-	this.box.appendChild(this.lutClip);
-	this.oneOrThree();
+	this.lutUsage.appendChild(document.createElement('br'));
+	this.lutUsage.appendChild(this.lutClip);
 }
 // Set Up Data
 LUTLutBox.prototype.cleanName = function() {
@@ -136,57 +173,8 @@ LUTLutBox.prototype.createRadioElement = function(name, checked) {
     return radioInput;
 }
 // Event Responses
-LUTLutBox.prototype.oneOrThree = function() {
-	if (this.lutOneD.checked)  {
-		this.oneD.style.display = 'inline';
-		this.threeD.style.display = 'none';
-		this.lutOne1024.checked = true;
-	} else {
-		this.oneD.style.display = 'none';
-		this.threeD.style.display = 'inline';
-		this.lutThree33.checked = true;
-	}
-}
-LUTLutBox.prototype.toggleMLUT = function() {
-	if (this.lutMLUTCheck.checked) {
-		this.lutThreeD.checked = true;
-		this.lutInData.checked = true;
-		this.lutOutLegal.checked = true;
-		this.lutThree33.checked = true;
-		this.oneOrThree();
-		this.lutOneD.disabled = true;
-		this.lutThreeD.disabled = true;
-		this.lutInLegal.disabled = true;
-		this.lutInData.disabled = true;
-		this.lutOutLegal.disabled = true;
-		this.lutOutData.disabled = true;
-	} else {
-		this.lutOneD.disabled = false;
-		this.lutThreeD.disabled = false;
-		this.lutInLegal.disabled = false;
-		this.lutInData.disabled = false;
-		this.lutOutLegal.disabled = false;
-		this.lutOutData.disabled = false;
-	}
-}
 LUTLutBox.prototype.changeGamma = function() {
-	if (!this.lutMLUTCheck.checked) {
-		var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
-		if (curOut === 9999) {
-			curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
-		}
-		switch (this.catList[curOut]) {
-			case 0:
-			case 3:	this.lutInData.checked = true;
-					this.lutOutData.checked = true;
-					break;
-			case 1:
-			case 2:
-			case 4:	this.lutInData.checked = true;
-					this.lutOutLegal.checked = true;
-					break;
-		}
-	}
+	this.formats.updateOptions();
 }
 LUTLutBox.prototype.gotGammaLists = function(catList) {
 	this.catList = catList;
@@ -205,7 +193,7 @@ LUTLutBox.prototype.getInfo = function(info) {
 			break;
 		}
 	}
-	if (this.lutMLUTCheck.checked) {
+	if (this.mlutOpt.checked) {
 		info.mlut = true;
 	} else {
 		info.mlut = false;

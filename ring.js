@@ -77,17 +77,17 @@ Ring.prototype.f = function(L) {
 	var d0,d1;
 	p0 = this.L[f];
 	if (f === top) {
-		p1 = this.L[0] + this.r;
-		d0 = (this.L[0] + this.r - this.L[f-1])/2;
+		p1 = this.L[1] + this.r;
+		d0 = (p1 - this.L[f-1])/2;
 	} else if (f === 0) {
-		p1 = this.L[f+1];
-		d0 = (this.L[f+1] - this.L[top] + this.r)/2;
+		p1 = this.L[1];
+		d0 = (p1 - this.L[top-1] + this.r)/2;
 	} else {
 		p1 = this.L[f+1];
-		d0 = (this.L[f+1] - this.L[f - 1])/2;
+		d0 = (p1 - this.L[f - 1])/2;
 	}
 	if (f > top-2) {
-		d1 = (this.L[(f + 2)%top] + this.r - this.L[f])/2;
+		d1 = (this.L[(f + 3)%top] + this.r - this.L[f])/2;
 	} else {
 		d1 = (this.L[f + 2] - this.L[f])/2;
 	}
@@ -124,17 +124,17 @@ Ring.prototype.cub = function(L) {
 	var d0,d1;
 	p0 = this.L[f];
 	if (f === top) {
-		p1 = this.L[0] + this.r;
-		d0 = (this.L[0] + this.r - this.L[f-1])/2;
+		p1 = this.L[1] + this.r;
+		d0 = (p1 - this.L[f-1])/2;
 	} else if (f === 0) {
-		p1 = this.L[f+1];
-		d0 = (this.L[f+1] - this.L[top] + this.r)/2;
+		p1 = this.L[1];
+		d0 = (p1 - this.L[top-1] + this.r)/2;
 	} else {
 		p1 = this.L[f+1];
-		d0 = (this.L[f+1] - this.L[f - 1])/2;
+		d0 = (p1 - this.L[f - 1])/2;
 	}
 	if (f > top-2) {
-		d1 = (this.L[(f + 2)%top] + this.r - this.L[f])/2;
+		d1 = (this.L[(f + 3)%top] + this.r - this.L[f])/2;
 	} else {
 		d1 = (this.L[f + 2] - this.L[f])/2;
 	}
@@ -160,17 +160,17 @@ Ring.prototype.cubMod = function(L) {
 	var d0,d1;
 	p0 = this.L[f];
 	if (f === top) {
-		p1 = this.L[0] + this.r;
+		p1 = this.L[1] + this.r;
 		pm1 = this.L[f-1];
 	} else if (f === 0) {
-		p1 = this.L[f+1];
-		pm1 = this.L[top] - this.r;
+		p1 = this.L[1];
+		pm1 = this.L[top-1] - this.r;
 	} else {
 		p1 = this.L[f+1];
 		pm1 = this.L[f - 1];
 	}
 	if (f > top-2) {
-		p2 = this.L[(f + 2)%top] + this.r;
+		p2 = this.L[(f + 3)%top] + this.r;
 	} else {
 		p2 = this.L[f + 2];
 	}
@@ -212,7 +212,7 @@ Ring.prototype.lin = function(L) {
 	var f = Math.floor(L);
 	var dy = L - f;
 	if (f === top) {
-		return (this.L[f] * (1 - dy)) + ((this.L[0]+this.r) * dy);
+		return (this.L[f] * (1 - dy)) + ((this.L[1]+this.r) * dy);
 	} else {
 		return (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
 	}
@@ -231,7 +231,7 @@ Ring.prototype.linMod = function(L) {
 	var p0 = this.L[f];
 	var p1;
 	if (f === top) {
-		p1 = this.L[0]+this.r;
+		p1 = this.L[1]+this.r;
 	} else {
 		p1 = this.L[f + 1];
 	}
@@ -267,17 +267,17 @@ Ring.prototype.cubs = function(buff) {
 		f = Math.floor(o[j]);
 		p0 = this.L[f];
 		if (f === max) {
-			p1 = this.L[0] + this.r;
-			d0 = (this.L[0] + this.r - this.L[f-1])/2;
+			p1 = this.L[1] + this.r;
+			d0 = (p1 - this.L[f-1])/2;
 		} else if (f === 0) {
-			p1 = this.L[f+1];
-			d0 = (this.L[f+1] - this.L[max] + this.r)/2;
+			p1 = this.L[1];
+			d0 = (p1 - this.L[max-1] + this.r)/2;
 		} else {
 			p1 = this.L[f+1];
 			d0 = (this.L[f+1] - this.L[f - 1])/2;
 		}
 		if (f > max-2) {
-			d1 = (this.L[(f + 2)%max] + this.r - this.L[f])/2;
+			d1 = (this.L[(f + 3)%max] + this.r - this.L[f])/2;
 		} else {
 			d1 = (this.L[f + 2] - this.L[f])/2;
 		}
@@ -309,17 +309,17 @@ Ring.prototype.cubsMod = function(buff) {
 		f = Math.floor(o[j]);
 		p0 = this.L[f];
 		if (f === max) {
-			p1 = this.L[0] + this.r;
+			p1 = this.L[1] + this.r;
 			pm1 = this.L[f-1];
 		} else if (f === 0) {
-			p1 = this.L[f+1];
-			pm1 = this.L[max] - this.r;
+			p1 = this.L[1];
+			pm1 = this.L[max-1] - this.r;
 		} else {
 			p1 = this.L[f+1];
 			pm1 = this.L[f - 1];
 		}
 		if (f > max-2) {
-			p2 = this.L[(f + 2)%max] + this.r;
+			p2 = this.L[(f + 3)%max] + this.r;
 		} else {
 			p2 = this.L[f + 2];
 		}
@@ -373,7 +373,7 @@ Ring.prototype.lins = function(buff) {
 		var f = Math.floor(o[j]);
 		var dy = o[j] - f;
 		if (f === top) {
-			o[j] = (this.L[f] * (1 - dy)) + ((this.L[0]+this.r) * dy);
+			o[j] = (this.L[f] * (1 - dy)) + ((this.L[1]+this.r) * dy);
 		} else {
 			o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
 		}
@@ -397,7 +397,7 @@ Ring.prototype.linMod = function(buff) {
 		dy = o[j] - f;
 		p0 = this.L[f];
 		if (f === max) {
-			p1 = this.L[0]+this.r;
+			p1 = this.L[1]+this.r;
 		} else {
 			p1 = this.L[f + 1];
 		}

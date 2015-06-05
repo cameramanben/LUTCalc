@@ -21,7 +21,10 @@ function LUTGamma() {
 	this.inL = false;
 	this.outL = true;
 	this.clip = false;
-	this.mlut = false;
+
+	this.bClip = 0;
+	this.mClip = 67025937;
+
 	this.linList = [];
 	this.inList = [];
 	this.outList = [];
@@ -57,6 +60,8 @@ LUTGamma.prototype.gammaList = function() {
 		'LogC (Sup 2.x)',2));
 	this.gammas.push(new LUTGammaLog(
 		'C-Log', [ 0.3734467748,-0.0467265867, 0.45310179472141, 10.1596, 10, 0.1251224801564, 1, 0.00391002619746, -0.0452664 ]));
+	this.gammas.push(new LUTGammaLog(
+		'Canon Log 2 (Approx)', [ 0,0,0.242431278,4.958584184,10,0.392766751,0.05813449,0,0 ]));
 	this.gammas.push(new LUTGammaLog(
 		'Panasonic V-Log', [ 0.198412698,-0.024801587, 0.241514, 0.9, 10, 0.598206, 0.00873, 0.181, 0.009 ]));
 	this.gammas.push(new LUTGammaLog(
@@ -133,6 +138,16 @@ LUTGamma.prototype.gammaList = function() {
 			min: [0,0,0],
 			max: [1,1,1],
 			lut: new Float64Array(
+				[ 0.03093963,0.03517715,0.03975096,0.04459771,0.0498902,0.05557408,0.06190443,0.06897675,
+				  0.07677725,0.08537468,0.09473446,0.10541067,0.11868528,0.13311738,0.1487007,0.16548566,
+				  0.1835071,0.20262917,0.22283545,0.24403145,0.26617877,0.28925105,0.31327642,0.33809209,
+				  0.3635757,0.3896826,0.41631627,0.44341889,0.47081168,0.49848151,0.52623353,0.55406649,
+				  0.58169329,0.60913806,0.63624608,0.66303621,0.68930935,0.71517113,0.73981736,0.76273104,
+				  0.78514678,0.80792983,0.82988348,0.85024823,0.86926131,0.88683223,0.90300653,0.91783703,
+				  0.93129966,0.94331701,0.95391642,0.96327691,0.97138937,0.97818037,0.98361305,0.98799011,
+				  0.99133483,0.9937684,0.9951962,0.99614917,0.99691692,0.9975211,0.99811777,0.99867865,
+				  0.9992434 ]
+/*
 				[ 0.0704087159144412,0.0749508264215621,0.0794617799217457,0.0838732626982114,0.0881097436496700,0.0923072350428986,0.0968725459117816,0.1017817230036446,
 				  0.1071977397933189,0.1131605158561053,0.1199746181561136,0.1279564714951100,0.1382298606268642,0.1497419711974320,0.1625809898335268,0.1767665423389763,
 				  0.1923097643611671,0.2092816197242860,0.2276642469792305,0.2473159354901496,0.2681923921822879,0.2901870119434045,0.3132785476681936,0.3374798948802260,
@@ -142,6 +157,7 @@ LUTGamma.prototype.gammaList = function() {
 				  0.8911356461564750,0.8984703840964808,0.9042049482452085,0.9086445989987296,0.9118898079356863,0.9140557501917589,0.9151841643927341,0.9160498695958156,
 				  0.9166686728274339,0.9172670369957161,0.9178298118153824,0.9183922438603406,0.9189835150172793,0.9195603550971945,0.9201371910775960,0.9207140234967608,
 				  0.9212908528222833 ]
+*/
 			)
 		}));
 	this.gammas.push(new LUTGammaPQ(
@@ -327,11 +343,10 @@ LUTGamma.prototype.setParams = function(params) {
 		this.clip = params.clip;
 		out.clip = this.clip;
 	}
-	if (typeof params.mlut === 'boolean') {
-		this.mlut = params.mlut;
-		out.mlut = this.mlut;
+	if (typeof params.bClip === 'number') {
+		this.bClip = params.bClip;
+		this.wClip = params.wClip;
 	}
-
 	if (typeof params.tweaks === 'boolean') {
 		this.tweaks = params.tweaks;
 	} else {
@@ -474,23 +489,19 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 	var max = i.vals;
 	var o = new Float64Array(max*3);
 	var d = i.dim -1;
-	var cMin;
-	if (this.outL && !this.clip) {
-		cMin = -0.06256109481916;
+	var cMin,cMax;
+	if (this.outL) {
+		cMin = (this.bClip - 64)/876;
+		cMax = (this.wClip - 64)/876;
 	} else {
+		cMin = this.bClip / 1023;
+		cMax = this.wClip / 1023;
+	}
+	if (this.clip && cMin<0) {
 		cMin = 0;
 	}
-	var cMax;
-	if (this.clip) {
+	if (this.clip && cMax>1) {
 		cMax = 1;
-	} else if (this.mlut) {
-		if (this.outL) {
-			cMax = 1.09474885844749;
-		} else {
-			cMax = 1;
-		}
-	} else {
-		cMax = 65535;
 	}
 	if (this.nul) {
 		if (this.inL) {
@@ -534,17 +545,17 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 				// Green
 				l = o[(j*3)];
 				l = (l*this.asc[1])+this.asc[4];
-				l = Math.pow((l<0)?0:l,this.asc[7]);
+				l = ((l<0)?l:Math.pow(l,this.asc[7]));
 				o[(j*3)+1] = (isNaN(l)?0:l);
 				// Blue
 				l = o[(j*3)];
 				l = (l*this.asc[2])+this.asc[5];
-				l = Math.pow((l<0)?0:l,this.asc[8]);
+				l = ((l<0)?l:Math.pow(l,this.asc[8]));
 				o[(j*3)+2] = (isNaN(l)?0:l);
 				// Red
 				l = o[(j*3)];
 				l = (l*this.asc[0])+this.asc[3];
-				l = Math.pow((l<0)?0:l,this.asc[6]);
+				l = ((l<0)?l:Math.pow(l,this.asc[6]));
 				o[(j*3)] = (isNaN(l)?0:l);
 			}
 			if (this.outL) {
@@ -591,7 +602,7 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 LUTGamma.prototype.SL3Val = function(p,t,i) {
 	var m = i.dim;
 	var d = m-1;
-	var c = new Float64Array(d);
+	var c = new Float64Array(m);
 	var buff = c.buffer;
 	for (var j=0; j<m; j++) {
 		c[j] = j/d;
@@ -734,23 +745,19 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim };
 	var o = new Float64Array(i.o);
-	var cMin;
-	if (this.outL && !this.clip && !this.mlut) {
-		cMin = -0.06256109481916;
+	var cMin,cMax;
+	if (this.outL) {
+		cMin = (this.bClip - 64)/876;
+		cMax = (this.wClip - 64)/876;
 	} else {
+		cMin = this.bClip / 1023;
+		cMax = this.wClip / 1023;
+	}
+	if (this.clip && cMin<0) {
 		cMin = 0;
 	}
-	var cMax;
-	if (this.clip) {
+	if (this.clip && cMax>1) {
 		cMax = 1;
-	} else if (this.mlut) {
-		if (this.outL) {
-			cMax = 1.09474885844749;
-		} else {
-			cMax = 1;
-		}
-	} else {
-		cMax = 65535;
 	}
 	var max = o.length;
 	if (this.nul) {
@@ -919,15 +926,15 @@ LUTGamma.prototype.preview = function(p,t,i) {
 			if (doASCCDL) {
 				// Red
 				f[ l ] = (f[ l ]*this.asc[0])+this.asc[3];
-				f[ l ] = Math.pow((f[ l ]<0)?0:f[ l ],this.asc[6]);
+				f[ l ] = ((f[ l ]<0)?f[ l ]:Math.pow(f[ l ],this.asc[6]));
 				f[ l ] = (isNaN(f[ l ])?0:f[ l ]);
 				// Green
 				f[l+1] = (f[l+1]*this.asc[1])+this.asc[4];
-				f[l+1] = Math.pow((f[l+1]<0)?0:f[l+1],this.asc[7]);
+				f[l+1] = ((f[l+1]<0)?f[l+1]:Math.pow(f[l+1],this.asc[7]));
 				f[l+1] = (isNaN(f[l+1])?0:f[l+1]);
 				// Blue
 				f[l+2] = (f[l+2]*this.asc[2])+this.asc[5];
-				f[l+2] = Math.pow((f[l+2]<0)?0:f[l+2],this.asc[8]);
+				f[l+2] = ((f[l+2]<0)?f[l+2]:Math.pow(f[l+2],this.asc[8]));
 				f[l+2] = (isNaN(f[l+2])?0:f[l+2]);
 			}
 			f[ l ] = this.gammas[this.curOut].linToLegal(f[ l ]);
@@ -1038,7 +1045,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 		k = j/d;
 		refX[j] = 14*k;
 		refIn[j] = refX[j]/0.9;
-		stopX[j] = (16*k)-8;
+		stopX[j] = (18*k)-9;
 		stopIn[j] = Math.pow(2,stopX[j]) / 5;
 		lutIn[j] = k;
 		lutOut[j] = ((k*1023) - 64)/876;
@@ -1117,11 +1124,11 @@ LUTGamma.prototype.getPrimaries = function(p,t,i) {
 }
 LUTGamma.prototype.cdlLum = function(l) {
 	var r = (l*this.asc[0])+this.asc[3];
-	r = 0.2126*Math.pow((r<0)?0:r,this.asc[6]);
+	r = 0.2126*((r<0)?r:Math.pow(r,this.asc[6]));
 	var g = (l*this.asc[1])+this.asc[4];
-	g = 0.7152*Math.pow((g<0)?0:g,this.asc[7]);
+	g = 0.7152*((g<0)?g:Math.pow(g,this.asc[7]));
 	var b = (l*this.asc[2])+this.asc[5];
-	b = 0.0722*Math.pow((b<0)?0:b,this.asc[8]);
+	b = 0.0722*((b<0)?b:Math.pow(b,this.asc[8]));
 	return ((isNaN(r)?0:r)+(isNaN(g)?0:g)+(isNaN(b)?0:b));
 }
 LUTGamma.prototype.ASCCDL = function(buff) {
@@ -1130,11 +1137,11 @@ LUTGamma.prototype.ASCCDL = function(buff) {
 	var r,g,b;
 	for (var j=0; j<m; j++) {
 		r = (c[j]*this.asc[0])+this.asc[3];
-		r = 0.2126*Math.pow((r<0)?0:r,this.asc[6]);
+		r = 0.2126*((r<0)?r:Math.pow(r,this.asc[6]));
 		g = (c[j]*this.asc[1])+this.asc[4];
-		g = 0.7152*Math.pow((g<0)?0:g,this.asc[7]);
+		g = 0.7152*((g<0)?g:Math.pow(g,this.asc[7]));
 		b = (c[j]*this.asc[2])+this.asc[5];
-		b = 0.0722*Math.pow((b<0)?0:b,this.asc[8]);
+		b = 0.0722*((b<0)?b:Math.pow(b,this.asc[8]));
 		c[j] = ((isNaN(r)?0:r)+(isNaN(g)?0:g)+(isNaN(b)?0:b));
 	}
 }
@@ -1147,7 +1154,6 @@ LUTGamma.prototype.psstColours = function(p,t,i) {
 	var after = new Uint8Array(m);
 	this.gammas[this.curOut].linToL(i.b);
 	this.gammas[this.curOut].linToL(i.a);
-// self.postMessage({msg:true,details:'gamma'+this.curOut});
 	if (this.doBlkHi) {
 		for (var j=0; j<m; j++) {
 			before[j] = Math.min(255,Math.max(0,Math.round(((b[ j ] * this.al) + this.bl)*255)));
