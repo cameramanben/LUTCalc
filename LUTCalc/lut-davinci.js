@@ -67,7 +67,7 @@ davinciiLUT.prototype.parse = function(title, text, lut) {
 			s: size,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [R.buffer,G.buffer,B.buffer],
+			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
 	} else {
@@ -134,7 +134,7 @@ davincioLUT.prototype.parse = function(title, text, lut) {
 			s: size,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [R.buffer,G.buffer,B.buffer],
+			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
 	} else {

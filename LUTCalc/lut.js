@@ -16,6 +16,8 @@ function LUTs() {
 	this.s = 1024; // Dimension - eg 1024 or 4096 for 1D, 17, 33 or 65 for 3D
 	this.min = [0,0,0]; // Lowest input value
 	this.max = [1,1,1]; // Highest input value
+	this.scale = false;
+	this.comp = false;
 	this.C = [];
 	this.rgbl = false;
 }
@@ -63,6 +65,20 @@ LUTs.prototype.setDetails = function(d) {
 	this.s = d.s;
 	this.min = d.min;
 	this.max = d.max;
+	this.scale = false;
+	this.comp = false;
+	if (this.min[0] !== 0 && this.min[1] !== 0 && this.min[2] !== 0) {
+		this.scale = true;
+		if (this.min[0] !== this.min[1] || this.min[1] !== this.min[2] || this.min[2] !== this.min[0]) {
+			this.comp = true;
+		}
+	}
+	if (this.max[0] !== 1 && this.max[1] !== 1 && this.max[2] !== 1) {
+		this.scale = true;
+		if (this.max[0] !== this.max[1] || this.max[1] !== this.max[2] || this.max[2] !== this.max[0]) {
+			this.comp = true;
+		}
+	}
 	if (d.C.length === 3) {
 		this.addLUT(d.C[0],d.C[1],d.C[2]);
 	} else {
@@ -80,6 +96,20 @@ LUTs.prototype.setInfo = function(title, format, dimensions, size, min, max) {
 	this.max[0] = max[0];
 	this.max[1] = max[1];
 	this.max[2] = max[2];
+	this.scale = false;
+	this.comp = false;
+	if (this.min[0] !== 0 && this.min[1] !== 0 && this.min[2] !== 0) {
+		this.scale = true;
+		if (this.min[0] !== this.min[1] || this.min[1] !== this.min[2] || this.min[2] !== this.min[0]) {
+			this.comp = true;
+		}
+	}
+	if (this.max[0] !== 1 && this.max[1] !== 1 && this.max[2] !== 1) {
+		this.scale = true;
+		if (this.max[0] !== this.max[1] || this.max[1] !== this.max[2] || this.max[2] !== this.max[0]) {
+			this.comp = true;
+		}
+	}
 }
 LUTs.prototype.reset = function() {
 	this.title = '';
@@ -88,6 +118,8 @@ LUTs.prototype.reset = function() {
 	this.s = 1024;
 	this.min = [0,0,0];
 	this.max = [1,1,1];
+	this.scale = false;
+	this.comp = false;
 	this.C.length = 0;
 	this.rgbl = false;
 }
@@ -126,6 +158,11 @@ LUTs.prototype.getRGB = function() {
 			this.C[2].buffer];
 }
 LUTs.prototype.f = function(L) {
+	if (this.scale) {
+		L =	(0.2126*(L-this.min[0])/(this.max[0]-this.min[0])) +
+			(0.7152*(L-this.min[1])/(this.max[1]-this.min[1])) +
+			(0.0722*(L-this.min[2])/(this.max[2]-this.min[2]));
+	}
 	var max = this.s - 1;
 	L = L * max;
 	if (L < 0) {
@@ -158,43 +195,55 @@ LUTs.prototype.f = function(L) {
 	}
 }
 LUTs.prototype.lLCub = function(L) {
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		return this.L[0] + (L * dy);
-	} else if (L >= max) {
-		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-		return this.L[max] + ((L - max) * dy);
+	if (this.rgbl && this.comp) {
+		var out = this.lRCub(L);
+		return (0.2126 * out[0]) + (0.7152 * out[1]) + (0.0722 * out[2]);
 	} else {
-		var f = Math.floor(L);
-		var p0 = this.L[f];
-		var p1 = this.L[f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		} else {
-			d0 = (this.L[f + 1] - this.L[f - 1])/2;
+		if (this.scale) {
+			L =	(L-this.min[0])/(this.max[0]-this.min[0]);
 		}
-		if (f === max - 1) {
-			d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+		var max = this.s - 1;
+		L = L * max;
+		if (L < 0) {
+			var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+			return this.L[0] + (L * dy);
+		} else if (L >= max) {
+			var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+			return this.L[max] + ((L - max) * dy);
 		} else {
-			d1 = (this.L[f + 2] - this.L[f])/2;
+			var f = Math.floor(L);
+			var p0 = this.L[f];
+			var p1 = this.L[f + 1];
+			var d0,d1;
+			if (f === 0) {
+				d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+			} else {
+				d0 = (this.L[f + 1] - this.L[f - 1])/2;
+			}
+			if (f === max - 1) {
+				d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+			} else {
+				d1 = (this.L[f + 2] - this.L[f])/2;
+			}
+			var a = (2 * p0) + d0 - (2 * p1) + d1;
+			var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+			var c = d0;
+			var d = p0;
+			L -= f;
+			return (((((a * L) + b) * L) + c) * L) + d;
 		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 }
-LUTs.prototype.lRCub = function(L) {
+LUTs.prototype.lRCub = function(Y) {
 	var max = this.s - 1;
-	L = L * max;
 	var out = new Float64Array(3);
 	if (this.d === 1) {
 		if (!this.rgbl) {
+			var L = Y;
+			if (this.scale) {
+				L =	(L-this.min[0])/(this.max[0]-this.min[0]);
+			}
+			L *= max;
 			if (L < 0) {
 				var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 				out[0] = this.L[0] + (L * dy);
@@ -229,6 +278,11 @@ LUTs.prototype.lRCub = function(L) {
 		} else {
 			var C;
 			for (var j = 0; j < 3; j++) {
+				var L = Y;
+				if (this.scale) {
+					L =	(L-this.min[j])/(this.max[j]-this.min[j]);
+				}
+				L *= max;
 				C = this.C[j];
 				if (L < 0) {
 					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
@@ -263,9 +317,14 @@ LUTs.prototype.lRCub = function(L) {
 		}
 	} else {
 		var C;
+		var s = this.s
 		for (var j=0; j < 3; j++) {
+			var L = Y;
+			if (this.scale) {
+				L =	(L-this.min[j])/(this.max[j]-this.min[j]);
+			}
+			L *= max;
 			C = this.C[j];
-			var s = this.s
 			if (L < 0) {
 				var dy = ((4 * C[1+(s*(1+s))]) - (3 * C[0]) - C[2+(s*(2+(s*2)))])/2;
 				out[j] = C[0] + (L * dy);
@@ -304,34 +363,43 @@ LUTs.prototype.lLsCub = function(buff) {
 	var m = o.length;
 	var max = this.s - 1;
 	var dy, f, d0, d1, Y, a, b, c, d;
-	for (var j=0; j<m; j++) {
-		o[j] *= max;
-		if (o[j] < 0) {
-			dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-			o[j] =  this.L[0] + (o[j] * dy);
-		} else if (o[j] >= max) {
-			dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-			o[j] = this.L[max] + ((o[j] - max) * dy);
-		} else {
-			f = Math.floor(o[j]);
-			p0 = this.L[f];
-			p1 = this.L[f + 1];
-			if (f === 0) {
-				d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-			} else {
-				d0 = (this.L[f + 1] - this.L[f - 1])/2;
+	if (this.rgbl && this.comp) {
+		for (var j=0; j<m; j++) {
+			o[j] = this.lLCub(o[j]);
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (this.scale) {
+				o[j] = (o[j]-this.min[0])/(this.max[0]-this.min[0]);
 			}
-			if (f === (max - 1)) {
-				d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+			o[j] *= max;
+			if (o[j] < 0) {
+				dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+				o[j] =  this.L[0] + (o[j] * dy);
+			} else if (o[j] >= max) {
+				dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+				o[j] = this.L[max] + ((o[j] - max) * dy);
 			} else {
-				d1 = (this.L[f + 2] - this.L[f])/2;
+				f = Math.floor(o[j]);
+				p0 = this.L[f];
+				p1 = this.L[f + 1];
+				if (f === 0) {
+					d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+				} else {
+					d0 = (this.L[f + 1] - this.L[f - 1])/2;
+				}
+				if (f === (max - 1)) {
+					d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
+				} else {
+					d1 = (this.L[f + 2] - this.L[f])/2;
+				}
+				a = (2 * p0) + d0 - (2 * p1) + d1;
+				b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+				c = d0;
+				d = p0;
+				Y = o[j] - f;
+				o[j] = (((((a * Y) + b) * Y) + c) * Y) + d;
 			}
-			a = (2 * p0) + d0 - (2 * p1) + d1;
-			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-			c = d0;
-			d = p0;
-			Y = o[j] - f;
-			o[j] = (((((a * Y) + b) * Y) + c) * Y) + d;
 		}
 	}
 }
@@ -340,18 +408,27 @@ LUTs.prototype.lLsLin = function(buff) {
 	var m = o.length;
 	var max = this.s - 1;
 	var dy;
-	for (var j=0; j<m; j++) {
-		o[j] *= max;
-		if (o[j] < 0) {
-			dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-			o[j] = this.L[0] + (o[j] * dy);
-		} else if (o[j] >= max) {
-			dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-			o[j] = this.L[max] + ((o[j] - max) * dy);
-		} else {
-			f = Math.floor(o[j]);
-			dy = o[j] - f;
-			o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
+	if (this.rgbl && this.comp) {
+		for (var j=0; j<m; j++) {
+			o[j] = this.lLCub(o[j]);
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (this.scale) {
+				o[j] = (o[j]-this.min[0])/(this.max[0]-this.min[0]);
+			}
+			o[j] *= max;
+			if (o[j] < 0) {
+				dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+				o[j] = this.L[0] + (o[j] * dy);
+			} else if (o[j] >= max) {
+				dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+				o[j] = this.L[max] + ((o[j] - max) * dy);
+			} else {
+				f = Math.floor(o[j]);
+				dy = o[j] - f;
+				o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
+			}
 		}
 	}
 }
@@ -370,7 +447,11 @@ LUTs.prototype.rRsCub = function(buff) {
 			C = this.C[k];
 			for (var j=0; j<m; j += 3) {
 				// Scale basic luma (0-1.0) range to array dimension
-				Y = o[j+k] * max;
+				Y = o[j+k];
+				if (this.scale) {
+					Y =	(Y-this.min[k])/(this.max[k]-this.min[k]);
+				}
+				Y *= max;
 				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
 				// Then linearly scale from the array's 0 value
 				if (Y < 0) {
@@ -418,9 +499,17 @@ LUTs.prototype.rRsCub = function(buff) {
 		var p0,p1,p2,dy;
 		for (var j=0; j<m; j += 3) {
 			// Scale basic RGB (0-1.0) range to array dimension
-			i[0] = o[ j ] * max;
-			i[1] = o[j+1] * max;
-			i[2] = o[j+2] * max;
+			i[0] = o[ j ];
+			i[1] = o[j+1];
+			i[2] = o[j+2];
+			if (this.scale) {
+				i[0] =	(i[0]-this.min[k])/(this.max[k]-this.min[k]);
+				i[1] =	(i[1]-this.min[k])/(this.max[k]-this.min[k]);
+				i[2] =	(i[2]-this.min[k])/(this.max[k]-this.min[k]);
+			}
+			i[0] *= max;
+			i[1] *= max;
+			i[2] *= max;
 			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
 			rL = false;
 			gL = false;
@@ -513,7 +602,11 @@ LUTs.prototype.rRsLin = function(buff) {
 			C = this.C[k];
 			for (var j=0; j<m; j += 3) {
 				// Scale basic luma (0-1.0) range to array dimension
-				Y = o[j+k] * max;
+				Y = o[j+k];
+				if (this.scale) {
+					Y =	(Y-this.min[k])/(this.max[k]-this.min[k]);
+				}
+				Y *= max;
 				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
 				// Then linearly scale from the array's 0 value
 				if (Y < 0) {
@@ -541,9 +634,17 @@ LUTs.prototype.rRsLin = function(buff) {
 		var p0,p1,p2,dy;
 		for (var j=0; j<m; j += 3) {
 			// Scale basic RGB (0-1.0) range to array dimension
-			i[0] = o[ j ] * max;
-			i[1] = o[j+1] * max;
-			i[2] = o[j+2] * max;
+			i[0] = o[ j ];
+			i[1] = o[j+1];
+			i[2] = o[j+2];
+			if (this.scale) {
+				i[0] =	(i[0]-this.min[k])/(this.max[k]-this.min[k]);
+				i[1] =	(i[1]-this.min[k])/(this.max[k]-this.min[k]);
+				i[2] =	(i[2]-this.min[k])/(this.max[k]-this.min[k]);
+			}
+			i[0] *= max;
+			i[1] *= max;
+			i[2] *= max;
 			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
 			rL = false;
 			gL = false;
