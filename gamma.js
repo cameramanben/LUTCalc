@@ -67,6 +67,10 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLog(
 		'Panalog', [ 0.324196014, -0.020278938, 0.434198361, 0.956463747, 10, 0.665276427, 0.040913561, 0.088290045, 0 ]));
 	this.gammas.push(new LUTGammaLog(
+		'BMD Film', [ 0.235007442, -0.021824371, 0.367608584, 3.806255082, 10, 0.424864581, 0.123774409, 0.114884702, 0.005175 ]));
+	this.gammas.push(new LUTGammaLog(
+		'BMD Film4k', [ 0.335139188, -0.031122728, 0.582240631, 2.733951639, 10, 0.477563161, 0.218018711, 0.10830634, 0.005175 ]));
+	this.gammas.push(new LUTGammaLog(
 		'Cineon', [ 0.0000000000, 0.0000000000, 0.1260649940,22.2791018600, 2.6907845340, 0.2595160220, 0.2702335160, 0.0000000000, 0 ]));
 	this.rec709 = this.gammas.length;
 	this.gammas.push(new LUTGammaLin(

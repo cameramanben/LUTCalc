@@ -54,6 +54,7 @@ LUTFormats.prototype.formatsList = function() {
 	this.addFormat('vlt','vlt',new vltLUT(this.messages, this.inputs.isLE));
 	this.addFormat('ilut','ilut',new davinciiLUT(this.messages, this.inputs.isLE));
 	this.addFormat('olut','olut',new davincioLUT(this.messages, this.inputs.isLE));
+	this.addFormat('lut','lut',new lutLUT(this.messages, this.inputs.isLE));
 }
 LUTFormats.prototype.addFormat = function(type,ext,format) {
 	this.types.push(type);
@@ -68,7 +69,7 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 33,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 67025937
+		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'DaVinci Resolve cube', type: 'cube',
@@ -77,7 +78,7 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 65,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 67025937
+		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'Lumetri / Speedgrade cube', type: 'cube',
@@ -86,7 +87,7 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 65,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
-		bClip: 0, wClip: 67025937
+		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'DaVinci Resolve 1D ilut', type: 'ilut',
@@ -95,7 +96,7 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 16384,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 67025937
+		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'DaVinci Resolve 1D olut', type: 'olut',
@@ -104,12 +105,21 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 4096,
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 1023
+		bClip: 0, wClip: 1023, hard: false
+	});
+	this.grades.push({
+		title: 'Assimilate 1D lut', type: 'lut',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [4096], threeDim: [],
+		defDim: 4096,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 1023, hard: true
 	});
 	var max = this.grades.length;
 	var max2 = this.types.length;
 	for (var j=0; j<max; j++) {
-		for (var k=0; j<max2; k++) {
+		for (var k=0; k<max2; k++) {
 			if (this.grades[j].type === this.types[k]) {
 				this.grades[j].idx = k;
 				break;
@@ -125,7 +135,7 @@ LUTFormats.prototype.mlutsList = function() {
 		defDim: 33,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
-		bClip: 64, wClip: 1023
+		bClip: 64, wClip: 1023, hard: false
 	});
 /*
 	this.mluts.push({
@@ -135,7 +145,7 @@ LUTFormats.prototype.mlutsList = function() {
 		defDim: 17,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
-		bClip: 0, wClip: 1023
+		bClip: 0, wClip: 1023, hard: true
 	});
 */
 	var max = this.mluts.length;
@@ -162,6 +172,48 @@ LUTFormats.prototype.gradeMLUT = function() {
 		this.inputs.mlutSelect.className = 'lut-opt';
 	}
 	this.updateOptions();
+}
+LUTFormats.prototype.oneOrThree = function() {
+	var cur;
+	if (this.inputs.lutUsage[0].checked) {
+		var idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
+		cur = this.grades[idx];
+	} else {
+		var idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
+		cur = this.mluts[idx];
+	}
+	// 1D or 3D
+	if (this.inputs.d[0].checked) {
+		this.inputs.oneDBox.className = 'graybox';
+		this.inputs.threeDBox.className = 'graybox-hide';
+		if (!cur.defThree) {
+			var max = cur.oneDim.length;
+			for (var j=0; j<max; j++) {
+				if (cur.oneDim[j] === cur.defDim) {
+					this.inputs.dimension[j].checked = true;
+				}
+			}
+		} else {
+			this.inputs.dimension[cur.oneDim.length-1].checked = true;
+		}
+	} else {
+		this.inputs.oneDBox.className = 'graybox-hide';
+		this.inputs.threeDBox.className = 'graybox';
+		if (cur.defThree) {
+			var max = cur.threeDim.length;
+			for (var j=0; j<max; j++) {
+				if (cur.threeDim[j] === cur.defDim) {
+					this.inputs.dimension[j+2].checked = true;
+				}
+			}
+		} else {
+			if (cur.threeDim.length > 1) {
+					this.inputs.dimension[3].checked = true;
+			} else {
+					this.inputs.dimension[2].checked = true;
+			}
+		}
+	}
 }
 LUTFormats.prototype.updateOptions = function() {
 	var cur;
@@ -283,6 +335,14 @@ LUTFormats.prototype.updateOptions = function() {
 	// Set black clip and white clip levels for the format
 	this.inputs.bClip = cur.bClip;
 	this.inputs.wClip = cur.wClip;
+	// Release hard clip option
+	if (cur.hard) {
+		this.inputs.clipCheck.disabled = true;
+		this.inputs.clipCheck.checked = true;
+	} else {
+		this.inputs.clipCheck.disabled = false;
+		this.inputs.clipCheck.checked = false;
+	}
 }
 LUTFormats.prototype.resetOptions = function() {
 	// 1D or 3D
@@ -336,6 +396,9 @@ LUTFormats.prototype.resetOptions = function() {
 	// Set black clip and white clip levels for the format
 	this.inputs.bClip = cur.bClip;
 	this.inputs.wClip = cur.wClip;
+	// Release hard clip option
+	this.inputs.clipCheck.disabled = false;
+	this.inputs.clipCheck.checked = false;
 }
 
 LUTFormats.prototype.output = function(buff) {

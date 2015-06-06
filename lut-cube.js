@@ -99,34 +99,34 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 		} else if (lower.search('domain_min') >= 0) {
 			var dom = line.substr(parseInt(lower.search('domain_min')) + 10).trim().split(/\s+/g);
 			if (!isNaN(dom[0]) && !isNaN(dom[1]) && !isNaN(dom[2])) {
-				minimum[0] = parseInt(dom[0]);
-				minimum[1] = parseInt(dom[1]);
-				minimum[2] = parseInt(dom[2]);
+				minimum[0] = parseFloat(dom[0]);
+				minimum[1] = parseFloat(dom[1]);
+				minimum[2] = parseFloat(dom[2]);
 			}
 		} else if (lower.search('domain_max') >= 0) {
 			var dom = line.substr(parseInt(lower.search('domain_max')) + 10).trim().split(/\s+/g);
 			if (!isNaN(dom[0]) && !isNaN(dom[1]) && !isNaN(dom[2])) {
-				maximum[0] = parseInt(dom[0]);
-				maximum[1] = parseInt(dom[1]);
-				maximum[2] = parseInt(dom[2]);
+				maximum[0] = parseFloat(dom[0]);
+				maximum[1] = parseFloat(dom[1]);
+				maximum[2] = parseFloat(dom[2]);
 			}
 		} else if (lower.search('lut_3d_input_range') >= 0) {
 			var ran = line.substr(parseInt(lower.search('lut_3d_input_range')) + 18).trim().split(/\s+/g);
 			if (!isNaN(ran[0]) && !isNaN(ran[1])) {
-				minimum[0] = parseInt(ran[0]);
+				minimum[0] = parseFloat(ran[0]);
 				minimum[1] = minimum[0];
 				minimum[2] = minimum[0];
-				maximum[0] = parseInt(ran[1]);
+				maximum[0] = parseFloat(ran[1]);
 				maximum[1] = maximum[0];
 				maximum[2] = maximum[0];
 			}
 		} else if (lower.search('lut_1d_input_range') >= 0) {
 			var ran = line.substr(parseInt(lower.search('lut_1d_input_range')) + 18).trim().split(/\s+/g);
 			if (!isNaN(ran[0]) && !isNaN(ran[1])) {
-				minimum[0] = parseInt(ran[0]);
+				minimum[0] = parseFloat(ran[0]);
 				minimum[1] = minimum[0];
 				minimum[2] = minimum[0];
-				maximum[0] = parseInt(ran[1]);
+				maximum[0] = parseFloat(ran[1]);
 				maximum[1] = maximum[0];
 				maximum[2] = maximum[0];
 			}
@@ -161,7 +161,7 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 			s: size,
 			min: minimum,
 			max: maximum,
-			C: [R.buffer,G.buffer,B.buffer],
+			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
 	} else {

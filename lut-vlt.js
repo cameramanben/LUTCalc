@@ -127,7 +127,7 @@ vltLUT.prototype.parse = function(title, text, lut) {
 			s: size,
 			min: minimum,
 			max: maximum,
-			C: [R.buffer,G.buffer,B.buffer],
+			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
 	} else {

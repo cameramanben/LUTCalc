@@ -129,12 +129,14 @@ document.addEventListener("DOMContentLoaded", function() {
 		lutMessage.gaSetParams();
 	}
 	lutInputs.d[0].onchange = function(){
+		lutFormats.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweaks();
 		lutMessage.gtSetParams();
 		lutMessage.gaSetParams();
 	}
 	lutInputs.d[1].onchange = function(){
+		lutFormats.oneOrThree();
 		lutGammaBox.oneOrThree();
 		lutTweaksBox.toggleTweaks();
 		lutMessage.gtSetParams();
