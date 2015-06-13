@@ -233,49 +233,6 @@ function maxHeights() {
 	left.style.height = mainHeight.toString() + 'px';
 	right.style.height = mainHeight.toString() + 'px';
 }
-// Functions available to native apps
-function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
-	lutInputs[destination].format = format;
-	if (format.toLowerCase() === 'labin') {
-        var max = content.length;
-        var data = new Uint8Array(max);
-        for (var j=0; j<max; j++) {
-            data[j] = content[j];
-        }
-        lutInputs[destination].title = fileName;
-		lutInputs[destination].buff = data.buffer;
-	} else {
-        lutInputs[destination].title = fileName;
-		lutInputs[destination].text = content.split(/[\n\u0085\u2028\u2029]|\r\n?/);
-	}
-	switch (parseInt(parentIdx)) {
-		case 10: lutTweaksBox.followUp(parseInt(parentIdx),parseInt(next));
-				break;
-	}
-}
- function loadImgFromApp(format, content, destination, parentIdx, next) {
-	var theDestination = lutInputs[destination];
-	var nextObject;
-	switch (parseInt(parentIdx)) {
-		case 8: nextObject = lutPreview;
-				break;
-	}
-// window.lutCalcApp.logOSX(content.length);
-     var max = content.length;
-     var dataString = '';
-     for (var j=0; j<max; j++) {
-         dataString += String.fromCharCode( content[j] );
-     }
-     var imgString = 'data:image/' + format + ';base64,' + btoa(dataString);
-	theDestination.pic = new Image();
-    theDestination.pic.onload = function(e){
-             window.lutCalcApp.logOSX(destination);
-   	theDestination.w = theDestination.pic.width;
-		theDestination.h = theDestination.pic.height;
-	 	nextObject.followUp(parseInt(next));
-    };
-    theDestination.pic.src = imgString;
-}
 // Helper Functions
 function fieldSet(parentElement,shadow,id) {
 	var box = document.createElement('fieldset');

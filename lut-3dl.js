@@ -9,13 +9,304 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function threedlLUT(messages, isLE) {
+function threedlLUT(messages, isLE, mesh) {
 	this.messages = messages;
 	this.isLE = isLE;
+	this.mesh = mesh;
 }
 threedlLUT.prototype.build = function(buff) {
+	var info = {};
+	this.messages.getInfo(info);
+	var lut = new Float64Array(buff);
+	var max = lut.length;
+	var d = '';
+	var max = info.dimension;
+	var mult = 1023/(max-1);
+	for (var j=0; j<max; j++) {
+		d += Math.ceil(j*mult) + ' ';
+	}
+	d = d.slice(0,d.length - 1);
+	d += "\n";
+	var t;
+	for (var r=0; r<max; r++) {
+		for (var g=0; g<max; g++) {
+			for (var b=0; b<max; b++) {
+				t = (r + (g*max) + (b*max*max))*3;
+				if (lut[ t ] > 0) {
+					d += Math.round(lut[ t ]*4095).toString() + ' ';
+				} else {
+					d += '0 ';
+				}
+				if (lut[t+1] > 0) {
+					d += Math.round(lut[t+1]*4095).toString() + ' ';
+				} else {
+					d += '0 ';
+				}
+				if (lut[t+2] > 0) {
+					d += Math.round(lut[t+2]*4095).toString() + "\n";
+				} else {
+					d += '0' + "\n";
+				}
+			}
+		}
+	}
+	if (this.mesh) {
+		return this.header(info) + d + this.footer(info);
+	} else {
+		return this.header(info) + d;
+	}
 }
-threedlLUT.prototype.header = function() {
+threedlLUT.prototype.header = function(info) {
+	var out = '# ' + info.name + "\n";
+	if (info.nul) {
+		out += '# Null LUT';
+	} else {
+		out += '# ';
+		if (info.mlut) {
+			out += 'MLUT';
+		}
+		if (info.doFC) {
+			out += '*** FALSE COLOUR - DO NOT BAKE IN *** ';
+		}
+		if (info.oneD) {
+			out += info.inGammaName + ' -> ' + info.outGammaName;
+		} else if (this.doHG) {
+			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName + '(' + info.hgGamutName + ' in the highlights)';
+		} else {
+			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName;
+		}
+		out += ', CineEI Shift ' + info.cineEI.toFixed(2).toString();
+		out += ', Black Level ' + info.blackLevel + '% IRE';
+		if (info.legalIn) {
+			out += ', Legal Input -> ';
+		} else {
+			out += ', Data Input -> ';
+		}
+		if (info.legalOut) {
+			out += 'Legal Output';
+		} else {
+			out += 'Data Output';
+		}
+	}
+	out += ' - Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
+	if (this.mesh) {
+		out += '3DMESH' + "\n";
+		out += 'Mesh ';
+		switch (info.dimension) {
+			case 9: out += '3 ';
+					break;
+			case 17: out += '4 ';
+					break;
+			case 33: out += '5 ';
+					break;
+			case 65: out += '6 ';
+					break;
+			case 129: out += '7 ';
+					break;
+		}
+		out += '12' + "\n";
+	}
+	return out;
+}
+threedlLUT.prototype.footer = function(info) {
+	var out = '';
+	out += 'LUT8' + "\n";
+	out += 'gamma 1.0' + "\n";
+	return out;
 }
 threedlLUT.prototype.parse = function(title, text, lut) {
+	var size = false;
+	var minimum = [0,0,0];
+	var maximum = [1,1,1];
+	var maxIn = 0;
+	var maxOut = false;
+	var mOut = 0;
+	var format = 'threedl1';
+	var mesh = false;
+	var inBits = false;
+	var outBits = false;
+	var shaper;
+	var max = text.length;
+	if (max === 0) {
+		return false;
+	}
+	var i;
+	for (i=0; i<max; i++) {
+		var line = text[i].trim();
+		var lower = line.toLowerCase();
+		var j = line.charAt(0);
+		if ((!isNaN(parseFloat(j)) && isFinite(j)) || j === '-') {
+			// The first line with just numbers will be the shaper
+			var shape = line.trim().split(/\s+/g);
+			var m = shape.length;
+			shaper = new Float64Array(m);
+			for (var l=0; l<m; l++) {
+				shaper[l] = parseFloat(shape[l]);
+				if (shaper[l] > maxIn) {
+					maxIn = shaper[l];
+				}
+				if (isNaN(shaper[l])) {
+					return false;
+				}
+			}
+			i++;
+			break;
+		} else if (lower.search('3dmesh') >= 0) {
+			// 3DMESH line distinguishes two types
+			mesh = true;
+			format = 'threedl2';
+		} else if (lower.search('mesh') >= 0) {
+			mesh = true;
+			format = 'threedl2';
+			var bits = line.substr(lower.search('lut_3d_size') + 4).trim().split(/\s+/g);
+			if (!isNaN(bits[0]) && !isNaN(bits[1])) {
+				inBits = parseInt(bits[0]);
+				size = Math.pow(2,inBits)+1;
+				outBits = parseInt(bits[1]);
+				maxOut = Math.pow(2,outBits)-1;
+			}
+		} else if (lower.search('gamma') >= 0) {
+			// Unused at the moment
+		} else if (lower.search('lut8') >= 0) {
+			// Unused at the moment
+		}
+	}
+	if (!size) {
+		// 3D LUT dimension does not need to match shaper, without 'Mesh', must be gauged from the number of entries. Yuck!
+		size = 0;
+		for (var k=i; k<max; k++) {
+			var line = text[k].trim();
+			var j = line.charAt(0);
+			if ((!isNaN(parseFloat(j)) && isFinite(j)) || j === '-') {
+				size++;
+			}
+		}
+		size = Math.round(Math.pow(size, 1/3));
+	}
+	if (size > 0) {
+		var spline = false;
+		var doShaper = false;
+		var m = shaper.length;
+		if (maxIn < 511) {
+			maxIn = 255;
+		} else if (maxIn < 2047) {
+			maxIn = 1023;
+		} else if (maxIn < 8191) {
+			maxIn = 4095;
+		} else if (maxIn < 32767) {
+			maxIn = 16383;
+		} else {
+			maxIn = 65535;
+		}
+		for (var j=0; j<m; j++) {
+			if (Math.round(shaper[j]) !== Math.ceil(maxIn*j/(m-1))) {
+				doShaper = true;
+			}
+		}
+		if (doShaper) {
+			for (var j=0; j<m; j++) {
+				shaper[j] /= maxIn;
+			}
+			var lutSpline = new LUTSpline(shaper.buffer);
+			spline = new Float64Array(lutSpline.getReverse());
+		}
+		var arraySize = size*size*size;
+		var R = new Float64Array(arraySize);
+		var G = new Float64Array(arraySize);
+		var B = new Float64Array(arraySize);
+		var s=0;
+		var r=0;
+		var g=0;
+		var b=0;
+		var t;
+		for (var k=i; k<max; k++) {
+			var line = text[k].trim();
+			var j = line.charAt(0);
+			if ((!isNaN(parseFloat(j)) && isFinite(j)) || j === '-') {
+				var vals = line.split(/\s+/g);
+				if (!isNaN(vals[0]) && !isNaN(vals[1]) && !isNaN(vals[2])) {
+					t = r + (g*size) + (b*size*size);
+					R[t] = parseFloat(vals[0]);
+					G[t] = parseFloat(vals[1]);
+					B[t] = parseFloat(vals[2]);
+					if (maxOut) {
+						R[t] /= maxOut;
+						G[t] /= maxOut;
+						B[t] /= maxOut;
+					} else {
+						if (R[s] > mOut) {
+							mOut = R[s];
+						}
+						if (G[s] > mOut) {
+							mOut = G[s];
+						}
+						if (B[s] > mOut) {
+							mOut = B[s];
+						}
+					}
+					b++;
+					if (b === size) {
+						b=0;
+						g++;
+					}
+					if (g === size) {
+						g=0;
+						r++;
+					}
+					s++;
+				}
+			} else if (lower.search('gamma') >= 0) {
+				// Unused at the moment
+			} else if (lower.search('lut8') >= 0) {
+				// Unused at the moment
+			}
+		}
+		if (s === arraySize) {
+			if (!maxOut) {
+				if (mOut < 511) {
+					maxOut = 255;
+				} else if (mOut < 2047) {
+					maxOut = 1023;
+				} else if (mOut < 8191) {
+					maxOut = 4095;
+				} else if (mOut < 32767) {
+					maxOut = 16383;
+				} else {
+					maxOut = 65535;
+				}
+				for (var j=0; j<arraySize; j++) {
+					R[j] /= maxOut;
+					G[j] /= maxOut;
+					B[j] /= maxOut;
+				}
+			}
+			if (doShaper) {
+				lut.setDetails({
+					title: title,
+					format: format,
+					dims: 3,
+					s: size,
+					min: minimum,
+					max: maximum,
+					spline: spline.buffer,
+					C: [R.buffer,G.buffer,B.buffer]
+				});
+			} else {
+				lut.setDetails({
+					title: title,
+					format: format,
+					dims: 3,
+					s: size,
+					min: minimum,
+					max: maximum,
+					C: [R.buffer,G.buffer,B.buffer]
+				});
+			}
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
 }

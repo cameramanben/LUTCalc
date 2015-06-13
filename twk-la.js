@@ -16,6 +16,7 @@ function TWKLA(tweaksBox, inputs, messages, files, formats) {
 	this.files = files;
 	this.formats = formats;
 	this.validExts = this.formats.validExts();
+	this.isTxt = this.formats.isTxt();
 	this.p = 10;
 	this.messages.addUI(this.p,this);
 	this.io();
@@ -297,13 +298,16 @@ TWKLA.prototype.createRadioElement = function(name, checked) {
 }
 TWKLA.prototype.getFile = function() {
 	var validExts = [];
+	var isTxt = [];
 	if (this.newOpt.checked) {
 		validExts = this.validExts.slice(0);
+		isTxt = this.isTxt.slice(0);
 	} else {
 		validExts = ['lacube','labin'];
+		isTxt = [true, false];
 	}
 	if (this.inputs.isApp || this.fileInput.value !== '') {
-		this.files.loadLUTFromInput(this.fileInput, validExts, 'laFileData', this, 0);
+		this.files.loadLUTFromInput(this.fileInput, validExts, isTxt, 'laFileData', this, 0);
 	}
 }
 TWKLA.prototype.followUp = function(input) {
@@ -320,7 +324,12 @@ TWKLA.prototype.gotFile = function() {
 	if (this.newOpt.checked) {
 		this.analysisBox.className = 'twk-tab';
 		this.inputs.lutAnalyst.reset();
-		var parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.inLUT);
+		var parsed = false;
+		if (this.inputs.laFileData.isTxt) {
+			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.inLUT);
+		} else {
+			var parsed2 = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst.inLUT);
+		}
 		if (parsed) {
 			this.title.value = this.inputs.lutAnalyst.getTitle('in');
 			this.doButton.className = 'twk-button';

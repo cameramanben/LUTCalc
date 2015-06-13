@@ -16,6 +16,7 @@ function LUTFormats(inputs, messages, file) {
 	this.formats = [];
 	this.types = [];
 	this.exts = [];
+	this.txt = [];
 	this.mluts = [];
 	this.grades = [];
 	this.formatsList();
@@ -50,20 +51,25 @@ LUTFormats.prototype.io = function() {
 	this.inputs.addInput('wClip', 67025937); // 1023 * 65519 (the largest integer representable with a 16-bit half float)
 }
 LUTFormats.prototype.formatsList = function() {
-	this.addFormat('cube','cube',new cubeLUT(this.messages, this.inputs.isLE));
-	this.addFormat('vlt','vlt',new vltLUT(this.messages, this.inputs.isLE));
-	this.addFormat('ilut','ilut',new davinciiLUT(this.messages, this.inputs.isLE));
-	this.addFormat('olut','olut',new davincioLUT(this.messages, this.inputs.isLE));
-	this.addFormat('lut','lut',new lutLUT(this.messages, this.inputs.isLE));
+	this.addFormat('cube','cube',true,new cubeLUT(this.messages, this.inputs.isLE));
+	this.addFormat('vlt','vlt',true,new vltLUT(this.messages, this.inputs.isLE));
+	this.addFormat('threedl1','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, false));
+	this.addFormat('threedl2','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, true));
+	this.addFormat('ilut','ilut',true,new davinciiLUT(this.messages, this.inputs.isLE));
+	this.addFormat('olut','olut',true,new davincioLUT(this.messages, this.inputs.isLE));
+	this.addFormat('lut','lut',true,new lutLUT(this.messages, this.inputs.isLE));
+	this.addFormat('spi1d','spi1d',true,new spi1dLUT(this.messages, this.inputs.isLE));
+	this.addFormat('spi3d','spi3d',true,new spi3dLUT(this.messages, this.inputs.isLE));
 }
-LUTFormats.prototype.addFormat = function(type,ext,format) {
+LUTFormats.prototype.addFormat = function(type,ext,txt,format) {
 	this.types.push(type);
 	this.exts.push(ext);
+	this.txt.push(txt);
 	this.formats.push(format);
 }
 LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
-		title: 'General cube LUT', type: 'cube',
+		title: 'General cube LUT (.cube)', type: 'cube',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 33,
@@ -72,7 +78,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve cube', type: 'cube',
+		title: 'DaVinci Resolve (.cube)', type: 'cube',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
@@ -81,7 +87,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'Lumetri / Speedgrade cube', type: 'cube',
+		title: 'Lumetri / Speedgrade (.cube)', type: 'cube',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
@@ -90,7 +96,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve 1D ilut', type: 'ilut',
+		title: 'DaVinci Resolve 1D (.ilut)', type: 'ilut',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [16384], threeDim: [],
 		defDim: 16384,
@@ -99,7 +105,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve 1D olut', type: 'olut',
+		title: 'DaVinci Resolve 1D (.olut)', type: 'olut',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [4096], threeDim: [],
 		defDim: 4096,
@@ -108,13 +114,58 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: 0, wClip: 1023, hard: false
 	});
 	this.grades.push({
-		title: 'Assimilate 1D lut', type: 'lut',
+		title: 'Assimilate 1D (.lut)', type: 'lut',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [4096], threeDim: [],
 		defDim: 4096,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		bClip: 0, wClip: 1023, hard: true
+	});
+	this.grades.push({
+		title: 'Assimilate 3D (.3dl)', type: 'threedl1',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [16,32,64],
+		defDim: 32,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 1023, hard: false
+	});
+	this.grades.push({
+		title: 'SPI 3D (.spi3d)', type: 'spi3d',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [16,32,64],
+		defDim: 32,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: 'SPI 1D (.spi1d)', type: 'spi1d',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [4096,16384], threeDim: [],
+		defDim: 4096,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: 'Flame 3D (.3dl)', type: 'threedl1',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17,33,65],
+		defDim: 17,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 1023, hard: false
+	});
+	this.grades.push({
+		title: 'Lustre 3D (.3dl)', type: 'threedl2',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17,33,65],
+		defDim: 33,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		bClip: 0, wClip: 1023, hard: false
 	});
 	var max = this.grades.length;
 	var max2 = this.types.length;
@@ -129,7 +180,7 @@ LUTFormats.prototype.gradesList = function() {
 }
 LUTFormats.prototype.mlutsList = function() {
 	this.mluts.push({
-		title: 'Sony User 3D MLUT', type: 'cube',
+		title: 'Sony User 3D MLUT (.cube)', type: 'cube',
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33],
 		defDim: 33,
@@ -139,7 +190,7 @@ LUTFormats.prototype.mlutsList = function() {
 	});
 /*
 	this.mluts.push({
-		title: 'Varicam 3D MLUT', type: 'vlt',
+		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17],
 		defDim: 17,
@@ -161,6 +212,9 @@ LUTFormats.prototype.mlutsList = function() {
 }
 LUTFormats.prototype.validExts = function() {
 	return this.exts.slice(0);
+}
+LUTFormats.prototype.isTxt = function() {
+	return this.txt.slice(0);
 }
 
 LUTFormats.prototype.gradeMLUT = function() {
@@ -422,11 +476,11 @@ LUTFormats.prototype.build = function(type,buff) {
 	}
 	return false;
 }
-LUTFormats.prototype.parse = function(ext, title, text, lut) {
+LUTFormats.prototype.parse = function(ext, title, data, lut) {
 	var max = this.types.length;
 	for (var j=0; j<max; j++) {
 		if (this.exts[j] === ext) {
-			return this.formats[j].parse(title, text, lut);
+			return this.formats[j].parse(title, data, lut);
 		}
 	}
 	return false;

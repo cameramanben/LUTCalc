@@ -31,7 +31,7 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 }
 LUTFile.prototype.saveBinary = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveBIN(new Uint8Array(data), this.filename(fileName), extension);
+        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName) + '.' + extension);
 		return true;
@@ -40,7 +40,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 		return false;
 	}
 }
-LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination, parentObject, next) {
+LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, isTxt, destination, parentObject, next) {
 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.p, next);
 	} else {
@@ -48,6 +48,7 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination
 		var valid = false;
 		var dot = file.name.lastIndexOf('.');
 		var ext = '';
+		var isBin = false;
 		if (dot != -1) {
 			dot++;
 			ext = file.name.substr(dot).toLowerCase();
@@ -55,6 +56,7 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination
 			for (var i=0; i<max; i++) {
 				if (ext === extensions[i]) {
 					valid = true;
+					isBin = !isTxt[i];
 					break;
 				}
 			}
@@ -65,10 +67,11 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination
 				var localDestination = this.inputs[destination];
 				localDestination.format = ext;
 				localDestination.title = file.name.substr(0,file.name.length-ext.length-1);
-				if (ext === 'labin') {
+				if (isBin) {
 					reader.onload = (function(theFile){
 						var theDestination = localDestination;
     					return function(e){
+ 	  						theDestination.isTxt = false;
     						theDestination.buff = e.target.result;
 							parentObject.followUp(next);
     					};
@@ -82,6 +85,7 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, destination
 					reader.onload = (function(theFile){
 						var theDestination = localDestination;
     					return function(e){
+    						theDestination.isTxt = true;
     						theDestination.text = e.target.result.split(/[\n\u0085\u2028\u2029]|\r\n?/);
 							parentObject.followUp(next);
     					};
@@ -156,4 +160,47 @@ LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination
 }
 LUTFile.prototype.filename = function(filename) {
 	return filename.replace(/[^a-z0-9_\-\ ]/gi, '').replace(/[^a-z0-9_\-]/gi, '_');
+}
+// Functions available to native apps
+function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
+	lutInputs[destination].format = format;
+	if (format.toLowerCase() === 'labin') {
+        var max = content.length;
+        var data = new Uint8Array(max);
+        for (var j=0; j<max; j++) {
+            data[j] = content[j];
+        }
+        lutInputs[destination].title = fileName;
+		lutInputs[destination].buff = data.buffer;
+	} else {
+        lutInputs[destination].title = fileName;
+		lutInputs[destination].text = content.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+	}
+	switch (parseInt(parentIdx)) {
+		case 10: lutTweaksBox.followUp(parseInt(parentIdx),parseInt(next));
+				break;
+	}
+}
+function loadImgFromApp(format, content, destination, parentIdx, next) {
+	var theDestination = lutInputs[destination];
+	var nextObject;
+	switch (parseInt(parentIdx)) {
+		case 8: nextObject = lutPreview;
+				break;
+	}
+// window.lutCalcApp.logOSX(content.length);
+     var max = content.length;
+     var dataString = '';
+     for (var j=0; j<max; j++) {
+         dataString += String.fromCharCode( content[j] );
+     }
+     var imgString = 'data:image/' + format + ';base64,' + btoa(dataString);
+	theDestination.pic = new Image();
+    theDestination.pic.onload = function(e){
+             window.lutCalcApp.logOSX(destination);
+   	theDestination.w = theDestination.pic.width;
+		theDestination.h = theDestination.pic.height;
+	 	nextObject.followUp(parseInt(next));
+    };
+    theDestination.pic.src = imgString;
 }
