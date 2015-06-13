@@ -33,7 +33,7 @@ lutLUT.prototype.header = function() {
 	var out = '# Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
 	out += '# "' + info.name + '"' + "\n";
 	if (info.nul) {
-		out += '# Null LUT';
+		out += '# Null LUT' + "\n";
 	} else {
 		out += '# ';
 		if (info.mlut) {

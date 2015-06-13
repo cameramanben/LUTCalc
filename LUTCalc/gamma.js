@@ -70,6 +70,8 @@ LUTGamma.prototype.gammaList = function() {
 		'BMD Film', [ 0.235007442, -0.021824371, 0.367608584, 3.806255082, 10, 0.424864581, 0.123774409, 0.114884702, 0.005175 ]));
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film4k', [ 0.335139188, -0.031122728, 0.582240631, 2.733951639, 10, 0.477563161, 0.218018711, 0.10830634, 0.005175 ]));
+//	this.gammas.push(new LUTGammaLog(
+//		'RedLog', [ 0.054934837, -0.003437557, 0.427733972, 3.334384833, 10, 0.693295949, 0.033527711, 0.068022346, 0.0003 ]));
 	this.gammas.push(new LUTGammaLog(
 		'Cineon', [ 0.0000000000, 0.0000000000, 0.1260649940,22.2791018600, 2.6907845340, 0.2595160220, 0.2702335160, 0.0000000000, 0 ]));
 	this.rec709 = this.gammas.length;
@@ -80,7 +82,9 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLin(
 		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966 ]));
 	this.gammas.push(new LUTGammaLin(
-		'Linear', [ 1.00000000, 1.00000000, 0.00000000,999.0000000,999.0000000 ]));
+		'Scene Linear IRE', [ 1.00000000, 1.00000000, 0.00000000,999.0000000,999.0000000 ]));
+	this.gammas.push(new LUTGammaLin(
+		'Scene Reflectance', [ 1.00000000, 0.9, 0.00000000,999.0000000,999.0000000 ]));
 	this.gammas.push(new LUTGammaLUT(
 		'Rec709 (800%)',
 		{
@@ -1765,8 +1769,15 @@ LUTGammaGen.prototype.linToLegal = function(input) {
 function LUTGammaLUT(name,params) {
 	this.name = name;
 	this.lut = new LUTs();
-	this.lut.setInfo(name, params.format, 1, params.size, params.min, params.max);
-	this.lut.addLUT(params.lut.buffer);
+	this.lut.setDetails({
+		title: name,
+		format: params.format,
+		dims: 1,
+		s: params.size,
+		min: params.min,
+		max: params.max,
+		C: [params.lut.buffer]
+	});
 	this.iso = 800;
 	this.cat = 2;
 }
