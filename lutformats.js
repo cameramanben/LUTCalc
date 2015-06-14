@@ -51,10 +51,13 @@ LUTFormats.prototype.io = function() {
 	this.inputs.addInput('wClip', 67025937); // 1023 * 65519 (the largest integer representable with a 16-bit half float)
 }
 LUTFormats.prototype.formatsList = function() {
-	this.addFormat('cube','cube',true,new cubeLUT(this.messages, this.inputs.isLE));
+	this.addFormat('cube1','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 1));
+	this.addFormat('cube2','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 2));
+	this.addFormat('cube3','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 3));
 	this.addFormat('vlt','vlt',true,new vltLUT(this.messages, this.inputs.isLE));
-	this.addFormat('threedl1','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, false));
-	this.addFormat('threedl2','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, true));
+	this.addFormat('threedl1','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, 1));
+	this.addFormat('threedl2','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, 2));
+	this.addFormat('threedl3','3dl',true,new threedlLUT(this.messages, this.inputs.isLE, 3));
 	this.addFormat('ilut','ilut',true,new davinciiLUT(this.messages, this.inputs.isLE));
 	this.addFormat('olut','olut',true,new davincioLUT(this.messages, this.inputs.isLE));
 	this.addFormat('lut','lut',true,new lutLUT(this.messages, this.inputs.isLE));
@@ -69,31 +72,37 @@ LUTFormats.prototype.addFormat = function(type,ext,txt,format) {
 }
 LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
-		title: 'General cube LUT (.cube)', type: 'cube',
+		title: 'General cube LUT (.cube)', type: 'cube1',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 33,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve (.cube)', type: 'cube',
+		title: 'DaVinci Resolve (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 67025937, hard: false
+		scaling: true,
+		setBits: false,
+		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'Lumetri / Speedgrade (.cube)', type: 'cube',
+		title: 'Lumetri / Speedgrade (.cube)', type: 'cube3',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
-		bClip: 0, wClip: 67025937, hard: false
+		scaling: true,
+		setBits: false,
+		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'DaVinci Resolve 1D (.ilut)', type: 'ilut',
@@ -102,6 +111,8 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 16384,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -111,6 +122,8 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 4096,
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 1023, hard: false
 	});
 	this.grades.push({
@@ -120,6 +133,8 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 4096,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
@@ -129,7 +144,9 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 32,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 1023, hard: false
+		scaling: false,
+		setBits: true, inBits: 10, outBits: 12,
+		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
 		title: 'SPI 3D (.spi3d)', type: 'spi3d',
@@ -138,6 +155,8 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 32,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -147,7 +166,9 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 4096,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 67025937, hard: false
+		scaling: true,
+		setBits: false,
+		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'Flame 3D (.3dl)', type: 'threedl1',
@@ -156,7 +177,9 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 17,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 1023, hard: false
+		scaling: false,
+		setBits: true, inBits: 10, outBits: 12,
+		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
 		title: 'Lustre 3D (.3dl)', type: 'threedl2',
@@ -165,7 +188,20 @@ LUTFormats.prototype.gradesList = function() {
 		defDim: 33,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
-		bClip: 0, wClip: 1023, hard: false
+		scaling: false,
+		setBits: true, inBits: 10, outBits: 12,
+		bClip: 0, wClip: 1023, hard: true
+	});
+	this.grades.push({
+		title: 'Kodak 3D (.3dl)', type: 'threedl3',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17,33,65],
+		defDim: 17,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: true, inBits: 10, outBits: 12,
+		bClip: 0, wClip: 1023, hard: true
 	});
 	var max = this.grades.length;
 	var max2 = this.types.length;
@@ -180,12 +216,14 @@ LUTFormats.prototype.gradesList = function() {
 }
 LUTFormats.prototype.mlutsList = function() {
 	this.mluts.push({
-		title: 'Sony User 3D MLUT (.cube)', type: 'cube',
+		title: 'Sony User 3D MLUT (.cube)', type: 'cube1',
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33],
 		defDim: 33,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
 		bClip: 64, wClip: 1023, hard: false
 	});
 /*
@@ -196,6 +234,8 @@ LUTFormats.prototype.mlutsList = function() {
 		defDim: 17,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		scaling: false,
+		setBits: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 */
@@ -385,6 +425,22 @@ LUTFormats.prototype.updateOptions = function() {
 		} else if (cur.legOut) {
 			this.inputs.outRange[0].checked = true;
 		}
+	}
+	// Custom input scaling
+	if (cur.scaling) {
+		this.inputs.scaleBox.className = 'emptybox';
+	} else {
+		this.inputs.scaleBox.className = 'emptybox-hide';
+		this.inputs.scaleMin.value = '0';
+		this.inputs.scaleMax.value = '1.0';
+	}
+	// set LUT bit depth (3dl etc.)
+	if (cur.setBits) {
+		this.inputs.bitsBox.className = 'emptybox';
+		this.inputs.inBitsSelect.options[(cur.inBits - 10)/2].selected = true;
+		this.inputs.outBitsSelect.options[(cur.outBits - 10)/2].selected = true;
+	} else {
+		this.inputs.bitsBox.className = 'emptybox-hide';
 	}
 	// Set black clip and white clip levels for the format
 	this.inputs.bClip = cur.bClip;

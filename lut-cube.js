@@ -9,9 +9,10 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function cubeLUT(messages, isLE) {
+function cubeLUT(messages, isLE, flavour) {
 	this.messages = messages;
 	this.isLE = isLE;
+	this.flavour = flavour;
 }
 cubeLUT.prototype.build = function(buff) {
 	var lut = new Float64Array(buff);
@@ -32,6 +33,18 @@ cubeLUT.prototype.header = function() {
 		out += 'LUT_1D_SIZE ' + info.dimension.toString() + "\n";
 	} else {
 		out += 'LUT_3D_SIZE ' + info.dimension.toString() + "\n";
+	}
+	if (this.flavour !== 1 && this.scaleMin !== 0 && this.scaleMax !== 1) {
+		if (this.flavour === 2) {
+			if (info.dimension === 1) {
+				out += 'LUT_3D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
+			} else {
+				out += 'LUT_1D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
+			}
+		} else if (this.flavour === 3) {
+			out += 'DOMAIN_MIN ' + info.scaleMin + ' ' + info.scaleMin + ' ' + info.scaleMin + "\n";
+			out += 'DOMAIN_MAX ' + info.scaleMax + ' ' + info.scaleMax + ' ' + info.scaleMax + "\n";
+		}
 	}
 	if (info.nul) {
 		out += '# Null LUT';

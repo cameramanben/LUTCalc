@@ -21,6 +21,10 @@ function LUTGamma() {
 	this.inL = false;
 	this.outL = true;
 	this.clip = false;
+	
+	this.sIn = false;
+	this.sMin = 0;
+	this.sMax = 1;
 
 	this.bClip = 0;
 	this.mClip = 67025937;
@@ -347,6 +351,15 @@ LUTGamma.prototype.setParams = function(params) {
 	if (typeof params.outL === 'boolean') {
 		this.outL = params.outL;
 	}
+	if (typeof params.scaleMin === 'number' && typeof params.scaleMax === 'number') {
+		this.sMin = params.scaleMin;
+		this.sMax = params.scaleMax;
+		if (this.sMin !== 0 || this.sMax !== 1) {
+			this.sIn = true;
+		} else {
+			this.sIn = false;
+		}
+	}
 	if (typeof params.clip === 'boolean') {
 		this.clip = params.clip;
 		out.clip = this.clip;
@@ -511,17 +524,26 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 	if (this.clip && cMax>1) {
 		cMax = 1;
 	}
+	var k;
 	if (this.nul) {
 		if (this.inL) {
 			if (this.outL) {
 				for (var j=0; j<max; j++) {
-					o[(j*3)] = Math.min(cMax,Math.max(cMin,(s+j)/d));
+					k = (s+j)/d; // between 0-1.0
+					if (this.sIn) {
+						k = (k*(this.sMax-this.sMin)) + this.sMin;
+					}
+					o[(j*3)] = Math.min(cMax,Math.max(cMin,k));
 					o[(j*3)+1] = o[(j*3)];
 					o[(j*3)+2] = o[(j*3)];
 				}
 			} else {
 				for (var j=0; j<max; j++) {
-					o[(j*3)] = Math.min(cMax,Math.max(cMin,((876*(s+j)/d)+64)/1023));
+					k = (s+j)/d; // between 0-1.0
+					if (this.sIn) {
+						k = (k*(this.sMax-this.sMin)) + this.sMin;
+					}
+					o[(j*3)] = Math.min(cMax,Math.max(cMin,((876*k)+64)/1023));
 					o[(j*3)+1] = o[(j*3)];
 					o[(j*3)+2] = o[(j*3)];
 				}
@@ -529,13 +551,21 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 		} else {
 			if (this.outL) {
 				for (var j=0; j<max; j++) {
-					o[(j*3)] = Math.min(cMax,Math.max(cMin,((1023*(s+j)/d)-64)/876));
+					k = (s+j)/d; // between 0-1.0
+					if (this.sIn) {
+						k = (k*(this.sMax-this.sMin)) + this.sMin;
+					}
+					o[(j*3)] = Math.min(cMax,Math.max(cMin,((1023*k)-64)/876));
 					o[(j*3)+1] = o[(j*3)];
 					o[(j*3)+2] = o[(j*3)];
 				}
 			} else {
 				for (var j=0; j<max; j++) {
-					o[(j*3)] = Math.min(cMax,Math.max(cMin,(s+j)/d));
+					k = (s+j)/d; // between 0-1.0
+					if (this.sIn) {
+						k = (k*(this.sMax-this.sMin)) + this.sMin;
+					}
+					o[(j*3)] = Math.min(cMax,Math.max(cMin,k));
 					o[(j*3)+1] = o[(j*3)];
 					o[(j*3)+2] = o[(j*3)];
 				}
@@ -544,10 +574,14 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 	} else {
 		var l;
 		for (var j=0; j<max; j++) {
+			k = (s+j)/d; // between 0-1.0
+			if (this.sIn) {
+				k = (k*(this.sMax-this.sMin)) + this.sMin;
+			}
 			if (this.inL) {
-				o[(j*3)] = this.gammas[this.curIn].linFromLegal((s+j)/d)*this.eiMult;
+				o[(j*3)] = this.gammas[this.curIn].linFromLegal(k)*this.eiMult;
 			} else {
-				o[(j*3)] = this.gammas[this.curIn].linFromData((s+j)/d)*this.eiMult;
+				o[(j*3)] = this.gammas[this.curIn].linFromData(k)*this.eiMult;
 			}
 			if (this.doASCCDL) {
 				// Green
@@ -689,18 +723,30 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 				for (var G=0; G<max; G++) {
 					for (var R=0; R<max; R++) {
 						var j = (R+(G*max))*3;
-						o[(j*3)] = R/d;
-						o[(j*3)+1] = G/d;
-						o[(j*3)+2] = B/d;
+						if (this.sIn) {
+							o[(j*3)] = ((R/d)*(this.sMax-this.sMin)) + this.sMin;
+							o[(j*3)+1] = ((G/d)*(this.sMax-this.sMin)) + this.sMin;
+							o[(j*3)+2] = ((B/d)*(this.sMax-this.sMin)) + this.sMin;
+						} else {
+							o[(j*3)] = R/d;
+							o[(j*3)+1] = G/d;
+							o[(j*3)+2] = B/d;
+						}
 					}
 				}
 			} else {
 				for (var G=0; G<max; G++) {
 					for (var R=0; R<max; R++) {
 						var j = (R+(G*max))*3;
-						o[ j ] = ((876*R/d)+64)/1023;
-						o[j+1] = ((876*G/d)+64)/1023;
-						o[j+2] = ((876*B/d)+64)/1023;
+						if (this.sIn) {
+							o[ j ] = ((876*(((R/d)*(this.sMax-this.sMin)) + this.sMin))+64)/1023;
+							o[j+1] = ((876*(((G/d)*(this.sMax-this.sMin)) + this.sMin))+64)/1023;
+							o[j+2] = ((876*(((B/d)*(this.sMax-this.sMin)) + this.sMin))+64)/1023;
+						} else {
+							o[ j ] = ((876*(R/d))+64)/1023;
+							o[j+1] = ((876*(G/d))+64)/1023;
+							o[j+2] = ((876*(B/d))+64)/1023;
+						}
 					}
 				}
 			}
@@ -709,18 +755,30 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 				for (var G=0; G<max; G++) {
 					for (var R=0; R<max; R++) {
 						var j = (R+(G*max))*3;
-						o[ j ] = ((1023*R/d)-64)/876;
-						o[j+1] = ((1023*G/d)-64)/876;
-						o[j+2] = ((1023*B/d)-64)/876;
+						if (this.sIn) {
+							o[ j ] = ((1023*(((R/d)*(this.sMax-this.sMin)) + this.sMin))-64)/876;
+							o[j+1] = ((1023*(((G/d)*(this.sMax-this.sMin)) + this.sMin))-64)/876;
+							o[j+2] = ((1023*(((B/d)*(this.sMax-this.sMin)) + this.sMin))-64)/876;
+						} else {
+							o[ j ] = ((1023*R/d)-64)/876;
+							o[j+1] = ((1023*G/d)-64)/876;
+							o[j+2] = ((1023*B/d)-64)/876;
+						}
 					}
 				}
 			} else {
 				for (var G=0; G<max; G++) {
 					for (var R=0; R<max; R++) {
 						var j = (R+(G*max))*3;
-						o[ j ] = R/d;
-						o[j+1] = G/d;
-						o[j+2] = B/d;
+						if (this.sIn) {
+							o[ j ] = ((R/d)*(this.sMax-this.sMin)) + this.sMin;
+							o[j+1] = ((G/d)*(this.sMax-this.sMin)) + this.sMin;
+							o[j+2] = ((B/d)*(this.sMax-this.sMin)) + this.sMin;
+						} else {
+							o[ j ] = R/d;
+							o[j+1] = G/d;
+							o[j+2] = B/d;
+						}
 					}
 				}
 			}
@@ -730,18 +788,30 @@ LUTGamma.prototype.inCalcRGB = function(p,t,i) {
 			for (var G=0; G<max; G++) {
 				for (var R=0; R<max; R++) {
 					var j = (R+(G*max))*3;
-					o[ j ] = this.gammas[this.curIn].linFromLegal(R/d);
-					o[j+1] = this.gammas[this.curIn].linFromLegal(G/d);
-					o[j+2] = this.gammas[this.curIn].linFromLegal(B/d);
+					if (this.sIn) {
+						o[ j ] = this.gammas[this.curIn].linFromLegal(((R/d)*(this.sMax-this.sMin)) + this.sMin);
+						o[j+1] = this.gammas[this.curIn].linFromLegal(((G/d)*(this.sMax-this.sMin)) + this.sMin);
+						o[j+2] = this.gammas[this.curIn].linFromLegal(((B/d)*(this.sMax-this.sMin)) + this.sMin);
+					} else {
+						o[ j ] = this.gammas[this.curIn].linFromLegal(R/d);
+						o[j+1] = this.gammas[this.curIn].linFromLegal(G/d);
+						o[j+2] = this.gammas[this.curIn].linFromLegal(B/d);
+					}
 				}
 			}
 		} else {
 			for (var G=0; G<max; G++) {
 				for (var R=0; R<max; R++) {
 					var j = (R+(G*max))*3;
-					o[ j ] = this.gammas[this.curIn].linFromData(R/d);
-					o[j+1] = this.gammas[this.curIn].linFromData(G/d);
-					o[j+2] = this.gammas[this.curIn].linFromData(B/d);
+					if (this.sIn) {
+						o[ j ] = this.gammas[this.curIn].linFromData(((R/d)*(this.sMax-this.sMin)) + this.sMin);
+						o[j+1] = this.gammas[this.curIn].linFromData(((G/d)*(this.sMax-this.sMin)) + this.sMin);
+						o[j+2] = this.gammas[this.curIn].linFromData(((B/d)*(this.sMax-this.sMin)) + this.sMin);
+					} else {
+						o[ j ] = this.gammas[this.curIn].linFromData(R/d);
+						o[j+1] = this.gammas[this.curIn].linFromData(G/d);
+						o[j+2] = this.gammas[this.curIn].linFromData(B/d);
+					}
 				}
 			}
 		}

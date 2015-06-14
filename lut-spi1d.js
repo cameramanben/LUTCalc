@@ -33,7 +33,7 @@ spi1dLUT.prototype.build = function(buff) {
 spi1dLUT.prototype.header = function(info) {
 	var out = '';
 	out += 'Version 1' + "\n";
-	out += 'From 0.0 1.0' + "\n";
+	out += 'From ' + info.scaleMin.toString() + ' '  + info.scaleMax.toString() + "\n";
 	out += 'Length ' + info.dimension.toString() + "\n";
 	if (info.doASCCDL) {
 		out += 'Components 3' + "\n";

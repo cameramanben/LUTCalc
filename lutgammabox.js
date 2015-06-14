@@ -148,17 +148,17 @@ LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
 		var max = this.outGamutSelect.options.length;
 		for (var i=0; i<max; i++) {
-			if (this.outGamutSelect.options[i].value == this.gamutPass) {
+			if (parseInt(this.outGamutSelect.options[i].value) === this.gamutPass) {
 				this.outGamutSelect.options[i].selected = true;
 				break;
 			}
 		}
-	} else if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamutPass) {
+	} else if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.outGamutSelect.options[0].selected = true;
 	}
 }
 LUTGammaBox.prototype.changeOutGamut = function() {
-	if (this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value == this.gamutPass) {
+	if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected = true;
 	} else if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
 		var max = this.inGamutSelect.length;

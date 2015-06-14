@@ -71,6 +71,18 @@ LUTLutBox.prototype.io = function() {
 	this.gradeOpt = this.createRadioElement('lutusage', true);
 	this.mlutOpt = this.createRadioElement('lutusage', false);
 	this.inputs.addInput('lutUsage',[this.gradeOpt,this.mlutOpt]);
+	this.scaleBox = document.createElement('div');
+	this.inputs.addInput('scaleBox',this.scaleBox);
+	this.scaleMin = document.createElement('input');
+	this.inputs.addInput('scaleMin',this.scaleMin);
+	this.scaleMax = document.createElement('input');
+	this.inputs.addInput('scaleMax',this.scaleMax);
+	this.bitsBox = document.createElement('div');
+	this.inputs.addInput('bitsBox',this.bitsBox);
+	this.inBitsSelect = document.createElement('select');
+	this.inputs.addInput('inBitsSelect',this.inBitsSelect);
+	this.outBitsSelect = document.createElement('select');
+	this.inputs.addInput('outBitsSelect',this.outBitsSelect);
 	this.lutClipCheck = document.createElement('input');
 	this.inputs.addInput('clipCheck',this.lutClipCheck);
 }
@@ -139,6 +151,47 @@ LUTLutBox.prototype.ui = function() {
 	this.lutType.appendChild(this.inputs.gradeSelect);
 	this.lutType.appendChild(this.inputs.mlutSelect);
 	this.lutUsage.appendChild(this.lutType);
+	// LUT input scaling (useful for narrow range gammas such as Rec709 or linear)
+	this.scaleBox.setAttribute('class','emptybox-hide');
+	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Scaling:')));
+	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Min')));
+	this.scaleMin.setAttribute('type','number');
+	this.scaleMin.setAttribute('step','any');
+	this.scaleMin.className = 'ireinput';
+	this.scaleMin.value = '0';
+	this.scaleBox.appendChild(this.scaleMin);
+	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Max')));
+	this.scaleMax.setAttribute('type','number');
+	this.scaleMax.setAttribute('step','any');
+	this.scaleMax.className = 'ireinput';
+	this.scaleMax.value = '1';
+	this.scaleBox.appendChild(this.scaleMax);
+	this.lutUsage.appendChild(this.scaleBox);
+	// LUT integer bit depths for files which require it (eg 3dl)
+	this.bitsBox.setAttribute('class','emptybox-hide');
+	this.bitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Bits')));
+	for (var j=10; j<18; j += 2) {
+		var option1 = document.createElement('option');
+		option1.value = j;
+		option1.appendChild(document.createTextNode(j.toString() + ' (0-' + (Math.pow(2,j)-1).toString() + ')'));
+		if (j === 10) {
+			option1.selected = true;
+		}
+		var option2 = document.createElement('option');
+		option2.value = j;
+		option2.appendChild(document.createTextNode(j.toString() + ' (0-' + (Math.pow(2,j)-1).toString() + ')'));
+		if (j === 12) {
+			option2.selected = true;
+		}
+		this.inBitsSelect.appendChild(option1);
+		this.outBitsSelect.appendChild(option2);
+	}
+	this.inBitsSelect.className = 'lut-opt';
+	this.outBitsSelect.className = 'lut-opt';
+	this.bitsBox.appendChild(this.inBitsSelect);
+	this.bitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Bits')));
+	this.bitsBox.appendChild(this.outBitsSelect);
+	this.lutUsage.appendChild(this.bitsBox);
 	// 0-1.0 hard clip checkbox
 	this.lutClip = document.createElement('div');
 	this.lutClip.setAttribute('class','emptybox');
@@ -213,4 +266,8 @@ LUTLutBox.prototype.getInfo = function(info) {
 	} else {
 		info.legalOut = false;
 	}
+	info.scaleMin = parseFloat(this.scaleMin.value);
+	info.scaleMax = parseFloat(this.scaleMax.value);
+	info.inBits = parseInt(this.inBitsSelect.options[this.inBitsSelect.options.selectedIndex].value);
+	info.outBits = parseInt(this.outBitsSelect.options[this.outBitsSelect.options.selectedIndex].value);
 }
