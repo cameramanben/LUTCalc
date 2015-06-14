@@ -402,6 +402,7 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gtL++;
 					if (this.gtL === this.gtT) {
 						this.gtL = 0;
+						this.ui[8].isChanged();
 					}
 					break;
 			case 27: // Set LA Title

@@ -13,6 +13,7 @@ function LUTFormats(inputs, messages, file) {
 	this.inputs = inputs;
 	this.messages = messages;
 	this.file = file;
+	this.curIdx = 0;
 	this.formats = [];
 	this.types = [];
 	this.exts = [];
@@ -310,109 +311,120 @@ LUTFormats.prototype.oneOrThree = function() {
 	}
 }
 LUTFormats.prototype.updateOptions = function() {
-	var cur;
+	var curIdx = this.curIdx;
+	var cur, idx;
 	if (this.inputs.lutUsage[0].checked) {
-		var idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
 		cur = this.grades[idx];
 	} else {
-		var idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
 		cur = this.mluts[idx];
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;
 	this.inputs.d[1].disabled = !cur.threeD;
-	if (cur.defThree) {
-		this.inputs.oneDBox.className = 'graybox-hide';
-		this.inputs.threeDBox.className = 'graybox';
-		this.inputs.d[1].checked = true;
-	} else {
-		this.inputs.oneDBox.className = 'graybox';
-		this.inputs.threeDBox.className = 'graybox-hide';
-		this.inputs.d[0].checked = true;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		if (cur.defThree) {
+			this.inputs.oneDBox.className = 'graybox-hide';
+			this.inputs.threeDBox.className = 'graybox';
+			this.inputs.d[1].checked = true;
+		} else {
+			this.inputs.oneDBox.className = 'graybox';
+			this.inputs.threeDBox.className = 'graybox-hide';
+			this.inputs.d[0].checked = true;
+		}
 	}
 	// 1D size options
-	var dim;	
-	this.inputs.dimension[0].className = 'lut-opt-hide';
-	this.inputs.dimensionLabel[0].className = 'lut-opt-hide';
-	this.inputs.dimension[1].className = 'lut-opt-hide';	
-	this.inputs.dimensionLabel[1].className = 'lut-opt-hide';
-	if (cur.oneDim.length > 0) {
-		dim = cur.oneDim[0].toString()
-		this.inputs.dimension[0].value = dim;
-		if (cur.defDim === cur.oneDim[0]) {
-			this.inputs.dimension[0].checked = true;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		var dim;	
+		this.inputs.dimension[0].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[0].className = 'lut-opt-hide';
+		this.inputs.dimension[1].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[1].className = 'lut-opt-hide';
+		if (cur.oneDim.length > 0) {
+			dim = cur.oneDim[0].toString()
+			this.inputs.dimension[0].value = dim;
+			if (cur.defDim === cur.oneDim[0]) {
+				this.inputs.dimension[0].checked = true;
+			}
+			this.inputs.dimensionLabel[0].removeChild(this.inputs.dimensionLabel[0].firstChild);
+			this.inputs.dimensionLabel[0].appendChild(document.createTextNode(dim));
+			this.inputs.dimension[0].className = 'lut-opt';
+			this.inputs.dimensionLabel[0].className = 'lut-opt';
 		}
-		this.inputs.dimensionLabel[0].removeChild(this.inputs.dimensionLabel[0].firstChild);
-		this.inputs.dimensionLabel[0].appendChild(document.createTextNode(dim));
-		this.inputs.dimension[0].className = 'lut-opt';
-		this.inputs.dimensionLabel[0].className = 'lut-opt';
-	}
-	if (cur.oneDim.length === 2) {
-		dim = cur.oneDim[1].toString()
-		this.inputs.dimension[1].value = dim;
-		if (cur.defDim === cur.oneDim[1]) {
-			this.inputs.dimension[1].checked = true;
+		if (cur.oneDim.length === 2) {
+			dim = cur.oneDim[1].toString()
+			this.inputs.dimension[1].value = dim;
+			if (cur.defDim === cur.oneDim[1]) {
+				this.inputs.dimension[1].checked = true;
+			}
+			this.inputs.dimensionLabel[1].removeChild(this.inputs.dimensionLabel[1].firstChild);
+			this.inputs.dimensionLabel[1].appendChild(document.createTextNode(dim));
+			this.inputs.dimension[1].className = 'lut-opt';
+			this.inputs.dimensionLabel[1].className = 'lut-opt';
 		}
-		this.inputs.dimensionLabel[1].removeChild(this.inputs.dimensionLabel[1].firstChild);
-		this.inputs.dimensionLabel[1].appendChild(document.createTextNode(dim));
-		this.inputs.dimension[1].className = 'lut-opt';
-		this.inputs.dimensionLabel[1].className = 'lut-opt';
 	}
 	// 3D size options
-	this.inputs.dimension[2].className = 'lut-opt-hide';
-	this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
-	this.inputs.dimension[3].className = 'lut-opt-hide';	
-	this.inputs.dimensionLabel[3].className = 'lut-opt-hide';	
-	this.inputs.dimension[4].className = 'lut-opt-hide';	
-	this.inputs.dimensionLabel[4].className = 'lut-opt-hide';
-	if (cur.threeDim.length > 0) {
-		dim = cur.threeDim[0].toString();
-		this.inputs.dimension[2].value = dim;
-		if (cur.defDim === cur.threeDim[0]) {
-			this.inputs.dimension[2].checked = true;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		this.inputs.dimension[2].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
+		this.inputs.dimension[3].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[3].className = 'lut-opt-hide';	
+		this.inputs.dimension[4].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[4].className = 'lut-opt-hide';
+		if (cur.threeDim.length > 0) {
+			dim = cur.threeDim[0].toString();
+			this.inputs.dimension[2].value = dim;
+			if (cur.defDim === cur.threeDim[0]) {
+				this.inputs.dimension[2].checked = true;
+			}
+			this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
+			this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
+			this.inputs.dimension[2].className = 'lut-opt';
+			this.inputs.dimensionLabel[2].className = 'lut-opt';
 		}
-		this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
-		this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
-		this.inputs.dimension[2].className = 'lut-opt';
-		this.inputs.dimensionLabel[2].className = 'lut-opt';
-	}
-	if (cur.threeDim.length > 1) {
-		dim = cur.threeDim[1].toString();
-		this.inputs.dimension[3].value = dim;
-		if (cur.defDim === cur.threeDim[1]) {
-			this.inputs.dimension[3].checked = true;
+		if (cur.threeDim.length > 1) {
+			dim = cur.threeDim[1].toString();
+			this.inputs.dimension[3].value = dim;
+			if (cur.defDim === cur.threeDim[1]) {
+				this.inputs.dimension[3].checked = true;
+			}
+			this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
+			this.inputs.dimensionLabel[3].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
+			this.inputs.dimension[3].className = 'lut-opt';
+			this.inputs.dimensionLabel[3].className = 'lut-opt';
 		}
-		this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
-		this.inputs.dimensionLabel[3].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
-		this.inputs.dimension[3].className = 'lut-opt';
-		this.inputs.dimensionLabel[3].className = 'lut-opt';
-	}
-	if (cur.threeDim.length === 3) {
-		dim = cur.threeDim[2].toString();
-		this.inputs.dimension[4].value = dim;
-		if (cur.defDim === cur.threeDim[2]) {
-			this.inputs.dimension[4].checked = true;
+		if (cur.threeDim.length === 3) {
+			dim = cur.threeDim[2].toString();
+			this.inputs.dimension[4].value = dim;
+			if (cur.defDim === cur.threeDim[2]) {
+				this.inputs.dimension[4].checked = true;
+			}
+			this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
+			this.inputs.dimensionLabel[4].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
+			this.inputs.dimension[4].className = 'lut-opt';
+			this.inputs.dimensionLabel[4].className = 'lut-opt';
 		}
-		this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
-		this.inputs.dimensionLabel[4].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
-		this.inputs.dimension[4].className = 'lut-opt';
-		this.inputs.dimensionLabel[4].className = 'lut-opt';
 	}
 	// Input range
-	this.inputs.inRange[0].disabled = !cur.legIn;
-	this.inputs.inRange[1].disabled = !cur.datIn;
-	if (cur.defLegIn) {
-		this.inputs.inRange[0].checked = true;
-	} else {
-		this.inputs.inRange[1].checked = true;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		this.inputs.inRange[0].disabled = !cur.legIn;
+		this.inputs.inRange[1].disabled = !cur.datIn;
+		if (cur.defLegIn) {
+			this.inputs.inRange[0].checked = true;
+		} else {
+			this.inputs.inRange[1].checked = true;
+		}
 	}
 	// Output range
-	this.inputs.outRange[0].disabled = !cur.legOut;
-	this.inputs.outRange[1].disabled = !cur.datOut;
-	if (cur.defLegOut) {
-		this.inputs.outRange[0].checked = true;
-	} else {
-		this.inputs.outRange[1].checked = true;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		this.inputs.outRange[0].disabled = !cur.legOut;
+		this.inputs.outRange[1].disabled = !cur.datOut;
+		if (cur.defLegOut) {
+			this.inputs.outRange[0].checked = true;
+		} else {
+			this.inputs.outRange[1].checked = true;
+		}
 	}
 	// Check if input and output range can match for log or null output
 	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
@@ -427,32 +439,42 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Custom input scaling
-	if (cur.scaling) {
-		this.inputs.scaleBox.className = 'emptybox';
-	} else {
-		this.inputs.scaleBox.className = 'emptybox-hide';
-		this.inputs.scaleMin.value = '0';
-		this.inputs.scaleMax.value = '1.0';
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		if (cur.scaling) {
+			this.inputs.scaleBox.className = 'emptybox';
+		} else {
+			this.inputs.scaleBox.className = 'emptybox-hide';
+			this.inputs.scaleMin.value = '0';
+			this.inputs.scaleMax.value = '1.0';
+		}
 	}
 	// set LUT bit depth (3dl etc.)
-	if (cur.setBits) {
-		this.inputs.bitsBox.className = 'emptybox';
-		this.inputs.inBitsSelect.options[(cur.inBits - 10)/2].selected = true;
-		this.inputs.outBitsSelect.options[(cur.outBits - 10)/2].selected = true;
-	} else {
-		this.inputs.bitsBox.className = 'emptybox-hide';
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		if (cur.setBits) {
+			this.inputs.bitsBox.className = 'emptybox';
+			this.inputs.inBitsSelect.options[(cur.inBits - 10)/2].selected = true;
+			this.inputs.outBitsSelect.options[(cur.outBits - 10)/2].selected = true;
+		} else {
+			this.inputs.bitsBox.className = 'emptybox-hide';
+		}
 	}
 	// Set black clip and white clip levels for the format
-	this.inputs.bClip = cur.bClip;
-	this.inputs.wClip = cur.wClip;
-	// Release hard clip option
-	if (cur.hard) {
-		this.inputs.clipCheck.disabled = true;
-		this.inputs.clipCheck.checked = true;
-	} else {
-		this.inputs.clipCheck.disabled = false;
-		this.inputs.clipCheck.checked = false;
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		this.inputs.bClip = cur.bClip;
+		this.inputs.wClip = cur.wClip;
 	}
+	// Release hard clip option
+	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+		if (cur.hard) {
+			this.inputs.clipCheck.disabled = true;
+			this.inputs.clipCheck.checked = true;
+		} else {
+			this.inputs.clipCheck.disabled = false;
+			this.inputs.clipCheck.checked = false;
+		}
+	}
+	// Line up current and changed indeces
+	this.curIdx = idx;
 }
 LUTFormats.prototype.resetOptions = function() {
 	// 1D or 3D

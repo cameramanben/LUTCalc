@@ -79,16 +79,16 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLog(
 		'Cineon', [ 0.0000000000, 0.0000000000, 0.1260649940,22.2791018600, 2.6907845340, 0.2595160220, 0.2702335160, 0.0000000000, 0 ]));
 	this.rec709 = this.gammas.length;
-	this.gammas.push(new LUTGammaLin(
+	this.gammas.push(new LUTGammaGam(
 		'Rec709', [ 1/0.45, 4.50000000, 0.09900000, 0.01800000, 0.08100000 ]));
-	this.gammas.push(new LUTGammaLin(
+	this.gammas.push(new LUTGammaGam(
 		'Rec2020 12-bit', [ 1/0.45, 4.50000000, 0.09930000, 0.01810000, 0.08145000 ]));
-	this.gammas.push(new LUTGammaLin(
+	this.gammas.push(new LUTGammaGam(
 		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966 ]));
 	this.gammas.push(new LUTGammaLin(
-		'Scene Linear IRE', [ 1.00000000, 1.00000000, 0.00000000,999.0000000,999.0000000 ]));
+		'Scene Linear IRE', 0.2));
 	this.gammas.push(new LUTGammaLin(
-		'Scene Reflectance', [ 1.00000000, 0.9, 0.00000000,999.0000000,999.0000000 ]));
+		'Scene Reflectance', 0.18));
 	this.gammas.push(new LUTGammaLUT(
 		'Rec709 (800%)',
 		{
@@ -1462,17 +1462,17 @@ LUTGammaArri.prototype.linFromData = function(input) {
 LUTGammaArri.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 }
-function LUTGammaLin(name,params) {
+function LUTGammaGam(name,params) {
 	this.name = name;
 	this.params = params;
 	this.gamma = params[0].toFixed(2).toString();
 	this.iso = 800;
 	this.cat = 1;
 }
-LUTGammaLin.prototype.changeISO = function(iso) {
+LUTGammaGam.prototype.changeISO = function(iso) {
 	this.iso = iso;
 }
-LUTGammaLin.prototype.linToD = function(buff) {
+LUTGammaGam.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	this.linToL(buff)
@@ -1480,7 +1480,7 @@ LUTGammaLin.prototype.linToD = function(buff) {
 		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 }
-LUTGammaLin.prototype.linToL = function(buff) {
+LUTGammaGam.prototype.linToL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
@@ -1491,7 +1491,7 @@ LUTGammaLin.prototype.linToL = function(buff) {
 		}
 	}
 }
-LUTGammaLin.prototype.linFromD = function(buff) {
+LUTGammaGam.prototype.linFromD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
@@ -1499,7 +1499,7 @@ LUTGammaLin.prototype.linFromD = function(buff) {
 	}
 	this.linFromL(buff)
 }
-LUTGammaLin.prototype.linFromL = function(buff) {
+LUTGammaGam.prototype.linFromL = function(buff) {
 	var c= new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
@@ -1510,25 +1510,75 @@ LUTGammaLin.prototype.linFromL = function(buff) {
 		}
 	}
 }
-LUTGammaLin.prototype.linToData = function(input) {
+LUTGammaGam.prototype.linToData = function(input) {
 	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
 }
-LUTGammaLin.prototype.linToLegal = function(input) {
+LUTGammaGam.prototype.linToLegal = function(input) {
 	if (input >= this.params[3]) {
 		return ((1 + this.params[2]) * Math.pow(input,1 / this.params[0])) - this.params[2];
 	} else {
 		return this.params[1] * input;
 	}
 }
-LUTGammaLin.prototype.linFromData = function(input) {
+LUTGammaGam.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 }
-LUTGammaLin.prototype.linFromLegal = function(input) {
+LUTGammaGam.prototype.linFromLegal = function(input) {
 	if (input >= this.params[4]) {
 		return Math.pow((input + this.params[2])/(1 + this.params[2]),this.params[0]);		
 	} else {
 		return (input / this.params[1]);
 	}
+}
+function LUTGammaLin(name, zero) {
+	this.name = name;
+	this.iso = 800;
+	this.zero = zero / 0.2;
+	this.gamma = 1;
+	this.cat = 1;
+}
+LUTGammaLin.prototype.changeISO = function(iso) {
+	this.iso = iso;
+}
+LUTGammaLin.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * this.zero * 0.85630498533724) + 0.06256109481916;
+	}
+}
+LUTGammaLin.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = c[j] * this.zero;
+	}
+}
+LUTGammaLin.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / (0.85630498533724 * this.zero);
+	}
+}
+LUTGammaLin.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = c[j] / this.zero;
+	}
+}
+LUTGammaLin.prototype.linToData = function(input) {
+	return (input * this.zero * 0.85630498533724) + 0.06256109481916;
+}
+LUTGammaLin.prototype.linToLegal = function(input) {
+	return input * this.zero;
+}
+LUTGammaLin.prototype.linFromData = function(input) {
+	return (input - 0.06256109481916) / (0.85630498533724 * this.zero);
+}
+LUTGammaLin.prototype.linFromLegal = function(input) {
+	return input / this.zero;
 }
 function LUTGammaPQ(name,params) {
 	this.name = name;
