@@ -1,5 +1,12 @@
 LUTCalc Changelog
 =================
+v1.9 RC9
+--------
+* Added support for more LUT formats: .3dl (Flame / Assimilate flavour, Lustre flavour and Kodak flavour), .lut (assimilate flavour), .spi1d and .spi3d.
+* LUTAnalyst support for nonlinear input values (shaper LUTs) and scaled input values (common with narrow dynamic range inputs such as linear or Rec709).
+* Scaled inputs can be used with LUT generation (where the format allows it).
+* Bugfixes
+
 v1.9 RC8
 --------
 * Bugfix

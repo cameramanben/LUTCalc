@@ -162,7 +162,7 @@ TWKLA.prototype.ui = function() {
 	this.analysisBox.appendChild(this.dim65);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('65x65x65')));
 	this.analysisBox.appendChild(document.createElement('br'));
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Scaling  ')));
+	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Range  ')));
 	this.analysisBox.appendChild(this.dlOpt);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('D→L')));
 	this.analysisBox.appendChild(this.ddOpt);

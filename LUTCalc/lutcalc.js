@@ -154,6 +154,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.outRange[1].onchange = function(){
 		lutMessage.gaSetParams();
 	}
+	lutInputs.scaleMin.oninput = function(){
+		lutMessage.gaSetParams();
+	}
+	lutInputs.scaleMax.oninput = function(){
+		lutMessage.gaSetParams();
+	}
 	//		Preview Box
 	lutInputs.preFileButton.onclick = function(){
 		var e = new MouseEvent('click');

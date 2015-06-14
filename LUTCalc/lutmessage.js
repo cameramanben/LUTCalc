@@ -118,6 +118,10 @@ LUTMessage.prototype.gaSetParams = function() {
 		d.bClip = this.inputs.bClip;
 		d.wClip = this.inputs.wClip;
 	}
+	if (typeof this.inputs.scaleMin.value !== 'undefined') {
+		d.scaleMin = parseFloat(this.inputs.scaleMin.value);
+		d.scaleMax = parseFloat(this.inputs.scaleMax.value);
+	}
 	this.ui[3].getTFParams(d);
 	var max = this.gas.length;
 	for (var i=0; i<max; i++) {
@@ -398,6 +402,7 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gtL++;
 					if (this.gtL === this.gtT) {
 						this.gtL = 0;
+						this.ui[8].isChanged();
 					}
 					break;
 			case 27: // Set LA Title

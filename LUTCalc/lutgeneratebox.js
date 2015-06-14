@@ -85,12 +85,9 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 	}
 }
 LUTGenerateBox.prototype.got1D = function(d) {
-console.log('Vals' + d.vals);
 	var o = new Float64Array(d.o);
 	this.lut.set(o, d.start*3);
 	this.lT += d.vals;
-console.log('lT' + this.lT);
-console.log('dimension' + this.dimension);
 	if (this.lT === this.dimension) {
 		this.lT = 0;
 		this.formats.output(this.lut.buffer);

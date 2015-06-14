@@ -689,7 +689,7 @@ LUTInfoBox.prototype.createCustLut = function() {
 	lut3.setAttribute('id','ins-cust-lut-3');
 	this.custLutInfo.appendChild(lut3);
 	this.addInfo(this.custLutInfo,false,null,"'Save Cube' stores the 1D and 3D LUTAnalyst LUTs as a single file combining two cube files. 'Save Binary' stores them in a smaller, simpler binary format. LUTCalc For Mac cannot currently save the binary versions, though it can read them.");
-	this.addInfo(this.custLutInfo,false,null,"'Re-Analyse' reperforms the analysis, for example if the LUT Scaling was incorrectly set.");
+	this.addInfo(this.custLutInfo,false,null,"'Re-Analyse' reperforms the analysis, for example if the LUT Range was incorrectly set.");
 	this.custLut.style.display = 'none';
 	this.custLut.appendChild(this.custLutInfo);
 }

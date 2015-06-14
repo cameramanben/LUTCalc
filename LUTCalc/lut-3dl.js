@@ -9,10 +9,10 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function threedlLUT(messages, isLE, mesh) {
+function threedlLUT(messages, isLE, flavour) {
 	this.messages = messages;
 	this.isLE = isLE;
-	this.mesh = mesh;
+	this.flavour = flavour;
 }
 threedlLUT.prototype.build = function(buff) {
 	var info = {};
@@ -21,61 +21,84 @@ threedlLUT.prototype.build = function(buff) {
 	var max = lut.length;
 	var d = '';
 	var max = info.dimension;
-	var mult = 1023/(max-1);
+	var mult = (Math.pow(2,info.inBits)-1)/(max-1);
 	for (var j=0; j<max; j++) {
 		d += Math.ceil(j*mult) + ' ';
 	}
 	d = d.slice(0,d.length - 1);
 	d += "\n";
 	var t;
+	mult = Math.pow(2,info.outBits)-1;
 	for (var r=0; r<max; r++) {
 		for (var g=0; g<max; g++) {
 			for (var b=0; b<max; b++) {
 				t = (r + (g*max) + (b*max*max))*3;
 				if (lut[ t ] > 0) {
-					d += Math.round(lut[ t ]*4095).toString() + ' ';
+					d += Math.round(lut[ t ]*mult).toString() + ' ';
 				} else {
 					d += '0 ';
 				}
 				if (lut[t+1] > 0) {
-					d += Math.round(lut[t+1]*4095).toString() + ' ';
+					d += Math.round(lut[t+1]*mult).toString() + ' ';
 				} else {
 					d += '0 ';
 				}
 				if (lut[t+2] > 0) {
-					d += Math.round(lut[t+2]*4095).toString() + "\n";
+					d += Math.round(lut[t+2]*mult).toString() + "\n";
 				} else {
 					d += '0' + "\n";
 				}
 			}
 		}
 	}
-	if (this.mesh) {
-		return this.header(info) + d + this.footer(info);
-	} else {
-		return this.header(info) + d;
+	switch (this.flavour) {
+		case 1: // Flame
+			return this.header(info) + d
+			break;
+		case 2: // Lustre
+			return this.header(info) + d + this.footer(info);
+			break;
+		case 3: // Kodak
+			return this.header(info) + d
+			break;
 	}
 }
 threedlLUT.prototype.header = function(info) {
-	var out = '# ' + info.name + "\n";
+	var out = '';
+	var date = new Date();
+	out += '# Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + ' #' + "\n";
+	out += '# IDENTIFICATION: LUTCalc - 3DLUT' + "\n";
+	out += '# CREATOR: LUTCalc ' + info.version + "\n";
+	out += '# USER: LUTCalc' + "\n";
+	out += '# DATA: ' +
+			date.getUTCFullYear() + '-' +
+			this.addZero(date.getUTCMonth()) + '-' +
+			this.addZero(date.getUTCDate()) + 'T' +
+			this.addZero(date.getUTCHours()) + ':' +
+			this.addZero(date.getUTCMinutes()) + ':' +
+			this.addZero(date.getUTCSeconds()) + ' #' + "\n";
+	out += '# NUMBER OF COLUMNS: 3' + "\n";
+	out += '# NUMBER OF ROWS: ' + Math.pow(info.dimension,3).toString() + "\n";
+	out += '# NUMBER OF NODES: ' + info.dimension.toString() + "\n";
+	out += '# INPUT RANGE: ' + info.inBits.toString() + "\n";
+	out += '# OUTPUT RANGE: ' + info.outBits.toString() + "\n";
+	out += '# TITLE : ' + info.name + "\n";
+	out += '# DESCRIPTION : ';
 	if (info.nul) {
-		out += '# Null LUT';
+		out += ' Null LUT';
 	} else {
-		out += '# ';
 		if (info.mlut) {
 			out += 'MLUT';
 		}
 		if (info.doFC) {
 			out += '*** FALSE COLOUR - DO NOT BAKE IN *** ';
 		}
-		if (info.oneD) {
-			out += info.inGammaName + ' -> ' + info.outGammaName;
-		} else if (this.doHG) {
+		if (this.doHG) {
 			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName + '(' + info.hgGamutName + ' in the highlights)';
 		} else {
 			out += info.inGammaName + '/' + info.inGamutName + ' -> ' + info.outGammaName + '/' + info.outGamutName;
 		}
-		out += ', CineEI Shift ' + info.cineEI.toFixed(2).toString();
+		out += ', Stop Shift ' + info.cineEI.toFixed(2).toString();
 		out += ', Black Level ' + info.blackLevel + '% IRE';
 		if (info.legalIn) {
 			out += ', Legal Input -> ';
@@ -88,8 +111,8 @@ threedlLUT.prototype.header = function(info) {
 			out += 'Data Output';
 		}
 	}
-	out += ' - Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
-	if (this.mesh) {
+	out += "\n";
+	if (this.flavour === 2) {
 		out += '3DMESH' + "\n";
 		out += 'Mesh ';
 		switch (info.dimension) {
@@ -104,9 +127,15 @@ threedlLUT.prototype.header = function(info) {
 			case 129: out += '7 ';
 					break;
 		}
-		out += '12' + "\n";
+		out += info.outBits.toString() + "\n";
 	}
 	return out;
+}
+threedlLUT.prototype.addZero = function(i) {
+    if (i < 10) {
+        i = '0' + i;
+    }
+    return i;
 }
 threedlLUT.prototype.footer = function(info) {
 	var out = '';
@@ -207,8 +236,9 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 			for (var j=0; j<m; j++) {
 				shaper[j] /= maxIn;
 			}
-			var lutSpline = new LUTSpline(shaper.buffer);
-			spline = new Float64Array(lutSpline.getReverse());
+//			var lutSpline = new LUTSpline(shaper.buffer);
+//			spline = new Float64Array(lutSpline.getReverse());
+			spline = shaper;
 		}
 		var arraySize = size*size*size;
 		var R = new Float64Array(arraySize);
