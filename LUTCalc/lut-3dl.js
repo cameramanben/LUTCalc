@@ -148,11 +148,11 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 	var minimum = [0,0,0];
 	var maximum = [1,1,1];
 	var maxIn = 0;
+	var setMaxIn = false;
 	var maxOut = false;
 	var mOut = 0;
 	var format = 'threedl1';
 	var mesh = false;
-	var inBits = false;
 	var outBits = false;
 	var shaper;
 	var max = text.length;
@@ -171,7 +171,7 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 			shaper = new Float64Array(m);
 			for (var l=0; l<m; l++) {
 				shaper[l] = parseFloat(shape[l]);
-				if (shaper[l] > maxIn) {
+				if (!setMaxIn && shaper[l] > maxIn) {
 					maxIn = shaper[l];
 				}
 				if (isNaN(shaper[l])) {
@@ -187,13 +187,35 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 		} else if (lower.search('mesh') >= 0) {
 			mesh = true;
 			format = 'threedl2';
-			var bits = line.substr(lower.search('lut_3d_size') + 4).trim().split(/\s+/g);
+			var bits = line.substr(lower.search('mesh') + 4).trim().split(/\s+/g);
 			if (!isNaN(bits[0]) && !isNaN(bits[1])) {
-				inBits = parseInt(bits[0]);
-				size = Math.pow(2,inBits)+1;
+				size = Math.pow(2,parseInt(bits[0]))+1;
 				outBits = parseInt(bits[1]);
 				maxOut = Math.pow(2,outBits)-1;
 			}
+		} else if (lower.search('number of rows:') >= 0) {
+			var val = parseFloat(line.substr(lower.search('number of rows:') + 15));
+			if (!isNaN(val)) {
+				size = Math.round(Math.pow(val, 1/3));
+			}
+		} else if (lower.search('number of nodes:') >= 0) {
+			var val = parseInt(line.substr(lower.search('number of nodes:') + 16));
+			if (!isNaN(val)) {
+				size = val;
+			}
+		} else if (lower.search('input range:') >= 0) {
+			var val = parseInt(line.substr(lower.search('input range:') + 12).trim());
+			if (!isNaN(val)) {
+				maxIn = Math.pow(2,val)-1;
+			}
+		} else if (lower.search('output range:') >= 0) {
+			var val = parseInt(line.substr(lower.search('output range:') + 13).trim());
+			if (!isNaN(val)) {
+				outBits = val;
+				maxOut = Math.pow(2,outBits)-1;
+			}
+		} else if (lower.search('title:') >= 0) {
+			title = line.substr(lower.search('title:') + 6).trim();
 		} else if (lower.search('gamma') >= 0) {
 			// Unused at the moment
 		} else if (lower.search('lut8') >= 0) {
@@ -216,16 +238,18 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 		var spline = false;
 		var doShaper = false;
 		var m = shaper.length;
-		if (maxIn < 511) {
-			maxIn = 255;
-		} else if (maxIn < 2047) {
-			maxIn = 1023;
-		} else if (maxIn < 8191) {
-			maxIn = 4095;
-		} else if (maxIn < 32767) {
-			maxIn = 16383;
-		} else {
-			maxIn = 65535;
+		if (!setMaxIn) {
+			if (maxIn < 511) {
+				maxIn = 255;
+			} else if (maxIn < 2047) {
+				maxIn = 1023;
+			} else if (maxIn < 8191) {
+				maxIn = 4095;
+			} else if (maxIn < 32767) {
+				maxIn = 16383;
+			} else {
+				maxIn = 65535;
+			}
 		}
 		for (var j=0; j<m; j++) {
 			if (Math.round(shaper[j]) !== Math.ceil(maxIn*j/(m-1))) {
