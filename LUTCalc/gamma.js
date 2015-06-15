@@ -1941,7 +1941,27 @@ function LUTGammaLA(name) {
 }
 LUTGammaLA.prototype.setLUT = function(lut) {
 	this.lut = new LUTs();
-	this.lut.setDetails(lut);
+	this.lut.setDetails({
+		title: lut.title,
+		format: lut.format,
+		dims: lut.dims,
+		s: lut.s,
+		min: [lut.min[0],lut.min[1],lut.min[2]],
+		max: [lut.max[0],lut.max[1],lut.max[2]],
+		rgbl: lut.rgbl,
+		C: lut.C
+	});
+	this.rev = new LUTs();
+	this.rev.setDetails({
+		title: lut.title,
+		format: lut.format,
+		dims: lut.dims,
+		s: lut.s,
+		min: [lut.min[0],lut.min[1],lut.min[2]],
+		max: [lut.max[0],lut.max[1],lut.max[2]],
+		rgbl: lut.rgbl,
+		C: lut.R
+	});
 }
 LUTGammaLA.prototype.setTitle = function(name) {
 	this.name = name;
@@ -1969,6 +1989,26 @@ LUTGammaLA.prototype.linToL = function(buff) {
 		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 	}
 }
+LUTGammaLA.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = this.rev.lLCub(c[j]);
+		if (c[j] >= 0.1673609920) {
+			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+		} else {
+			c[j] = (0.1677922920*c[j]) + -0.0155818840;
+		}
+	}
+}
+LUTGammaLA.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (input * 0.85630498533724) + 0.06256109481916;
+	}
+	this.linFromD(buff);
+}
 LUTGammaLA.prototype.linToData = function(input) {
 	if (input >= 0.0125) {
 		return this.lut.lLCub((0.2556207230 * Math.log((input * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850);
@@ -1978,6 +2018,17 @@ LUTGammaLA.prototype.linToData = function(input) {
 }
 LUTGammaLA.prototype.linToLegal = function(input) {
 	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
+}
+LUTGammaLA.prototype.linFromData = function(input) {
+ 	input = this.rev.lLCub(input);
+	if (input >= 0.1673609920) {
+		return (Math.pow(10,(input - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+	} else {
+		return (0.1677922920*input) + -0.0155818840;
+	}
+}
+LUTGammaLA.prototype.linFromLegal = function(input) {
+	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 }
 function LUTGammaNull(name) {
 	this.name = name;

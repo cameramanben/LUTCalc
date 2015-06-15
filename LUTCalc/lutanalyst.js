@@ -20,6 +20,7 @@ function LUTAnalyst(inputs, message) {
 	this.tf = new LUTs();
 	this.cs = new LUTs();
 }
+/*
 LUTAnalyst.prototype.setLUT = function(lut) {
 	switch(lut.dest) {
 		case 'in':	this.inLUT.setDetails(lut);
@@ -32,6 +33,7 @@ LUTAnalyst.prototype.setLUT = function(lut) {
 					break;
 	}
 }
+*/
 LUTAnalyst.prototype.getTitle = function(lut) {
 	switch(lut) {
 		case 'in':  this.title = this.inLUT.getTitle();
@@ -85,7 +87,10 @@ LUTAnalyst.prototype.getTF = function() {
 }
 LUTAnalyst.prototype.updateLATF = function() {
 	this.gaT = this.message.getGammaThreads();
-	this.message.gaTxAll(this.p,6,this.tf.getDetails());
+	var dets = this.tf.getDetails();
+	var rev = new LUTSpline(dets.C[0].slice(0));
+	dets.R = [rev.getReverse()];
+	this.message.gaTxAll(this.p,6,dets);
 }
 LUTAnalyst.prototype.getL = function() {
 	return this.tf.getL();

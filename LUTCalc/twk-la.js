@@ -32,8 +32,8 @@ TWKLA.prototype.io = function() {
 	// Tweak - Specific Inputs
 	this.inLUT = new LUTs();
 	this.inputs.addInput('laInLUT',this.inLUT);
-	this.inputs.addInput('laGammaLUT',{text:[]});
-	this.inputs.addInput('laGamutLUT',{text:[]});
+//	this.inputs.addInput('laGammaLUT',{text:[]});
+//	this.inputs.addInput('laGamutLUT',{text:[]});
 
 	this.analysed = document.createElement('input');
 	this.analysed.setAttribute('type','hidden');
@@ -186,6 +186,14 @@ TWKLA.prototype.toggleTweaks = function() {
 }
 TWKLA.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
+		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) !== this.inputs.gammaLA) {
+			var laOption = document.createElement('option');
+				laOption.value = this.inputs.gammaLA;
+				laOption.innerHTML = 'LA - ' + this.title.value;
+			this.inputs.inGamma.appendChild(laOption);
+		} else {
+			this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].innerHTML = 'LA - ' + this.title.value;
+		}
 		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) !== this.inputs.gammaLA) {
 			var laOption = document.createElement('option');
 				laOption.value = this.inputs.gammaLA;
@@ -211,17 +219,29 @@ TWKLA.prototype.toggleTweak = function() {
 			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 		}
 	} else {
+		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value) === this.inputs.gammaLA) {
+			this.inputs.inGamma.options[0].selected = true;
+		}
+		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) === this.inputs.gammaLA) {
+			this.inputs.inGamma.remove(this.inputs.inGamma.options.length - 1);
+		}
+		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value) === this.inputs.gammaLA) {
+			this.inputs.outGamma.options[0].selected = true;
+		}
 		if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) === this.inputs.gammaLA) {
 			this.inputs.outGamma.remove(this.inputs.outGamma.options.length - 1);
-			this.inputs.outGamma.options[0].selected = true;
+		}
+		if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.selectedIndex].value) === this.inputs.gamutLA) {
+			this.inputs.outGamut.options[0].selected = true;
 		}
 		if (parseInt(this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].value) === this.inputs.gamutLA) {
 			this.inputs.outGamut.remove(this.inputs.outGamut.options.length - 1);
-			this.inputs.outGamut.options[0].selected = true;
+		}
+		if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.selectedIndex].value) === this.inputs.gamutLA) {
+			this.inputs.twkHGSelect.options[0].selected = true;
 		}
 		if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) !== this.inputs.gamutLA) {
 			this.inputs.twkHGSelect.remove(this.inputs.twkHGSelect.options.length - 1);
-			this.inputs.twkHGSelect.options[0].selected = true;
 		}
 	}
 }
@@ -448,6 +468,9 @@ TWKLA.prototype.store = function(cube) {
 }
 TWKLA.prototype.cleanTitle = function() {
 	this.title.value = this.title.value.replace(/[/"/']/gi, '');
+	if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) === this.inputs.gammaLA) {
+		this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].innerHTML = 'LA - ' + this.title.value;
+	}
 	if (parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].value) === this.inputs.gammaLA) {
 		this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
