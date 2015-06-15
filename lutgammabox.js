@@ -120,6 +120,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 			break;
 		}
 	}
+	this.changeGammaIn();
 	max = this.inGamutSelect.length;
 	var defGamut = this.inputs.defGamutIn;
 	for (var i = 0; i < max; i++) {

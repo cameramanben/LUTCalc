@@ -172,9 +172,11 @@ function loadLUTFromApp(fileName, format, content, destination, parentIdx, next)
         }
         lutInputs[destination].title = fileName;
 		lutInputs[destination].buff = data.buffer;
+		lutInputs[destination].isTxt = false;
 	} else {
         lutInputs[destination].title = fileName;
 		lutInputs[destination].text = content.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+		lutInputs[destination].isTxt = true;
 	}
 	switch (parseInt(parentIdx)) {
 		case 10: lutTweaksBox.followUp(parseInt(parentIdx),parseInt(next));

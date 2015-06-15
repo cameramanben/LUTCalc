@@ -75,19 +75,19 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 				var rh = this.brent(I, y0, I+dx, yh, tol);
 				if (Math.abs(rl - I) < Math.abs(rh - I)) {
 					this.minMax(rl);
-					return rl;
+					return this.clamp(rl);
 				} else {
 					this.minMax(rh);
-					return rh;
+					return this.clamp(rh);
 				}
 			} else if (dl<0) { // Bracket below first guess
 				var r = this.brent(I, y0, I-dx, yl, tol);
 				this.minMax(r);
-				return r;
+				return this.clamp(r);
 			} else if (dh<0) { // Bracket above first guess
 				var r = this.brent(I, y0, I+dx, yh, tol);
 				this.minMax(r);
-				return r;
+				return this.clamp(r);
 			}
 		}
 	}
@@ -98,6 +98,15 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 		return -65536;
 	} else {
 		return 65536;
+	}
+}
+Brent.prototype.clamp = function(i) {
+	if (i > 65536) {
+		return 65536;
+	} else if (i < -65536) {
+		return -65536;
+	} else {
+		return i;
 	}
 }
 Brent.prototype.brent = function(a,fa,b,fb,rtol) {
