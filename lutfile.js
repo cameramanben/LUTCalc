@@ -190,19 +190,12 @@ function loadImgFromApp(format, content, destination, parentIdx, next) {
 		case 8: nextObject = lutPreview;
 				break;
 	}
-// window.lutCalcApp.logOSX(content.length);
      var max = content.length;
-     var dataString = '';
+     theDestination.imageData = new Float64Array(max);
+    var sample;
      for (var j=0; j<max; j++) {
-         dataString += String.fromCharCode( content[j] );
+         sample = parseFloat(content[ j ])/65535;
+         theDestination.imageData[ j ] = sample;
      }
-     var imgString = 'data:image/' + format + ';base64,' + btoa(dataString);
-	theDestination.pic = new Image();
-    theDestination.pic.onload = function(e){
-             window.lutCalcApp.logOSX(destination);
-   	theDestination.w = theDestination.pic.width;
-		theDestination.h = theDestination.pic.height;
-	 	nextObject.followUp(parseInt(next));
-    };
-    theDestination.pic.src = imgString;
+     nextObject.followUp(parseInt(next));
 }
