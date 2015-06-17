@@ -1,5 +1,12 @@
 LUTCalc Changelog
 =================
+
+v1.9 RC10
+--------
+* LUTCalc For Mac can now read in 16-bit TIFFs and PNGs for use in the preview window.
+* Added a 16-stop grayscale to the preview defaults.
+* Updated instructions.
+
 v1.9 RC9
 --------
 * Added support for more LUT formats: .3dl (Flame / Assimilate flavour, Lustre flavour and Kodak flavour), .lut (assimilate flavour), .spi1d and .spi3d.

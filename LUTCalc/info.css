@@ -5,12 +5,12 @@
 #ins-main-cam:hover {background-image: url('pngs/main-cam-g.png');margin:0;padding:0;background-size:14em 2.58125em;width:14em;height:2.58125em;}
 #ins-main-gam {background-image: url('pngs/main-gam.png');margin:0;padding:0;background-size:14em 3.10625em;width:14em;height:3.10625em;}
 #ins-main-gam:hover {background-image: url('pngs/main-gam-g.png');margin:0;padding:0;background-size:14em 3.10625em;width:14em;height:3.10625em;}
-#ins-main-twk {background-image: url('pngs/main-twk.png');margin:0;padding:0;background-size:14em 8.44375em;width:14em;height:8.44375em;}
-#ins-main-twk:hover {background-image: url('pngs/main-twk-g.png');margin:0;padding:0;background-size:14em 8.44375em;width:14em;height:8.44375em;}
-#ins-main-spacer {background-image: url('pngs/main-spacer.png');margin:0;padding:0;background-size:14em 1.4875em;width:14em;height:1.4875em;}
+#ins-main-twk {background-image: url('pngs/main-twk.png');margin:0;padding:0;background-size:14em 8.9844em;width:14em;height:8.9844em;}
+#ins-main-twk:hover {background-image: url('pngs/main-twk-g.png');margin:0;padding:0;background-size:14em 8.9844em;width:14em;height:8.9844em;}
+#ins-main-spacer {background-image: url('pngs/main-spacer.png');margin:0;padding:0;background-size:14em 2.12815em;width:14em;height:2.12815em;}
 #ins-main-right {margin:0;padding:0;display:inline-block;}
-#ins-main-lut {background-image: url('pngs/main-lut.png');margin:0;padding:0;background-size:14em 4.4625em;width:14em;height:4.4625em;}
-#ins-main-lut:hover {background-image: url('pngs/main-lut-g.png');margin:0;padding:0;background-size:14em 4.4625em;width:14em;height:4.4625em;}
+#ins-main-lut {background-image: url('pngs/main-lut.png');margin:0;padding:0;background-size:14em 5.6438em;width:14em;height:5.6438em;}
+#ins-main-lut:hover {background-image: url('pngs/main-lut-g.png');margin:0;padding:0;background-size:14em 5.6438em;width:14em;height:5.6438em;}
 #ins-main-buttons {margin:0;padding:0;width:14em;height:0.7875em;}
 #ins-main-pre {float:left;background-image: url('pngs/main-pre.png');margin:0;padding:0;background-size:6.4em 0.7875em;width:6.4em;height:0.7875em;}
 #ins-main-pre:hover {float:left;background-image: url('pngs/main-pre-g.png');margin:0;padding:0;background-size:6.4em 0.7875em;width:6.4em;height:0.7875em;}
