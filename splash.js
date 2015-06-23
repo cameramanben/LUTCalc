@@ -1,4 +1,4 @@
-/* spalsh.js
+/* splash.js
 * Changes Javascript warning into a splash screen in the LUTCalc Web App.
 * 7th October 2014
 *
@@ -9,7 +9,7 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-lutInputs.addInput('version','v1.9RC10');
+lutInputs.addInput('version','v1.9RC11');
 lutInputs.addInput('date','June 2015');
 var splash = document.getElementById('javascriptwarning');
 splash.removeChild(splash.firstChild);

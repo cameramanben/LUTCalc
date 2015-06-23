@@ -39,6 +39,11 @@ TWKFL.prototype.io = function() {
 	this.advancedCheck.className = 'twk-checkbox';
 	this.advancedCheck.checked = false;
 
+	// Camera White Balance Input
+	this.camTempInput = document.createElement('input');
+	this.camTempInput.setAttribute('type','number');
+	this.camTempInput.className = 'kelvininput';
+	this.camTempInput.value = '3200';
 	// Lamp Colour Temperature Selector
 	this.flTempSelect = document.createElement('select');
 	this.flTempSelect.className = 'twk-select';
@@ -76,6 +81,11 @@ TWKFL.prototype.ui = function() {
 	// Advanced settings Checkbox
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
 	this.box.appendChild(this.advancedCheck);
+	// Camera White Balance Input
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera White Balance')));
+	this.advancedBox.appendChild(this.camTempInput);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('K')));
+	this.advancedBox.appendChild(document.createElement('br'));
 	// Lamp Nominal Colour Temperature Selector
 	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Lamp Nominal Colour')));
 	this.advancedBox.appendChild(this.flTempSelect);
@@ -125,7 +135,7 @@ TWKFL.prototype.getCSParams = function(params) {
 	if (tweaks && tweak) {
 		out.doFL = true;
 		out.flMag = parseFloat(this.flSlider.value);
-		out.flTemp = parseInt(this.flTempInput.value);
+		out.flT = parseFloat(this.flTempInput.value)/parseFloat(this.camTempInput.value);
 		out.CAT = this.catSelect.selectedIndex;
 	} else {
 		out.doFL = false;
@@ -159,6 +169,10 @@ TWKFL.prototype.events = function() {
 	this.advancedCheck.onclick = function(here){ return function(){
 		here.toggleAdvanced();
 	};}(this);
+	this.camTempInput.onchange = function(here){ return function(){
+		here.testCamTemp();
+		here.messages.gtSetParams();
+	};}(this);
 	this.flTempSelect.onchange = function(here){ return function(){
 		here.testFLTempSelect();
 		here.messages.gtSetParams();
@@ -175,10 +189,10 @@ TWKFL.prototype.events = function() {
 TWKFL.prototype.catList = function() {
 	var CATs = [
 		'Bradford Chromatic Adaptation',
+		'CIECAT02',
 		'Von Kries',
 		'Sharp',
 		'CMCCAT2000',
-		'CAT02',
 		'XYZ Scaling'
 	];
 	var max = CATs.length;
@@ -269,5 +283,17 @@ TWKFL.prototype.testFLTemp = function() {
 			this.flTempSelect.options[j].selected = true;
 			break;
 		}
+	}
+}
+TWKFL.prototype.testCamTemp = function() {
+	var val = Math.round(parseFloat(this.camTempInput.value));
+	if (isNaN (val)) {
+		this.camTempInput.value = '3200';
+	} else if (val < 1800) {
+		this.camTempInput.value = '1800';
+	} else if (val > 21000) {
+		this.camTempInput.value = '21000';
+	} else {
+		this.camTempInput.value = val.toString();
 	}
 }

@@ -289,7 +289,7 @@ LUTMessage.prototype.startGtThreads = function() {
 	var max = this.gtT;
 	for (var i=0; i<max; i++) {
 		var _this = this;
-		this.gts[i] = new Worker('gamut.js');
+		this.gts[i] = new Worker('colourspace.js');
 		this.gts[i].onmessage = function(e) {
 			_this.gtRx(e.data);
 		};
@@ -309,7 +309,7 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 		if (T > max) {
 			for (var i=max; i<T; i++) {
 				var _this = this;
-				this.gts[i] = new Worker('gamut.js');
+				this.gts[i] = new Worker('colourspace.js');
 				this.gts[i].onmessage = function(e) {
 					_this.gtRx(e.data);
 				};

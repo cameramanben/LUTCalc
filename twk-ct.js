@@ -128,6 +128,7 @@ TWKCT.prototype.getCSParams = function(params) {
 		out.doCT = true;
 		out.camTemp = parseInt(this.ctCamInput.value);
 		out.newTemp = parseInt(this.ctNewInput.value);
+		out.dT = parseFloat(this.ctNewInput.value)/parseFloat(this.ctCamInput.value);
 		out.CAT = this.catSelect.selectedIndex;
 	} else {
 		out.doCT = false;
@@ -177,10 +178,10 @@ TWKCT.prototype.events = function() {
 TWKCT.prototype.catList = function() {
 	var CATs = [
 		'Bradford Chromatic Adaptation',
+		'CIECAT02',
 		'Von Kries',
 		'Sharp',
 		'CMCCAT2000',
-		'CAT02',
 		'XYZ Scaling'
 	];
 	var max = CATs.length;
