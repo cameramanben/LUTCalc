@@ -62,15 +62,38 @@ UI Files
 * lutanalyst.js - extension to luttweaksbox which reads and then analyses LUTs into transfer function and colour space components so that they can be adapted for use with other input colour spaces and further tweaked as with the built-in options.
 * lutlutbox.js - builds the UI object containing options concerning the LUT format.
 * lutgeneratebox.js - builds the 'Generate' button that triggers the LUT generation, plus the generation logic itself.
-* lutinfobox.js - builds the UI object which shows instructions, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
 * lutpreview.js - builds the UI object which previews LUTs on test images.
+* lutinfobox.js - builds the UI object which shows instructions, plots of the input and output gammas against stop and IRE and data values for correct exposure with the chosen output gamma.
+
+LUT I/O
+-------
+* lutformats.js - controller object for the parsers and builders of various LUT formats.
+* lut-cube.js - .cube format parsing and building (Adobe format and DaVinci format).
+* lut-davinci.js - DaVinci Resolve 1D .ilut input LUT and .olut output LUT parsing and building.
+* lut-vlt.js - Panasonic .vlt MLUT format parsing and building.
+* lut-3dl.js - .3dl format parsing and building (Assimilate, Autodesk and Kodak formats).
+* lut-lut.js - Assimilate 1D .lut parsing and building.
+* lut-spi1d.js - Sony Pictures International 1D .spi1d format parsing and building.
+* lut-spi3d.js - Sony Pictures International 3D .spi3d format parsing and building.
+* lut-la.js - cube-based .lacube and .labin LUTAnalyst parsing and building.
+
+Adjustment Files
+----------------
+* twk-ct.js - colour temperature adjustment.
+* twk-fl.js - fluorescent / LED - green / magenta adjustment.
+* twk-asccdl.js - adjustment based on the ASC-CDL operations.
+* twk-psstcdl.js - colour-specific adjustment based on the ASC-CDL controls.
+* twk-hg.js - adjustment to allow for a second choice of gamut in the highlights.
+* twk-blkhi.js - adjustment of the black level and a user-selectable scene reflectance response level.
+* twk-fc.js - false colour overlay option.
+* twk-la.js - LUTAnalyst UI controls.
+* twk-blank.js - empty example object which demonstrates the layout.
 
 Web Workers
 -----------
 * lutmessage.js - handles creation and message passing for multiple web worker calculation threads.
 * gamma.js - handles all the calculations relating to transfer functions (gammas).
-* gamut.js - handles all the functions relating to colour spaces (gamuts).
-
+* colourspace.js - handles all the functions relating to colour spaces (gamuts).
 
 Binary LUT Files
 ----------------
@@ -82,19 +105,35 @@ Binary LUT Files
 
 Helper Javascript
 -----------------
+* splash.js - displays a splash screen and sets the version.
+* tests.js - performs Javascript capabilities tests to see whether and how LUTCalc will run in a given environment.
 * lut.js - LUT handling object. Will calculate interpolated values from LUTs using cubic and tricubic interpolation. Also includes code for breaking a 3D LUT into gamma and gamut component LUTs and changing the input gamma / gamut (as used by the LUTAnalyst tool).
+* ring.js - ring spline object. Like a 1D LUT which connects back on itself. Used in the PSST-CDL calculations.
 * lutfile.js - file handling object.
 * lutinputs.js - simple object into which the other objects can place their form input objects, to allow interaction without globals.
 * brent.js - Brent's method of root finding for LUTAnalyst.
 * tests.js - object containing feature / environment detection tests.
+* window.html - web app version of index.html.
+* background.js - web app required code.
+* manifest.webapp - web app manifest.
+* manifest.json - alternative web app manifest format.
+
+Style Sheets
+------------
+* reset.css - DOM reset stylesheet.
+* fonts.css - font options stylesheet.
+* ui.css - style sheet controlling specific UI elements.
+* style.css - base stylesheet controlling the look of the app. All dimensions (greater than 1 pixel) are em values.
+* info.css - stylesheet controlling the information / instructions window.
 
 Other Files
 -----------
 * background.js - Chrome packaged app requirement
-* style.css - stylesheet controlling the look of the app. All dimensions (greater than 1 pixel) are em values.
 * LUTCalc.icns - icon file containing a logo in a format suitable for Mac OSX Apps in XCode.
 * logo(x).png - various sizes of png containing the LUTCalc logo for the Chrome app.
 * LDR / HDR Preview LSB / MSB .png - test images for use in the preview window. Low dynamic range / contrast (LDR) and high dynamic range (HDR) from 16-bit originals broken into 8-bit most significant and least significant byte images (MSB and LSB) for Javascript.
+* Gray LSB/ MSB .png - 16-stop grayscale test image.
+* CW LSB / MSB .png - Representation image of the Rec709 Colour Gamut for use in the preview window.
 * README.md - this file.
 * CHANGELOG.md - changelog.
 * LICENSE - GPL2 License document.

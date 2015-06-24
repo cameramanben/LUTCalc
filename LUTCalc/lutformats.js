@@ -20,6 +20,7 @@ function LUTFormats(inputs, messages, file) {
 	this.txt = [];
 	this.mluts = [];
 	this.grades = [];
+	this.lastGamma = -1;
 	this.formatsList();
 	this.mlutsList();
 	this.gradesList();
@@ -225,7 +226,7 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
-		bClip: 64, wClip: 1023, hard: false
+		bClip: 64, wClip: 1019, hard: false
 	});
 /*
 	this.mluts.push({
@@ -237,7 +238,7 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
 		setBits: false,
-		bClip: 0, wClip: 1023, hard: true
+		bClip: 0, wClip: 1019, hard: true
 	});
 */
 	var max = this.mluts.length;
@@ -407,7 +408,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Input range
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.inRange[0].disabled = !cur.legIn;
 		this.inputs.inRange[1].disabled = !cur.datIn;
 		if (cur.defLegIn) {
@@ -417,7 +418,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Output range
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.outRange[0].disabled = !cur.legOut;
 		this.inputs.outRange[1].disabled = !cur.datOut;
 		if (cur.defLegOut) {
@@ -438,6 +439,7 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.outRange[0].checked = true;
 		}
 	}
+	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	// Custom input scaling
 	if (idx !== curIdx) { // Set to default only if the LUT format has changed
 		if (cur.scaling) {
