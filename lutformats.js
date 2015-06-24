@@ -225,7 +225,7 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
-		bClip: 64, wClip: 1023, hard: false
+		bClip: 64, wClip: 1019, hard: false
 	});
 /*
 	this.mluts.push({
@@ -237,7 +237,7 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
 		setBits: false,
-		bClip: 0, wClip: 1023, hard: true
+		bClip: 0, wClip: 1019, hard: true
 	});
 */
 	var max = this.mluts.length;

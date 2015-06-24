@@ -43,7 +43,7 @@ TWKFL.prototype.io = function() {
 	this.camTempInput = document.createElement('input');
 	this.camTempInput.setAttribute('type','number');
 	this.camTempInput.className = 'kelvininput';
-	this.camTempInput.value = '3200';
+	this.camTempInput.value = '4300';
 	// Lamp Colour Temperature Selector
 	this.flTempSelect = document.createElement('select');
 	this.flTempSelect.className = 'twk-select';

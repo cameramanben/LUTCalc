@@ -6,6 +6,8 @@ v1.9 RC11
 * Colourspace calculation overhaul. All gamuts transforms are now calculated at startup from chromacity / whitepoint data. Luma coefficients and CATs are calculated from the choice of working gamut (currently S-Gamut3.cine), which can now be any of the available options.
 * This makes it easier to add Gamuts / Colourspaces. DCI-P3, DCI-P3D60, Canon's DCI-P3+, Adobe RGB and Adobe Wide Gamut RGB have been added.
 * New attempt at the C300 colourspace - still a work in progress!
+* More accurate colour temperature shifts.
+* Simplified fluorescent / LED green / magenta control.
 
 v1.9 RC10
 --------
