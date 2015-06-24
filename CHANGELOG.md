@@ -8,6 +8,7 @@ v1.9 RC11
 * New attempt at the C300 colourspace - still a work in progress!
 * More accurate colour temperature shifts.
 * Simplified fluorescent / LED green / magenta control.
+* Fixed a bug where the output range was not adjusting correctly for non-log gammas.
 
 v1.9 RC10
 --------
