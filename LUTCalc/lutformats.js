@@ -14,6 +14,7 @@ function LUTFormats(inputs, messages, file) {
 	this.messages = messages;
 	this.file = file;
 	this.curIdx = 0;
+	this.curType = 0;
 	this.formats = [];
 	this.types = [];
 	this.exts = [];
@@ -313,18 +314,27 @@ LUTFormats.prototype.oneOrThree = function() {
 }
 LUTFormats.prototype.updateOptions = function() {
 	var curIdx = this.curIdx;
+	var changedType = false;
 	var cur, idx;
 	if (this.inputs.lutUsage[0].checked) {
+		if (this.curType === 1) {
+			changedType = true;
+			this.curType = 0;
+		}
 		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
 		cur = this.grades[idx];
 	} else {
+		if (this.curType === 0) {
+			changedType = true;
+			this.curType = 1;
+		}
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
 		cur = this.mluts[idx];
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;
 	this.inputs.d[1].disabled = !cur.threeD;
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.defThree) {
 			this.inputs.oneDBox.className = 'graybox-hide';
 			this.inputs.threeDBox.className = 'graybox';
@@ -336,7 +346,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// 1D size options
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		var dim;	
 		this.inputs.dimension[0].className = 'lut-opt-hide';
 		this.inputs.dimensionLabel[0].className = 'lut-opt-hide';
@@ -366,7 +376,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// 3D size options
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		this.inputs.dimension[2].className = 'lut-opt-hide';
 		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
 		this.inputs.dimension[3].className = 'lut-opt-hide';	
@@ -408,7 +418,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Input range
-	if (idx !== curIdx || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.inRange[0].disabled = !cur.legIn;
 		this.inputs.inRange[1].disabled = !cur.datIn;
 		if (cur.defLegIn) {
@@ -418,7 +428,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Output range
-	if (idx !== curIdx || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.outRange[0].disabled = !cur.legOut;
 		this.inputs.outRange[1].disabled = !cur.datOut;
 		if (cur.defLegOut) {
@@ -441,7 +451,7 @@ LUTFormats.prototype.updateOptions = function() {
 	}
 	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	// Custom input scaling
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.scaling) {
 			this.inputs.scaleBox.className = 'emptybox';
 		} else {
@@ -451,7 +461,7 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// set LUT bit depth (3dl etc.)
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.setBits) {
 			this.inputs.bitsBox.className = 'emptybox';
 			this.inputs.inBitsSelect.options[(cur.inBits - 10)/2].selected = true;
@@ -461,12 +471,12 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 	}
 	// Set black clip and white clip levels for the format
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		this.inputs.bClip = cur.bClip;
 		this.inputs.wClip = cur.wClip;
 	}
 	// Release hard clip option
-	if (idx !== curIdx) { // Set to default only if the LUT format has changed
+	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.hard) {
 			this.inputs.clipCheck.disabled = true;
 			this.inputs.clipCheck.checked = true;

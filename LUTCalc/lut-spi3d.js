@@ -111,7 +111,6 @@ spi3dLUT.prototype.parse = function(title, text, lut) {
 					max: maximum,
 					C: [R.buffer,G.buffer,B.buffer]
 				});
-				console.log(lut);
 				return true;
 			} else {
 				return false;

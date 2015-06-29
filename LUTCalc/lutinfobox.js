@@ -20,6 +20,9 @@ function LUTInfoBox(fieldset,inputs,message) {
 	this.gammaChartBut = document.createElement('input');
 	this.buildBox();
 	fieldset.appendChild(this.box);
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
+	}
 }
 // Construct the UI Box
 LUTInfoBox.prototype.buildBox = function() {
@@ -1054,8 +1057,13 @@ LUTInfoBox.prototype.buildChart = function() {
 	outCanvas3.id = 'outcanvas3';
 	outCanvas3.width = canvas3.width;
 	outCanvas3.height = canvas3.height;
+	var rgbCanvas3 = document.createElement('canvas');
+	rgbCanvas3.id = 'rgbcanvas3';
+	rgbCanvas3.width = canvas3.width;
+	rgbCanvas3.height = canvas3.height;
 	this.lutChart = {};
 	this.lutChart.out = outCanvas3.getContext('2d');
+	this.lutChart.rgb = rgbCanvas3.getContext('2d');
 	this.lutChart.width = canvas3.width;
 	this.lutChart.w = w;
 	this.lutChart.x0 = x0;
@@ -1067,8 +1075,10 @@ LUTInfoBox.prototype.buildChart = function() {
 	this.lutChart.dY = yA;
 	this.gammaChartBox.appendChild(canvas3);
 	this.gammaChartBox.appendChild(outCanvas3);
+	this.gammaChartBox.appendChild(rgbCanvas3);
 	canvas3.style.display = 'none';
 	outCanvas3.style.display = 'none';
+	rgbCanvas3.style.display = 'none';
 	// Draw The Lines
 //	this.updateGamma();
 }
@@ -1188,6 +1198,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('clipcanvas2').style.display = 'none';
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
+		document.getElementById('rgbcanvas3').style.display = 'none';
 	} else if (this.chartType[1].checked) {
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
@@ -1199,6 +1210,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('clipcanvas2').style.display = 'block';
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
+		document.getElementById('rgbcanvas3').style.display = 'none';
 	} else{
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
@@ -1210,6 +1222,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('clipcanvas2').style.display = 'none';
 		document.getElementById('chartcanvas3').style.display = 'block';
 		document.getElementById('outcanvas3').style.display = 'block';
+		document.getElementById('rgbcanvas3').style.display = 'block';
 	}
 }
 LUTInfoBox.prototype.gotIOGammaNames = function(d) {
@@ -1317,24 +1330,72 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 }
 LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	var xMin = this.lutChart.x0 + (64*876/1023);
-	this.lutChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
 	this.lutChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	this.lutChart.out.textBaseline = 'middle';
 	this.lutChart.out.textAlign = 'left';
 	this.lutChart.out.beginPath();
-	this.lutChart.out.strokeStyle='rgba(0, 0, 240, 0.75)';	
+	this.lutChart.out.strokeStyle='rgba(128, 128, 128, 0.75)';	
 	this.lutChart.out.fillStyle = 'rgba(0, 0, 0, 1)';
 	this.lutChart.out.fillText(this.gammaInName + ' -> ' + this.gammaOutName, 220,90);
 	this.lutChart.out.lineWidth = 4;
 	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.lutOut[0] * this.lutChart.dY));
 	var max = this.lutIn.length;
 	for (var i=1; i<max; i++) {
-		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.lutIn[i]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (this.lutOut[i] * this.lutChart.dY));
+		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.lutIn[i]*this.lutChart.dX)*1023/876),this.lutChart.y0 - (this.lutOut[i] * this.lutChart.dY));
 	}
 	this.lutChart.out.stroke();
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
 	var yMin = this.lutChart.h / 15;
 	this.lutChart.out.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
+}
+LUTInfoBox.prototype.updateRGBChart = function(d) {
+	var rIn = new Float64Array(d.rIn);
+	var gIn = new Float64Array(d.gIn);
+	var bIn = new Float64Array(d.bIn);
+	var rOut = new Float64Array(d.rOut);
+	var gOut = new Float64Array(d.gOut);
+	var bOut = new Float64Array(d.bOut);
+	var m = rIn.length;
+// console.log(r);
+// console.log(g);
+// console.log(b);
+	var xMin = this.lutChart.x0 + (64*876/1023);
+	this.lutChart.rgb.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
+// Red
+	this.lutChart.rgb.beginPath();
+	this.lutChart.rgb.strokeStyle='rgba(240, 0, 0, 0.75)';	
+	this.lutChart.rgb.fillStyle = 'rgba(0, 0, 0, 1)';
+	this.lutChart.rgb.lineWidth = 4;
+	this.lutChart.rgb.moveTo(this.lutChart.x0 + ((rIn[0]*this.lutChart.dX)*1023/876),this.lutChart.y0 - (rOut[0] * this.lutChart.dY));
+	for (var j=1; j<m; j++) {
+		this.lutChart.rgb.lineTo( this.lutChart.x0 + ((rIn[j]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (rOut[j] * this.lutChart.dY));
+	}
+	this.lutChart.rgb.stroke();
+// Green
+	this.lutChart.rgb.beginPath();
+	this.lutChart.rgb.strokeStyle='rgba(0, 240, 0, 0.75)';	
+	this.lutChart.rgb.fillStyle = 'rgba(0, 0, 0, 1)';
+	this.lutChart.rgb.lineWidth = 4;
+	this.lutChart.rgb.moveTo(this.lutChart.x0 + ((gIn[j]*this.lutChart.dX)*1023/876),this.lutChart.y0 - (gOut[0] * this.lutChart.dY));
+	for (var j=1; j<m; j++) {
+		this.lutChart.rgb.lineTo( this.lutChart.x0 + ((gIn[j]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (gOut[j] * this.lutChart.dY));
+	}
+	this.lutChart.rgb.stroke();
+// Blue
+	this.lutChart.rgb.beginPath();
+	this.lutChart.rgb.strokeStyle='rgba(0, 0, 240, 0.75)';	
+	this.lutChart.rgb.fillStyle = 'rgba(0, 0, 0, 1)';
+	this.lutChart.rgb.lineWidth = 4;
+	this.lutChart.rgb.moveTo(this.lutChart.x0 + ((bIn[j]*this.lutChart.dX)*1023/876),this.lutChart.y0 - (bOut[0] * this.lutChart.dY));
+	for (var j=1; j<m; j++) {
+		this.lutChart.rgb.lineTo( this.lutChart.x0 + ((bIn[j]*this.lutChart.dX)*1023/876),this.stopChart.y0 - (bOut[j] * this.lutChart.dY));
+	}
+	this.lutChart.rgb.stroke();
+// Tidy
+	this.lutChart.rgb.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
+	var yMin = this.lutChart.h / 15;
+	this.lutChart.rgb.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
 }
 LUTInfoBox.prototype.updateGamma = function() {
 	this.message.gaTx(this.p,10,null);

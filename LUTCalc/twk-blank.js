@@ -129,4 +129,4 @@ TWKBLANK.prototype.events = function() {
 	// Methods called by event responses should go here
 	// Requirements:
 	//		style.display should be avoided, use className = 'value';
-	//		for showing and hiding, it should be of the form class = 'twk-itemclass' and class = 'twk-itemclass-hide'
+	//		for showing and hiding, it should be of the form className = 'twk-itemclass' and className = 'twk-itemclass-hide'

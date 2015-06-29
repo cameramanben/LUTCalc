@@ -20,6 +20,7 @@ function LUTTweaksBox(fieldset, inputs, messages, files, formats) {
 	this.tweaksList = [];
 	this.gaLists = false;
 	this.gtLists = false;
+	this.built = false;
 	fieldset.appendChild(this.box);
 }
 LUTTweaksBox.prototype.build = function() {
@@ -29,7 +30,9 @@ LUTTweaksBox.prototype.build = function() {
 	this.toggleTweaks();
 	this.messages.gaSetParams();
 	this.messages.gtSetParams();
-	splash.style.display='none';
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
+	}
 }
 LUTTweaksBox.prototype.io = function() {
 	// Tweaks Checkbox
@@ -74,14 +77,16 @@ LUTTweaksBox.prototype.toggleTweaks = function() {
 }
 LUTTweaksBox.prototype.gotGammaLists = function() {
 	this.gaLists = true;
-	if (this.gtLists) {
+	if (this.gtLists && !this.built) {
 		this.build();
+		this.built = true;
 	}
 }
 LUTTweaksBox.prototype.gotGamutLists = function() {
 	this.gtLists = true;
-	if (this.gaLists) {
+	if (this.gaLists && !this.built) {
 		this.build();
+		this.built = true;
 	}
 }
 LUTTweaksBox.prototype.getTFParams = function(params) {

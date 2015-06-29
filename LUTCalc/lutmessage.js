@@ -226,6 +226,9 @@ LUTMessage.prototype.gaRx = function(d) {
 			case 36: // Get PSST-CDL colours
 					this.ui[3].psstColours(d);
 					break;
+			case 38: // Get LUT in to LUT out values for primaries
+					this.ui[6].updateRGBChart(d);
+					break;
 		}
 	}
 }
@@ -279,6 +282,7 @@ LUTMessage.prototype.gotIOGammaNames = function(d) {
 	this.ui[d.p].gotIOGammaNames(d.o);
 }
 LUTMessage.prototype.gotChartVals = function(d) {
+//	this.gtTx(d.p,11,{ colIn:d.colIn, colOut:d.colOut, eiMult:d.eiMult, to:['colIn','colOut']});
 	this.ui[d.p].gotChartVals(d);
 }
 LUTMessage.prototype.gotHighLevelDefault = function(d) {
@@ -410,9 +414,10 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 30: //
 					this.gotIOGamutNames(d);
 					break;
-			case 31: // Get Chromatic Adaptation Transform options
-//					this.ui[3].gotCATs(d.o[0]);
-//					this.ui[3].gotGreenCATs(d.o[1]);
+			case 31: // Get LUT In / LUT Out values for primaries
+					if (typeof d.rIn !== 'undefined') {
+						this.gaTx(d.p,18,{ rIn:d.rIn, gIn:d.gIn, bIn:d.bIn, rOut:d.rOut, gOut:d.gOut, bOut:d.bOut, to:['rIn', 'gIn', 'bIn','rOut','gOut','bOut']});
+					};
 					break;
 			case 32: // Get preview colour correction
 					this.gaTx(d.p,12,d)
@@ -426,6 +431,10 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 36: // Get PSST-CDL colours
 					this.gaTx(3,16,{b:d.b,a:d.a,to:['b','a']})
 					break;
+			case 37: // Get Chromatic Adaptation Transform options
+//					this.ui[3].gotCATs(d.o[0]);
+//					this.ui[3].gotGreenCATs(d.o[1]);
+					break;
 		}
 	}
 }
@@ -436,6 +445,7 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 		this.gtTx(3,16,{});
 		this.gtTx(8,15,{});
 		this.ui[3].setParams(d);
+//		this.ui[6].updateGamma();
 		this.ui[8].isChanged();
 	}
 }

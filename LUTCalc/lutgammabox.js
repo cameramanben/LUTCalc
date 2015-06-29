@@ -31,6 +31,9 @@ function LUTGammaBox(fieldset,inputs,message) {
 	this.inputs.addInput('outGamut',this.outGamutSelect);
 	this.buildBox();
 	fieldset.appendChild(this.box);
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
+	}
 }
 // Construct the UI Box
 LUTGammaBox.prototype.buildBox = function() {
