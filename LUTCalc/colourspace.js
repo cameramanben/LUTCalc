@@ -1690,7 +1690,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}		
 // Highlight Gamut
 		if (this.doHG) {
-			var h = new Float64Array(o.slice(0));
+			var h = new Float64Array(o.buffer.slice(0));
 			if (g) {
 				this.csOut[this.curOut].lc(buff);
 				this.csOut[this.curHG].lc(h.buffer);
@@ -1881,9 +1881,9 @@ LUTColourSpace.prototype.chartVals = function(p,t,i) {
 	// Highlight Gamut
 		if (this.doHG) {
 			var Y;
-			var hr = new Float64Array(r.slice(0));
-			var hg = new Float64Array(g.slice(0));
-			var hb = new Float64Array(b.slice(0));
+			var hr = new Float64Array(r.buffer.slice(0));
+			var hg = new Float64Array(g.buffer.slice(0));
+			var hb = new Float64Array(b.buffer.slice(0));
 			this.csOut[this.curOut].lf(r.buffer);
 			this.csOut[this.curHG].lf(hr.buffer);
 			this.csOut[this.curOut].lf(g.buffer);
