@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v1.9 RC12
+---------
+* Added legal / data toggle to the Preview so that it can be used to display the whole data range.
+* Preview code adjustment to avoid reloading / glitches.
+
 v1.9 RC11
 ---------
 * Colourspace calculation overhaul. All gamuts transforms are now calculated at startup from chromacity / whitepoint data. Luma coefficients and CATs are calculated from the choice of working gamut (currently S-Gamut3.cine), which can now be any of the available options.

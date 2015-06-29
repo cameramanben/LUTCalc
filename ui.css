@@ -38,6 +38,7 @@ body {
 	width:20em;
 	height:20em;
 }
+.splash-hide { display: none; }
 .splash div {
 	padding-top: 7em;
 }

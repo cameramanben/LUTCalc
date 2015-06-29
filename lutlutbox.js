@@ -21,6 +21,9 @@ function LUTLutBox(fieldset, inputs, message, formats) {
 	this.io();
 	this.ui();
 	fieldset.appendChild(this.box);
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
+	}
 }
 LUTLutBox.prototype.getFieldSet = function() {
 	return this.fieldSet;

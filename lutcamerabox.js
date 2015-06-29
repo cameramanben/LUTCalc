@@ -12,7 +12,8 @@
 function LUTCameraBox(fieldset, inputs, message) {
 	this.inputs = inputs;
 	this.message = message;
-	this.message.addUI(1,this);
+	this.p = 1;
+	this.message.addUI(this.p,this);
 	this.box = document.createElement('fieldset');
 	this.cameras = [];
 	this.cameraList();
@@ -34,7 +35,10 @@ function LUTCameraBox(fieldset, inputs, message) {
 	this.inputs.addInput('defGammaIn',this.cameras[this.current].defgamma);
 	this.inputs.addInput('defGamutIn',this.cameras[this.current].defgamut);
 	this.buildBox();
-	fieldset.appendChild(this.box);
+	fieldset.appendChild(this.box);	
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
+	}
 }
 // Construct the UI Box
 LUTCameraBox.prototype.buildBox = function() {

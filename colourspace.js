@@ -1,6 +1,6 @@
 /* colourspace.js
 * Colour Space (gamut) conversion web worker object for the LUTCalc Web App.
-* 30th December 2014
+* 27th June December 2015
 *
 * LUTCalc generates 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, 
 * principally the Sony CineAlta line.
@@ -79,7 +79,7 @@ function LUTColourSpace() {
 
 	this.loadColourSpaces();
 }
-// Prepare Colour Spaces
+// Prepare colour spaces
 LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.SG3C = this.csIn.length;
 	this.csIn.push(this.toSys('Sony S-Gamut3.cine'));
@@ -90,6 +90,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES').m));
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES').m));
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
+	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
 	this.csIn.push(this.toSys('Rec2020'));
 	this.csIn.push(this.toSys('sRGB'));
@@ -108,6 +109,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Alexa Wide Gamut'));
 	this.csOut.push(this.fromSys('Canon Cinema Gamut'));
 	this.csOut.push(this.fromSys('Panasonic V-Gamut'));
+	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOut.push(new CSLUT('LC709',
 		{
@@ -187,7 +189,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	}
 
 }
-// Colour Calculations
+// Colour calculations
 LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 //	xy = [	xr, yr,
 //			xg, yg,
@@ -238,7 +240,7 @@ LUTColourSpace.prototype.fromSys = function(name) {
 	}
 	return false;
 }
-// Matrix Operations
+// Matrix operations
 LUTColourSpace.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
 				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
@@ -289,7 +291,7 @@ LUTColourSpace.prototype.mMult = function(m1,m2) {
 		return false;
 	}
 }
-// Base Colour Data
+// Base colour data
 LUTColourSpace.prototype.illuminant = function(name) {
 	switch (name.toLowerCase()) {
 		case 'a':	return new Float64Array([ 0.44757, 0.40745, 0.14498 ]);
@@ -583,7 +585,6 @@ LUTColourSpace.prototype.setYCoeffs = function() {
 	var rec709 = new Float64Array([ 0.2126, 0.7152, 0.0722 ]);
 	var p2 = this.mInverse(new Float64Array([p[0],p[3],p[6], p[1],p[4],p[7], p[2],p[5],p[8]]));
 	this.y = this.mMult(p2,rec709);
-console.log(this.y);
 }
 LUTColourSpace.prototype.setSaturated = function() {
 	var max = this.g.length;
@@ -612,7 +613,7 @@ LUTColourSpace.prototype.setSaturated = function() {
 LUTColourSpace.prototype.getCCT = function(white) {
 	return 6500; // until I have the CCT algorithm in place, assume D65
 }
-// Parameter Setting Functions
+// Parameter setting functions
 LUTColourSpace.prototype.setCT = function(params) {
 	var out = {};
 	this.doCT = false;
@@ -854,7 +855,7 @@ LUTColourSpace.prototype.setFC = function(params) {
 	out.doFC = this.doFC;
 	return out;
 }
-// Adjustment Objects
+// Adjustment objects
 function CSTemperature(CCT,toXYZ) {
 	this.CCT = CCT;
 	this.toSys = this.mInverse(toXYZ);
@@ -1191,7 +1192,7 @@ CSGreen.prototype.lc = function(buff) {
 		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
 	}
 }
-// Colour Space Calculation Objects
+// Colour space calculation objects
 function CSMatrix(name,params) {
 	this.name = name;
 	this.m = params;
@@ -1504,7 +1505,7 @@ CSCanonIDT.prototype.lc = function(buff) {
 CSCanonIDT.prototype.lf = function(buff) {
 	this.lc(buff);
 }
-// IO Functions
+// IO functions
 LUTColourSpace.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
 	if (typeof params.v !== 'number') {
@@ -1551,6 +1552,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		out.vals = i.vals;
 		out.dim = i.dim;
 	} else {
+		out.leg = i.leg;
 		out.line =  i.line;
 		out.upd = i.upd;
 		out.threeD = true;
@@ -1688,7 +1690,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}		
 // Highlight Gamut
 		if (this.doHG) {
-			var h = new Float64Array(o);
+			var h = new Float64Array(o.slice(0));
 			if (g) {
 				this.csOut[this.curOut].lc(buff);
 				this.csOut[this.curHG].lc(h.buffer);
@@ -1756,6 +1758,216 @@ LUTColourSpace.prototype.ioNames = function(p,t) {
 	out.outName = this.csOut[this.curOut].name;
 	out.hgName = this.csOut[this.curHG].name;
 	return {p: p, t: t+20, v: this.ver, o: out};
+}
+LUTColourSpace.prototype.chartVals = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver};
+	if (typeof i.colIn !== 'undefined') {
+		var y = this.y;
+		var colIn = new Float64Array(i.colIn);
+		var m = colIn.length*3;
+		var rIn = new Float64Array(m);
+		var gIn = new Float64Array(m);
+		var bIn = new Float64Array(m);
+		var k = 0;
+		var last = Math.round((m/3)-1);
+		var rM = 12.8/(colIn[last-2] * 0.2126);
+		var gM = 12.8/(colIn[last-1] * 0.7152);
+		var bM = 12.8/(colIn[ last ] * 0.0722);
+		for (var j=0; j<m; j += 3) {
+			rIn[ j ] = Math.pow(colIn[k] * rM, 1.5);
+			gIn[j+1] = Math.pow(colIn[k] * gM, 1.5);
+			bIn[j+2] = Math.pow(colIn[k] * bM, 1.5);
+			k++;
+		}
+		this.csIn[this.rec709In].lc(rIn.buffer);
+		this.csIn[this.rec709In].lc(gIn.buffer);
+		this.csIn[this.rec709In].lc(bIn.buffer);
+		var r = new Float64Array(rIn.buffer.slice(0));
+		var g = new Float64Array(gIn.buffer.slice(0));
+		var b = new Float64Array(bIn.buffer.slice(0));
+		var eiMult = i.eiMult;
+		var max = this.csOut.length;
+		var got = false;
+		for (var j=0; j<max; j++) {
+			if (this.csOut[j].name === this.csIn[this.curIn].name) {
+				this.csOut[j].lc(rIn.buffer);
+				this.csOut[j].lc(gIn.buffer);
+				this.csOut[j].lc(bIn.buffer);
+				got = true;
+				break;
+			}
+		}
+		if (!got) {
+			self.postMessage({msg:true,details:this.csIn[this.curIn].name});
+			return out;
+		}
+// self.postMessage({msg:true,details:r});
+// self.postMessage({msg:true,details:g});
+// self.postMessage({msg:true,details:b});
+		for (var j=0; j<m; j++) {
+			if (isNaN(r[j])) {
+				r[j] = 0;
+			} else {
+				r[j] *= eiMult;
+			}
+			if (isNaN(g[j])) {
+				g[j] = 0;
+			} else {
+				g[j] *= eiMult;
+			}
+			if (isNaN(b[j])) {
+				b[j] = 0;
+			} else {
+				b[j] *= eiMult;
+			}
+		}
+	// Colour Temperature Shift
+		if (this.doCT) {
+			this.CAT.lc(r.buffer);
+			this.CAT.lc(g.buffer);
+			this.CAT.lc(b.buffer);
+		}
+	// Fluori Correction
+		if (this.doFL) {
+			this.green.lc(r.buffer);
+			this.green.lc(g.buffer);
+			this.green.lc(b.buffer);
+		}
+	// ASC-CDL
+		if (this.doASCCDL) {
+			var Y;
+			for (var j=0; j<m; j += 3) {
+				r[ j ] = (r[ j ]*this.asc[0])+this.asc[3];
+				r[ j ] = ((r[ j ]<0)?r[ j ]:Math.pow(r[ j ],this.asc[6]));
+				r[ j ] = (isNaN(r[ j ])?0:r[ j ]);
+				r[j+1] = (r[j+1]*this.asc[1])+this.asc[4];
+				r[j+1] = ((r[j+1]<0)?r[j+1]:Math.pow(r[j+1],this.asc[7]));
+				r[j+1] = (isNaN(r[j+1])?0:r[j+1]);
+				r[j+2] = (r[j+2]*this.asc[2])+this.asc[5];
+				r[j+2] = ((r[j+2]<0)?r[j+2]:Math.pow(r[j+2],this.asc[8]));
+				r[j+2] = (isNaN(r[j+2])?0:r[j+2]);
+				Y = (y[0]*r[j])+(y[1]*r[j+1])+(y[2]*r[j+2]);
+				r[ j ] = Y + (this.asc[9]*(r[ j ]-Y));
+				r[j+1] = Y + (this.asc[9]*(r[j+1]-Y));
+				r[j+2] = Y + (this.asc[9]*(r[j+2]-Y));
+				g[ j ] = (g[ j ]*this.asc[0])+this.asc[3];
+				g[ j ] = ((g[ j ]<0)?g[ j ]:Math.pow(g[ j ],this.asc[6]));
+				g[ j ] = (isNaN(g[ j ])?0:g[ j ]);
+				g[j+1] = (g[j+1]*this.asc[1])+this.asc[4];
+				g[j+1] = ((g[j+1]<0)?g[j+1]:Math.pow(g[j+1],this.asc[7]));
+				g[j+1] = (isNaN(g[j+1])?0:g[j+1]);
+				g[j+2] = (g[j+2]*this.asc[2])+this.asc[5];
+				g[j+2] = ((g[j+2]<0)?g[j+2]:Math.pow(g[j+2],this.asc[8]));
+				g[j+2] = (isNaN(g[j+2])?0:g[j+2]);
+				Y = (y[0]*g[j])+(y[1]*g[j+1])+(y[2]*g[j+2]);
+				g[ j ] = Y + (this.asc[9]*(g[ j ]-Y));
+				g[j+1] = Y + (this.asc[9]*(g[j+1]-Y));
+				g[j+2] = Y + (this.asc[9]*(g[j+2]-Y));
+				b[ j ] = (b[ j ]*this.asc[0])+this.asc[3];
+				b[ j ] = ((b[ j ]<0)?b[ j ]:Math.pow(b[ j ],this.asc[6]));
+				b[ j ] = (isNaN(b[ j ])?0:b[ j ]);
+				b[j+1] = (b[j+1]*this.asc[1])+this.asc[4];
+				b[j+1] = ((b[j+1]<0)?b[j+1]:Math.pow(b[j+1],this.asc[7]));
+				b[j+1] = (isNaN(b[j+1])?0:b[j+1]);
+				b[j+2] = (b[j+2]*this.asc[2])+this.asc[5];
+				b[j+2] = ((b[j+2]<0)?b[j+2]:Math.pow(b[j+2],this.asc[8]));
+				b[j+2] = (isNaN(b[j+2])?0:b[j+2]);
+				Y = (y[0]*b[j])+(y[1]*b[j+1])+(y[2]*b[j+2]);
+				b[ j ] = Y + (this.asc[9]*(b[ j ]-Y));
+				b[j+1] = Y + (this.asc[9]*(b[j+1]-Y));
+				b[j+2] = Y + (this.asc[9]*(b[j+2]-Y));
+			}
+		}
+	// Highlight Gamut
+		if (this.doHG) {
+			var Y;
+			var hr = new Float64Array(r.slice(0));
+			var hg = new Float64Array(g.slice(0));
+			var hb = new Float64Array(b.slice(0));
+			this.csOut[this.curOut].lf(r.buffer);
+			this.csOut[this.curHG].lf(hr.buffer);
+			this.csOut[this.curOut].lf(g.buffer);
+			this.csOut[this.curHG].lf(hg.buffer);
+			this.csOut[this.curOut].lf(b.buffer);
+			this.csOut[this.curHG].lf(hb.buffer);
+			var rat;
+			for (var j=0; j<m; j += 3) {
+				Y = (y[0]*r[j])+(y[1]*r[j+1])+(y[2]*r[j+2]);
+				if (Y >= this.hgHigh) {
+					r[ j ] = hr[j];
+					r[j+1] = hr[j+1];
+					r[j+2] = hr[j+2];
+				} else if (Y > this.hgLow) {
+					if (this.hgLin) {
+						rat = (this.hgHigh - Y)/(this.hgHigh - this.hgLow);
+					} else {
+						rat = (this.hgHighStop - (Math.log(Y * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
+					}
+					r[ j ] = (r[ j ] * (rat)) + (hr[ j ] * (1-rat));
+					r[j+1] = (r[j+1] * (rat)) + (hr[j+1] * (1-rat));
+					r[j+2] = (r[j+2] * (rat)) + (hr[j+2] * (1-rat));
+				}
+				Y = (y[0]*g[j])+(y[1]*g[j+1])+(y[2]*g[j+2]);
+				if (Y >= this.hgHigh) {
+					g[ j ] = hg[j];
+					g[j+1] = hg[j+1];
+					g[j+2] = hg[j+2];
+				} else if (Y > this.hgLow) {
+					if (this.hgLin) {
+						rat = (this.hgHigh - Y)/(this.hgHigh - this.hgLow);
+					} else {
+						rat = (this.hgHighStop - (Math.log(Y * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
+					}
+					g[ j ] = (g[ j ] * (rat)) + (hg[ j ] * (1-rat));
+					g[j+1] = (g[j+1] * (rat)) + (hg[j+1] * (1-rat));
+					g[j+2] = (g[j+2] * (rat)) + (hg[j+2] * (1-rat));
+				}
+				Y = (y[0]*b[j])+(y[1]*b[j+1])+(y[2]*b[j+2]);
+				if (Y >= this.hgHigh) {
+					b[ j ] = hb[j];
+					b[j+1] = hb[j+1];
+					b[j+2] = hb[j+2];
+				} else if (Y > this.hgLow) {
+					if (this.hgLin) {
+						rat = (this.hgHigh - Y)/(this.hgHigh - this.hgLow);
+					} else {
+						rat = (this.hgHighStop - (Math.log(Y * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
+					}
+					b[ j ] = (b[ j ] * (rat)) + (hb[ j ] * (1-rat));
+					b[j+1] = (b[j+1] * (rat)) + (hb[j+1] * (1-rat));
+					b[j+2] = (b[j+2] * (rat)) + (hb[j+2] * (1-rat));
+				}
+			}
+		} else {
+			this.csOut[this.curOut].lf(r.buffer);
+			this.csOut[this.curOut].lf(g.buffer);
+			this.csOut[this.curOut].lf(b.buffer);
+		}
+		var rInput = new Float64Array(colIn.length);
+		var gInput = new Float64Array(colIn.length);
+		var bInput = new Float64Array(colIn.length);
+		var rOutput = new Float64Array(colIn.length);
+		var gOutput = new Float64Array(colIn.length);
+		var bOutput = new Float64Array(colIn.length);
+		k = 0;
+		for (var j=0; j<m; j += 3) {
+			rInput[k] = ((0.2126*rIn[j])+(0.7152*rIn[j+1])+(0.0722*rIn[j+2]));
+			gInput[k] = ((0.2126*gIn[j])+(0.7152*gIn[j+1])+(0.0722*gIn[j+2]));
+			bInput[k] = ((0.2126*bIn[j])+(0.7152*bIn[j+1])+(0.0722*bIn[j+2]));
+			rOutput[k] = ((0.2126*r[j])+(0.7152*r[j+1])+(0.0722*r[j+2]));
+			gOutput[k] = ((0.2126*g[j])+(0.7152*g[j+1])+(0.0722*g[j+2]));
+			bOutput[k] = ((0.2126*b[j])+(0.7152*b[j+1])+(0.0722*b[j+2]));
+			k++;
+		}
+		out.rIn = rInput.buffer;
+		out.gIn = gInput.buffer;
+		out.bIn = bInput.buffer;
+		out.rOut = rOutput.buffer;
+		out.gOut = gOutput.buffer;
+		out.bOut = bOutput.buffer;
+		out.to = ['rIn', 'gIn', 'bIn', 'rOut', 'gOut', 'bOut'];
+	}
+	return out;
 }
 LUTColourSpace.prototype.getCATs = function(p,t) {
 	return {
@@ -1842,7 +2054,7 @@ LUTColourSpace.prototype.psstColours = function(p,t) {
 	out.to = ['b','a'];
 	return out;
 }
-// Web Worker Messaging Functions
+// Web worker messaging functions
 function sendMessage(d) {
 	if (cs.isTrans && typeof d.to !== 'undefined') {
 		var max = d.to.length;
@@ -1879,7 +2091,7 @@ this.addEventListener('message', function(e) {
 					break;
 			case 10:sendMessage(cs.ioNames(d.p,d.t));
 					break;
-			case 11:sendMessage(cs.getCATs(d.p,d.t));
+			case 11:sendMessage(cs.chartVals(d.p,d.t,d.d));
 					break;
 			case 12:sendMessage(cs.calc(d.p,d.t,d.d,false)); 
 					break;
@@ -1888,6 +2100,8 @@ this.addEventListener('message', function(e) {
 			case 15:sendMessage(cs.getPrimaries(d.p,d.t));
 					break;
 			case 16:sendMessage(cs.psstColours(d.p,d.t));
+					break;
+			case 17:sendMessage(cs.getCATs(d.p,d.t));
 					break;
 		}
 	}

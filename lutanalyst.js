@@ -19,21 +19,10 @@ function LUTAnalyst(inputs, message) {
 	this.inLUT = new LUTs();
 	this.tf = new LUTs();
 	this.cs = new LUTs();
-}
-/*
-LUTAnalyst.prototype.setLUT = function(lut) {
-	switch(lut.dest) {
-		case 'in':	this.inLUT.setDetails(lut);
-					this.title = lut.title;
-					break;
-		case 'tf':	this.tf.setDetails(lut);
-					this.title = lut.title;
-					break;
-		case 'cs':	this.cs.setDetails(lut);
-					break;
+	if (this.inputs.isReady(this.p)) {
+		lutcalcReady();
 	}
 }
-*/
 LUTAnalyst.prototype.getTitle = function(lut) {
 	switch(lut) {
 		case 'in':  this.title = this.inLUT.getTitle();

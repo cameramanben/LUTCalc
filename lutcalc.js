@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
 	lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage, lutFormats);
 	lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile, lutFormats);
-	lutPreview.setUIs(lutGenerate.getBox(),lutBox.getFieldSet());
+	lutPreview.uiExternal(lutGenerate.getBox(),lutBox.getFieldSet());
 	lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
 	// Set Up Data
 	lutMessage.gaTx(0,5,{});
@@ -160,45 +160,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutInputs.scaleMax.oninput = function(){
 		lutMessage.gaSetParams();
 	}
-	//		Preview Box
-	lutInputs.preFileButton.onclick = function(){
-		var e = new MouseEvent('click');
-		lutInputs.preFileInput.dispatchEvent(e);
-	}
-	if (lutInputs.isApp) {
-		lutInputs.preFileInput.onclick = function(){
-			lutPreview.preGetImg();
-		}
-	} else {
-		lutInputs.preFileInput.onchange = function(){
-			lutPreview.preGetImg();
-		}
-	}
-	lutInputs.preOK.onclick = function(){
-		lutInputs.preBox.style.display = 'none';
-		lutPreview.prepPreview();
-	}
-	lutInputs.preCancel.onclick = function(){
-		lutInputs.preBox.style.display = 'none';
-	}
-	lutInputs.preButton.onclick = function(){
-		lutPreview.toggle();
-	}
-	lutInputs.sizeButton.onclick = function(){
-		lutPreview.toggleSize();
-	}
-	lutInputs.drButton.onclick = function(){
-		lutPreview.toggleDefault();
-	}
-	lutInputs.wavCheck.onclick = function(){
-		lutPreview.toggleWaveform();
-	}
-	lutInputs.vecCheck.onclick = function(){
-		lutPreview.toggleVectorscope();
-	}
-	lutInputs.rgbCheck.onclick = function(){
-		lutPreview.toggleParade();
-	}
 	//		Generate Button
 	lutGenerate.genButton.onclick = function(){
 		lutGenerate.generate();
@@ -240,6 +201,9 @@ function maxHeights() {
 	right.style.height = mainHeight.toString() + 'px';
 }
 // Helper Functions
+function lutcalcReady() {
+	splash.style.display = 'none';
+}
 function fieldSet(parentElement,shadow,id) {
 	var box = document.createElement('fieldset');
 	if (id) {
