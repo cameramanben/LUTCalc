@@ -1,6 +1,14 @@
 LUTCalc Changelog
 =================
 
+v1.9 RC14
+---------
+* Tweaked Preview 'data range' option so that black remains black (it shows 10-bit 64 to 10-bit 1023). Changed the options to '100%' and '109%'.
+
+v1.9 RC13
+---------
+* Fixed Highlight Gamut bug which could cause freezing / crashing
+
 v1.9 RC12
 ---------
 * Added legal / data toggle to the Preview so that it can be used to display the whole data range.
