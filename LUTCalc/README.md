@@ -21,6 +21,8 @@ Sony S-Log3 - [Technical Summary for S-Gamut3.Cine/S-Log3 and S-Gamut3/S-Log3](h
 
 Sony S-Gamut3 / S-Gamut3.cine - [Sony Excel spreadsheet of various gamut matrices](http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/3/S-Gamut3_S-Gamut3Cine_Matrix.xlsx)
 
+Sony S-Log2 - [Sony technical paper on S-Log2](https://pro.sony.com/bbsccms/assets/files/micro/dmpc/training/S-Log2_Technical_PaperV1_0.pdf)
+
 Sony S-Log - [S-Log: A new LUT for digital production mastering and interchange applications](https://pro.sony.com/bbsccms/assets/files/mkt/cinema/solutions/slog_manual.pdf)
 
 Sony Look Profile LUTs - [Sony Community Website](http://community.sony.com/t5/F5-F55/Release-version-3DLUT-s-for-S-Gamut3-Cine-S-Log3/td-p/287847)
