@@ -70,9 +70,9 @@ LUTPreview.prototype.io = function() {
 LUTPreview.prototype.ui = function() {
 	this.fileInput.style.display = 'none';
 	this.box.appendChild(this.fileInput);
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
 	this.box.appendChild(this.preLeg);	
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('109%')));
 	this.box.appendChild(this.preDat);	
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Waveform')));
 	this.box.appendChild(this.wavCheck);	

@@ -2021,9 +2021,9 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*255)));
 				o[k+3] = 255;
 			} else {
-				o[ k ] = Math.min(255,Math.max(0,Math.round((f[ l ]*218)+16)));
-				o[k+1] = Math.min(255,Math.max(0,Math.round((f[l+1]*218)+16)));
-				o[k+2] = Math.min(255,Math.max(0,Math.round((f[l+2]*218)+16)));
+				o[ k ] = Math.min(255,Math.max(0,Math.round(f[ l ]*239)));
+				o[k+1] = Math.min(255,Math.max(0,Math.round(f[l+1]*239)));
+				o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*239)));
 				o[k+3] = 255;
 			}
 			k += 4;
