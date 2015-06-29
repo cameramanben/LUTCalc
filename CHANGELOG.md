@@ -5,6 +5,7 @@ v1.9 RC12
 ---------
 * Added legal / data toggle to the Preview so that it can be used to display the whole data range.
 * Preview code adjustment to avoid reloading / glitches.
+* Fixed MLUT clipping bug.
 
 v1.9 RC11
 ---------

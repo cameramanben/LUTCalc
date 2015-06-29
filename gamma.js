@@ -1483,6 +1483,9 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 					o[(j*3)+2] = o[(j*3)];
 				}
 			}
+			o[ (j*3) ] = Math.min(cMax,Math.max(cMin,o[ (j*3) ]));
+			o[(j*3)+1] = Math.min(cMax,Math.max(cMin,o[(j*3)+1]));
+			o[(j*3)+2] = Math.min(cMax,Math.max(cMin,o[(j*3)+2]));
 		}
 	}
 	out.o = o.buffer;
