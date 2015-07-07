@@ -354,6 +354,48 @@ Full-Width Styles
   background: url(../images/sprite_download.png) no-repeat top right;
 }
 
+.mou_download_link {
+  display: block;
+  float: right;
+  width: 90px;
+  height:70px;
+  text-indent: -5000px;
+  overflow: hidden;
+  background: url(../images/mou_download.png) no-repeat bottom;
+}
+
+.mou_download_link:hover {
+  background: url(../images/mou_download.png) no-repeat top;
+}
+
+.mav_download_link {
+  display: block;
+  float: right;
+  width: 90px;
+  height:70px;
+  text-indent: -5000px;
+  overflow: hidden;
+  background: url(../images/mav_download.png) no-repeat bottom;
+}
+
+.mav_download_link:hover {
+  background: url(../images/mav_download.png) no-repeat top;
+}
+
+.yos_download_link {
+  display: block;
+  float: right;
+  width: 90px;
+  height:70px;
+  text-indent: -5000px;
+  overflow: hidden;
+  background: url(../images/yos_download.png) no-repeat bottom;
+}
+
+.yos_download_link:hover {
+  background: url(../images/yos_download.png) no-repeat top;
+}
+
 #main_content_wrap {
   background: #f2f2f2;
   border-top: 1px solid #111;
