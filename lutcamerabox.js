@@ -9,12 +9,21 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTCameraBox(fieldset, inputs, message) {
+function LUTCameraBox(fieldset, inputs, messages) {
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.p = 1;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.box = document.createElement('fieldset');
+	fieldset.appendChild(this.box);
+	this.build();
+	lutcalcReady(this.p);
+}
+LUTCameraBox.prototype.build = function() {
+	this.io();
+	this.ui();
+}
+LUTCameraBox.prototype.io = function() {
 	this.cameras = [];
 	this.cameraList();
 	this.current = 0;
@@ -25,27 +34,28 @@ function LUTCameraBox(fieldset, inputs, message) {
 	this.cameraSelect.options[this.current].selected = true;
 	this.inputs.addInput('camera',this.cameraSelect);
 	this.cameraType = document.createElement('input');
+	this.cameraType.setAttribute('type','hidden');
+	this.cameraType.value = this.cameras[this.current].type.toString();
 	this.inputs.addInput('cameraType',this.cameraType);
 	this.nativeLabel = document.createElement('label');
 	this.inputs.addInput('nativeISO',this.nativeLabel);
 	this.cineeiInput = document.createElement('input');
+	this.cineeiInput.setAttribute('type','number');
+	this.cineeiInput.setAttribute('class','isoinput');
+	this.cineeiInput.value = this.cameras[this.current].iso.toString();
 	this.inputs.addInput('cineEI',this.cineeiInput);
 	this.shiftInput = document.createElement('input');
+	this.shiftInput.setAttribute('type','number');
+	this.shiftInput.setAttribute('step','any');
+	this.shiftInput.setAttribute('class','shiftinput');
+	this.shiftInput.value = '0';
 	this.inputs.addInput('stopShift',this.shiftInput);
 	this.inputs.addInput('defGammaIn',this.cameras[this.current].defgamma);
 	this.inputs.addInput('defGamutIn',this.cameras[this.current].defgamut);
-	this.buildBox();
-	fieldset.appendChild(this.box);	
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
 }
-// Construct the UI Box
-LUTCameraBox.prototype.buildBox = function() {
+LUTCameraBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera')));
 	this.box.appendChild(this.cameraSelect);
-	this.cameraType.setAttribute('type','hidden');
-	this.cameraType.value = this.cameras[this.current].type.toString();
 	this.box.appendChild(this.cameraType);
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Native ISO:')));
 	this.nativeLabel.innerHTML = this.cameras[this.current].iso.toString();
@@ -54,19 +64,26 @@ LUTCameraBox.prototype.buildBox = function() {
 	this.cineeiLabel = document.createElement('label');
 	this.cineeiLabel.innerHTML = 'CineEI ISO';
 	this.recorded.appendChild(this.cineeiLabel);
-	this.cineeiInput.setAttribute('type','number');
-	this.cineeiInput.setAttribute('class','isoinput');
-	this.cineeiInput.value = this.cameras[this.current].iso.toString();
 	this.recorded.appendChild(this.cineeiInput);
 	this.box.appendChild(this.recorded);
 	this.shifted = document.createElement('div');
 	this.shifted.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop Correction')));
-	this.shiftInput.setAttribute('type','number');
-	this.shiftInput.setAttribute('step','any');
-	this.shiftInput.setAttribute('class','shiftinput');
-	this.shiftInput.value = '0';
 	this.shifted.appendChild(this.shiftInput);
 	this.box.appendChild(this.shifted);
+}
+LUTCameraBox.prototype.events = function() {
+	this.cameraSelect.onchange = function(here){ return function(){
+		here.changeCamera();
+		here.messages.changeCamera();
+	};}(this);
+	this.cineeiInput.onchange = function(here){ return function(){
+		here.changeCineEI();
+		here.messages.gaSetParams();
+	};}(this);
+	this.shiftInput.onchange = function(here){ return function(){
+		here.changeShift();
+		here.messages.gaSetParams();
+	};}(this);
 }
 // Set Up Data
 LUTCameraBox.prototype.cameraList = function() {
@@ -83,6 +100,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon Log 2 (Approx)",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
+	this.cameras.push({make:"Nikon",model:"D800",iso:800,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
 }
 LUTCameraBox.prototype.cameraOptions = function() {
 	var max = this.cameras.length;

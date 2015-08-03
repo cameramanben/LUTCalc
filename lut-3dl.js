@@ -14,7 +14,7 @@ function threedlLUT(messages, isLE, flavour) {
 	this.isLE = isLE;
 	this.flavour = flavour;
 }
-threedlLUT.prototype.build = function(buff) {
+threedlLUT.prototype.build = function(buff, fileName, ext) {
 	var info = {};
 	this.messages.getInfo(info);
 	var lut = new Float64Array(buff);
@@ -53,13 +53,25 @@ threedlLUT.prototype.build = function(buff) {
 	}
 	switch (this.flavour) {
 		case 1: // Flame
-			return this.header(info) + d
+			return {
+				lut: this.header(info) + d,
+				fileName: fileName,
+				ext: ext
+			};
 			break;
 		case 2: // Lustre
-			return this.header(info) + d + this.footer(info);
+			return {
+				lut: this.header(info) + d + this.footer(info),
+				fileName: fileName,
+				ext: ext
+			};
 			break;
 		case 3: // Kodak
-			return this.header(info) + d
+			return {
+				lut: this.header(info) + d,
+				fileName: fileName,
+				ext: ext
+			};
 			break;
 	}
 }

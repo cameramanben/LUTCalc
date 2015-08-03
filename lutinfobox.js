@@ -9,35 +9,38 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTInfoBox(fieldset,inputs,message) {
+function LUTInfoBox(fieldset,inputs,messages) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.p = 6;
-	this.message.addUI(this.p,this);
-	this.instructionsBut = document.createElement('input');
-	this.gammaInfoBut = document.createElement('input');
-	this.gammaChartBut = document.createElement('input');
-	this.buildBox();
+	this.messages.addUI(this.p,this);
+	this.build();
 	fieldset.appendChild(this.box);
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
-// Construct the UI Box
-LUTInfoBox.prototype.buildBox = function() {
+LUTInfoBox.prototype.build = function() {
+ this.io();
+ this.ui();
+}
+LUTInfoBox.prototype.io = function() {
+	this.instructionsBut = document.createElement('input');
 	this.instructionsBut.setAttribute('type','button');
 	this.instructionsBut.value = 'Instructions';
+	this.gammaInfoBut = document.createElement('input');
+	this.gammaInfoBut.setAttribute('type','button');
+	this.gammaInfoBut.value = 'Log Info';
+	this.gammaChartBut = document.createElement('input');
+	this.gammaChartBut.setAttribute('type','button');
+	this.gammaChartBut.value = 'Charts';
+}
+LUTInfoBox.prototype.ui = function() {
 	this.instructionsBox = document.createElement('div');
 	this.instructions();
 	this.instructionsBox.style.display = 'none';
-	this.gammaInfoBut.setAttribute('type','button');
-	this.gammaInfoBut.value = 'Log Info';
 	this.gammaInfoBox = document.createElement('div');
 	this.gammaInfo();
 	this.gammaInfoBox.style.display = 'none';
-	this.gammaChartBut.setAttribute('type','button');
-	this.gammaChartBut.value = 'Charts';
 	this.gammaChartBox = document.createElement('div');
 	this.gammaChart();
 	this.gammaChartBox.style.display = 'block';
@@ -48,6 +51,57 @@ LUTInfoBox.prototype.buildBox = function() {
 	this.box.appendChild(this.gammaInfoBox);
 	this.box.appendChild(this.gammaChartBox);
 }
+LUTInfoBox.prototype.events = function() {
+	this.insMainCam.onclick = function(here){ return function(){ here.showCamInfo(); };}(this);
+	this.insCamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainGam.onclick = function(here){ return function(){ here.showGamInfo(); };}(this);
+	this.insGamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainTwk.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainLut.onclick = function(here){ return function(){ here.showLutInfo(); };}(this);
+	this.insLutBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainPre.onclick = function(here){ return function(){ here.showPreInfo(); };}(this);
+	this.insPreBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainGen.onclick = function(here){ return function(){ here.showGenInfo(); };}(this);
+	this.insGenBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
+	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insCustGam.onclick = function(here){ return function(){ here.showCustGamInfo(); };}(this);
+	this.custGamBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
+	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustCts.onclick = function(here){ return function(){ here.showCustCtsInfo(); };}(this);
+	this.custCtsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
+	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
+	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustCdl.onclick = function(here){ return function(){ here.showCustCdlInfo(); };}(this);
+	this.custCdlBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustFls.onclick = function(here){ return function(){ here.showCustFlsInfo(); };}(this);
+	this.custFlsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustLut.onclick = function(here){ return function(){ here.showCustLutInfo(); };}(this);
+	this.custLutBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.instructionsBut.onclick = function(here){ return function(){
+		here.instructionsOpt();
+	};}(this);
+	this.chartType[0].onchange = function(here){ return function(){
+		here.changeChart();
+	};}(this);
+	this.chartType[1].onchange = function(here){ return function(){
+		here.changeChart();
+	};}(this);
+	this.chartType[2].onchange = function(here){ return function(){
+		here.changeChart();
+	};}(this);
+	this.gammaInfoBut.onclick = function(here){ return function(){
+		here.gammaInfoOpt();
+	};}(this);
+	this.gammaChartBut.onclick = function(here){ return function(){
+		here.gammaChartOpt();
+	};}(this);
+}
+// Construct the UI Box
 LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.setAttribute('class','graybox infobox');
 	this.createMainscreen();
@@ -82,7 +136,6 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custFls);
 	this.createCustLut();
 	this.instructionsBox.appendChild(this.custLut);
-	this.setupEvents();
 }
 LUTInfoBox.prototype.showMainscreen = function() {
 	this.hideAll();
@@ -1119,39 +1172,6 @@ LUTInfoBox.prototype.createRadioElement = function(name, checked) {
     }
     return radioInput;
 }
-// Event Listeners
-LUTInfoBox.prototype.setupEvents = function() {
-	this.insMainCam.onclick = function(here){ return function(){ here.showCamInfo(); };}(this);
-	this.insCamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainGam.onclick = function(here){ return function(){ here.showGamInfo(); };}(this);
-	this.insGamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainTwk.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainLut.onclick = function(here){ return function(){ here.showLutInfo(); };}(this);
-	this.insLutBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainPre.onclick = function(here){ return function(){ here.showPreInfo(); };}(this);
-	this.insPreBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainGen.onclick = function(here){ return function(){ here.showGenInfo(); };}(this);
-	this.insGenBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
-	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insCustGam.onclick = function(here){ return function(){ here.showCustGamInfo(); };}(this);
-	this.custGamBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
-	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustCts.onclick = function(here){ return function(){ here.showCustCtsInfo(); };}(this);
-	this.custCtsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
-	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
-	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustCdl.onclick = function(here){ return function(){ here.showCustCdlInfo(); };}(this);
-	this.custCdlBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustFls.onclick = function(here){ return function(){ here.showCustFlsInfo(); };}(this);
-	this.custFlsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustLut.onclick = function(here){ return function(){ here.showCustLutInfo(); };}(this);
-	this.custLutBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-}
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {
 	this.showMainscreen();
@@ -1398,8 +1418,8 @@ LUTInfoBox.prototype.updateRGBChart = function(d) {
 	this.lutChart.rgb.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
 }
 LUTInfoBox.prototype.updateGamma = function() {
-	this.message.gaTx(this.p,10,null);
-	this.message.gaTx(this.p,11,null);
+	this.messages.gaTx(this.p,10,null);
+	this.messages.gaTx(this.p,11,null);
 }
 LUTInfoBox.prototype.gotChartVals = function(d) {
 	this.refX = new Float64Array(d.refX);

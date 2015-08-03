@@ -23,6 +23,7 @@ function LUTMessage(inputs) {
 	// 8 - preview
 	// 9 - twkHG
 	// 10 - twkLA
+	// 11 - formats
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -388,7 +389,7 @@ LUTMessage.prototype.gtRx = function(d) {
 		} else {
 			this.gtTx(d.p,d.t,d.d);
 		}
-	} else if (d.v === this.gtV) {
+	} else if (d.v === this.gtV || d.t === 37) {
 		switch(d.t) {
 			case 20: // Set params
 					this.gamutParamsSet(d);
@@ -432,8 +433,7 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gaTx(3,16,{b:d.b,a:d.a,to:['b','a']})
 					break;
 			case 37: // Get Chromatic Adaptation Transform options
-//					this.ui[3].gotCATs(d.o[0]);
-//					this.ui[3].gotGreenCATs(d.o[1]);
+					this.ui[3].gotCATs(d.o);
 					break;
 		}
 	}
@@ -470,4 +470,26 @@ LUTMessage.prototype.getInfo = function(info) {
 	this.ui[1].getInfo(info); // Camera Box (Stop Correction)
 	this.ui[2].getInfo(info); // Gamma Box (Gamma In / Out, Gamut In / Out)
 	this.ui[3].getInfo(info); // Tweaks Box - notes for in the LUT file
+}
+// Inter-object messages
+LUTMessage.prototype.changeCamera = function() {
+	this.ui[2].defaultGam();
+	this.gaSetParams();
+	this.ui[4].changeGamma();
+}
+LUTMessage.prototype.changeGamma = function() {
+	this.ui[4].changeGamma();
+	this.gaSetParams();
+}
+LUTMessage.prototype.changeFormat = function() {
+	this.ui[2].oneOrThree();
+	this.ui[3].toggleTweaks();
+	this.gaSetParams();
+}
+LUTMessage.prototype.oneOrThree = function() {
+		this.ui[11].oneOrThree();
+		this.ui[2].oneOrThree();
+		this.ui[3].toggleTweaks();
+		this.gtSetParams();
+		this.gaSetParams();
 }

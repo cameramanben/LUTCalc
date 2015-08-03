@@ -13,7 +13,7 @@ function vltLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
 }
-vltLUT.prototype.build = function(buff) {
+vltLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var d = '';
@@ -22,7 +22,11 @@ vltLUT.prototype.build = function(buff) {
 				Math.min(4095,Math.max(0,Math.round(lut[j+1]*4095))).toString() + ' ' +
 				Math.min(4095,Math.max(0,Math.round(lut[j+2]*4095))).toString() + "\n";
 	}
-	return this.header() + d;
+	return {
+		lut: this.header() + d,
+		fileName: fileName,
+		ext: ext
+	};
 }
 vltLUT.prototype.header = function() {
 	var info = {};

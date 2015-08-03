@@ -1,5 +1,13 @@
 LUTCalc Changelog
 =================
+v1.9 RC15
+---------
+* Added ACEScg colour space (AP1) with ACEScc and ACESproxy gammas.
+* Beta - added Nikon .NCP LUT format with initial Nikon styles support.
+* LUT formats can now specify acceptable input gammas (eg Nikon styles for NCP).
+* Refined and improved CAT calculations for colour temperature and fluori magenta/green shifts.
+* Default CAT is now CIECAT02 throughout.
+* Fixed Canon IDT out - daylight and tungsten calculated options are now the right way around.
 
 v1.9 RC14
 ---------

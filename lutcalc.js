@@ -24,7 +24,6 @@ var titFootHeight,
 	lutGenerate,
 	lutInfoBox;
 document.addEventListener("DOMContentLoaded", function() {
-// return window.lutCalcApp.logOSX('started');
 	// Housekeeping
 	titFootHeight = parseInt(document.getElementById('titlebar').clientHeight) + parseInt(document.getElementById('footer').clientHeight);
 	lutCalcForm = document.getElementById('lutcalcform');
@@ -52,137 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutMessage.gtTx(0,5,{});
 	lutMessage.gtTx(0,11,{});
 	lutGammaBox.oneOrThree();
-	// Set Up Form Input Events
-	//		Camera Box
-	lutInputs.camera.onchange = function(){
-		lutCameraBox.changeCamera();
-		lutGammaBox.defaultGam();
-		lutMessage.gaSetParams();
-		lutBox.changeGamma();
-	}
-	lutInputs.cineEI.onchange = function(){
-		lutCameraBox.changeCineEI();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.stopShift.onchange = function(){
-		lutCameraBox.changeShift();
-		lutMessage.gaSetParams();
-	}
-	//		Gamma Box
-	lutInputs.inGamma.onchange = function(){
-		lutGammaBox.changeGammaIn();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.inLinGamma.onchange = function(){
-		lutGammaBox.changeGammaIn();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.outGamma.onchange = function(){
-		lutGammaBox.changeGammaOut();
-		lutBox.changeGamma();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.outLinGamma.onchange = function(){
-		lutGammaBox.changeGammaOut();
-		lutBox.changeGamma();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.inGamut.onchange = function(){
-		lutGammaBox.changeInGamut();
-		lutMessage.gtSetParams();
-	}
-	lutInputs.outGamut.onchange = function(){
-		lutGammaBox.changeOutGamut();
-		lutMessage.gtSetParams();
-	}
-	//		Formats
-	lutInputs.lutUsage[0].onclick = function(){
-		lutFormats.gradeMLUT();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.lutUsage[1].onclick = function(){
-		lutFormats.gradeMLUT();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.gradeSelect.onchange = function(){
-		lutFormats.updateOptions();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.mlutSelect.onchange = function(){
-		lutFormats.updateOptions();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gaSetParams();
-	}
-	//		LUT Box
-	lutInputs.name.onchange = function(){
-		lutBox.cleanName();
-		lutFile.filename();
-	}
-	lutInputs.clipCheck.onchange = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.d[0].onchange = function(){
-		lutFormats.oneOrThree();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gtSetParams();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.d[1].onchange = function(){
-		lutFormats.oneOrThree();
-		lutGammaBox.oneOrThree();
-		lutTweaksBox.toggleTweaks();
-		lutMessage.gtSetParams();
-		lutMessage.gaSetParams();
-	}
-	lutInputs.inRange[0].onchange = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.inRange[1].onchange = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.outRange[0].onchange = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.outRange[1].onchange = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.scaleMin.oninput = function(){
-		lutMessage.gaSetParams();
-	}
-	lutInputs.scaleMax.oninput = function(){
-		lutMessage.gaSetParams();
-	}
-	//		Generate Button
-	lutGenerate.genButton.onclick = function(){
-		lutGenerate.generate();
-	}
-	//		Info Box
-	lutInfoBox.instructionsBut.onclick = function(){
-		lutInfoBox.instructionsOpt();
-	}
-	lutInfoBox.chartType[0].onchange = function(){
-		lutInfoBox.changeChart();
-	}
-	lutInfoBox.chartType[1].onchange = function(){
-		lutInfoBox.changeChart();
-	}
-	lutInfoBox.chartType[2].onchange = function(){
-		lutInfoBox.changeChart();
-	}
-	lutInfoBox.gammaInfoBut.onclick = function(){
-		lutInfoBox.gammaInfoOpt();
-	}
-	lutInfoBox.gammaChartBut.onclick = function(){
-		lutInfoBox.gammaChartOpt();
-	}
+	// Set Up Events
 	window.onresize = function(){
 		maxHeights();
 	}
@@ -201,8 +70,18 @@ function maxHeights() {
 	right.style.height = mainHeight.toString() + 'px';
 }
 // Helper Functions
-function lutcalcReady() {
-	splash.style.display = 'none';
+function lutcalcReady(p) {
+	if (lutInputs.isReady(p)) {
+		lutFormats.events();
+		lutCameraBox.events();
+		lutGammaBox.events();
+		lutTweaksBox.events();
+		lutBox.events();
+		lutGenerate.events();
+		lutPreview.events();
+		lutInfoBox.events();
+		splash.style.display = 'none';
+	}
 }
 function fieldSet(parentElement,shadow,id) {
 	var box = document.createElement('fieldset');

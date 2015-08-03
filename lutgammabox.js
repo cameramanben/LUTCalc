@@ -9,14 +9,23 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTGammaBox(fieldset,inputs,message) {
+function LUTGammaBox(fieldset,inputs,messages) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.p = 2;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.gamutPass = 0;
 	this.gamutLA = 0;
+	this.build();
+	fieldset.appendChild(this.box);
+	lutcalcReady(this.p);
+}
+LUTGammaBox.prototype.build = function() {
+	this.io();
+	this.ui();
+}
+LUTGammaBox.prototype.io = function() {
 	this.inGammaSelect = document.createElement('select');
 	this.inputs.addInput('inGamma',this.inGammaSelect);
 	this.inLinSelect = document.createElement('select');
@@ -29,14 +38,8 @@ function LUTGammaBox(fieldset,inputs,message) {
 	this.inputs.addInput('outLinGamma',this.outLinSelect);
 	this.outGamutSelect = document.createElement('select');
 	this.inputs.addInput('outGamut',this.outGamutSelect);
-	this.buildBox();
-	fieldset.appendChild(this.box);
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
 }
-// Construct the UI Box
-LUTGammaBox.prototype.buildBox = function() {
+LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Recorded Gamma')));
 	this.box.appendChild(this.inGammaSelect);
 	this.box.appendChild(document.createElement('br'));
@@ -63,6 +66,32 @@ LUTGammaBox.prototype.buildBox = function() {
 	this.inGamutBox.style.display = 'none';
 	this.outLin.style.display = 'none';
 	this.outGamutBox.style.display = 'none';
+}
+LUTGammaBox.prototype.events = function() {
+	this.inGammaSelect.onchange = function(here){ return function(){
+		here.changeGammaIn();
+		here.messages.gaSetParams();
+	};}(this);
+	this.inLinSelect.onchange = function(here){ return function(){
+		here.changeGammaIn();
+		here.messages.gaSetParams();
+	};}(this);
+	this.outGammaSelect.onchange = function(here){ return function(){
+		here.changeGammaOut();
+		here.messages.gaSetParams();
+	};}(this);
+	this.outLinSelect.onchange = function(here){ return function(){
+		here.changeGammaOut();
+		here.messages.gaSetParams();
+	};}(this);
+	this.inGamutSelect.onchange = function(here){ return function(){
+		here.changeInGamut();
+		here.messages.gtSetParams();
+	};}(this);
+	this.outGamutSelect.onchange = function(here){ return function(){
+		here.changeOutGamut();
+		here.messages.gtSetParams();
+	};}(this);
 }
 // Set Up Data
 LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {

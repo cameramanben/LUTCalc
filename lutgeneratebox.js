@@ -9,12 +9,13 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTGenerateBox(fieldset, inputs, message, file, formats) {
+function LUTGenerateBox(fieldset, inputs, messages, file, formats) {
 	this.box = document.createElement('fieldset');
+	this.fieldset = fieldset;
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.p = 5;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.lT = 0;
 	this.dimension = 0;
 	this.lut;
@@ -24,15 +25,24 @@ function LUTGenerateBox(fieldset, inputs, message, file, formats) {
 	this.gamutOutName = '';
 	this.gamutHGName = '';
 	this.baseIRE = 0;
+	this.io();
+	this.ui();
+	lutcalcReady(this.p);
+}
+LUTGenerateBox.prototype.io = function() {
 	this.genButton = document.createElement('input');
 	this.genButton.setAttribute('type','button');
 	this.genButton.value = 'Generate LUT';
+}
+LUTGenerateBox.prototype.ui = function() {
 	this.box.appendChild(this.genButton);
-	fieldset.id = 'genbutton';
-	fieldset.appendChild(this.box);
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	this.fieldset.id = 'genbutton';
+	this.fieldset.appendChild(this.box);
+}
+LUTGenerateBox.prototype.events = function() {
+	lutGenerate.genButton.onclick = function(here){ return function(){
+		lutGenerate.generate();
+	};}(this);
 }
 LUTGenerateBox.prototype.getBox = function() {
 	return { box: this.box, button: this.genButton };
@@ -62,9 +72,9 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 	for (var j=0; j<chunks; j++) {
 		var start = chunk*j;
 		if ((start + chunk) > this.dimension) {
-			this.message.gaTx(this.p,1,{start: start,vals: (this.dimension-start),dim: this.dimension});
+			this.messages.gaTx(this.p,1,{start: start,vals: (this.dimension-start),dim: this.dimension});
 		} else {
-			this.message.gaTx(this.p,1,{start: start,vals: chunk,dim: this.dimension});
+			this.messages.gaTx(this.p,1,{start: start,vals: chunk,dim: this.dimension});
 		}
 	}
 }
@@ -84,7 +94,7 @@ LUTGenerateBox.prototype.threeDLUT = function() {
 		var R = 0;
 		var G = 0;
 		var B = j;
-		this.message.gaTx(this.p,3,{R:R, G:G, B:B, vals:chunk, dim:this.dimension});
+		this.messages.gaTx(this.p,3,{R:R, G:G, B:B, vals:chunk, dim:this.dimension});
 	}
 }
 LUTGenerateBox.prototype.got1D = function(d) {

@@ -15,7 +15,6 @@ function TWKASCCDL(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKASCCDL.prototype.io = function() {
 	// Tweak Checkbox

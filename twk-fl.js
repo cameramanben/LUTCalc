@@ -15,7 +15,6 @@ function TWKFL(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKFL.prototype.io = function() {
 	// Tweak Checkbox
@@ -55,7 +54,7 @@ TWKFL.prototype.io = function() {
 	// Chromatic Adaptation Transform Model Selector
 	this.catSelect = document.createElement('select');
 	this.catSelect.className = 'twk-select';
-	this.catList();
+//	this.catList();
 }
 TWKFL.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -186,10 +185,23 @@ TWKFL.prototype.events = function() {
 	};}(this);
 }
 // Tweak-Specific Code
+TWKFL.prototype.gotCATs = function(CATs) {
+	var max = CATs.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = j.toString();
+		option.appendChild(document.createTextNode(CATs[j]));
+		if (j === 0) {
+			option.selected = true;
+		}
+		this.catSelect.appendChild(option);
+	}
+}
 TWKFL.prototype.catList = function() {
 	var CATs = [
-		'Bradford Chromatic Adaptation',
 		'CIECAT02',
+		'CIECAT97s',
+		'Bradford Chromatic Adaptation',
 		'Von Kries',
 		'Sharp',
 		'CMCCAT2000',
@@ -269,10 +281,10 @@ TWKFL.prototype.testFLTempSelect = function() {
 }
 TWKFL.prototype.testFLTemp = function() {
 	var temp = Math.round(parseFloat(this.flTempInput.value));
-	if (temp < 1800) {
-		this.flTempInput.value = '1800';
-	} else if (temp > 21000) {
-		this.flTempInput.value = '21000';
+	if (temp < 1000) {
+		this.flTempInput.value = '1000';
+	} else if (temp > 40000) {
+		this.flTempInput.value = '40000';
 	} else {
 		this.flTempInput.value = temp.toString();
 	}
@@ -289,10 +301,10 @@ TWKFL.prototype.testCamTemp = function() {
 	var val = Math.round(parseFloat(this.camTempInput.value));
 	if (isNaN (val)) {
 		this.camTempInput.value = '3200';
-	} else if (val < 1800) {
-		this.camTempInput.value = '1800';
-	} else if (val > 21000) {
-		this.camTempInput.value = '21000';
+	} else if (val < 1000) {
+		this.camTempInput.value = '1000';
+	} else if (val > 40000) {
+		this.camTempInput.value = '40000';
 	} else {
 		this.camTempInput.value = val.toString();
 	}

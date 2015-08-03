@@ -17,10 +17,7 @@ function TWKHG(tweaksBox, inputs, messages) {
 	this.messages.addUI(this.p,this);
 	this.io();
 	this.ui();
-	this.events();
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
 TWKHG.prototype.io = function() {
 	// Tweak Checkbox

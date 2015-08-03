@@ -9,24 +9,22 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTLutBox(fieldset, inputs, message, formats) {
+function LUTLutBox(fieldset, inputs, messages, formats) {
 	this.box = document.createElement('fieldset');
 	this.inputs = inputs;
 	this.catList = [];
-	this.message = message;
+	this.messages = messages;
 	this.p = 4;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.formats = formats;
-	this.fieldSet = fieldset;
+	this.fieldset = fieldset;
 	this.io();
 	this.ui();
 	fieldset.appendChild(this.box);
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
 LUTLutBox.prototype.getFieldSet = function() {
-	return this.fieldSet;
+	return this.fieldset;
 }
 LUTLutBox.prototype.io = function() {
 	this.lutName = document.createElement('input');
@@ -86,6 +84,34 @@ LUTLutBox.prototype.io = function() {
 	this.inputs.addInput('inBitsSelect',this.inBitsSelect);
 	this.outBitsSelect = document.createElement('select');
 	this.inputs.addInput('outBitsSelect',this.outBitsSelect);
+	this.nikonBox = document.createElement('div');
+	this.inputs.addInput('nikonBox',this.nikonBox);
+	this.nikonBank = document.createElement('select');
+	this.inputs.addInput('nikonBank',this.nikonBank);
+	this.nikonShr = document.createElement('input');
+	this.nikonShr.setAttribute('type','range');
+	this.nikonShr.setAttribute('min',0);
+	this.nikonShr.setAttribute('max',9);
+	this.nikonShr.setAttribute('step',1);
+	this.nikonShr.setAttribute('value',0);
+	this.inputs.addInput('nikonShr',this.nikonShr);
+	this.nikonShrLabel = document.createElement('label');
+	this.nikonSat = document.createElement('input');
+	this.nikonSat.setAttribute('type','range');
+	this.nikonSat.setAttribute('min',-3);
+	this.nikonSat.setAttribute('max',3);
+	this.nikonSat.setAttribute('step',1);
+	this.nikonSat.setAttribute('value',0);
+	this.inputs.addInput('nikonSat',this.nikonSat);
+	this.nikonSatLabel = document.createElement('label');
+	this.nikonHue = document.createElement('input');
+	this.nikonHue.setAttribute('type','range');
+	this.nikonHue.setAttribute('min',-3);
+	this.nikonHue.setAttribute('max',3);
+	this.nikonHue.setAttribute('step',1);
+	this.nikonHue.setAttribute('value',0);
+	this.inputs.addInput('nikonHue',this.nikonHue);
+	this.nikonHueLabel = document.createElement('label');
 	this.lutClipCheck = document.createElement('input');
 	this.inputs.addInput('clipCheck',this.lutClipCheck);
 }
@@ -195,6 +221,33 @@ LUTLutBox.prototype.ui = function() {
 	this.bitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Bits')));
 	this.bitsBox.appendChild(this.outBitsSelect);
 	this.lutUsage.appendChild(this.bitsBox);
+	// Nikon specific settings
+	this.nikonBox.className = 'emptybox-hide';
+	this.nikonBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Bank Number:')));
+	for (var j=1; j<100; j++) {
+		var option = document.createElement('option');
+		option.value = j;
+		option.appendChild(document.createTextNode(j.toString()));
+		this.nikonBank.appendChild(option);
+	}
+	this.nikonBank.className = 'lut-opt';
+	this.nikonBox.appendChild(this.nikonBank);
+	this.nikonBox.appendChild(document.createElement('br'));
+	this.nikonBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Sharpening:')));
+	this.nikonBox.appendChild(this.nikonShr);
+	this.nikonShrLabel.innerHTML = '0';
+	this.nikonBox.appendChild(this.nikonShrLabel);
+	this.nikonBox.appendChild(document.createElement('br'));
+	this.nikonBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation:')));
+	this.nikonBox.appendChild(this.nikonSat);
+	this.nikonSatLabel.innerHTML = '0';
+	this.nikonBox.appendChild(this.nikonSatLabel);
+	this.nikonBox.appendChild(document.createElement('br'));
+	this.nikonBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Hue:')));
+	this.nikonBox.appendChild(this.nikonHue);
+	this.nikonHueLabel.innerHTML = '0';
+	this.nikonBox.appendChild(this.nikonHueLabel);
+	this.lutUsage.appendChild(this.nikonBox);
 	// 0-1.0 hard clip checkbox
 	this.lutClip = document.createElement('div');
 	this.lutClip.setAttribute('class','emptybox');
@@ -204,6 +257,48 @@ LUTLutBox.prototype.ui = function() {
 	this.lutClip.appendChild(this.lutClipCheck);
 	this.lutUsage.appendChild(document.createElement('br'));
 	this.lutUsage.appendChild(this.lutClip);
+}
+LUTLutBox.prototype.events = function() {
+	this.lutName.onchange = function(here){ return function(){
+		here.cleanName();
+		lutFile.filename();
+	};}(this);
+	this.lutClipCheck.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.lutOneD.onchange = function(here){ return function(){
+		here.messages.oneOrThree();
+	};}(this);
+	this.lutThreeD.onchange = function(here){ return function(){
+		here.messages.oneOrThree();
+	};}(this);
+	this.lutInLegal.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.lutInData.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.lutOutLegal.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.lutOutData.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.scaleMin.oninput = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.scaleMax.oninput = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+	this.nikonShr.oninput = function(here){ return function(){
+		here.nikonShrLabel.innerHTML = here.nikonShr.value;
+	};}(this);
+	this.nikonSat.oninput = function(here){ return function(){
+		here.nikonSatLabel.innerHTML = here.nikonSat.value;
+	};}(this);
+	this.nikonHue.oninput = function(here){ return function(){
+		here.nikonHueLabel.innerHTML = here.nikonHue.value;
+	};}(this);
 }
 // Set Up Data
 LUTLutBox.prototype.cleanName = function() {
@@ -273,4 +368,8 @@ LUTLutBox.prototype.getInfo = function(info) {
 	info.scaleMax = parseFloat(this.scaleMax.value);
 	info.inBits = parseInt(this.inBitsSelect.options[this.inBitsSelect.options.selectedIndex].value);
 	info.outBits = parseInt(this.outBitsSelect.options[this.outBitsSelect.options.selectedIndex].value);
+	info.nikonBank = parseInt(this.nikonBank.options[this.nikonBank.options.selectedIndex].value);
+	info.nikonSharp = parseInt(this.nikonShr.value);
+	info.nikonSat = parseInt(this.nikonSat.value);
+	info.nikonHue = parseInt(this.nikonHue.value);
 }
