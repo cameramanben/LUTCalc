@@ -15,7 +15,6 @@ function TWKBlkHi(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKBlkHi.prototype.io = function() {
 	// Tweak Checkbox

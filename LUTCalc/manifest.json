@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "1.9.14",
+	"version": "1.9.15",
 	"manifest_version": 2,
 	"app": {
 		"background": {
@@ -22,6 +22,7 @@
 				"lut-lut.js",
 				"lut-spi1d.js",
 				"lut-spi3d.js",
+				"lut-ncp.js",
 				"lut-la.js",
 				"lutformats.js",
 				"brent.js",

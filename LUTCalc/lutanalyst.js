@@ -9,19 +9,17 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTAnalyst(inputs, message) {
+function LUTAnalyst(inputs, messages) {
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.p = 7;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.lutRange();
 	this.title = 'LUT Analyst';
 	this.inLUT = new LUTs();
 	this.tf = new LUTs();
 	this.cs = new LUTs();
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
 LUTAnalyst.prototype.getTitle = function(lut) {
 	switch(lut) {
@@ -68,18 +66,18 @@ LUTAnalyst.prototype.getTF = function() {
 	if (dim < 65) {
 		dim = 65;
 	}
-	this.message.gaTx(this.p,8,{
+	this.messages.gaTx(this.p,8,{
 		dim: dim,
 		legIn: this.legIn,
 		gamma: this.gammaIn
 	});
 }
 LUTAnalyst.prototype.updateLATF = function() {
-	this.gaT = this.message.getGammaThreads();
+	this.gaT = this.messages.getGammaThreads();
 	var dets = this.tf.getDetails();
 	var rev = new LUTSpline(dets.C[0].slice(0));
 	dets.R = [rev.getReverse()];
-	this.message.gaTxAll(this.p,6,dets);
+	this.messages.gaTxAll(this.p,6,dets);
 }
 LUTAnalyst.prototype.getL = function() {
 	return this.tf.getL();
@@ -93,7 +91,7 @@ LUTAnalyst.prototype.getCS = function() {
 	} else {
 		dim = 65;
 	}
-	this.message.gaTx(this.p,2,{
+	this.messages.gaTx(this.p,2,{
 		dim: dim,
 		legIn: this.legIn,
 		gamma: this.gammaIn,
@@ -178,8 +176,8 @@ LUTAnalyst.prototype.revTF = function(guess,goal) { // Brent Method
 	return this.brent.findRoot(guess,goal);
 }
 LUTAnalyst.prototype.updateLACS = function() {
-	this.gtT = this.message.getGamutThreads();
-	this.message.gtTxAll(this.p,6,this.cs.getDetails());
+	this.gtT = this.messages.getGamutThreads();
+	this.messages.gtTxAll(this.p,6,this.cs.getDetails());
 }
 LUTAnalyst.prototype.getRGB = function() {
 	return this.cs.getRGB();

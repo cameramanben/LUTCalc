@@ -15,7 +15,6 @@ function TWKPSSTCDL(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKPSSTCDL.prototype.io = function() {
 	// Tweak Checkbox

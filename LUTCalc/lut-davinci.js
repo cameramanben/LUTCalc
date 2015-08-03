@@ -13,7 +13,7 @@ function davinciiLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
 }
-davinciiLUT.prototype.build = function(buff) {
+davinciiLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var d = '';
@@ -23,7 +23,11 @@ davinciiLUT.prototype.build = function(buff) {
 				Math.round(lut[j+2]*16383).toString() + ' ' +
 				"0\n";
 	}
-	return d;
+	return {
+		lut: d,
+		fileName: fileName,
+		ext: ext
+	};
 }
 davinciiLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;
@@ -78,7 +82,7 @@ function davincioLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
 }
-davincioLUT.prototype.build = function(buff) {
+davincioLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var d = '';
@@ -90,7 +94,11 @@ davincioLUT.prototype.build = function(buff) {
 				Math.round(lut[j+1]*16383).toString() + ' ' +
 				Math.round(lut[j+2]*16383).toString() + "\n";
 	}
-	return d;
+	return {
+		lut: d,
+		fileName: fileName,
+		ext: ext
+	};
 }
 davincioLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;

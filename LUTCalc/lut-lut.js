@@ -13,7 +13,7 @@ function lutLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
 }
-lutLUT.prototype.build = function(buff) {
+lutLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var s = Math.round(max / 3)-1;
@@ -25,7 +25,11 @@ lutLUT.prototype.build = function(buff) {
 		g += Math.round(lut[j+1]*s).toString() + "\n";
 		b += Math.round(lut[j+2]*s).toString() + "\n";
 	}
-	return this.header() + r + g + b;
+	return {
+		lut: this.header() + r + g + b,
+		fileName: fileName,
+		ext: ext
+	};
 }
 lutLUT.prototype.header = function() {
 	var info = {};

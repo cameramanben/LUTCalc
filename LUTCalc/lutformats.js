@@ -12,6 +12,8 @@
 function LUTFormats(inputs, messages, file) {
 	this.inputs = inputs;
 	this.messages = messages;
+	this.p = 11;
+	this.messages.addUI(this.p,this);
 	this.file = file;
 	this.curIdx = 0;
 	this.curType = 0;
@@ -53,6 +55,24 @@ LUTFormats.prototype.io = function() {
 	this.inputs.addInput('bClip', 0);
 	this.inputs.addInput('wClip', 67025937); // 1023 * 65519 (the largest integer representable with a 16-bit half float)
 }
+LUTFormats.prototype.events = function() {
+	this.inputs.lutUsage[0].onclick = function(here){ return function(){
+		here.gradeMLUT();
+		here.messages.changeFormat();
+	};}(this);
+	this.inputs.lutUsage[1].onclick = function(here){ return function(){
+		here.gradeMLUT();
+		here.messages.changeFormat();
+	};}(this);
+	this.inputs.gradeSelect.onchange = function(here){ return function(){
+		here.updateOptions();
+		here.messages.changeFormat();
+	};}(this);
+	this.inputs.mlutSelect.onchange = function(here){ return function(){
+		here.updateOptions();
+		here.messages.changeFormat();
+	};}(this);
+}
 LUTFormats.prototype.formatsList = function() {
 	this.addFormat('cube1','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 1));
 	this.addFormat('cube2','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 2));
@@ -66,6 +86,7 @@ LUTFormats.prototype.formatsList = function() {
 	this.addFormat('lut','lut',true,new lutLUT(this.messages, this.inputs.isLE));
 	this.addFormat('spi1d','spi1d',true,new spi1dLUT(this.messages, this.inputs.isLE));
 	this.addFormat('spi3d','spi3d',true,new spi3dLUT(this.messages, this.inputs.isLE));
+	this.addFormat('ncp','ncp',false,new ncpLUT(this.messages, this.inputs.isLE));
 }
 LUTFormats.prototype.addFormat = function(type,ext,txt,format) {
 	this.types.push(type);
@@ -79,6 +100,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 33,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -90,6 +112,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: true,
@@ -101,6 +124,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 65,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
 		scaling: true,
@@ -112,6 +136,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [16384], threeDim: [],
 		defDim: 16384,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -123,6 +148,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [4096], threeDim: [],
 		defDim: 4096,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -134,6 +160,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [4096], threeDim: [],
 		defDim: 4096,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -145,6 +172,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [16,32,64],
 		defDim: 32,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -156,6 +184,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [16,32,64],
 		defDim: 32,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -167,6 +196,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [4096,16384], threeDim: [],
 		defDim: 4096,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: true,
@@ -178,6 +208,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33,65],
 		defDim: 17,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -189,6 +220,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33,65],
 		defDim: 33,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -200,6 +232,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33,65],
 		defDim: 17,
+		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
@@ -223,6 +256,7 @@ LUTFormats.prototype.mlutsList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33],
 		defDim: 33,
+		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
@@ -235,6 +269,7 @@ LUTFormats.prototype.mlutsList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17],
 		defDim: 17,
+		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
@@ -242,6 +277,19 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 0, wClip: 1019, hard: true
 	});
 */
+	this.mluts.push({
+		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [256], threeDim: [],
+		defDim: 256,
+		someGammas: ['Nikon Standard','Nikon Neutral','Nikon Vivid','Nikon Monochrome','Nikon Portrait','Nikon Landscape'],
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+
 	var max = this.mluts.length;
 	var max2 = this.types.length;
 	for (var j=0; j<max; j++) {
@@ -330,6 +378,48 @@ LUTFormats.prototype.updateOptions = function() {
 		}
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
 		cur = this.mluts[idx];
+	}
+	// Special settings fo particular formats
+	if (cur.type === 'ncp') {
+		this.inputs.nikonBox.className = 'emptybox';
+	} else {
+		this.inputs.nikonBox.className = 'emptybox-hide';
+	}	
+	// Check if all input gamma options are allowed and enable / disable as appropriate
+	if (cur.someGammas) {
+		var max = this.inputs.inGamma.options.length;
+		var max2 = cur.someGammas.length;
+		var changeIdx = true;
+		var defIdx = 0;
+		for (var j=0; j<max; j++) {
+			this.inputs.inGamma.options[j].disabled = true;
+			this.inputs.inGamma.options[j].style.display = 'none';
+			for (var k=0; k<max2; k++) {
+				if (this.inputs.inGamma.options[j].lastChild.nodeValue === cur.someGammas[k]) {
+					if (k === 0) {
+						defIdx = j;
+					}
+					this.inputs.inGamma.options[j].disabled = false;
+					this.inputs.inGamma.options[j].style.display = 'block';
+					if (this.inputs.inGamma.options[j].selected) {
+						changeIdx = false;
+					}
+					break;
+				}
+			}
+		}
+		if (changeIdx) {
+			var oldIdx = this.inputs.inGamma.options.selectedIndex;
+			this.inputs.inGamma.options[defIdx].selected = true;
+			this.inputs.inGamma.options[oldIdx].disabled = true;
+			this.inputs.inGamma.options[oldIdx].style.display = 'none';
+		}
+	} else {
+		var max = this.inputs.inGamma.options.length;
+		for (var j=0; j<max; j++) {
+			this.inputs.inGamma.options[j].disabled = false;
+			this.inputs.inGamma.options[j].style.display = 'block';
+		}
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;
@@ -552,9 +642,13 @@ LUTFormats.prototype.output = function(buff) {
 	} else {
 		idx = this.mluts[parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)].idx;
 	}
-	var out = this.formats[idx].build(buff);
-	if (out !== '') {
-		this.file.save(out, this.inputs.name.value, this.exts[idx]);
+	var out = this.formats[idx].build(buff, this.inputs.name.value, this.exts[idx]);
+	if (out) {
+		if (this.txt[idx]) {
+			this.file.save(out.lut, out.fileName, out.ext);
+		} else {
+			this.file.saveBinary(out.lut, out.fileName, out.ext);
+		}
 	}
 }
 LUTFormats.prototype.build = function(type,buff) {

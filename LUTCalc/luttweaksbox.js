@@ -26,13 +26,10 @@ function LUTTweaksBox(fieldset, inputs, messages, files, formats) {
 LUTTweaksBox.prototype.build = function() {
 	this.io();
 	this.ui();
-	this.events();
 	this.toggleTweaks();
 	this.messages.gaSetParams();
 	this.messages.gtSetParams();
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
 LUTTweaksBox.prototype.io = function() {
 	// Tweaks Checkbox
@@ -49,8 +46,11 @@ LUTTweaksBox.prototype.ui = function() {
 	this.box.appendChild(this.holder);
 	maxHeights();
 
+	this.ct = this.tweaksList.length;
 	this.tweaksList.push(new TWKCT(this.holder, this.inputs, this.messages));
+	this.fl = this.tweaksList.length;
 	this.tweaksList.push(new TWKFL(this.holder, this.inputs, this.messages));
+	this.messages.gtTx(3,17,{});
 	this.PSST = this.tweaksList.length;
 	this.tweaksList.push(new TWKPSSTCDL(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKASCCDL(this.holder, this.inputs, this.messages));
@@ -62,6 +62,10 @@ LUTTweaksBox.prototype.ui = function() {
 
 }
 LUTTweaksBox.prototype.events = function() {
+	var max = this.tweaksList.length;
+	for (var j=0; j<max; j++) {
+		this.tweaksList[j].events();
+	}
 	this.tweaks.onclick = function(here){ return function(){
 		here.toggleTweaks();
 		here.messages.gaSetParams();
@@ -88,6 +92,10 @@ LUTTweaksBox.prototype.gotGamutLists = function() {
 		this.build();
 		this.built = true;
 	}
+}
+LUTTweaksBox.prototype.gotCATs = function(CATs) {
+	this.tweaksList[this.ct].gotCATs(CATs);
+	this.tweaksList[this.fl].gotCATs(CATs);
 }
 LUTTweaksBox.prototype.getTFParams = function(params) {
 	if (typeof this.tweaks !== 'undefined' && this.tweaks.checked) {

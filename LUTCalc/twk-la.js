@@ -21,10 +21,7 @@ function TWKLA(tweaksBox, inputs, messages, files, formats) {
 	this.messages.addUI(this.p,this);
 	this.io();
 	this.ui();
-	this.events();
-	if (this.inputs.isReady(this.p)) {
-		lutcalcReady();
-	}
+	lutcalcReady(this.p);
 }
 TWKLA.prototype.io = function() {
 	// Tweak Checkbox

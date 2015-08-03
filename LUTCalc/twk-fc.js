@@ -15,7 +15,6 @@ function TWKFC(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKFC.prototype.io = function() {
 	// Tweak Checkbox

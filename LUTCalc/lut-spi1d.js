@@ -13,7 +13,7 @@ function spi1dLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
 }
-spi1dLUT.prototype.build = function(buff) {
+spi1dLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var info = {};
 	this.messages.getInfo(info);
@@ -28,7 +28,11 @@ spi1dLUT.prototype.build = function(buff) {
 		d += "\n";
 	}
 	d += '}' + "\n";
-	return this.header(info) + d;
+	return {
+		lut: this.header(info) + d,
+		fileName: fileName,
+		ext: ext
+	};
 }
 spi1dLUT.prototype.header = function(info) {
 	var out = '';

@@ -32,8 +32,10 @@ function LUTColourSpace() {
 	this.ver = 0;
 	this.curIn = 0;
 	this.curOut = 0;
-	this.CAT = new CSTemperature(this.getCCT(this.system.white),this.system.toXYZ);
-	this.green = new CSGreen(this.getCCT(this.system.white),this.system.toXYZ);
+	this.planck = new Planck();
+	this.CATs = new CAT();
+	this.CAT = new CSTemperature(this.planck.getCCT(this.system.white),this.system.toXYZ, this.planck, this.CATs);
+	this.green = new CSGreen(this.planck.getCCT(this.system.white),this.system.toXYZ, this.planck, this.CATs);
 	this.curHG = 0;
 	this.hgLow = 0;
 	this.hgHigh = 0;
@@ -87,14 +89,15 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Sony S-Gamut'));
 	this.csIn.push(this.toSys('Alexa Wide Gamut'));
 	this.csIn.push(this.toSys('Canon Cinema Gamut'));
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES').m));
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES').m));
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m));
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m));
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
 	this.csIn.push(this.toSys('Rec2020'));
 	this.csIn.push(this.toSys('sRGB'));
-	this.csIn.push(this.toSys('ACES'));
+	this.csIn.push(this.toSys('ACES AP0'));
+	this.csIn.push(this.toSys('ACEScg AP1'));
 	this.csIn.push(this.toSys('XYZ'));
 	this.csIn.push(this.toSys('DCI-P3'));
 	this.csIn.push(this.toSys('DCI-P3D60'));
@@ -154,7 +157,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Rec2020'));
 	this.csOut.push(this.fromSys('sRGB'));
 	this.csOut.push(new CSMatrix('Luma B&W', new Float64Array([ this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2] ])));
-	this.csOut.push(this.fromSys('ACES'));
+	this.csOut.push(this.fromSys('ACES AP0'));
+	this.csOut.push(this.fromSys('ACEScg AP1'));
 	this.csOut.push(this.fromSys('XYZ'));
 	this.csOut.push(this.fromSys('DCI-P3'));
 	this.csOut.push(this.fromSys('DCI-P3D60'));
@@ -187,7 +191,6 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 			}
 		}
 	}
-
 }
 // Colour calculations
 LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
@@ -385,13 +388,20 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	srgb.white = this.illuminant('d65');
 	srgb.toXYZ = this.RGBtoXYZ(srgb.xy,srgb.white);
 	this.g.push(srgb);
-// ACES
+// ACES AP0
 	var aces = {};
-	aces.name = 'ACES';
+	aces.name = 'ACES AP0';
 	aces.xy = new Float64Array([0.73470,0.26530, 0.00000,1.00000, 0.00010,-0.07700]);
 	aces.white = new Float64Array([0.32168, 0.33767, 0.34065]);
 	aces.toXYZ = this.RGBtoXYZ(aces.xy,aces.white);
 	this.g.push(aces);
+// ACEScg AP1
+	var ap1 = {};
+	ap1.name = 'ACEScg AP1';
+	ap1.xy = new Float64Array([0.7130,0.2930, 0.1650,0.8300, 0.1280,0.0440]);
+	ap1.white = new Float64Array([0.32168, 0.33767, 0.34065]);
+	ap1.toXYZ = this.RGBtoXYZ(ap1.xy,ap1.white);
+	this.g.push(ap1);
 // XYZ
 	var xyz = {};
 	xyz.name = 'XYZ';
@@ -609,9 +619,6 @@ LUTColourSpace.prototype.setSaturated = function() {
 		r[0],r[1],r[2],
 		b[0],b[1],b[2]
 	]).buffer;
-}
-LUTColourSpace.prototype.getCCT = function(white) {
-	return 6500; // until I have the CCT algorithm in place, assume D65
 }
 // Parameter setting functions
 LUTColourSpace.prototype.setCT = function(params) {
@@ -855,46 +862,155 @@ LUTColourSpace.prototype.setFC = function(params) {
 	out.doFC = this.doFC;
 	return out;
 }
+// Colour space data objects
+function Planck() {
+	this.loci = new LUTs();
+	this.setLoci();
+}
+Planck.prototype.setLoci = function() {
+	this.loci.setDetails({
+		title: 'loci',
+		format: 'cube',
+		dims: 1,
+		s: 131,
+		min: [1000,1000,1000],
+		max: [40000,40000,40000],
+		C: [new Float64Array(
+			[	0.6499, 0.6095, 0.5720, 0.5375, 0.5062, 0.4782, 0.4535, 0.4320,
+				0.4132, 0.3969, 0.3827, 0.3704, 0.3596, 0.3502, 0.3419, 0.3346,
+				0.3281, 0.3223, 0.3171, 0.3125, 0.3083, 0.3045, 0.3011, 0.2980,
+				0.2952, 0.2926, 0.2902, 0.2880, 0.2860, 0.2841, 0.2824, 0.2807,
+				0.2792, 0.2778, 0.2765, 0.2753, 0.2742, 0.2731, 0.2721, 0.2711,
+				0.2702, 0.2694, 0.2686, 0.2678, 0.2671, 0.2664, 0.2657, 0.2651,
+				0.2645, 0.2639, 0.2634, 0.2629, 0.2624, 0.2619, 0.2615, 0.2610,
+				0.2606, 0.2602, 0.2598, 0.2595, 0.2591, 0.2588, 0.2584, 0.2581,
+				0.2578, 0.2575, 0.2572, 0.2570, 0.2567, 0.2564, 0.2562, 0.2559,
+				0.2557, 0.2555, 0.2553, 0.2551, 0.2548, 0.2546, 0.2544, 0.2543,
+				0.2541, 0.2539, 0.2537, 0.2535, 0.2534, 0.2532, 0.2531, 0.2529,
+				0.2528, 0.2526, 0.2525, 0.2523, 0.2522, 0.2521, 0.2519, 0.2518,
+				0.2517, 0.2516, 0.2515, 0.2513, 0.2512, 0.2511, 0.2510, 0.2509,
+				0.2508, 0.2507, 0.2506, 0.2505, 0.2504, 0.2503, 0.2502, 0.2502,
+				0.2501, 0.2500, 0.2499, 0.2498, 0.2497, 0.2497, 0.2496, 0.2495,
+				0.2494, 0.2494, 0.2493, 0.2492, 0.2491, 0.2491, 0.2490, 0.2489,
+				0.2489, 0.2488, 0.2487]),
+			new Float64Array(
+		    [	0.3474, 0.3801, 0.4025, 0.4150, 0.4196, 0.4186, 0.4139, 0.4070,
+				0.3990, 0.3905, 0.3820, 0.3738, 0.3659, 0.3585, 0.3516, 0.3451,
+				0.3392, 0.3337, 0.3286, 0.3238, 0.3195, 0.3154, 0.3117, 0.3082,
+				0.3050, 0.3020, 0.2992, 0.2966, 0.2942, 0.2919, 0.2898, 0.2878,
+				0.2859, 0.2841, 0.2825, 0.2809, 0.2794, 0.2780, 0.2767, 0.2754,
+				0.2742, 0.2731, 0.2720, 0.2710, 0.2700, 0.2691, 0.2682, 0.2673,
+				0.2665, 0.2657, 0.2650, 0.2643, 0.2636, 0.2629, 0.2623, 0.2617,
+				0.2611, 0.2606, 0.2600, 0.2595, 0.2590, 0.2585, 0.2580, 0.2576,
+				0.2572, 0.2567, 0.2563, 0.2559, 0.2555, 0.2552, 0.2548, 0.2545,
+				0.2541, 0.2538, 0.2535, 0.2532, 0.2529, 0.2526, 0.2523, 0.2520,
+				0.2517, 0.2515, 0.2512, 0.2510, 0.2507, 0.2505, 0.2503, 0.2500,
+				0.2498, 0.2496, 0.2494, 0.2492, 0.2490, 0.2488, 0.2486, 0.2484,
+				0.2482, 0.2481, 0.2479, 0.2477, 0.2476, 0.2474, 0.2472, 0.2471,
+				0.2469, 0.2468, 0.2466, 0.2465, 0.2463, 0.2462, 0.2461, 0.2459,
+				0.2458, 0.2457, 0.2456, 0.2454, 0.2453, 0.2452, 0.2451, 0.2450,
+				0.2449, 0.2447, 0.2446, 0.2445, 0.2444, 0.2443, 0.2442, 0.2441,
+				0.2440, 0.2439, 0.2438]),
+			new Float64Array(
+			[	1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1,1,1,1,1,1,
+				1,1,1])
+			]
+	});
+}
+Planck.prototype.getCCT = function(white) {
+	return 6500; // until I have the CCT algorithm in place, assume D65
+}
+Planck.prototype.xyY = function(T) {
+	return this.loci.lRCub(T);
+}
+Planck.prototype.xyz = function(T) {
+	var xyY = this.loci.lRCub(T);
+	return new Float64Array([
+		xyY[0],xyY[1],1-xyY[0]-xyY[1]
+	]);
+}
+Planck.prototype.XYZ = function(T) {
+	var xyY = this.loci.lRCub(T);
+	return new Float64Array([
+		xyY[0]/xyY[1],1,(1-xyY[0]-xyY[1])/xyY[1]
+	]);
+}
+Planck.prototype.perp = function(T) {
+	var xyY1 = this.loci.lRCub(T - 0.1);
+	var xyY2 = this.loci.lRCub(T + 0.1);
+	return Math.atan2(xyY2[1]-xyY1[1], xyY2[0]-xyY1[0]) + (Math.PI/2);
+}
+function CAT() {
+	this.names = [];
+	this.M = [];
+	this.models();
+}
+CAT.prototype.models = function() {
+	this.addModel('CIECAT02', new Float64Array([0.7328,0.4296,-0.1624, -0.7036,1.6975,0.0061, 0.003,0.0136,0.9834]));
+	this.addModel('CIECAT97s', new Float64Array([0.8562,0.3372,-0.1934, -0.8360,1.8327,0.0033, 0.0357,-0.0469,1.0112]));
+	this.addModel('Bradford Chromatic Adaptation', new Float64Array([0.8951,0.2664,-0.1614, -0.7502,1.7135,0.0367, 0.0389,-0.0685,1.0296]));
+	this.addModel('Von Kries', new Float64Array([0.40024,0.7076,-0.08081, -0.2263,1.16532,0.0457, 0,0,0.91822]));
+	this.addModel('Sharp', new Float64Array([1.2694,-0.0988,-0.1706, -0.8364,1.8006,0.0357, 0.0297,-0.0315,1.0018]));
+	this.addModel('CMCCAT2000', new Float64Array([0.7982,0.3389,-0.1371, -0.5918,1.5512,0.0406, 0.0008,0.0239,0.9753]));
+	this.addModel('XYZ Scaling', new Float64Array([1,0,0, 0,1,0, 0,0,1]));
+}
+CAT.prototype.addModel = function(name,M) {
+	this.names.push(name);
+	this.M.push(M);
+}
+CAT.prototype.getModel = function(idx) {
+	return new Float64Array(this.M[idx]);
+}
+CAT.prototype.getModels = function() {
+	return this.names.slice(0);
+}
 // Adjustment objects
-function CSTemperature(CCT,toXYZ) {
+function CSTemperature(CCT, toXYZ, planck, CATs) {
 	this.CCT = CCT;
 	this.toSys = this.mInverse(toXYZ);
 	this.fromSys = toXYZ;
-	this.loci = new LUTs();
-	this.setLoci();
+	this.planck = planck;
+	this.CATs = CATs;
 	this.cur = 0;
 	this.dT = 0;
-	this.names = [];
-	this.Ms = [];
-	this.models();
 	this.setModel(this.cur);
-	this.setCAT();
-}
-CSTemperature.prototype.models = function() {
-	this.addModel('Bradford Chromatic Adaptation', [0.8951,0.2664,-0.1614, -0.7502,1.7135,0.0367, 0.0389,-0.0685,1.0296]);
-	this.addModel('CIECAT02',[0.7328,0.4296,-0.1624, -0.7036,1.6975,0.0061, 0.003,0.0136,0.9834]);
-	this.addModel('Von Kries',[0.40024,0.7076,-0.08081, -0.2263,1.16532,0.0457, 0,0,0.91822]);
-	this.addModel('Sharp',[1.2694,-0.0988,-0.1706, -0.8364,1.8006,0.0357, 0.0297,-0.0315,1.0018]);
-	this.addModel('CMCCAT2000',[0.7982,0.3389,-0.1371, -0.5918,1.5512,0.0406, 0.0008,0.0239,0.9753]);
-	this.addModel('XYZ Scaling',[1,0,0, 0,1,0, 0,0,1]);
-}
-CSTemperature.prototype.addModel = function(name,M) {
-	this.names.push(name);
-	this.Ms.push(M);
 }
 CSTemperature.prototype.setModel = function(modelIdx) {
 	this.cur = modelIdx;
-	this.M = this.Ms[this.cur];
+	this.M = this.CATs.getModel(modelIdx);
 	this.Minv = this.mInverse(this.M);
 	this.setCAT();
 }
-CSTemperature.prototype.getModels = function() {
-	var max = this.names.length;
-	var out = [];
-	for (var j=0; j<max; j++) {
-		out.push({idx: j, name: this.names[j]});
-	}
-	return out;
+CSTemperature.prototype.setCAT = function() {
+	var Ws = this.planck.XYZ(this.dT);
+	var Wd = this.planck.XYZ(this.CCT);
+	var s = this.mMult(this.M,Ws);
+	var d = this.mMult(this.M,Wd);
+	var M1 = this.mMult(this.mMult(new Float64Array([
+		d[0]/s[0],	0,			0,
+		0,			d[1]/s[1],	0,
+		0,			0,			d[2]/s[2]
+	]), this.M),this.fromSys);
+	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
+}
+CSTemperature.prototype.setTemp = function(dT) {
+	this.dT = dT * this.CCT;
+	this.setCAT();
 }
 CSTemperature.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
@@ -946,63 +1062,6 @@ CSTemperature.prototype.mMult = function(m1,m2) {
 		return false;
 	}
 }
-CSTemperature.prototype.setLoci = function() {
-	this.loci.setDetails({
-		title: 'loci',
-		format: 'cube',
-		dims: 1,
-		s: 65,
-		min: [0,0,0],
-		max: [1,1,1],
-		C: [new Float64Array(
-			[1.34656,1.24451,1.17117,1.11848,1.08017,1.05187,1.03065,1.01455,
-			 1.00197,0.99234,0.98506,0.97960,0.97557,0.97264,0.97058,0.96920,
-			 0.96835,0.96791,0.96780,0.96794,0.96828,0.96877,0.96937,0.97006,
-			 0.97082,0.97163,0.97246,0.97332,0.97419,0.97507,0.97594,0.97681,
-			 0.97767,0.97852,0.97936,0.98017,0.98098,0.98176,0.98253,0.98327,
-			 0.98400,0.98471,0.98540,0.98607,0.98673,0.98736,0.98798,0.98858,
-			 0.98917,0.98974,0.99029,0.99083,0.99135,0.99186,0.99236,0.99284,
-			 0.99331,0.99376,0.99421,0.99464,0.99506,0.99547,0.99586,0.99625,
-			 0.99663]),
-			new Float64Array(
-		    [1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1]),
-			new Float64Array(
-			[0.10372,0.16741,0.24024,0.31663,0.39400,0.47089,0.54644,0.62019,
-			 0.69148,0.75874,0.82247,0.88270,0.93953,0.99307,1.04350,1.09097,
-			 1.13565,1.17772,1.21733,1.25466,1.28985,1.32304,1.35437,1.38397,
-			 1.41196,1.43844,1.46352,1.48728,1.50983,1.53123,1.55157,1.57090,
-			 1.58931,1.60684,1.62355,1.63949,1.65471,1.66925,1.68316,1.69646,
-			 1.70920,1.72141,1.73311,1.74434,1.75512,1.76548,1.77544,1.78502,
-			 1.79423,1.80311,1.81166,1.81991,1.82786,1.83553,1.84294,1.85010,
-			 1.85702,1.86371,1.87018,1.87645,1.88251,1.88839,1.89408,1.89960,
-			 1.90495])
-			]
-	});
-}
-CSTemperature.prototype.setCAT = function() {
-	var Ws = this.loci.lRCub((this.dT-1800)/19200);
-	var Wd = this.loci.lRCub((this.CCT-1800)/19200);
-	var s = this.mMult(this.M,Ws);
-	var d = this.mMult(this.M,Wd);
-	var M1 = this.mMult(this.mMult(new Float64Array([
-		d[0]/s[0],	0,			0,
-		0,			d[1]/s[1],	0,
-		0,			0,			d[2]/s[2]
-	]), this.M),this.fromSys);
-	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
-}
-CSTemperature.prototype.setTemp = function(dT) {
-	this.dT = dT * this.CCT;
-	this.setCAT();
-}
 CSTemperature.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var max = c.length;
@@ -1016,47 +1075,52 @@ CSTemperature.prototype.lc = function(buff) {
 		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
 	}
 }
-function CSGreen(CCT,toXYZ) {
+function CSGreen(CCT, toXYZ, planck, CATs) {
 	this.CCT = CCT;
+	this.T = CCT;
 	this.toSys = this.mInverse(toXYZ);
 	this.fromSys = toXYZ;
-	this.loci = new LUTs();
-	this.setLoci();
-	this.white = this.loci.lRCub((this.CCT-1800)/19200);
+	this.planck = planck;
+	this.whiteXYZ = this.planck.XYZ(CCT);
+	this.whitexyY = this.planck.xyY(CCT);
+	this.CATs = CATs;
 	this.cur = 0;
-	this.T = CCT;
 	this.mag = 0;
-	this.names = [];
-	this.Ms = [];
-	this.models();
 	this.setModel(this.cur);
-	this.setCAT();
-}
-CSGreen.prototype.models = function() {
-	this.addModel('Bradford Chromatic Adaptation', [0.8951,0.2664,-0.1614, -0.7502,1.7135,0.0367, 0.0389,-0.0685,1.0296]);
-	this.addModel('CIECAT02',[0.7328,0.4296,-0.1624, -0.7036,1.6975,0.0061, 0.003,0.0136,0.9834]);
-	this.addModel('Von Kries',[0.40024,0.7076,-0.08081, -0.2263,1.16532,0.0457, 0,0,0.91822]);
-	this.addModel('Sharp',[1.2694,-0.0988,-0.1706, -0.8364,1.8006,0.0357, 0.0297,-0.0315,1.0018]);
-	this.addModel('CMCCAT2000',[0.7982,0.3389,-0.1371, -0.5918,1.5512,0.0406, 0.0008,0.0239,0.9753]);
-	this.addModel('XYZ Scaling',[1,0,0, 0,1,0, 0,0,1]);
-}
-CSGreen.prototype.addModel = function(name,M) {
-	this.names.push(name);
-	this.Ms.push(M);
 }
 CSGreen.prototype.setModel = function(modelIdx) {
 	this.cur = modelIdx;
-	this.M = this.Ms[this.cur];
+	this.M = this.CATs.getModel(modelIdx);
 	this.Minv = this.mInverse(this.M);
 	this.setCAT();
 }
-CSGreen.prototype.getModels = function() {
-	var max = this.names.length;
-	var out = [];
-	for (var j=0; j<max; j++) {
-		out.push({idx: j, name: this.names[j]});
-	}
-	return out;
+CSGreen.prototype.setCAT = function() {
+	var Ws = this.whiteXYZ;
+	var Wd = this.shift();
+	var s = this.mMult(this.M,Ws);
+	var d = this.mMult(this.M,Wd);
+	var M1 = this.mMult(this.mMult(new Float64Array([
+		d[0]/s[0],	0,			0,
+		0,			d[1]/s[1],	0,
+		0,			0,			d[2]/s[2]
+	]), this.M),this.fromSys);
+	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
+}
+CSGreen.prototype.shift = function() {
+	var a = this.planck.perp(this.T);
+	var mag = this.mag * 0.041048757;
+	var dx = mag * Math.sin(a);
+	var dy = mag * Math.cos(a);
+	var x = this.whitexyY[0] + dx;
+	var y = this.whitexyY[1] + dy;
+	return new Float64Array([
+		x/y,1,(1-x-y)/y
+	]);
+}
+CSGreen.prototype.setGreen = function(dT,m) {
+	this.T = dT * this.CCT;
+	this.mag = m;
+	this.setCAT();
 }
 CSGreen.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
@@ -1107,77 +1171,6 @@ CSGreen.prototype.mMult = function(m1,m2) {
 	} else {
 		return false;
 	}
-}
-CSGreen.prototype.setLoci = function() {
-	this.loci.setDetails({
-		title: 'loci',
-		format: 'cube',
-		dims: 1,
-		s: 65,
-		min: [0,0,0],
-		max: [1,1,1],
-		C: [new Float64Array(
-			[0.549554281,0.515981903,0.485678486,0.459314076,0.436578981,0.416952596,0.399927196,0.385065683,
-			 0.3720036,0.360710179,0.350863077,0.34224204,0.334660345,0.327961725,0.322016063,0.316715103,
-			 0.311968633,0.307701254,0.303849707,0.3003607,0.297189137,0.294296685,0.291650622,0.289222888,
-			 0.286989321,0.28492903,0.283023883,0.281258078,0.279617799,0.278090919,0.276666763,0.275335899,
-			 0.274089972,0.272921555,0.27182403,0.270791487,0.269818625,0.268900689,0.268033395,0.267212878,
-			 0.266435644,0.265698526,0.264998648,0.264333394,0.263700379,0.263097425,0.262522539,0.261973896,
-			 0.261449821,0.260948772,0.260469333,0.260010195,0.259570151,0.259148084,0.258742963,0.258353827,
-			 0.257979789,0.257620022,0.257273756,0.256940277,0.256618916,0.256309051,0.256010098,0.255721513,
-			 0.255442786]),
-			new Float64Array(
-			[0.408116416,0.414606817,0.414694684,0.410660277,0.404174524,0.396390777,0.38803413,0.379544456,
-			 0.371270504,0.363493931,0.356185759,0.349369467,0.343042515,0.337186884,0.331776025,0.326779327,
-			 0.322164915,0.317901341,0.313958564,0.310308465,0.306925075,0.303784628,0.300865504,0.298148114,
-			 0.295614754,0.293249445,0.29103778,0.288966769,0.287024695,0.285200986,0.283486092,0.28187138,
-			 0.280349037,0.27891198,0.277553785,0.276268614,0.275051153,0.273896563,0.272800426,0.271758707,
-			 0.270767715,0.269824064,0.268924652,0.268066625,0.267247361,0.266464443,0.26571564,0.264998896,
-			 0.264312306,0.263654108,0.26302267,0.262416477,0.26183412,0.261274291,0.260735771,0.260217427,
-			 0.259718197,0.259237094,0.258773194,0.258325631,0.257893596,0.25747633,0.257073122,0.256683302,
-			 0.256306244]),
-			new Float64Array(
-		    [1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1,1,1,1,1,1,1,1,
-			 1])
-			]
-	});
-}
-CSGreen.prototype.setCAT = function() {
-	var Ws = this.white;
-	var Wd = this.shift();
-	var s = this.mMult(this.M,Ws);
-	var d = this.mMult(this.M,Wd);
-	var M1 = this.mMult(this.mMult(new Float64Array([
-		d[0]/s[0],	0,			0,
-		0,			d[1]/s[1],	0,
-		0,			0,			d[2]/s[2]
-	]), this.M),this.fromSys);
-	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
-}
-CSGreen.prototype.shift = function() {
-	var T = (this.T-1800)/19200;
-	var xyz1 = this.loci.lRCub(T-0.00005);
-	var xyz2 = this.loci.lRCub(T+0.00005);
-	var d = (xyz1[1]-xyz2[1])/(xyz2[0]-xyz1[0]);
-	var x = -this.mag * 0.041048757* Math.pow(1/(1+(d*d)),0.5);
-//	var x = -this.mag * 0.1 * Math.pow(1/(1+(d*d)),0.5);
-	return new Float64Array([
-		this.white[0] + x,
-		this.white[1] + (x*d),
-		this.white[2]
-	]);
-}
-CSGreen.prototype.setGreen = function(dT,m) {
-	this.T = dT * this.CCT;
-	this.mag = m;
-	this.setCAT();
 }
 CSGreen.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
@@ -1974,7 +1967,7 @@ LUTColourSpace.prototype.getCATs = function(p,t) {
 		p: p,
 		t: t+20,
 		v: this.ver,
-		o: [this.CAT.getModels(), this.green.getModels()]
+		o: this.CATs.getModels()
 	};
 }
 LUTColourSpace.prototype.previewLin = function(p,t,i) {

@@ -15,7 +15,6 @@ function TWKCT(tweaksBox, inputs, messages) {
 	this.messages = messages;
 	this.io();
 	this.ui();
-	this.events();
 }
 TWKCT.prototype.io = function() {
 	// Tweak Checkbox
@@ -52,7 +51,7 @@ TWKCT.prototype.io = function() {
 	// Chromatic Adaptation Transform Model Selector
 	this.catSelect = document.createElement('select');
 	this.catSelect.className = 'twk-select';
-	this.catList();
+//	this.catList();
 }
 TWKCT.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -175,10 +174,23 @@ TWKCT.prototype.events = function() {
 	};}(this);
 }
 // Tweak-Specific Code
+TWKCT.prototype.gotCATs = function(CATs) {
+	var max = CATs.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = j.toString();
+		option.appendChild(document.createTextNode(CATs[j]));
+		if (j === 0) {
+			option.selected = true;
+		}
+		this.catSelect.appendChild(option);
+	}
+}
 TWKCT.prototype.catList = function() {
 	var CATs = [
-		'Bradford Chromatic Adaptation',
 		'CIECAT02',
+		'CIECAT97s',
+		'Bradford Chromatic Adaptation',
 		'Von Kries',
 		'Sharp',
 		'CMCCAT2000',
@@ -200,12 +212,12 @@ TWKCT.prototype.testSlider = function() {
 	var ratio = Math.exp(-val*0.5415972824);
 	var ctCam = Math.round(parseFloat(this.ctCamInput.value));
 	var temp = ctCam*ratio;
-	if (temp < 1800) {
-		this.ctCamInput.value = Math.round(1800/ratio).toString();
-		this.ctNewInput.value = '1800';
-	} else if (temp > 21000) {
-		this.ctCamInput.value = Math.round(21000/ratio).toString();
-		this.ctNewInput.value = '21000';
+	if (temp < 1000) {
+		this.ctCamInput.value = Math.round(1000/ratio).toString();
+		this.ctNewInput.value = '1000';
+	} else if (temp > 40000) {
+		this.ctCamInput.value = Math.round(40000/ratio).toString();
+		this.ctNewInput.value = '40000';
 	} else {
 		this.ctNewInput.value = Math.round(temp).toString();
 	}
@@ -220,10 +232,10 @@ TWKCT.prototype.testSlider = function() {
 TWKCT.prototype.testCTCam = function() {
 	var ctCam = Math.round(parseFloat(this.ctCamInput.value));
 	var temp = Math.round(parseFloat(this.ctNewInput.value));
-	if (ctCam < 1800) {
-		this.ctCamInput.value = '1800';
-	} else if (temp > 21000) {
-		this.ctCamInput.value = '21000';
+	if (ctCam < 1000) {
+		this.ctCamInput.value = '1000';
+	} else if (temp > 40000) {
+		this.ctCamInput.value = '40000';
 	} else {
 		this.ctCamInput.value = ctCam.toString();
 	}
@@ -242,10 +254,10 @@ TWKCT.prototype.testCTCam = function() {
 TWKCT.prototype.testCTNew = function() {
 	var ctCam = Math.round(parseFloat(this.ctCamInput.value));
 	var temp = Math.round(parseFloat(this.ctNewInput.value));
-	if (temp < 1800) {
-		this.ctNewInput.value = '1800';
-	} else if (temp > 21000) {
-		this.ctNewInput.value = '21000';
+	if (temp < 1000) {
+		this.ctNewInput.value = '1000';
+	} else if (temp > 40000) {
+		this.ctNewInput.value = '40000';
 	} else {
 		this.ctNewInput.value = temp.toString();
 	}

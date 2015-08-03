@@ -14,7 +14,7 @@ function cubeLUT(messages, isLE, flavour) {
 	this.isLE = isLE;
 	this.flavour = flavour;
 }
-cubeLUT.prototype.build = function(buff) {
+cubeLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var d = '';
@@ -23,7 +23,11 @@ cubeLUT.prototype.build = function(buff) {
 				lut[j+1].toFixed(6).toString() + ' ' +
 				lut[j+2].toFixed(6).toString() + "\n";
 	}
-	return this.header() + d;
+	return {
+		lut: this.header() + d,
+		fileName: fileName,
+		ext: ext
+	};
 }
 cubeLUT.prototype.header = function() {
 	var info = {};

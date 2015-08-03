@@ -9,14 +9,14 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTPreview(fieldset,inputs,message,file) {
+function LUTPreview(fieldset,inputs,messages,file) {
 	this.box = document.createElement('fieldset');
 	this.fieldset = fieldset;
 	this.inputs = inputs;
-	this.message = message;
+	this.messages = messages;
 	this.file = file;
 	this.p = 8;
-	this.message.addUI(this.p,this);
+	this.messages.addUI(this.p,this);
 	this.main = document.getElementById('main');
 	this.right = document.getElementById('right');
 	this.io();
@@ -339,10 +339,7 @@ LUTPreview.prototype.loadedDefault = function() {
 		} else {
 			this.pre = this.def[0];
 			this.refresh();
-			this.events();
-			if (this.inputs.isReady(this.p)) {
-				lutcalcReady();
-			}
+			lutcalcReady(this.p);
 		}
 	}
 }
@@ -421,7 +418,7 @@ LUTPreview.prototype.preGotImg = function() {
 	this.updatePopup();
 }
 LUTPreview.prototype.prepPreview = function() {
-	this.message.gaTx(8,14,{
+	this.messages.gaTx(8,14,{
 		gamma: parseInt(this.preGammaSelect.options[this.preGammaSelect.options.selectedIndex].value),
 		gamut: parseInt(this.preGamutSelect.options[this.preGamutSelect.options.selectedIndex].value),
 		legal: this.preLegalRange.checked,
@@ -649,9 +646,9 @@ LUTPreview.prototype.gotLine = function(data) {
 			this.line++;
 			var input = {line: this.line, upd: data.upd, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), leg: this.leg, eiMult: this.eiMult, to: ['o']}
 			if (this.inputs.d[0].checked) {
-				this.message.gaTx(this.p,12,input);
+				this.messages.gaTx(this.p,12,input);
 			} else {
-				this.message.gtTx(this.p,12,input);
+				this.messages.gtTx(this.p,12,input);
 			}
 		}
 	}
@@ -668,15 +665,15 @@ LUTPreview.prototype.refresh = function() {
 		if (this.parade) {
 			this.clearParade();
 		}
-		var max = Math.max(this.message.getGammaThreads(),this.message.getGamutThreads());
+		var max = Math.max(this.messages.getGammaThreads(),this.messages.getGamutThreads());
 		this.upd++;
 		for (var j=0; j<max; j++) {
 			this.line = j;
 			var input = {line: this.line, upd:this.upd, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), leg:this.leg, eiMult: this.eiMult, to: ['o']};
 			if (this.inputs.d[0].checked) {
-				this.message.gaTx(this.p,12,input);
+				this.messages.gaTx(this.p,12,input);
 			} else {
-				this.message.gtTx(this.p,12,input);
+				this.messages.gtTx(this.p,12,input);
 			}
 		}
 	}
