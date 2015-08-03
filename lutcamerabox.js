@@ -100,7 +100,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon Log 2 (Approx)",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
-	this.cameras.push({make:"Nikon",model:"D800",iso:800,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
+	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
 }
 LUTCameraBox.prototype.cameraOptions = function() {
 	var max = this.cameras.length;
