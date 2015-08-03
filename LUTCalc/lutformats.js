@@ -277,6 +277,7 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 0, wClip: 1019, hard: true
 	});
 */
+/*
 	this.mluts.push({
 		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
 		oneD: true, threeD: false, defThree: false,
@@ -289,7 +290,7 @@ LUTFormats.prototype.mlutsList = function() {
 		setBits: false,
 		bClip: 64, wClip: 1019, hard: true
 	});
-
+*/
 	var max = this.mluts.length;
 	var max2 = this.types.length;
 	for (var j=0; j<max; j++) {
