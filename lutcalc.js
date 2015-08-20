@@ -41,10 +41,10 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutGammaBox = new LUTGammaBox(fieldSet(left,true), lutInputs, lutMessage);
 	lutTweaksBox = new LUTTweaksBox(fieldSet(left,true), lutInputs, lutMessage, lutFile, lutFormats);
 	right = fieldSet(lutCalcForm,false,'right');
-	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
 	lutBox = new LUTLutBox(fieldSet(right,true), lutInputs, lutMessage, lutFormats);
 	lutGenerate = new LUTGenerateBox(fieldSet(right,false), lutInputs, lutMessage, lutFile, lutFormats);
-	lutPreview.uiExternal(lutGenerate.getBox(),lutBox.getFieldSet());
+	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
+	lutPreview.uiExternal(lutGenerate.getBox());
 	lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
 	// Set Up Data
 	lutMessage.gaTx(0,5,{});

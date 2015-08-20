@@ -22,6 +22,8 @@ function Brent(func, a, b) {
 	} else {
 		this.setRange(0,1);
 	}
+	this.delta = 1;
+	this.tol = 0.00000001; // tolerence - OK for Float64s, too small for Float32s
 }
 Brent.prototype.setRange = function(a,b) {
 	this.a = a;			// For f(x), minimum value of x
@@ -29,6 +31,12 @@ Brent.prototype.setRange = function(a,b) {
 	this.b = b;			// For f(x), maximum value of x
 	this.fMax = this.func.f(b);
 	this.mid = this.func.f((a+b)/2);
+}
+Brent.prototype.setDelta = function(d) {
+	this.delta = d;
+}
+Brent.prototype.setTolerance = function(tol) {
+	this.tol = tol;
 }
 Brent.prototype.minMax = function(x) {
 	if (x < this.a) {
@@ -43,7 +51,7 @@ Brent.prototype.getMinMax = function() {
 	return { a: this.a, fMin: this.fMin, b: this.b, fMax: this.fMax };
 }
 Brent.prototype.findRoot = function(I,O) { // Public single root method, O is the f(x) to match to if not zero (root), finds closest root to I
-	var tol = 0.00000001; // tolerence - OK for Float64s, too small for Float32s
+	var tol = this.tol;
 	if (typeof O === 'number') {
 		this.o = O;
 	} else {
@@ -58,7 +66,7 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 	var yl,yh;
 	var dl,dh;
 	for (var j=1; j<25; j++) {
-		dx = Math.pow(1.04,j) - 1;
+		dx = this.delta * (Math.pow(1.04,j) - 1);
 		yl = this.func.f(I-dx) - this.o;
 		yh = this.func.f(I+dx) - this.o;
 		if (Math.abs(yl)<tol) {

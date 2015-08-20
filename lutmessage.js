@@ -24,6 +24,7 @@ function LUTMessage(inputs) {
 	// 9 - twkHG
 	// 10 - twkLA
 	// 11 - formats
+	// 12 - twkWHITE
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -435,6 +436,9 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 37: // Get Chromatic Adaptation Transform options
 					this.ui[3].gotCATs(d.o);
 					break;
+			case 38: // Get CCT and Dxy for white point dropper
+					this.ui[12].gotPreCCTDuv(d);
+					break;
 		}
 	}
 }
@@ -492,4 +496,11 @@ LUTMessage.prototype.oneOrThree = function() {
 		this.ui[3].toggleTweaks();
 		this.gtSetParams();
 		this.gaSetParams();
+}
+LUTMessage.prototype.showPreview = function() {
+	this.ui[3].toggleTweaks();
+}
+LUTMessage.prototype.getPreCCTDuv = function(xcoord,ycoord) {
+	var rgb = this.ui[8].getCanVal(xcoord, ycoord);
+	this.gtTx(12,18,{rgb: rgb.buffer, to:['rgb']});
 }

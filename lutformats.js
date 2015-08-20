@@ -105,6 +105,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -117,6 +118,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: true,
 		setBits: false,
+		resSDI: false,
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -129,6 +131,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: false,
 		scaling: true,
 		setBits: false,
+		resSDI: false,
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -141,6 +144,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -153,6 +157,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: false
 	});
 	this.grades.push({
@@ -165,6 +170,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
@@ -177,6 +183,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
@@ -189,6 +196,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -201,6 +209,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: true,
 		setBits: false,
+		resSDI: false,
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -213,6 +222,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
@@ -225,6 +235,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	this.grades.push({
@@ -237,6 +248,7 @@ LUTFormats.prototype.gradesList = function() {
 		legOut: true, datOut: true, defLegOut: true,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
+		resSDI: false,
 		bClip: 0, wClip: 1023, hard: true
 	});
 	var max = this.grades.length;
@@ -261,6 +273,7 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: 1,
 		bClip: 64, wClip: 1019, hard: false
 	});
 /*
@@ -274,10 +287,10 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 0, wClip: 1019, hard: true
 	});
 */
-/*
 	this.mluts.push({
 		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
 		oneD: true, threeD: false, defThree: false,
@@ -288,9 +301,9 @@ LUTFormats.prototype.mlutsList = function() {
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
+		resSDI: false,
 		bClip: 64, wClip: 1019, hard: true
 	});
-*/
 	var max = this.mluts.length;
 	var max2 = this.types.length;
 	for (var j=0; j<max; j++) {

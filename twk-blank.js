@@ -13,11 +13,11 @@ function TWKBLANK(tweaksBox, inputs, messages) {
 	this.tweaksBox = tweaksBox;
 	this.inputs = inputs;
 	this.messages = messages;
-	this.inputs();
+	this.io();
 	this.ui();
 	this.events();
 }
-TWKBLANK.prototype.inputs = function() {
+TWKBLANK.prototype.io = function() {
 	// Tweak Checkbox
 	this.tweakCheck = document.createElement('input');
 	this.tweakCheck.setAttribute('type','checkbox');
