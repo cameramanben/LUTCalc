@@ -2,7 +2,7 @@
     "name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
     "package_path" : "https://cameramanben.github.io/LUTCalc/package.zip",
-	"version": "1.9.15",
+	"version": "1.9.16",
 	"icons": {
 		"128": "/img/ff128.png",
 		"512": "/img/ff512.png",

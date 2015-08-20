@@ -34,6 +34,8 @@ LUTPreview.prototype.io = function() {
 	this.drButton = document.createElement('input');
 	this.drButton.setAttribute('type','button');
 	this.drButton.value = 'Low Contrast';
+	this.buttonHolder = document.createElement('fieldset');
+	this.buttonHolder.className = 'button-holder';
 	this.preLeg = this.createRadioElement('prelegdat',true);
 	this.preDat = this.createRadioElement('prelegdat',false);
 	this.wavCheck = document.createElement('input');
@@ -51,6 +53,8 @@ LUTPreview.prototype.io = function() {
 	this.fileInput = document.createElement('input');
 	this.fileInput.setAttribute('type','file');
 	this.inputs.addInput('preFileData',{});
+	this.show = false;
+	this.inputs.addInput('showPreview',this.show);
 	// File popup io
 	this.preCSBoxHolder = document.createElement('div');
 	this.preGammaSelect = document.createElement('select');
@@ -68,6 +72,11 @@ LUTPreview.prototype.io = function() {
 	this.fileButton.style.display = 'none';
 }
 LUTPreview.prototype.ui = function() {
+	this.buttonHolder.appendChild(this.sizeButton);
+	this.buttonHolder.appendChild(this.drButton);
+	this.buttonHolder.appendChild(this.fileButton);
+	this.box.appendChild(this.buttonHolder);
+
 	this.fileInput.style.display = 'none';
 	this.box.appendChild(this.fileInput);
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
@@ -81,11 +90,33 @@ LUTPreview.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('RGB Parade')));
 	this.box.appendChild(this.rgbCheck);	
 	this.box.appendChild(document.createElement('br'));
+
+	// RGB Values box
+	this.rgbBox = document.createElement('div');
+	this.rgbBox.appendChild(document.createTextNode('10-Bit Values - R:'));
+	this.rgbR = document.createElement('div');
+	this.rgbR.className = 'fixed-width-no';
+	this.rgbR.innerHTML = '0';
+	this.rgbBox.appendChild(this.rgbR);
+	this.rgbBox.appendChild(document.createTextNode('G:'));
+	this.rgbG = document.createElement('div');
+	this.rgbG.className = 'fixed-width-no';
+	this.rgbG.innerHTML = '0';
+	this.rgbBox.appendChild(this.rgbG);
+	this.rgbBox.appendChild(document.createTextNode('B:'));
+	this.rgbB = document.createElement('div');
+	this.rgbB.className = 'fixed-width-no';
+	this.rgbB.innerHTML = '0';
+	this.rgbBox.appendChild(this.rgbB);
+	this.box.appendChild(this.rgbBox);
+
 	this.uiCanvases();
-	this.uiPopup();
-	this.fieldset.appendChild(this.box);
+
 	this.fieldset.style.width = '32em';	
 	this.fieldset.style.display = 'none';
+	this.fieldset.appendChild(this.box);
+
+	this.uiPopup();
 }
 LUTPreview.prototype.uiCanvases = function() {
 	this.width = 960;
@@ -95,7 +126,6 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.vscope = false;
 	this.parade = false;
 	this.vscale = 410;
-	this.show = false;
 	this.changed = false;
 	this.eiMult = 1;
 	this.line = 0;
@@ -105,15 +135,18 @@ LUTPreview.prototype.uiCanvases = function() {
 	// Preview image canvases
 	this.pCan = document.createElement('canvas');
 	this.pCan.setAttribute('id','can-preview');
+	this.inputs.addInput('previewCanvas',this.pCan);
 	this.pCan.width = this.width.toString();
 	this.pCan.height = this.height.toString();
 	this.pCan.style.width = '32em';
 	this.pCan.style.height = '18em';
 	this.pCtx = this.pCan.getContext('2d');
 	this.pData = this.pCtx.createImageData(this.width,this.height);
+	this.pRaw = new Float64Array(this.width * this.height * 3);
+	this.inputs.addInput('preRaw',this.pRaw);
 	this.box.appendChild(this.pCan);
 	this.lCan = document.createElement('canvas');
-	this.pCan.setAttribute('id','can-hidden');
+	this.lCan.setAttribute('id','can-hide');
 	this.lCan.width = this.width.toString();
 	this.lCan.height = this.height.toString();
 	this.lCan.style.width = '32em';
@@ -145,7 +178,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.box.appendChild(this.vCan);
 	// RGB parade
 	this.rgbCan = document.createElement('canvas');
-	this.pCan.setAttribute('id','can-parade');
+	this.rgbCan.setAttribute('id','can-parade');
 	this.rgbCan.width = this.width.toString();
 	this.rgbCan.height = this.height.toString();
 	this.rgbCan.style.width = '32em';
@@ -182,13 +215,9 @@ LUTPreview.prototype.uiPopup = function() {
 	this.preCSBoxHolder.appendChild(this.preCSBox);
 	document.getElementById('body').appendChild(this.preCSBoxHolder);
 }
-LUTPreview.prototype.uiExternal = function(generateBox,lutbox) {
-	this.lutbox = lutbox;
-	this.generateButton = generateBox.button;
-	generateBox.box.insertBefore(this.preButton,generateBox.button);
-	generateBox.box.insertBefore(this.sizeButton,generateBox.button);
-	generateBox.box.insertBefore(this.drButton,generateBox.button);
-	generateBox.box.insertBefore(this.fileButton,generateBox.button);
+LUTPreview.prototype.uiExternal = function(genBox) {
+	this.generateButton = genBox.button;
+	genBox.box.insertBefore(this.preButton, genBox.button);
 	this.drButton.style.display = 'none';
 }
 LUTPreview.prototype.events = function() {
@@ -235,6 +264,9 @@ LUTPreview.prototype.events = function() {
 	};}(this);
 	this.rgbCheck.onclick = function(here){ return function(){
 		here.toggleParade();
+	};}(this);
+	this.pCan.onmousemove = function(here){ return function(e){
+		here.rgbVals(e.clientX, e.clientY);
 	};}(this);
 }
 // Base data
@@ -624,6 +656,7 @@ LUTPreview.prototype.gotLine = function(data) {
 				k += 4;
 			}
 		}
+		this.pRaw.set(raster,data.line*this.width*3);
 		if (this.line === this.height-1) {
 			this.pCtx.putImageData(this.pData,0,0);
 			if (this.wform) {
@@ -705,16 +738,20 @@ LUTPreview.prototype.createRadioElement = function(name, checked) {
     }
     return radioInput;
 }
+LUTPreview.prototype.getCanVal = function(x,y) {
+	x = Math.round(x*960);
+	y = Math.round(y*540);
+	var t = (x + (y*960))*3;
+	return new Float64Array([this.pre[t],this.pre[t+1],this.pre[t+2]]);
+}
 // Event responses
 LUTPreview.prototype.toggle = function() {
 	if (this.show) {
 		main.style.width = '69em';
 		right.style.width = '33em';
 		this.fieldset.style.display = 'none';
-		this.lutbox.style.display = 'block';
 		this.sizeButton.style.display = 'none';
 		this.fileButton.style.display = 'none';
-		this.generateButton.style.display = 'inline';
 		this.drButton.style.display = 'none';
 		this.show = false;
 		this.preButton.value = 'Preview';
@@ -727,15 +764,15 @@ LUTPreview.prototype.toggle = function() {
 			right.style.width = '52em';
 		}
 		this.fieldset.style.display = 'block';
-		this.lutbox.style.display = 'none';
 		this.sizeButton.style.display = 'inline';
 		this.fileButton.style.display = 'inline';
-		this.generateButton.style.display = 'none';
 		this.drButton.style.display = 'inline';
 		this.show = true;
 		this.preButton.value = 'Hide Preview';
 		this.refresh();
 	}
+	this.inputs.showPreview = this.show;
+	this.messages.showPreview();
 }
 LUTPreview.prototype.toggleSize = function() {
 	if (this.small) {
@@ -835,4 +872,13 @@ LUTPreview.prototype.toggleParade = function() {
 		this.rgbCan.style.display = 'none';
 		this.refresh();
 	}
+}
+LUTPreview.prototype.rgbVals = function(x,y) {
+	var rect = this.pCan.getBoundingClientRect();
+	var x = Math.round(960*(x - rect.left)/rect.width);
+	var y = 960*Math.round(540*(y - rect.top)/rect.height);
+	var i = (x + y)*3;
+	this.rgbR.innerHTML = Math.min(1023,Math.round(876*this.pRaw[ i ])+64).toString();
+	this.rgbG.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+1])+64).toString();
+	this.rgbB.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+2])+64).toString();
 }

@@ -311,6 +311,8 @@ background:transparent;
   background: rgba(0, 0, 0, 0);
 }
 
+.fixed-width-no {width:3em; display:inline-block; text-align: center; margin:0}
+.slider-holder { display: inline-block; }
 .isoinput {width:5em;line-height:0.8;}
 .shiftinput {width:5em;line-height:0.8;}
 .ireinput {width:4em;line-height:0.8;}
@@ -321,6 +323,8 @@ background:transparent;
 .infobox {height:21em;margin-top:0.15em;overflow:auto;}
 .buttons { text-align: center; }
 .smallbutton {text-align: center;font-size:0.6em;vertical-align:middle;}
+.reset { font-size:0.6em;margin-top: 1em; float:right; }
+.button-holder { text-align:center; display: block; }
 #chartcanvas1 {display:block;width:28em;height:15em; z-index: 1;}
 #chartcanvas2 {display:block;width:28em;height:15em; z-index: 1;}
 #chartcanvas3 {display:block;width:28em;height:15em; z-index: 1;}
@@ -335,9 +339,10 @@ background:transparent;
 #rgbcanvas3 {display:block;margin-top:-15em;width:28em;height:15em;z-index: 4;}
 #chartreclabel {color:red; margin-right:10px;}
 #chartoutlabel {color:blue; margin-left:10px;}
-#genbutton { text-align:center; }
+#genbutton { text-align:center; display:inline-block;}
 /* Preview canvases */
-#can-hidden {margin:0px auto;}
+#can-preview {margin:0px auto;cursor: crosshair;}
+#can-hide {display:none;}
 #can-waveform {margin:0px auto;}
 #can-vector {margin:0px auto;}
 #can-parade {margin:0px auto;}
