@@ -37,8 +37,6 @@ function LUTColourSpace() {
 	this.system.Dxy = this.planck.getDxy(this.system.white,this.system.CCT);
 	this.CATs = new CSCAT();
 	this.wb = new CSWB(this.system.white,this.system.toXYZ, this.planck, this.CATs);
-	this.CAT = new CSTemperature(this.system.CCT,this.system.toXYZ, this.planck, this.CATs);
-	this.green = new CSGreen(this.system.CCT,this.system.toXYZ, this.planck, this.CATs);
 	this.curHG = 0;
 	this.hgLow = 0;
 	this.hgHigh = 0;
@@ -77,8 +75,6 @@ function LUTColourSpace() {
 
 	this.doHG = false;
 	this.doWB = false;
-	this.doCT = false;
-	this.doFL = false;
 	this.doASCCDL = false;
 	this.doPSSTCDL = false;
 	this.doFC = false;
@@ -462,10 +458,6 @@ LUTColourSpace.prototype.systemMatrices = function() {
 			this.g[j].toSys = this.mMult(this.system.inv, this.g[j].toXYZ);
 		}
 	}
-/*
-	console.log('Rec709 to Rec7093200K');
-	console.log(this.mMult(this.mInverse(this.g[6].toXYZ),this.ciecat02(this.g[6].toXYZ,this.g[6].white,new Float64Array([0.4254,0.4044,0.1704]))));
-*/
 }
 LUTColourSpace.prototype.initPSSTCDL = function() {
 	this.psstMC = true;
@@ -645,54 +637,6 @@ LUTColourSpace.prototype.setWB = function(params) {
 		}
 	}
 	out.doWB = this.doWB;
-	return out;
-}
-LUTColourSpace.prototype.setCT = function(params) {
-	var out = {};
-	this.doCT = false;
-	if (this.tweaks && typeof params.twkCT !== 'undefined') {
-		var p = params.twkCT;
-		if (typeof p.doCT === 'boolean' && p.doCT) {
-			this.doCT = true;
-			if (typeof p.CAT === 'number') {
-				this.CAT.setModel(p.CAT);
-				out.CAT = params.CAT;
-			}
-			if (typeof p.dT === 'number') {
-				this.CAT.setTemp(p.dT);
-				out.dT = p.dT;
-			}
-		}
-	}
-	out.doCT = this.doCT;
-	return out;
-}
-LUTColourSpace.prototype.setFL = function(params) {
-	var out = {};
-	this.doFL = false;
-	if (this.tweaks && typeof params.twkFL !== 'undefined') {
-		var p = params.twkFL;
-		if (typeof p.doFL === 'boolean' && p.doFL) {
-			this.doFL = true;
-			if (typeof p.CAT === 'number') {
-				this.green.setModel(p.CAT);
-				out.CAT = p.CAT;
-			}
-			if (typeof p.flT === 'number' && typeof p.flMag === 'number') {
-				this.green.setGreen(p.flT, p.flMag);
-				out.dT = p.flT;
-				out.flMag = p.flMag;
-			}
-/*
-			if (typeof p.flMag === 'number' && typeof p.flTemp === 'number') {
-				this.green.setGreen(p.flTemp,p.flMag);
-				out.flMag = p.flMag;
-				out.flTemp = p.flTemp;
-			}
-*/
-		}
-	}
-	out.doFL = this.doFL;
 	return out;
 }
 LUTColourSpace.prototype.setASCCDL = function(params) {
@@ -915,8 +859,8 @@ CCTxy.prototype.f = function(T) {
 		4 * xy1[0] / ((-2*xy1[0]) + (12*xy1[1]) + 3),
 		6 * xy1[1] / ((-2*xy1[0]) + (12*xy1[1]) + 3)
 	]);
-	var d0 = Math.sqrt(Math.pow(this.u - uv0[0],2) + Math.pow(this.v - uv0[1],2));
-	var d1 = Math.sqrt(Math.pow(this.u - uv1[0],2) + Math.pow(this.v - uv1[1],2));
+	var d0 = Math.pow(Math.pow(this.u - uv0[0],2) + Math.pow(this.v - uv0[1],2),0.5);
+	var d1 = Math.pow(Math.pow(this.u - uv1[0],2) + Math.pow(this.v - uv1[1],2),0.5);
 	return (d0-d1)*10;
 }
 function Planck() {
@@ -1106,14 +1050,15 @@ Planck.prototype.getCCT = function(white) {
 		var u = 4 * white[0] / ((-2*white[0]) + (12*white[1]) + 3);
 		var v = 6 * white[1] / ((-2*white[0]) + (12*white[1]) + 3);
 		// Test if in triangles below 1000K or above 25000K
+/*
 		var left = (0.42644748-0.44800714)*(v-0.3546253) - (0.1055567-0.3546253)*(u-0.44800714);
 		if (left >= 0) {
 			return 1000;
-		} else {
-			left = (0.42207761-0.18293282)*(v-0.2740731) - (0.2012049-0.2740731)*(u-0.18293282);
-			if (left <= 0) {
-				return 25000;
-			}
+		} else 
+*/
+		left = (0.42207761-0.18293282)*(v-0.2740731) - (0.2012049-0.2740731)*(u-0.18293282);
+		if (left <= 0) {
+			return 25000;
 		}
 		// Find CCT using Brents method
 		this.slope.setuv(u,v);
@@ -1123,23 +1068,22 @@ Planck.prototype.getCCT = function(white) {
 		var root, xy, dist;
 		var uv = new Float64Array(2);
 		for (var j=0; j<m; j++) {
-			root = this.brent.findRoot((j*200)+100,0);
-			if (root > 200 && root < 75000) {
-				if (root<1000) {
-					root = 1000;
-				} else if (root > 25000) {
-					root = 25000;
-				}
+			root = this.brent.findRoot((j*1000)+100,0);
+			if (root > 100) {
 				xy = this.loci.lRCub(root);
 				uv = this.xy2uv(xy);
-				dist = Math.sqrt(Math.pow(u - uv[0],2) + Math.pow(v - uv[1],2));
+				dist = Math.pow(Math.pow(u - uv[0],2) + Math.pow(v - uv[1],2),0.5);
 				if (dist < bDist) {
 					best = root;
 					bDist = dist;
 				}
 			}
 		}
-// self.postMessage({msg:true,details:'Duv - ' + this.getDuv(white, best)});
+		if (best < 500) {
+			best = 500;
+		} else if (best > 25000) {
+			best = 25000;
+		}
 		return Math.round(best);
 	}
 }
@@ -1159,12 +1103,11 @@ Planck.prototype.getDuvMag = function(white,T) {
 	var du = u - uv[0];
 	var dv = v - uv[1];
 	var nBelow = (uv1[0]-uv2[0])*(v-uv2[1]) - (uv1[1]-uv2[1])*(u-uv2[0]);
-	var nMag = Math.sqrt((du*du)+(dv*dv));
+	var nMag = Math.pow((du*du)+(dv*dv),0.5);
 	var dut = u - uvW[0];
 	var dvt = v - uvW[1];
 	var tLeft = (uv[0]-u)*(uvW[1]-v) - (uv[1]-v)*(uvW[0]-u);
-	var tMag = Math.sqrt((dut*dut)+(dvt*dvt));
-// self.postMessage({msg:true,details:'uv, u, v - ' + uv[0] + ' , ' + uv[1] + ' , ' + u + ' , ' + v});
+	var tMag = Math.pow((dut*dut)+(dvt*dvt),0.5);
 	var out = new Float64Array(2);
 	if (nBelow > 0 && nMag > 0.0000001) {
 		out[0] = -nMag;
@@ -1210,7 +1153,7 @@ Planck.prototype.getDxy = function(white,T) {
 	var dx = x - xyY[0];
 	var dy = y - xyY[1];
 	var left = (xyY1[0]-xyY2[0])*(y-xyY2[1]) - (xyY1[1]-xyY2[1])*(x-xyY2[0]);
-	var mag = Math.sqrt((dx*dx)+(dy*dy));
+	var mag = Math.pow((dx*dx)+(dy*dy),0.5);
 // self.postMessage({msg:true,details:'xy, x, y - ' + xyY[0] + ' , ' + xyY[1] + ' , ' + x + ' , ' + y});
 	if (left > 0) {
 		return -mag;
@@ -1291,7 +1234,7 @@ Planck.prototype.Dxy = function(T) {
 	var y = (2*v)/((2*u)-(8*v)+4);
 	var dx = x - xyY[0];
 	var dy = y - xyY[1];
-	var mag = Math.sqrt((dx*dx)+(dy*dy));
+	var mag = Math.pow((dx*dx)+(dy*dy),0.5);
 	return new Float64Array([mag, Math.atan2(dy, dx)]);
 }
 Planck.prototype.Duv = function(T) {
@@ -1333,6 +1276,7 @@ function CSWB(sysWhite, toXYZ, planck, CATs) {
 	this.toSys = this.mInverse(toXYZ);
 	this.planck = planck;
 
+	this.sysWhiteXYZ = new Float64Array([sysWhite[0]/sysWhite[1],1,(1-sysWhite[0]-sysWhite[1])/sysWhite[1]]);
 	this.CCT0 = this.planck.getCCT(sysWhite);
 	this.Duv0 = this.planck.getDuvMag(sysWhite,this.CCT0)[0];
 	var uv0 = this.planck.uv(this.CCT0);
@@ -1359,7 +1303,18 @@ CSWB.prototype.setModel = function(idx) {
 	this.cur = idx;
 	this.M = this.CATs.getModel(idx);
 	this.Minv = this.mInverse(this.M);
+	this.setToLocus();
 	this.setCAT();
+}
+CSWB.prototype.setToLocus = function() {
+	var Msys = this.mMult(this.M,this.sysWhiteXYZ);
+	var Mcct = this.mMult(this.M,this.planck.XYZ(this.CCT0));
+	var Mtolocus = new Float64Array([
+		Mcct[0]/Msys[0],	0,					0,
+		0,					Mcct[1]/Msys[1],	0,
+		0,					0,					Mcct[2]/Msys[2]
+	]);
+	this.Ntolocus = this.mMult(this.Minv,this.mMult(Mtolocus, this.M));
 }
 CSWB.prototype.setCAT = function() {
 	var Msys = this.mMult(this.M,this.planck.XYZ(this.CCT0));
@@ -1429,6 +1384,13 @@ CSWB.prototype.setVals = function(ref,ctShift,lampShift,duv,dpl) {
 	this.dpl = dpl * 0.0175;
 	this.setCAT();
 }
+CSWB.prototype.toLocus = function(XYZ) {
+	return new Float64Array([
+		(this.Ntolocus[0]*XYZ[0])+(this.Ntolocus[1]*XYZ[1])+(this.Ntolocus[2]*XYZ[2]),
+		(this.Ntolocus[3]*XYZ[0])+(this.Ntolocus[4]*XYZ[1])+(this.Ntolocus[5]*XYZ[2]),
+		(this.Ntolocus[6]*XYZ[0])+(this.Ntolocus[7]*XYZ[1])+(this.Ntolocus[8]*XYZ[2])
+	]);
+}
 CSWB.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
 				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
@@ -1480,212 +1442,6 @@ CSWB.prototype.mMult = function(m1,m2) {
 	}
 }
 CSWB.prototype.lc = function(buff) {
-	var c = new Float64Array(buff);
-	var max = c.length;
-	var r,g,b;
-	for (var j=0; j<max; j+= 3) {
-		r = c[ j ];
-		g = c[j+1];
-		b = c[j+2];
-		c[ j ] = (this.N[0]*r)+(this.N[1]*g)+(this.N[2]*b);
-		c[j+1] = (this.N[3]*r)+(this.N[4]*g)+(this.N[5]*b);
-		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
-	}
-}
-function CSTemperature(CCT, toXYZ, planck, CATs) {
-	this.CCT = CCT;
-	this.toSys = this.mInverse(toXYZ);
-	this.fromSys = toXYZ;
-	this.planck = planck;
-	this.CATs = CATs;
-	this.cur = 0;
-	this.dT = 0;
-	this.setModel(this.cur);
-}
-CSTemperature.prototype.setModel = function(modelIdx) {
-	this.cur = modelIdx;
-	this.M = this.CATs.getModel(modelIdx);
-	this.Minv = this.mInverse(this.M);
-	this.setCAT();
-}
-CSTemperature.prototype.setCAT = function() {
-	var Ws = this.planck.XYZ(this.dT);
-	var Wd = this.planck.XYZ(this.CCT);
-	var s = this.mMult(this.M,Ws);
-	var d = this.mMult(this.M,Wd);
-	var M1 = this.mMult(this.mMult(new Float64Array([
-		d[0]/s[0],	0,			0,
-		0,			d[1]/s[1],	0,
-		0,			0,			d[2]/s[2]
-	]), this.M),this.fromSys);
-	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
-}
-CSTemperature.prototype.setTemp = function(dT) {
-	this.dT = dT * this.CCT;
-	this.setCAT();
-}
-CSTemperature.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
-	if (det === 0) {
-		return false;
-	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
-	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
-	]);
-}
-CSTemperature.prototype.mMult = function(m1,m2) {
-	if (m1.length !== 9) {
-		return false;
-	}
-	var len = m2.length;
-	if (len === 3) {
-		var out = new Float64Array(3);
-		out[0] = (m1[0]*m2[0]) + (m1[1]*m2[1]) + (m1[2]*m2[2]);
-		out[1] = (m1[3]*m2[0]) + (m1[4]*m2[1]) + (m1[5]*m2[2]);
-		out[2] = (m1[6]*m2[0]) + (m1[7]*m2[1]) + (m1[8]*m2[2]);
-		return out;
-	} else if (len === 9) {
-		var out = new Float64Array(9);
-		out[0] = (m1[0]*m2[0]) + (m1[1]*m2[3]) + (m1[2]*m2[6]);
-		out[1] = (m1[0]*m2[1]) + (m1[1]*m2[4]) + (m1[2]*m2[7]);
-		out[2] = (m1[0]*m2[2]) + (m1[1]*m2[5]) + (m1[2]*m2[8]);
-		out[3] = (m1[3]*m2[0]) + (m1[4]*m2[3]) + (m1[5]*m2[6]);
-		out[4] = (m1[3]*m2[1]) + (m1[4]*m2[4]) + (m1[5]*m2[7]);
-		out[5] = (m1[3]*m2[2]) + (m1[4]*m2[5]) + (m1[5]*m2[8]);
-		out[6] = (m1[6]*m2[0]) + (m1[7]*m2[3]) + (m1[8]*m2[6]);
-		out[7] = (m1[6]*m2[1]) + (m1[7]*m2[4]) + (m1[8]*m2[7]);
-		out[8] = (m1[6]*m2[2]) + (m1[7]*m2[5]) + (m1[8]*m2[8]);
-		return out;
-	} else {
-		return false;
-	}
-}
-CSTemperature.prototype.lc = function(buff) {
-	var c = new Float64Array(buff);
-	var max = c.length;
-	var r,g,b;
-	for (var j=0; j<max; j+= 3) {
-		r = c[ j ];
-		g = c[j+1];
-		b = c[j+2];
-		c[ j ] = (this.N[0]*r)+(this.N[1]*g)+(this.N[2]*b);
-		c[j+1] = (this.N[3]*r)+(this.N[4]*g)+(this.N[5]*b);
-		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
-	}
-}
-function CSGreen(CCT, toXYZ, planck, CATs) {
-	this.CCT = CCT;
-	this.T = CCT;
-	this.toSys = this.mInverse(toXYZ);
-	this.fromSys = toXYZ;
-	this.planck = planck;
-	this.whiteXYZ = this.planck.XYZ(CCT);
-	this.whitexyY = this.planck.xyY(CCT);
-	this.CATs = CATs;
-	this.cur = 0;
-	this.mag = 0;
-	this.setModel(this.cur);
-}
-CSGreen.prototype.setModel = function(modelIdx) {
-	this.cur = modelIdx;
-	this.M = this.CATs.getModel(modelIdx);
-	this.Minv = this.mInverse(this.M);
-	this.setCAT();
-}
-CSGreen.prototype.setCAT = function() {
-	var Wxy = this.planck.xyY(this.T);
-	var Ws = new Float64Array([Wxy[0]/Wxy[1],1,(1-Wxy[0]-Wxy[1])/Wxy[1]]);
-	var Wd = this.shift(Wxy);
-	var s = this.mMult(this.M,Ws);
-	var d = this.mMult(this.M,Wd);
-	var M1 = this.mMult(this.mMult(new Float64Array([
-		d[0]/s[0],	0,			0,
-		0,			d[1]/s[1],	0,
-		0,			0,			d[2]/s[2]
-	]), this.M),this.fromSys);
-	this.N = this.mMult(this.toSys,this.mMult(this.Minv,M1));
-}
-CSGreen.prototype.shift = function(Wxy) {
-	var a = this.planck.Dxy(this.T);
-	var mag = a[0] * this.mag * 0.05; //0.041048757;
-	var dx = mag * Math.sin(a[1]);
-	var dy = mag * Math.cos(a[1]);
-	var x = Wxy[0] + dx;
-	var y = Wxy[1] + dy;
-	return new Float64Array([
-		x/y,1,(1-x-y)/y
-	]);
-}
-CSGreen.prototype.setGreen = function(dT,m) {
-	this.T = dT * this.CCT;
-	this.mag = m;
-	this.setCAT();
-}
-CSGreen.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
-	if (det === 0) {
-		return false;
-	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
-	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
-	]);
-}
-CSGreen.prototype.mMult = function(m1,m2) {
-	if (m1.length !== 9) {
-		return false;
-	}
-	var len = m2.length;
-	if (len === 3) {
-		var out = new Float64Array(3);
-		out[0] = (m1[0]*m2[0]) + (m1[1]*m2[1]) + (m1[2]*m2[2]);
-		out[1] = (m1[3]*m2[0]) + (m1[4]*m2[1]) + (m1[5]*m2[2]);
-		out[2] = (m1[6]*m2[0]) + (m1[7]*m2[1]) + (m1[8]*m2[2]);
-		return out;
-	} else if (len === 9) {
-		var out = new Float64Array(9);
-		out[0] = (m1[0]*m2[0]) + (m1[1]*m2[3]) + (m1[2]*m2[6]);
-		out[1] = (m1[0]*m2[1]) + (m1[1]*m2[4]) + (m1[2]*m2[7]);
-		out[2] = (m1[0]*m2[2]) + (m1[1]*m2[5]) + (m1[2]*m2[8]);
-		out[3] = (m1[3]*m2[0]) + (m1[4]*m2[3]) + (m1[5]*m2[6]);
-		out[4] = (m1[3]*m2[1]) + (m1[4]*m2[4]) + (m1[5]*m2[7]);
-		out[5] = (m1[3]*m2[2]) + (m1[4]*m2[5]) + (m1[5]*m2[8]);
-		out[6] = (m1[6]*m2[0]) + (m1[7]*m2[3]) + (m1[8]*m2[6]);
-		out[7] = (m1[6]*m2[1]) + (m1[7]*m2[4]) + (m1[8]*m2[7]);
-		out[8] = (m1[6]*m2[2]) + (m1[7]*m2[5]) + (m1[8]*m2[8]);
-		return out;
-	} else {
-		return false;
-	}
-}
-CSGreen.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var max = c.length;
 	var r,g,b;
@@ -2034,8 +1790,6 @@ LUTColourSpace.prototype.setParams = function(params) {
 		this.tweaks = false;
 	}
 	out.twkWB = this.setWB(params);
-//	out.twkCT = this.setCT(params);
-//	out.twkFL = this.setFL(params);
 	out.twkASCCDL = this.setASCCDL(params);
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
@@ -2107,13 +1861,6 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		if (this.doWB) {
 			this.wb.lc(buff);
 		}
-		if (this.doCT) {
-			this.CAT.lc(buff);
-		}
-// Fluori Correction
-		if (this.doFL) {
-			this.green.lc(buff);
-		}
 // PSST-CDL
 		if (this.doPSSTCDL) {
 			var Pb,Pr;
@@ -2124,7 +1871,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
 				Pb = (o[j+2]-Y)/Db;
 				Pr = (o[ j ]-Y)/Dr;
-				m = Math.sqrt((Pb*Pb)+(Pr*Pr));
+				m = Math.pow((Pb*Pb)+(Pr*Pr),0.5);
 				h = Math.atan2(Pr,Pb)/(2*Math.PI); // converts coordinates to angle from x-axis. 0-deg = 0, 360-deg = 1
 				if (h < 0) {
 					h += 1;
@@ -2337,17 +2084,21 @@ LUTColourSpace.prototype.chartVals = function(p,t,i) {
 			this.wb.lc(g.buffer);
 			this.wb.lc(b.buffer);
 		}
+/*
 		if (this.doCT) {
 			this.CAT.lc(r.buffer);
 			this.CAT.lc(g.buffer);
 			this.CAT.lc(b.buffer);
 		}
+*/
 	// Fluori Correction
+/*
 		if (this.doFL) {
 			this.green.lc(r.buffer);
 			this.green.lc(g.buffer);
 			this.green.lc(b.buffer);
 		}
+*/
 	// ASC-CDL
 		if (this.doASCCDL) {
 			var Y;
@@ -2572,7 +2323,7 @@ LUTColourSpace.prototype.psstColours = function(p,t) {
 LUTColourSpace.prototype.getCCTDuv = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver };
 	var rgb = new Float64Array(i.rgb);
-	var XYZ = this.mMult(this.system.toXYZ,rgb);
+	var XYZ = this.wb.toLocus(this.mMult(this.system.toXYZ,rgb));
 	var L = XYZ[0] + XYZ[1] + XYZ[2];
 	var xyz = new Float64Array([XYZ[0]/L,XYZ[1]/L,XYZ[2]/L]);
 	var CCT = this.planck.getCCT(xyz);
@@ -2580,8 +2331,8 @@ LUTColourSpace.prototype.getCCTDuv = function(p,t,i) {
 	out.sys = this.wb.getSys();
 	out.ct = CCT;
 	out.lamp = out.ct;
-	out.duv = -delta[0] / 0.0175;
-//	out.dpl = -delta[1] / 0.0175;
+	out.duv = (-delta[0] / 0.0175).toFixed(4);
+//	out.dpl = (-delta[1] / 0.0175).toFixed(4);
 	out.dpl = 0;
 	this.wb.setVals(out.sys,out.ct,out.lamp,out.duv,out.dpl);
 	return out;

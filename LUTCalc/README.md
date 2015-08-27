@@ -81,8 +81,7 @@ LUT I/O
 
 Adjustment Files
 ----------------
-* twk-ct.js - colour temperature adjustment.
-* twk-fl.js - fluorescent / LED - green / magenta adjustment.
+* twk-wb.js - white balance (colour temperature / fluori green / magenta) adjustment.
 * twk-asccdl.js - adjustment based on the ASC-CDL operations.
 * twk-psstcdl.js - colour-specific adjustment based on the ASC-CDL controls.
 * twk-hg.js - adjustment to allow for a second choice of gamut in the highlights.

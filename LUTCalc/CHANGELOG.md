@@ -1,5 +1,23 @@
 LUTCalc Changelog
 =================
+v1.9 RC17
+---------
+* Further improvement of White Balance code.
+* Additional preview default showing the CIE 1931 xy and CIE 1960 uv chromacity diagrams with Planck locus. Gives a guide to the saturation limits / clipping of the current output colourspace.
+* White Balance now includes a 'click on preview' option. Once activated, clicking a spot on the preview window will attempt to calculate the CCT and Duv at that point and apply them to the White Balance adjustments.
+* Improvements to the Correlated Colour Temperature (CCT) calculation code.
+* Preview images are now chosen from a selection list, rather than toggling from one to the next.
+
+v1.9 RC16
+---------
+* Overhaul of the white balance adjustments code and Planck Locus calculation.
+* Planck locus data calculated from Planck equation and CIE 1931 data at 5nm intervals from 360-830.
+* Colour temperature and Fluori adjustments combined into one 'White Balance' adjustement tool.
+* Colour temperature shifts calculated from mired values rather than mappings from lighting gel data, then converted to working colour space's white point.
+* Fluori adjustment fixes to ensure that it is a Duv shift at the lamp's nominal CCT.
+* LUT file options and generate button now remain visible when the preview window is on.
+* The cursor becomes a crosshair over the preview window, with 10-bit code values for the output image at that point displayed above.
+
 v1.9 RC15
 ---------
 * Added ACEScg colour space (AP1) with ACEScc and ACESproxy gammas.

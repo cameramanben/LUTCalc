@@ -31,9 +31,22 @@ LUTPreview.prototype.io = function() {
 	this.sizeButton = document.createElement('input');
 	this.sizeButton.setAttribute('type','button');
 	this.sizeButton.value = 'Large Image';
-	this.drButton = document.createElement('input');
-	this.drButton.setAttribute('type','button');
-	this.drButton.value = 'Low Contrast';
+	//
+	this.defSelect = document.createElement('select');
+	var defs = [
+		'High Contrast',
+		'Low Contrast',
+		'Rec709 Gamut',
+		'xy / uv Chromacity',
+		'Grayscale'
+	];
+	for (var j=0; j<5; j++) {
+		var option = document.createElement('option');
+		option.value = j;
+		option.appendChild(document.createTextNode(defs[j]));
+		this.defSelect.appendChild(option);
+	}
+	//
 	this.buttonHolder = document.createElement('fieldset');
 	this.buttonHolder.className = 'button-holder';
 	this.preLeg = this.createRadioElement('prelegdat',true);
@@ -73,7 +86,7 @@ LUTPreview.prototype.io = function() {
 }
 LUTPreview.prototype.ui = function() {
 	this.buttonHolder.appendChild(this.sizeButton);
-	this.buttonHolder.appendChild(this.drButton);
+	this.buttonHolder.appendChild(this.defSelect);
 	this.buttonHolder.appendChild(this.fileButton);
 	this.box.appendChild(this.buttonHolder);
 
@@ -188,7 +201,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.rgbData = this.rgbCtx.createImageData(this.width,this.height);
 	this.box.appendChild(this.rgbCan);
 	this.def = [];
-	this.defNext = 3;
+	this.defNext = 4;
 	this.defOpt = 0;
 	this.loadDefault(this.defNext);
 }
@@ -218,7 +231,7 @@ LUTPreview.prototype.uiPopup = function() {
 LUTPreview.prototype.uiExternal = function(genBox) {
 	this.generateButton = genBox.button;
 	genBox.box.insertBefore(this.preButton, genBox.button);
-	this.drButton.style.display = 'none';
+	this.defSelect.style.display = 'none';
 }
 LUTPreview.prototype.events = function() {
 	this.fileButton.onclick = function(here){ return function(){
@@ -247,7 +260,7 @@ LUTPreview.prototype.events = function() {
 	this.sizeButton.onclick = function(here){ return function(){
 		here.toggleSize();
 	};}(this);
-	this.drButton.onclick = function(here){ return function(){
+	this.defSelect.onchange = function(here){ return function(){
 		here.toggleDefault();
 	};}(this);
 	this.preLeg.onclick = function(here){ return function(){
@@ -346,6 +359,10 @@ LUTPreview.prototype.loadDefault = function(opt) {
 			lsb.src = "CWLSB.png";
 			break;
 		case 3:
+			msb.src = "xyuvMSB.png";
+			lsb.src = "xyuvLSB.png";
+			break;
+		case 4:
 			msb.src = "GrayMSB.png";
 			lsb.src = "GrayLSB.png";
 			break;
@@ -359,10 +376,23 @@ LUTPreview.prototype.loadedDefault = function() {
 		var msb = this.pCtx.getImageData(0,0,960,540);
 		var max = Math.round(msb.data.length/4);
 		var def = new Float64Array(max*3);
-		for (var j=0; j<max; j++) {
-			def[(j*3)+0] = this.sl3ToLin(parseFloat((msb.data[(j*4)+0]*256)+lsb.data[(j*4)+0])/65535);
-			def[(j*3)+1] = this.sl3ToLin(parseFloat((msb.data[(j*4)+1]*256)+lsb.data[(j*4)+1])/65535);
-			def[(j*3)+2] = this.sl3ToLin(parseFloat((msb.data[(j*4)+2]*256)+lsb.data[(j*4)+2])/65535);
+		if (this.defNext === 3) {
+			var x,y,z;
+			for (var j=0; j<max; j++) {
+				x = parseFloat((msb.data[(j*4)+0]*256)+lsb.data[(j*4)+0])/65535;
+				y = parseFloat((msb.data[(j*4)+1]*256)+lsb.data[(j*4)+1])/65535;
+				z = parseFloat((msb.data[(j*4)+2]*256)+lsb.data[(j*4)+2])/65535;
+// Change this if I move from S-Gamut3.cine
+				def[(j*3)+0] = (1.8467789693*x) + (-0.5259861230*y) + (-0.2105452114*z);
+				def[(j*3)+1] = (-0.4441532629*x) + (1.2594429028*y) + (0.1493999729*z);
+				def[(j*3)+2] = (0.0408554212*x) + (0.0156408893*y) + (0.8682072487*z);
+			}
+		} else {
+			for (var j=0; j<max; j++) {
+				def[(j*3)+0] = this.sl3ToLin(parseFloat((msb.data[(j*4)+0]*256)+lsb.data[(j*4)+0])/65535);
+				def[(j*3)+1] = this.sl3ToLin(parseFloat((msb.data[(j*4)+1]*256)+lsb.data[(j*4)+1])/65535);
+				def[(j*3)+2] = this.sl3ToLin(parseFloat((msb.data[(j*4)+2]*256)+lsb.data[(j*4)+2])/65535);
+			}
 		}
 		this.def[this.defNext] = def;
 		this.defNext--;
@@ -458,8 +488,17 @@ LUTPreview.prototype.prepPreview = function() {
 	});
 }
 LUTPreview.prototype.preppedPreview = function(buff) {
-	this.pre = new Float64Array(buff);
-	this.drButton.value = 'To Default Test Images';
+	this.def[5] = new Float64Array(buff);
+	this.pre = this.def[5];
+	if (this.defSelect.options.length === 5) {
+		var option = document.createElement('option');
+		option.value = 5;
+		this.defSelect.appendChild(option);
+		this.defSelect.options[5].appendChild(document.createTextNode(this.inputs.preFileData.title));
+	}
+	this.defSelect.options[5].removeChild(this.defSelect.options[5].firstChild);
+	this.defSelect.options[5].appendChild(document.createTextNode(this.inputs.preFileData.title));
+	this.defSelect.options[5].selected = true;
 	this.refresh();
 }
 // Scope drawing
@@ -741,8 +780,39 @@ LUTPreview.prototype.createRadioElement = function(name, checked) {
 LUTPreview.prototype.getCanVal = function(x,y) {
 	x = Math.round(x*960);
 	y = Math.round(y*540);
-	var t = (x + (y*960))*3;
-	return new Float64Array([this.pre[t],this.pre[t+1],this.pre[t+2]]);
+	var t;
+	var out = new Float64Array(3);
+	var xj, yk;
+	var div;
+	for (var j=0; j<3; j++) {
+		for (var k=0; k<3; k++) {
+			xj = x + j;
+			if (xj < 0) {
+				xj = 0;
+			} else if (xj > 960) {
+				xj = 960;
+			}
+			yk = y + k;
+			if (yk < 0) {
+				yk = 0;
+			} else if (yk > 540) {
+				yk = 540;
+			}
+			t = (x + (y*960))*3;
+			if (j === 1 && k === 1) {
+				div = 4;
+			} else if (j === 1 || k === 1) {
+				div = 8;
+			} else {
+				div = 16;
+			}
+			out[0] += this.pre[ t ]/div;
+			out[1] += this.pre[t+1]/div;
+			out[2] += this.pre[t+2]/div;
+		}
+	}
+	var s = Math.pow(Math.pow(out[0],2) + Math.pow(out[1],2) + Math.pow(out[2],2),0.5);
+	return out;
 }
 // Event responses
 LUTPreview.prototype.toggle = function() {
@@ -752,7 +822,7 @@ LUTPreview.prototype.toggle = function() {
 		this.fieldset.style.display = 'none';
 		this.sizeButton.style.display = 'none';
 		this.fileButton.style.display = 'none';
-		this.drButton.style.display = 'none';
+		this.defSelect.style.display = 'none';
 		this.show = false;
 		this.preButton.value = 'Preview';
 	} else {
@@ -766,7 +836,7 @@ LUTPreview.prototype.toggle = function() {
 		this.fieldset.style.display = 'block';
 		this.sizeButton.style.display = 'inline';
 		this.fileButton.style.display = 'inline';
-		this.drButton.style.display = 'inline';
+		this.defSelect.style.display = 'inline';
 		this.show = true;
 		this.preButton.value = 'Hide Preview';
 		this.refresh();
@@ -808,28 +878,8 @@ LUTPreview.prototype.toggleSize = function() {
 	}
 }
 LUTPreview.prototype.toggleDefault = function() {
-	switch(this.defOpt) {
-		case 0:
-			this.changed = true;
-			this.defOpt = 1;
-			this.drButton.value = 'Rec709 Gamut';
-			break;
-		case 1:
-			this.changed = true;
-			this.defOpt = 2;
-			this.drButton.value = 'Grayscale';
-			break;
-		case 2:
-			this.changed = true;
-			this.defOpt = 3;
-			this.drButton.value = 'High Contrast';
-			break;	
-		case 3:
-			this.changed = true;
-			this.defOpt = 0;
-			this.drButton.value = 'Low Contrast';
-			break;	
-	}
+	this.defOpt = this.defSelect.options.selectedIndex;
+	this.changed = true;
 	this.pre = this.def[this.defOpt];
 	this.refresh();
 }
