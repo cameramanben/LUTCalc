@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "1.9.16",
+	"version": "1.9.17",
 	"manifest_version": 2,
 	"app": {
 		"background": {
@@ -31,8 +31,6 @@
 				"lutcamerabox.js",
 				"lutgammabox.js",
 				"twk-white.js",
-				"twk-ct.js",
-				"twk-fl.js",
 				"twk-asccdl.js",
 				"twk-psstcdl.js",
 				"twk-hg.js",

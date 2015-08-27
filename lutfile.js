@@ -183,13 +183,14 @@ function loadLUTFromApp(fileName, format, content, destination, parentIdx, next)
 				break;
 	}
 }
-function loadImgFromApp(format, content, destination, parentIdx, next) {
+function loadImgFromApp(format, title, content, destination, parentIdx, next) {
 	var theDestination = lutInputs[destination];
 	var nextObject;
 	switch (parseInt(parentIdx)) {
 		case 8: nextObject = lutPreview;
 				break;
 	}
+    theDestination.title = title;
      var max = content.length;
      theDestination.imageData = new Float64Array(max);
     var sample;

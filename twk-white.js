@@ -101,7 +101,7 @@ TWKWHITE.prototype.io = function() {
 	this.sample = false;
 	this.sampleButton = document.createElement('input');
 	this.sampleButton.setAttribute('type','button');
-	this.sampleButton.value = 'Activate Click On Preview For White';
+	this.sampleButton.value = 'Preview Click For White';
 	// Advanced Options Checkbox
 	this.advancedCheck = document.createElement('input');
 	this.advancedCheck.setAttribute('type','checkbox');
@@ -167,6 +167,7 @@ TWKWHITE.prototype.ui = function() {
 	this.box.appendChild(this.duvBox);
 	this.box.appendChild(this.duvReset);
 	this.box.appendChild(document.createElement('br'));
+
 /*
 	// Warm / Cool
 	this.dplBox = document.createElement('div');
@@ -180,13 +181,12 @@ TWKWHITE.prototype.ui = function() {
 	this.box.appendChild(this.dplReset);
 	this.box.appendChild(document.createElement('br'));
 */
+
 	// White Sample Button
-/*
 	this.preBox = document.createElement('div');
 	this.preBox.className = 'tweak-hide';
 	this.preBox.appendChild(this.sampleButton);
 	this.box.appendChild(this.preBox);
-*/
 	// Advanced settings Checkbox
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
 	this.box.appendChild(this.advancedCheck);
@@ -214,13 +214,11 @@ TWKWHITE.prototype.toggleTweaks = function() {
 	this.toggleTweak();
 }
 TWKWHITE.prototype.toggleTweak = function() {
-/*
 	if (this.inputs.showPreview) {
 		this.preBox.className = 'tweak';
 	} else {
 		this.preBox.className = 'tweak-hide';
 	}
-*/
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
@@ -336,10 +334,10 @@ TWKWHITE.prototype.testRefInput = function() {
 	var miredScale = (1000000/3200)-(1000000/5500); // scale mireds so that 3200 -> 5500 shift = 1 on slider
 	var sliderVal = (ctMiredShift / miredScale).toFixed(2);
 	this.ctSlider.value = sliderVal;
-	if (sliderVal<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
-	} else if (sliderVal === 0) {
+	if (Math.abs(sliderVal) < 0.0001) {
 		this.ctSliderLabel.innerHTML = 'Clear';
+	} else if (sliderVal<0) {
+		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
 	} else {
 		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
 	}
@@ -361,10 +359,10 @@ TWKWHITE.prototype.testCTInput = function() {
 	if (!this.lampFree) {
 		this.lampInput.value = this.ctInput.value;
 	}
-	if (sliderVal<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
-	} else if (sliderVal === 0) {
+	if (Math.abs(sliderVal) < 0.0001) {
 		this.ctSliderLabel.innerHTML = 'Clear';
+	} else if (sliderVal<0) {
+		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
 	} else {
 		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
 	}
@@ -393,30 +391,30 @@ TWKWHITE.prototype.testCTSlider = function() {
 	if (!this.lampFree) {
 		this.lampInput.value = this.ctInput.value;
 	}
-	if (val<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
-	} else if (val === 0) {
+	if (Math.abs(val) < 0.0001) {
 		this.ctSliderLabel.innerHTML = 'Clear';
+	} else 	if (val<0) {
+		this.ctSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
 	} else {
 		this.ctSliderLabel.innerHTML = val.toString() + ' CTB';
 	}
 }
 TWKWHITE.prototype.testDuvSlider = function() {
 	var val = parseFloat(this.duvSlider.value);
-	if (val<0) {
-		this.duvSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
-	} else if (val === 0) {
+	if (Math.abs(val) < 0.0001) {
 		this.duvSliderLabel.innerHTML = 'Clear';
+	} else if (val<0) {
+		this.duvSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
 	} else {
 		this.duvSliderLabel.innerHTML = val.toString() + ' Plus Green';
 	}
 }
 TWKWHITE.prototype.testDplSlider = function() {
 	var val = parseFloat(this.dplSlider.value);
-	if (val<0) {
-		this.dplSliderLabel.innerHTML = Math.abs(val).toString() + ' Yellow';
-	} else if (val === 0) {
+	if (Math.abs(val) < 0.0001) {
 		this.dplSliderLabel.innerHTML = 'Clear';
+	} else if (val<0) {
+		this.dplSliderLabel.innerHTML = Math.abs(val).toString() + ' Yellow';
 	} else {
 		this.dplSliderLabel.innerHTML = val.toString() + ' Blue';
 	}
@@ -447,10 +445,10 @@ TWKWHITE.prototype.gotCATs = function(CATs) {
 }
 TWKWHITE.prototype.toggleSample = function() {
 	if (this.sample) {
-		this.sampleButton.value = 'Activate Click On Preview For White';
+		this.sampleButton.value = 'Preview Click For White';
 		this.sample = false;
 	} else {
-		this.sampleButton.value = 'Deactivate Click On Preview For White';
+		this.sampleButton.value = 'Stop Preview Click For White';
 		this.sample = true;
 	}
 }

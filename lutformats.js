@@ -124,7 +124,7 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'Lumetri / Speedgrade (.cube)', type: 'cube3',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [17,33,65],
+		oneDim: [1024,4096], threeDim: [16,32,64],
 		defDim: 65,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
@@ -321,7 +321,6 @@ LUTFormats.prototype.validExts = function() {
 LUTFormats.prototype.isTxt = function() {
 	return this.txt.slice(0);
 }
-
 LUTFormats.prototype.gradeMLUT = function() {
 	if (this.inputs.lutUsage[0].checked) {
 		this.inputs.gradeSelect.className = 'lut-opt';
@@ -648,7 +647,6 @@ LUTFormats.prototype.resetOptions = function() {
 	this.inputs.clipCheck.disabled = false;
 	this.inputs.clipCheck.checked = false;
 }
-
 LUTFormats.prototype.output = function(buff) {
 	var idx;
 	if (this.inputs.lutUsage[0].checked) {
