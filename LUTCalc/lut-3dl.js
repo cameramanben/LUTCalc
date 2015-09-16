@@ -20,7 +20,7 @@ threedlLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
 	var d = '';
-	var max = info.dimension;
+	max = info.dimension;
 	var mult = (Math.pow(2,info.inBits)-1)/(max-1);
 	for (var j=0; j<max; j++) {
 		d += Math.ceil(j*mult) + ' ';
@@ -58,23 +58,20 @@ threedlLUT.prototype.build = function(buff, fileName, ext) {
 				fileName: fileName,
 				ext: ext
 			};
-			break;
 		case 2: // Lustre
 			return {
 				lut: this.header(info) + d + this.footer(info),
 				fileName: fileName,
 				ext: ext
 			};
-			break;
 		case 3: // Kodak
 			return {
 				lut: this.header(info) + d,
 				fileName: fileName,
 				ext: ext
 			};
-			break;
 	}
-}
+};
 threedlLUT.prototype.header = function(info) {
 	var out = '';
 	var date = new Date();
@@ -142,19 +139,19 @@ threedlLUT.prototype.header = function(info) {
 		out += info.outBits.toString() + "\n";
 	}
 	return out;
-}
+};
 threedlLUT.prototype.addZero = function(i) {
     if (i < 10) {
         i = '0' + i;
     }
     return i;
-}
+};
 threedlLUT.prototype.footer = function(info) {
 	var out = '';
 	out += 'LUT8' + "\n";
 	out += 'gamma 1.0' + "\n";
 	return out;
-}
+};
 threedlLUT.prototype.parse = function(title, text, lut) {
 	var size = false;
 	var minimum = [0,0,0];
@@ -321,11 +318,14 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 					}
 					s++;
 				}
-			} else if (lower.search('gamma') >= 0) {
+			}
+/*
+			 else if (lower.search('gamma') >= 0) {
 				// Unused at the moment
 			} else if (lower.search('lut8') >= 0) {
 				// Unused at the moment
 			}
+*/
 		}
 		if (s === arraySize) {
 			if (!maxOut) {
@@ -375,4 +375,4 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

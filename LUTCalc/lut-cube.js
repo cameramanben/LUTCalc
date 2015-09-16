@@ -28,7 +28,7 @@ cubeLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 cubeLUT.prototype.header = function() {
 	var info = {};
 	this.messages.getInfo(info);
@@ -82,7 +82,7 @@ cubeLUT.prototype.header = function() {
 	}
 	out += ' - ' + 'Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
 	return out;
-}
+};
 cubeLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = false;
 	var size = false;
@@ -184,4 +184,4 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

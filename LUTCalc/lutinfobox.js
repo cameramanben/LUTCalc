@@ -22,7 +22,7 @@ function LUTInfoBox(fieldset,inputs,messages) {
 LUTInfoBox.prototype.build = function() {
  this.io();
  this.ui();
-}
+};
 LUTInfoBox.prototype.io = function() {
 	this.instructionsBut = document.createElement('input');
 	this.instructionsBut.setAttribute('type','button');
@@ -33,7 +33,7 @@ LUTInfoBox.prototype.io = function() {
 	this.gammaChartBut = document.createElement('input');
 	this.gammaChartBut.setAttribute('type','button');
 	this.gammaChartBut.value = 'Charts';
-}
+};
 LUTInfoBox.prototype.ui = function() {
 	this.instructionsBox = document.createElement('div');
 	this.instructions();
@@ -50,7 +50,7 @@ LUTInfoBox.prototype.ui = function() {
 	this.box.appendChild(this.instructionsBox);
 	this.box.appendChild(this.gammaInfoBox);
 	this.box.appendChild(this.gammaChartBox);
-}
+};
 LUTInfoBox.prototype.events = function() {
 	this.insMainCam.onclick = function(here){ return function(){ here.showCamInfo(); };}(this);
 	this.insCamBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
@@ -64,24 +64,27 @@ LUTInfoBox.prototype.events = function() {
 	this.insPreBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainGen.onclick = function(here){ return function(){ here.showGenInfo(); };}(this);
 	this.insGenBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainSav.onclick = function(here){ return function(){ here.showSetInfo(); };}(this);
+	this.insMainLod.onclick = function(here){ return function(){ here.showSetInfo(); };}(this);
+	this.insSetBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
 	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insCustGam.onclick = function(here){ return function(){ here.showCustGamInfo(); };}(this);
-	this.custGamBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustHG.onclick = function(here){ return function(){ here.showCustHGInfo(); };}(this);
+	this.custHGBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustCts.onclick = function(here){ return function(){ here.showCustCtsInfo(); };}(this);
-	this.custCtsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
-	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
+	this.custWhtBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+//	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
+//	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
 	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustCdl.onclick = function(here){ return function(){ here.showCustCdlInfo(); };}(this);
-	this.custCdlBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustFls.onclick = function(here){ return function(){ here.showCustFlsInfo(); };}(this);
-	this.custFlsBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustLut.onclick = function(here){ return function(){ here.showCustLutInfo(); };}(this);
-	this.custLutBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustASC.onclick = function(here){ return function(){ here.showCustASCInfo(); };}(this);
+	this.custASCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustFC.onclick = function(here){ return function(){ here.showCustFCInfo(); };}(this);
+	this.custFCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustLA.onclick = function(here){ return function(){ here.showCustLAInfo(); };}(this);
+	this.custLABack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.instructionsBut.onclick = function(here){ return function(){
 		here.instructionsOpt();
 	};}(this);
@@ -100,7 +103,7 @@ LUTInfoBox.prototype.events = function() {
 	this.gammaChartBut.onclick = function(here){ return function(){
 		here.gammaChartOpt();
 	};}(this);
-}
+};
 // Construct the UI Box
 LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.setAttribute('class','graybox infobox');
@@ -118,89 +121,89 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.insPre);
 	this.createGenInfo();
 	this.instructionsBox.appendChild(this.insGen);
+	this.createSetInfo();
+	this.instructionsBox.appendChild(this.insSet);
 	this.createInfInfo();
 	this.instructionsBox.appendChild(this.insInf);
-	this.createCustCts();
-	this.instructionsBox.appendChild(this.custCts);
-	this.createCustFlc();
-	this.instructionsBox.appendChild(this.custFlc);
+	this.createCustWht();
+	this.instructionsBox.appendChild(this.custWht);
 	this.createCustPsst();
 	this.instructionsBox.appendChild(this.custPsst);
-	this.createCustCdl();
-	this.instructionsBox.appendChild(this.custCdl);
-	this.createCustGam();
-	this.instructionsBox.appendChild(this.custGam);
+	this.createCustASC();
+	this.instructionsBox.appendChild(this.custASC);
+	this.createCustHG();
+	this.instructionsBox.appendChild(this.custHG);
 	this.createCustBhi();
 	this.instructionsBox.appendChild(this.custBhi);
-	this.createCustFls();
-	this.instructionsBox.appendChild(this.custFls);
-	this.createCustLut();
-	this.instructionsBox.appendChild(this.custLut);
-}
+	this.createCustFC();
+	this.instructionsBox.appendChild(this.custFC);
+	this.createCustLA();
+	this.instructionsBox.appendChild(this.custLA);
+};
 LUTInfoBox.prototype.showMainscreen = function() {
 	this.hideAll();
 	this.mainscreen.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showCamInfo = function() {
 	this.hideAll();
 	this.insCam.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showGamInfo = function() {
 	this.hideAll();
 	this.insGam.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showCustscreen = function() {
 	this.hideAll();
 	this.insTwk.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showLutInfo = function() {
 	this.hideAll();
 	this.insLut.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showPreInfo = function() {
 	this.hideAll();
 	this.insPre.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.showGenInfo = function() {
 	this.hideAll();
 	this.insGen.style.display = 'block';
-}
+};
+LUTInfoBox.prototype.showSetInfo = function() {
+	this.hideAll();
+	this.insSet.style.display = 'block';
+};
 LUTInfoBox.prototype.showInfInfo = function() {
 	this.hideAll();
 	this.insInf.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustGamInfo = function() {
+};
+LUTInfoBox.prototype.showCustWhtInfo = function() {
 	this.hideAll();
-	this.custGam.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustBhiInfo = function() {
-	this.hideAll();
-	this.custBhi.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustCtsInfo = function() {
-	this.hideAll();
-	this.custCts.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustFlcInfo = function() {
-	this.hideAll();
-	this.custFlc.style.display = 'block';
-}
+	this.custWht.style.display = 'block';
+};
 LUTInfoBox.prototype.showCustPsstInfo = function() {
 	this.hideAll();
 	this.custPsst.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustCdlInfo = function() {
+};
+LUTInfoBox.prototype.showCustASCInfo = function() {
 	this.hideAll();
-	this.custCdl.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustFlsInfo = function() {
+	this.custASC.style.display = 'block';
+};
+LUTInfoBox.prototype.showCustHGInfo = function() {
 	this.hideAll();
-	this.custFls.style.display = 'block';
-}
-LUTInfoBox.prototype.showCustLutInfo = function() {
+	this.custHG.style.display = 'block';
+};
+LUTInfoBox.prototype.showCustBhiInfo = function() {
 	this.hideAll();
-	this.custLut.style.display = 'block';
-}
+	this.custBhi.style.display = 'block';
+};
+LUTInfoBox.prototype.showCustFCInfo = function() {
+	this.hideAll();
+	this.custFC.style.display = 'block';
+};
+LUTInfoBox.prototype.showCustLAInfo = function() {
+	this.hideAll();
+	this.custLA.style.display = 'block';
+};
 LUTInfoBox.prototype.hideAll = function() {
 	this.mainscreen.style.display = 'none';
 	this.insCam.style.display = 'none';
@@ -209,16 +212,16 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.insLut.style.display = 'none';
 	this.insPre.style.display = 'none';
 	this.insGen.style.display = 'none';
+	this.insSet.style.display = 'none';
 	this.insInf.style.display = 'none';
-	this.custCts.style.display = 'none';
-	this.custFlc.style.display = 'none';
+	this.custWht.style.display = 'none';
 	this.custPsst.style.display = 'none';
-	this.custCdl.style.display = 'none';
-	this.custGam.style.display = 'none';
+	this.custASC.style.display = 'none';
+	this.custHG.style.display = 'none';
 	this.custBhi.style.display = 'none';
-	this.custFls.style.display = 'none';
-	this.custLut.style.display = 'none';
-}
+	this.custFC.style.display = 'none';
+	this.custLA.style.display = 'none';
+};
 LUTInfoBox.prototype.createMainscreen = function() {
 	this.mainscreen = document.createElement('div');
 	this.mainscreen.setAttribute('class','imagemap');
@@ -233,15 +236,15 @@ LUTInfoBox.prototype.createMainscreen = function() {
 	var left = document.createElement('div');
 	left.setAttribute('id','ins-main-left');
 	this.insMainCam = document.createElement('div');
-	this.insMainCam.setAttribute('class','imagemapimg');
+	this.insMainCam.setAttribute('class','ins-main');
 	this.insMainCam.setAttribute('id','ins-main-cam');
 	left.appendChild(this.insMainCam);
 	this.insMainGam = document.createElement('div');
-	this.insMainGam.setAttribute('class','imagemapimg');
+	this.insMainGam.setAttribute('class','ins-main');
 	this.insMainGam.setAttribute('id','ins-main-gam');
 	left.appendChild(this.insMainGam);
 	this.insMainTwk = document.createElement('div');
-	this.insMainTwk.setAttribute('class','imagemapimg');
+	this.insMainTwk.setAttribute('class','ins-main');
 	this.insMainTwk.setAttribute('id','ins-main-twk');
 	left.appendChild(this.insMainTwk);
 	var spacer = document.createElement('div');
@@ -252,22 +255,30 @@ LUTInfoBox.prototype.createMainscreen = function() {
 	var right = document.createElement('div');
 	right.setAttribute('id','ins-main-right');
 	this.insMainLut = document.createElement('div');
-	this.insMainLut.setAttribute('class','imagemapimg');
+	this.insMainLut.setAttribute('class','ins-main');
 	this.insMainLut.setAttribute('id','ins-main-lut');
 	right.appendChild(this.insMainLut);
 	var buttons = document.createElement('div');
 	buttons.setAttribute('id','ins-main-buttons');
 	this.insMainPre = document.createElement('div');
-	this.insMainPre.setAttribute('class','imagemapimg');
+	this.insMainPre.setAttribute('class','ins-main-but');
 	this.insMainPre.setAttribute('id','ins-main-pre');
 	buttons.appendChild(this.insMainPre);
 	this.insMainGen = document.createElement('div');
-	this.insMainGen.setAttribute('class','imagemapimg');
+	this.insMainGen.setAttribute('class','ins-main-but');
 	this.insMainGen.setAttribute('id','ins-main-gen');
 	buttons.appendChild(this.insMainGen);
+	this.insMainSav = document.createElement('div');
+	this.insMainSav.setAttribute('class','ins-main-but');
+	this.insMainSav.setAttribute('id','ins-main-sav');
+	buttons.appendChild(this.insMainSav);
+	this.insMainLod = document.createElement('div');
+	this.insMainLod.setAttribute('class','ins-main-but');
+	this.insMainLod.setAttribute('id','ins-main-lod');
+	buttons.appendChild(this.insMainLod);
 	right.appendChild(buttons);
 	this.insMainInf = document.createElement('div');
-	this.insMainInf.setAttribute('class','imagemapimg');
+	this.insMainInf.setAttribute('class','ins-main');
 	this.insMainInf.setAttribute('id','ins-main-inf');
 	right.appendChild(this.insMainInf);
 	this.mainscreen.appendChild(right);
@@ -275,7 +286,7 @@ LUTInfoBox.prototype.createMainscreen = function() {
 	footer.setAttribute('class','imagemapimg');	
 	footer.setAttribute('id','ins-main-footer');	
 	this.mainscreen.appendChild(footer);
-}
+};
 LUTInfoBox.prototype.createCamInfo = function() {
 	this.insCam = document.createElement('div');
 	this.insCam.setAttribute('class','instructions');
@@ -286,10 +297,10 @@ LUTInfoBox.prototype.createCamInfo = function() {
 	this.insCam.appendChild(this.insCamBack);
 	this.insCamInfo = document.createElement('div');
 	this.insCamInfo.setAttribute('class','infotext');
-	var cam1 = document.createElement('div');
-	cam1.setAttribute('class','infoimage');
-	cam1.setAttribute('id','ins-cam-1');
-	this.insCamInfo.appendChild(cam1);
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-fig');
+	fig1.setAttribute('id','ins-cam-1');
+	this.insCamInfo.appendChild(fig1);
 	this.addInfo(this.insCamInfo,false,null,'This box defines which camera model the LUT generated is to be used with.');
 	this.addInfo(this.insCamInfo,false,null,'Camera manufacturers take differing approaches to recording log, which primarily effect how exposure corrections are handled.');
 	this.addInfo(this.insCamInfo,true,'The Sony Approach','Sony have arguably the most pure approach to log. The entire dynamic range of the camera is captured, with changes in ISO being stored purely as metadata in the clip file.');
@@ -303,7 +314,7 @@ LUTInfoBox.prototype.createCamInfo = function() {
 	this.addInfo(this.insCamInfo,true,'The Arri Approach','Somewhere between the other two, in LogC Arri adjusts the log parameters with ISO, incorporating a slight knee at high ISOs. Combined with higher bit depths than in the C300, this means that the full dynamic range is always captured.');
 	this.insCam.style.display = 'none';
 	this.insCam.appendChild(this.insCamInfo);
-}
+};
 LUTInfoBox.prototype.createGamInfo = function() {
 	this.insGam = document.createElement('div');
 	this.insGam.setAttribute('class','instructions');
@@ -314,10 +325,10 @@ LUTInfoBox.prototype.createGamInfo = function() {
 	this.insGam.appendChild(this.insGamBack);
 	this.insGamInfo = document.createElement('div');
 	this.insGamInfo.setAttribute('class','infotext');
-	var gam1 = document.createElement('div');
-	gam1.setAttribute('class','infoimage');
-	gam1.setAttribute('id','ins-gam-1');
-	this.insGamInfo.appendChild(gam1);
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-fig');
+	fig1.setAttribute('id','ins-gam-1');
+	this.insGamInfo.appendChild(fig1);
 	this.addInfo(this.insGamInfo,false,null,'This box is used to set the transfer function and colour space that the camera records to and the basic combination that the LUT is intended to output.');
 	this.addInfo(this.insGamInfo,false,null,"The menus refer to 'Gamma' and 'Gamut' as these terms are in common use and generally understood in the context, though the accurate terms should be 'Transfer Function' and 'Colour Space'.");
 	this.addInfo(this.insGamInfo,false,null,'There are four types of transfer function offered:');
@@ -334,7 +345,7 @@ LUTInfoBox.prototype.createGamInfo = function() {
 	this.addInfo(this.insGamInfo,true,null,'LC709 as a colour space gives a similar though arguably subtler colour response than the basic Rec709 matrix');
 	this.insGam.style.display = 'none';
 	this.insGam.appendChild(this.insGamInfo);
-}
+};
 LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insTwk = document.createElement('div');
 	this.insTwk.setAttribute('class','instructions');
@@ -349,49 +360,49 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.custscreen = document.createElement('div');
 	this.custscreen.setAttribute('class','imagemap');
 	this.custscreen.setAttribute('id','ins-custscreen');
+	this.custbox = document.createElement('div');
+	this.custbox.setAttribute('class','imagemap');
+	this.custbox.setAttribute('id','ins-cust-box');
 	var header = document.createElement('div');
 	header.setAttribute('class','imagemapimg');	
 	header.setAttribute('id','ins-cust-header');	
-	this.custscreen.appendChild(header);
-	this.insCustCts = document.createElement('div');
-	this.insCustCts.setAttribute('class','imagemapimg');	
-	this.insCustCts.setAttribute('id','ins-cust-cts');	
-	this.custscreen.appendChild(this.insCustCts);
-	this.insCustFlc = document.createElement('div');
-	this.insCustFlc.setAttribute('class','imagemapimg');	
-	this.insCustFlc.setAttribute('id','ins-cust-flc');	
-	this.custscreen.appendChild(this.insCustFlc);
+	this.custbox.appendChild(header);
+	this.insCustWht = document.createElement('div');
+	this.insCustWht.setAttribute('class','ins-cust');	
+	this.insCustWht.setAttribute('id','ins-cust-wht');	
+	this.custbox.appendChild(this.insCustWht);
 	this.insCustPsst = document.createElement('div');
-	this.insCustPsst.setAttribute('class','imagemapimg');	
+	this.insCustPsst.setAttribute('class','ins-cust');	
 	this.insCustPsst.setAttribute('id','ins-cust-psst');	
-	this.custscreen.appendChild(this.insCustPsst);
-	this.insCustCdl = document.createElement('div');
-	this.insCustCdl.setAttribute('class','imagemapimg');	
-	this.insCustCdl.setAttribute('id','ins-cust-cdl');	
-	this.custscreen.appendChild(this.insCustCdl);
-	this.insCustGam = document.createElement('div');
-	this.insCustGam.setAttribute('class','imagemapimg');	
-	this.insCustGam.setAttribute('id','ins-cust-gam');	
-	this.custscreen.appendChild(this.insCustGam);
+	this.custbox.appendChild(this.insCustPsst);
+	this.insCustASC = document.createElement('div');
+	this.insCustASC.setAttribute('class','ins-cust');	
+	this.insCustASC.setAttribute('id','ins-cust-asc');	
+	this.custbox.appendChild(this.insCustASC);
+	this.insCustHG = document.createElement('div');
+	this.insCustHG.setAttribute('class','ins-cust');	
+	this.insCustHG.setAttribute('id','ins-cust-hg');	
+	this.custbox.appendChild(this.insCustHG);
 	this.insCustBhi = document.createElement('div');
-	this.insCustBhi.setAttribute('class','imagemapimg');	
+	this.insCustBhi.setAttribute('class','ins-cust');	
 	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
-	this.custscreen.appendChild(this.insCustBhi);
-	this.insCustFls = document.createElement('div');
-	this.insCustFls.setAttribute('class','imagemapimg');	
-	this.insCustFls.setAttribute('id','ins-cust-fls');	
-	this.custscreen.appendChild(this.insCustFls);
-	this.insCustLut = document.createElement('div');
-	this.insCustLut.setAttribute('class','imagemapimg');	
-	this.insCustLut.setAttribute('id','ins-cust-lut');	
-	this.custscreen.appendChild(this.insCustLut);
+	this.custbox.appendChild(this.insCustBhi);
+	this.insCustFC = document.createElement('div');
+	this.insCustFC.setAttribute('class','ins-cust');	
+	this.insCustFC.setAttribute('id','ins-cust-fc');	
+	this.custbox.appendChild(this.insCustFC);
+	this.insCustLA = document.createElement('div');
+	this.insCustLA.setAttribute('class','ins-cust');
+	this.insCustLA.setAttribute('id','ins-cust-la');
+	this.custbox.appendChild(this.insCustLA);
+	this.custscreen.appendChild(this.custbox);
 	var footer = document.createElement('div');
 	footer.setAttribute('class','imagemapimg');	
 	footer.setAttribute('id','ins-cust-footer');	
 	this.custscreen.appendChild(footer);
 	this.insTwk.style.display = 'none';
 	this.insTwk.appendChild(this.custscreen);
-}
+};
 LUTInfoBox.prototype.createLutInfo = function() {
 	this.insLut = document.createElement('div');
 	this.insLut.setAttribute('class','instructions');
@@ -402,10 +413,10 @@ LUTInfoBox.prototype.createLutInfo = function() {
 	this.insLut.appendChild(this.insLutBack);
 	this.insLutInfo = document.createElement('div');
 	this.insLutInfo.setAttribute('class','infotext');
-	var lut1 = document.createElement('div');
-	lut1.setAttribute('class','infoimage');
-	lut1.setAttribute('id','ins-lut-1');
-	this.insLutInfo.appendChild(lut1);
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-fig');
+	fig1.setAttribute('id','ins-lut-1');
+	this.insLutInfo.appendChild(fig1);
 	this.addInfo(this.insLutInfo,false,null,'This is the box where the format of the LUT to be generated is decided.');
 	this.addInfo(this.insLutInfo,false,null,"The first option is 'LUT Title / Filename'. As well as being used as the filename for saving the LUT, this appears within the file as the title. This may help keep track of LUTs in case filenames change. LUTCalc will make sure that it is appropriately formatted.");
 	this.addInfo(this.insLutInfo,false,null,'LUTCalc produces 1D and 3D LUTs:');
@@ -431,7 +442,7 @@ LUTInfoBox.prototype.createLutInfo = function() {
 	this.addInfo(this.insLutInfo,true,null,'Some software does not handle out of range values correctly, so this option hard clips from 0-1.0. This does mean that data outside of that range is lost.');
 	this.insLut.style.display = 'none';
 	this.insLut.appendChild(this.insLutInfo);
-}
+};
 LUTInfoBox.prototype.createPreInfo = function() {
 	this.insPre = document.createElement('div');
 	this.insPre.setAttribute('class','instructions');
@@ -442,33 +453,43 @@ LUTInfoBox.prototype.createPreInfo = function() {
 	this.insPre.appendChild(this.insPreBack);
 	this.insPreInfo = document.createElement('div');
 	this.insPreInfo.setAttribute('class','infotext');
-	var pre1 = document.createElement('div');
-	pre1.setAttribute('class','infoimage');
-	pre1.setAttribute('id','ins-pre-1');
-	this.insPreInfo.appendChild(pre1);
-	this.addInfo(this.insPreInfo,false,null,"Clicking 'Preview' brings up a test image in place of the LUT options box at the top right. It is displayed legal range and incorporates any adjustments made.");
-	this.addInfo(this.insPreInfo,false,null,'LUTCalc includes four test images.');
-	this.addInfo(this.insPreInfo,true,'High Contrast','The initial one is high contrast, covering around eleven or twelve stops and with information over 5 1/2 stops above 18% gray.');
-	this.addInfo(this.insPreInfo,true,'Low Contrast','This toggles to the second image, which is against greenscreen and stays within the dynamic range of Rec709, with about 2 1/3 stops above 18% gray.');
-	this.addInfo(this.insPreInfo,true,'Rec709 Gamut','This toggles to the third image, which visualises colours across the entire Rec709 colour gamut. The layout matches the positions of the colours on a Rec709 vectorscope.');
-	this.addInfo(this.insPreInfo,true,'Grayscale','This toggles to the final image, a 16-stop grayscale. The upper portion smoothly shifts from 8 stops below mid gray to 7 stops above, with the lower portion going in one-stop steps. The vertical line marks 18% gray. On the waveform, this image will match up with the Stop/IRE chart.');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-fig');
+	fig1.setAttribute('id','ins-pre-1');
+	this.insPreInfo.appendChild(fig1);
+	this.addInfo(this.insPreInfo,false,null,"Clicking 'Preview' brings up a test image below the row of buttons. By default it is displayed legal range and reflects any adjustments made.");
+	this.addInfo(this.insPreInfo,false,null,'LUTCalc includes five test images built in, with the option to load an additional image.');
+	this.addInfo(this.insPreInfo,true,'High Contrast','This image covers around eleven or twelve stops and with the brightest highlights around 5 1/2 stops above 18% gray.');
+	this.addInfo(this.insPreInfo,true,'Low Contrast','This image is against greenscreen and stays within the dynamic range of Rec709, with highlights about 2 1/3 stops above 18% gray.');
+	this.addInfo(this.insPreInfo,true,'Rec709 Gamut','This visualises colours across the entire Rec709 colour gamut. The layout matches the positions of the colours on a Rec709 vectorscope.');
+	this.addInfo(this.insPreInfo,true,'xy / uv Chromacity','Here the entire gamut of human vision (CIE 1931 standard observer, XYZ) is displayed in standard chromacity charts. CIE1931 xy is the conventional representation of the XYZ gamut, where CIE1960 uv is a more linear representation used in colour temperature calculations. The Planck Locus (colour temperature line) is shown as a white curve.');
+	var fig2 = document.createElement('div');
+	fig2.setAttribute('class','ins-fig');
+	fig2.setAttribute('id','ins-pre-2');
+	this.insPreInfo.appendChild(fig2);
+	this.addInfo(this.insPreInfo,true,null,'On top of this are overlaid triangles representing the primaries of the current selected recording gamut and the net output gamut after adjustment, plus dot markers of the white points. Highly nonlinear adjustments (ie PSST-CDL) are not factored in to the triangle calculation, though White Balance and ASC-CDL are. Complex colour spaces (eg LC709 and LC709A assume the Rec709 primaries as their base).');
+	this.addInfo(this.insPreInfo,true,null,'the region where the two triangles overlap is a guide to the range of colours available in the finished image.');
+	this.addInfo(this.insPreInfo,true,'Grayscale','A 16-stop grayscale. The upper portion smoothly shifts from 8 stops below mid gray to 7 stops above, with the lower portion going in one-stop steps. The vertical line marks 18% gray. On the waveform, this image will match up with the Stop/IRE chart.');
 	this.addInfo(this.insPreInfo,false,null,'The high and low contrast images include a set of Rec709 75% and 100% primary and secondary boxes, a 16-stop grayscale and a colour chart on the right.');
 	this.addInfo(this.insPreInfo,false,null,'The high contrast image also includes colour charts four stops above and below base and the low contrast chart two stops above and below.');
+	this.addInfo(this.insPreInfo,false,null,'As the cursor moves over the preview window, the output 10-bit code values at that point are displayed above the image.');
 	this.addInfo(this.insPreInfo,false,null,"An image recorded in a known colour space can also be loaded in place of the defaults by clicking 'Load Preview...'. The webapp version of LUTCalc accepts 8-bit formats, such as JPEG, PNG and BMP. LUTCalc For Mac can additionally read 16-bit TIFF and PNG images.");
+	this.addInfo(this.insPreInfo,false,null,'Once loaded, the new image becomes available with the default selections.');
+	this.addInfo(this.insPreInfo,false,null,"By default the preview image is displayed legal range (0%-100%), but by clicking '109%' the image is darkened a little to give a representation of extended range details (0%-109%).");
 	this.addInfo(this.insPreInfo,false,null,"'Large Image' / 'Small Image' toggles between the default small preview image and a larger version which requires scrolling to view the scopes.");
 	this.addInfo(this.insPreInfo,false,null,'Above the preview window are the scope options:');
-	var pre2 = document.createElement('div');
-	pre2.setAttribute('class','infoimage');
-	pre2.setAttribute('id','ins-pre-2');
-	this.insPreInfo.appendChild(pre2);
+	var fig3 = document.createElement('div');
+	fig3.setAttribute('class','ins-fig');
+	fig3.setAttribute('id','ins-pre-3');
+	this.insPreInfo.appendChild(fig3);
 	this.addInfo(this.insPreInfo,true,'Waveform','The horizontal axis is the same as the test image, whilst the vertical axis is luma values of all the pixels in that column. The scale lines are blocks of 10% IRE and the full range runs from -7% to +109%.');
-	this.addInfo(this.insPreInfo,true,'Vectorscope','This is a polar plot of the image chroma. LUTCalc includes standard 75% and 100% Rec709 boxes (the two rows of green circles). In pure Rec709 75% colour bars should fall dead centre of the inner green circles.');
+	this.addInfo(this.insPreInfo,true,'Vectorscope','This is a polar plot of the image chroma. LUTCalc includes standard 75% and 100% Rec709 boxes (the two rows of green circles). In pure Rec709 75% colourspace (gamma and gamut) colour bars should fall dead centre of the inner green circles.');
 	this.addInfo(this.insPreInfo,true,null,'In addition there is a set of 75% Rec709 boxes that have been mapped to the current chosen colour space. These are the colour of their associated primary or secondary and will lie inside the green ones.');
 	this.addInfo(this.insPreInfo,true,null,'These give a guide to the size and nature of the chosen colour space, and also where a test chart should lie for correcting colour casts without changing colour space.');
 	this.addInfo(this.insPreInfo,true,'RGB Parade','Similar to the waveform, but the red, green and blue components are separated horizontally.');
 	this.insPre.style.display = 'none';
 	this.insPre.appendChild(this.insPreInfo);
-}
+};
 LUTInfoBox.prototype.createGenInfo = function() {
 	this.insGen = document.createElement('div');
 	this.insGen.setAttribute('class','instructions');
@@ -483,10 +504,24 @@ LUTInfoBox.prototype.createGenInfo = function() {
 	this.addInfo(this.insGenInfo,false,null,'In most browsers you will either be given a choice of where to save your LUT, or it will automatically go to the Downloads folder.');
 	this.addInfo(this.insGenInfo,false,null,'In some versions of Safari it may just appear in a new browser tab. In that case you will need to save it manually.');
 	this.addInfo(this.insGenInfo,false,null,'LUTCalc For Mac allows you to choose the destination for saving.');
-	this.addInfo(this.insGenInfo,false,null,"LUTCalc currently generates LUTs in the 'cube' format.");
 	this.insGen.style.display = 'none';
 	this.insGen.appendChild(this.insGenInfo);
-}
+};
+LUTInfoBox.prototype.createSetInfo = function() {
+	this.insSet = document.createElement('div');
+	this.insSet.setAttribute('class','instructions');
+	this.insSet.setAttribute('id','ins-set');
+	this.insSetBack = document.createElement('input');
+	this.insSetBack.setAttribute('type','button');
+	this.insSetBack.value = 'Back';
+	this.insSet.appendChild(this.insSetBack);
+	this.insSetInfo = document.createElement('div');
+	this.insSetInfo.setAttribute('class','infotext');
+	this.addInfo(this.insSetInfo,false,'Save Settings & Load Settings','These allow you to save the current state of all the options and customisations in LUTCalc, to quickly reload preferred settings at a later date.');
+	this.addInfo(this.insSetInfo,false,null,"The settings are saved in files ending '.lutcalc'.");
+	this.insSet.style.display = 'none';
+	this.insSet.appendChild(this.insSetInfo);
+};
 LUTInfoBox.prototype.createInfInfo = function() {
 	this.insInf = document.createElement('div');
 	this.insInf.setAttribute('class','instructions');
@@ -501,10 +536,10 @@ LUTInfoBox.prototype.createInfInfo = function() {
 	this.insInf.appendChild(this.insInfPic);
 	this.insInfInfo = document.createElement('div');
 	this.insInfInfo.setAttribute('class','infotext');
-	var inf1 = document.createElement('div');
-	inf1.setAttribute('class','infoimage');
-	inf1.setAttribute('id','ins-inf-1');
-	this.insInfInfo.appendChild(inf1);
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-fig');
+	fig1.setAttribute('id','ins-inf-1');
+	this.insInfInfo.appendChild(fig1);
 	this.addInfo(this.insInfInfo,false,null,'This box contains provides information about the current LUT under construction including suggested exposure values and transfer curves, plus instructions for LUTCalc.');
 	this.addInfo(this.insInfInfo,false,'Instructions','Hopefully fairly obvious, after all here you are!');
 	this.addInfo(this.insInfInfo,false,'Log Info','This shows tables of % IRE and 10-bit values for the main log and gamma curves, plus the current output curve.');
@@ -516,106 +551,36 @@ LUTInfoBox.prototype.createInfInfo = function() {
 	this.addInfo(this.insInfInfo,false,null,'The charts tab also includes a table of % IRE and 10-bit values for the current curve.');
 	this.insInf.style.display = 'none';
 	this.insInf.appendChild(this.insInfInfo);
-}
-LUTInfoBox.prototype.createCustGam = function() {
-	this.custGam = document.createElement('div');
-	this.custGam.setAttribute('class','instructions');
-	this.custGam.setAttribute('id','cust-gam');
-	this.custGamBack = document.createElement('input');
-	this.custGamBack.setAttribute('type','button');
-	this.custGamBack.value = 'Back';
-	this.custGam.appendChild(this.custGamBack);
-	this.custGamInfo = document.createElement('div');
-	this.custGamInfo.setAttribute('class','infotext');
-	var gam1 = document.createElement('div');
-	gam1.setAttribute('class','infoimage');
-	gam1.setAttribute('id','ins-cust-gam-1');
-	this.custGamInfo.appendChild(gam1);
-	this.addInfo(this.custGamInfo,false,null,"With 'Highlight Gamut' a second colour space or gamut can be applied above a user-selectable exposure range.");
-	this.addInfo(this.custGamInfo,false,null,'The transition can be calculated linearly, over a range of reflectance percentages (eg between 18% gray and 90% white) or logarithmically, set in stops above or below 18% gray.');
-	this.addInfo(this.custGamInfo,false,null,'With this effects such as muted or black and white highlights with saturated midtones can be achieved in a LUT.');
-	this.custGam.style.display = 'none';
-	this.custGam.appendChild(this.custGamInfo);
-}
-LUTInfoBox.prototype.createCustBhi = function() {
-	this.custBhi = document.createElement('div');
-	this.custBhi.setAttribute('class','instructions');
-	this.custBhi.setAttribute('id','cust-bhi');
-	this.custBhiBack = document.createElement('input');
-	this.custBhiBack.setAttribute('type','button');
-	this.custBhiBack.value = 'Back';
-	this.custBhi.appendChild(this.custBhiBack);
-	this.custBhiInfo = document.createElement('div');
-	this.custBhiInfo.setAttribute('class','infotext');
-	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level apply an offset and scaling after all other adjustments and conversions have been applied.');
-	var bhi1 = document.createElement('div');
-	bhi1.setAttribute('class','infoimage');
-	bhi1.setAttribute('id','ins-cust-bhi-1');
-	this.custBhiInfo.appendChild(bhi1);
-	this.addInfo(this.custBhiInfo,false,'Black Level','initially gives the % IRE level of 0% black in the output transfer function or gamma. This can then be fixed against highlight adjustments or reset, for example to thicken the black level by a measured amount.');
-	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level include ASC-CDL adjustments in their calculations, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
-	var bhi2 = document.createElement('div');
-	bhi2.setAttribute('class','infoimage');
-	bhi2.setAttribute('id','ins-cust-bhi-2');
-	this.custBhiInfo.appendChild(bhi2);
-	this.addInfo(this.custBhiInfo,false,'Highlight Level','this will give the % IRE level of a selectable reflectance percentage (initially 90% white) for the output curve. Also shown is the equivalent % IRE in the Rec709 display gamma.');
-	this.addInfo(this.custBhiInfo,false,null,'The output level can then be altered and LUTCalc will scale the output curve.');
-	this.addInfo(this.custBhiInfo,false,null,'As with Black Level, Highlight Level incorporates ASC-CDL adjustments, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
-	this.addInfo(this.custBhiInfo,false,null,'Black and Highlight Level adjustments work together, for example to adjust the LC709 and LC709A curves from being legal range - peaking just below 100% - to extended range (Reflected 1350% maps to 108.9%) without changing the black level.');
-	this.custBhi.style.display = 'none';
-	this.custBhi.appendChild(this.custBhiInfo);
-}
-LUTInfoBox.prototype.createCustCts = function() {
-	this.custCts = document.createElement('div');
-	this.custCts.setAttribute('class','instructions');
-	this.custCts.setAttribute('id','cust-cts');
-	this.custCtsBack = document.createElement('input');
-	this.custCtsBack.setAttribute('type','button');
-	this.custCtsBack.value = 'Back';
-	this.custCts.appendChild(this.custCtsBack);
-	this.custCtsInfo = document.createElement('div');
-	this.custCtsInfo.setAttribute('class','infotext');
-	var cts1 = document.createElement('div');
-	cts1.setAttribute('class','infoimage');
-	cts1.setAttribute('id','ins-cust-cts-1');
-	this.custCtsInfo.appendChild(cts1);
-	this.addInfo(this.custCtsInfo,false,null,"'Colour Temperature Shift' warms or cools the picture to fine tune white balances, or to provide intermediate temperatures unavailable in camera (eg CineEI on the Sony F cameras) through a LUT.");
-	this.addInfo(this.custCtsInfo,false,null,'Adjustments can be made using a slider which approximates the values of CTO and CTB lighting gel, or for more photometrically accurate adjustment the recorded and desired colour temperatures can be entered.');
-	var cts2 = document.createElement('div');
-	cts2.setAttribute('class','infoimage');
-	cts2.setAttribute('id','ins-cust-cts-2');
-	this.custCtsInfo.appendChild(cts2);
-	this.addInfo(this.custCtsInfo,false,null,'The colour adjustment is done using a Von Kries-style chromatic transform, and with the advanced option the choice of CAT matrix becomes user selectable.');
-	this.custCts.style.display = 'none';
-	this.custCts.appendChild(this.custCtsInfo);
-}
-LUTInfoBox.prototype.createCustFlc = function() {
-	this.custFlc = document.createElement('div');
-	this.custFlc.setAttribute('class','instructions');
-	this.custFlc.setAttribute('id','cust-flc');
-	this.custFlcBack = document.createElement('input');
-	this.custFlcBack.setAttribute('type','button');
-	this.custFlcBack.value = 'Back';
-	this.custFlc.appendChild(this.custFlcBack);
-	this.custFlcInfo = document.createElement('div');
-	this.custFlcInfo.setAttribute('class','infotext');
-	var flc1 = document.createElement('div');
-	flc1.setAttribute('class','infoimage');
-	flc1.setAttribute('id','ins-cust-flc-1');
-	this.custFlcInfo.appendChild(flc1);
-	this.addInfo(this.custFlcInfo,false,null,"'Fluori / LED Correction' applies a magenta or green cast to the image to counteract the effect of energy efficient lighting, particularly LEDs and fluorescent tubes.");
-	this.addInfo(this.custFlcInfo,false,null,'The same chromatic adaptation modelling is used as in the colour temperature shift, but the shift is at right angles to the colour temperature line (Planck Locus).');
-	this.addInfo(this.custFlcInfo,false,null,'The default setup uses a slider which roughly mimics plus and minus green gels.');
-	var flc2 = document.createElement('div');
-	flc2.setAttribute('class','infoimage');
-	flc2.setAttribute('id','ins-cust-flc-2');
-	this.custFlcInfo.appendChild(flc2);
-	this.addInfo(this.custFlcInfo,false,null,'The advanced settings include adjustment of the nominal temperature of the light source, to tune the green or magenta hue.');
-	this.addInfo(this.custFlcInfo,false,null,'The choice of CAT matrix can also be changed.');
-
-	this.custFlc.style.display = 'none';
-	this.custFlc.appendChild(this.custFlcInfo);
-}
+};
+LUTInfoBox.prototype.createCustWht = function() {
+	this.custWht = document.createElement('div');
+	this.custWht.setAttribute('class','instructions');
+	this.custWht.setAttribute('id','cust-cts');
+	this.custWhtBack = document.createElement('input');
+	this.custWhtBack.setAttribute('type','button');
+	this.custWhtBack.value = 'Back';
+	this.custWht.appendChild(this.custWhtBack);
+	this.custWhtInfo = document.createElement('div');
+	this.custWhtInfo.setAttribute('class','infotext');
+	var wht1 = document.createElement('div');
+	wht1.setAttribute('class','ins-cust-fig');
+	wht1.setAttribute('id','ins-cust-wht-1');
+	this.custWhtInfo.appendChild(wht1);
+	this.addInfo(this.custWhtInfo,false,null,"'White Balance' warms or cools the picture to fine tune white balances, or to provide intermediate temperatures unavailable in camera (eg CineEI on the Sony F cameras) through a LUT.");
+	this.addInfo(this.custWhtInfo,false,null,'It also includes the complementary green / magenta shift to correct for lightsources away from the nominal colour temperature.');
+	this.addInfo(this.custWhtInfo,false,null,'Temperature adjustments can be made using a slider which approximates the values of CTO and CTB lighting gel, or for more photometrically precise adjustment the recorded and desired colour temperatures can be entered.');
+	this.addInfo(this.custWhtInfo,false,null,'Green / magenta adjustments for correcting lighting such as fluorescents are made with a similar plus green / minus green slider.');
+	this.addInfo(this.custWhtInfo,false,null,"the nature of the green / magenta shift is dependent upon the lightsource's nominal temperature relative to the reference white balance. By default this is locked to the colour temperature shift, but by clicking 'Unlock Lightsource From New White' you can set the lamp's nominal temperature separately from the CTO / CTB shift.");
+	var wht2 = document.createElement('div');
+	wht2.setAttribute('class','ins-fig');
+	wht2.setAttribute('id','ins-cust-wht-2');
+	this.custWhtInfo.appendChild(wht2);
+	this.addInfo(this.custWhtInfo,false,null,"When the preview window is active, a button marked 'Preview Click For White' becomes available. Once activated, clicking on the preview window will cause LUTCalc to attempt to white balance to the chosen area.");
+	this.addInfo(this.custWhtInfo,false,null,'Activating the advanced options brings up a selection of nominal temperatures for fluorescent lamps, rather than entering a colour temperature directly.');
+	this.addInfo(this.custWhtInfo,false,null,'The adjustments are done using a Von Kries-style chromatic transform - by default the relatively standard CIECAT02 - but with the advanced option the choice of CAT matrix becomes user selectable.');
+	this.custWht.style.display = 'none';
+	this.custWht.appendChild(this.custWhtInfo);
+};
 LUTInfoBox.prototype.createCustPsst = function() {
 	this.custPsst = document.createElement('div');
 	this.custPsst.setAttribute('class','instructions');
@@ -626,10 +591,10 @@ LUTInfoBox.prototype.createCustPsst = function() {
 	this.custPsst.appendChild(this.custPsstBack);
 	this.custPsstInfo = document.createElement('div');
 	this.custPsstInfo.setAttribute('class','infotext');
-	var psst1 = document.createElement('div');
-	psst1.setAttribute('class','infoimage');
-	psst1.setAttribute('id','ins-cust-psst-1');
-	this.custPsstInfo.appendChild(psst1);
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-psst-1');
+	this.custPsstInfo.appendChild(fig1);
 	this.addInfo(this.custPsstInfo,false,null,'PSST-CDL is intended to take the controls provided by ASC-CDL and apply them selectively to specific ranges of colours on the vectorscope.');
 	this.addInfo(this.custPsstInfo,false,null,"PSST stands for (P)rimary, (S)econdary and (S)kin (T)one. The default window allows adjustment to reds, greens and blues (primaries), magentas, yellows and cyans (secondaries) and skin tone (based on a combination of a Vectorscope 'I'-line and colour chart 'Light Skin' and 'Dark Skin' values). Adjustments are interpolated between these base colours.");
 	this.addInfo(this.custPsstInfo,true,'Colour',"Similar to the 'Hue' in HSV and HSL, Colour here is the offset from the chosen base colour. PSST separates each base colour by a value of 1, so red to skin tone is 1, red to green is 3 and magenta to cyan in 5.");
@@ -640,121 +605,174 @@ LUTInfoBox.prototype.createCustPsst = function() {
 	this.addInfo(this.custPsstInfo,true,'Offset',"a value simply added or subtracted from an input value, carried out after the slope");
 	this.addInfo(this.custPsstInfo,true,'Power',"Analogous to 'gamma', once an input value has had the slope and offset applied, it is raised to the power of the power parameter. The range is any value from zero up.");
 	this.addInfo(this.custPsstInfo,false,null,"The seven base colours allow for some interesting effects, but for greater control PSST-CDL can specify adjustments for intermediate colours. This is done by clicking 'Refinements'");
-	var psst2 = document.createElement('div');
-	psst2.setAttribute('class','infoimage');
-	psst2.setAttribute('id','ins-cust-psst-2');
-	this.custPsstInfo.appendChild(psst2);
+	var fig2 = document.createElement('div');
+	fig2.setAttribute('class','ins-cust-fig');
+	fig2.setAttribute('id','ins-cust-psst-2');
+	this.custPsstInfo.appendChild(fig2);
 	this.addInfo(this.custPsstInfo,false,null,'The Refinements window shows a set of vertical sliders which can be used to make adjustments to both the seven base colours and intermediate colours. Rather like a graphic equalizer.');
 	this.addInfo(this.custPsstInfo,false,null,"The initial intermediate values are interpolated from any adjustments made in the 'Base Adjustments' window.");
 	this.addInfo(this.custPsstInfo,false,null,'Refinements defaults to adjusting Saturation, but this can be changed to Colour, Slope, Offset or Power.');
 	this.addInfo(this.custPsstInfo,false,null,'To fix an intermediate value, click on the checkbox beneath the slider. A ticked checkbox will not be interpolated by Base Adjustment changes.');
 	this.addInfo(this.custPsstInfo,false,null,'The spectrum background displays the effect of PSST adjustments in the current colour space (top and bottom before, centre after).');
-	var psst3 = document.createElement('div');
-	psst3.setAttribute('class','infoimage');
-	psst3.setAttribute('id','ins-cust-psst-3');
-	this.custPsstInfo.appendChild(psst3);
+	var fig3 = document.createElement('div');
+	fig3.setAttribute('class','ins-fig');
+	fig3.setAttribute('id','ins-cust-psst-3');
+	this.custPsstInfo.appendChild(fig3);
 	this.addInfo(this.custPsstInfo,false,null,'The primaries and secondaries on a Rec709 vectorscope take the shape of a squashed hexagon, ie the distance from the centre (grayscale) to the edges (100% saturation) varies with colour. Equally, the luma (Y) value of a full saturation varies with colour, reflecting the sensitivity of human vision.');
 	this.addInfo(this.custPsstInfo,false,null,'By default, when a PSST colour shift is applied, PSST-CDL will attempt to scale the magnitude on the vectorscope to match the difference between the values for the initial and final colours. For a full match, the Y value would also need to be scaled. However this tends to produce extreme results on real images, so is off by default.');
 	this.addInfo(this.custPsstInfo,false,null,'The advanced settings in PSST-CDL allow these two scalings to be turned on or off.');
 	this.custPsst.style.display = 'none';
 	this.custPsst.appendChild(this.custPsstInfo);
-}
-LUTInfoBox.prototype.createCustCdl = function() {
-	this.custCdl = document.createElement('div');
-	this.custCdl.setAttribute('class','instructions');
-	this.custCdl.setAttribute('id','cust-cdl');
-	this.custCdlBack = document.createElement('input');
-	this.custCdlBack.setAttribute('type','button');
-	this.custCdlBack.value = 'Back';
-	this.custCdl.appendChild(this.custCdlBack);
-	this.custCdlInfo = document.createElement('div');
-	this.custCdlInfo.setAttribute('class','infotext');
-	var cdl1 = document.createElement('div');
-	cdl1.setAttribute('class','infoimage');
-	cdl1.setAttribute('id','ins-cust-cdl-1');
-	this.custCdlInfo.appendChild(cdl1);
-	this.addInfo(this.custCdlInfo,false,null,'The ASC-CDL is a set of transforms developed by the American Society of Cinematographers intended to provide consistent adjustments across software and cameras.');
-	this.addInfo(this.custCdlInfo,false,null,'It is also a system of XML code for conveying those adjustments between systems and from frame to frame.');
-	this.addInfo(this.custCdlInfo,false,null,'LUTCalc provides the controls as a simple and clear way of adjusting the picture, but does not implement the full ASC-CDL system.');
-	this.addInfo(this.custCdlInfo,false,null,'The ASC-CDL is based around three basic parameters applied to each of the red, green and blue channels, plus a saturation parameter which couples all three:');
-	this.addInfo(this.custCdlInfo,true,'Slope','Analogous to gain, an input value is multiplied by this. Defined as any value from 0 (a flat line) up, the default value is 1.0.');
-	this.addInfo(this.custCdlInfo,true,null,'LUTCalc applies the ASC-CDL on linear data, so slope behaves like an exposure adjustment. 0.5 = one stop down, 0.25 = two stops. 2 = one stop up, 4 = two stops.');
-	this.addInfo(this.custCdlInfo,true,'Offset',"The definition and implementation of 'lift' can change between pieces of software, so the ASC uses the term 'offset' and defines it as a value simply added or subtracted from an input value. In the ASC-CDL this is carried out after the slope");
-	this.addInfo(this.custCdlInfo,true,'Power',"Analogous to 'gamma', once an input value has had the slope and offset applied, it is raised to the power of the power parameter. The range is any value from zero up.");
-	this.addInfo(this.custCdlInfo,true,'Saturation','All other ASC-CDL controls are applied on a colour channel by colour channel basis. Saturation takes the luma value of the RGB colour and scales the components such that a value of 0 gives a Rec709 grayscale, 1.0 leaves the image unaffected and anything above 1.0 increases the colour saturation.');
-	this.addInfo(this.custCdlInfo,false,null,'For simplicity, LUTCalc includes a luma channel alongside the red, green and blue and locking the individual channel adjustments together.');
-	this.custCdl.style.display = 'none';
-	this.custCdl.appendChild(this.custCdlInfo);
-}
-LUTInfoBox.prototype.createCustFls = function() {
-	this.custFls = document.createElement('div');
-	this.custFls.setAttribute('class','instructions');
-	this.custFls.setAttribute('id','cust-fls');
-	this.custFlsBack = document.createElement('input');
-	this.custFlsBack.setAttribute('type','button');
-	this.custFlsBack.value = 'Back';
-	this.custFls.appendChild(this.custFlsBack);
-	this.custFlsInfo = document.createElement('div');
-	this.custFlsInfo.setAttribute('class','infotext');
-	var fls1 = document.createElement('div');
-	fls1.setAttribute('class','infoimage');
-	fls1.setAttribute('id','ins-cust-fls-1');
-	this.custFlsInfo.appendChild(fls1);
-	this.addInfo(this.custFlsInfo,false,null,"'False Colour' changes luminance ranges to fixed colours as an exposure aid for wide dynamic range log recording.");
-	this.addInfo(this.custFlsInfo,false,null,'The colours and ranges LUTCalc uses are based on those used by Sony. They are:');
-	this.addInfo(this.custFlsInfo,true,'Purple','Black clip (actually 10 stops below 18% gray).');
-	this.addInfo(this.custFlsInfo,true,'Blue','Just above black clip. Default is 6.1 stops below 18% gray, but this can be changed to taste.');
-	this.addInfo(this.custFlsInfo,true,'Green','18% gray +/- 0.2 stops. Exposure datum.');
-	this.addInfo(this.custFlsInfo,true,'Pink','One stop over 18% gray +/- 0.175 stops. Common reference for caucasian skin.');
-	this.addInfo(this.custFlsInfo,true,'Orange','90% white +/- 0.175 stops. Off by default as not included by Sony, 90% white is a common datum in broadcast video.');
-	this.addInfo(this.custFlsInfo,true,'Yellow','Just below white clip. The default is 0.26 stops below clip, but this can also be changed.');
-	this.addInfo(this.custFlsInfo,true,'Red','White clip (5.95 stops above 18% gray).');
-	this.addInfo(this.custFlsInfo,false,null,'False colours map to the original real world exposure levels, regardless of the chosen input and output colour spaces.');
-	this.addInfo(this.custFlsInfo,false,null,'False colour LUTs should be 33x33x33 or larger.');
-	this.custFls.style.display = 'none';
-	this.custFls.appendChild(this.custFlsInfo);
-}
-LUTInfoBox.prototype.createCustLut = function() {
-	this.custLut = document.createElement('div');
-	this.custLut.setAttribute('class','instructions');
-	this.custLut.setAttribute('id','cust-lut');
-	this.custLutBack = document.createElement('input');
-	this.custLutBack.setAttribute('type','button');
-	this.custLutBack.value = 'Back';
-	this.custLut.appendChild(this.custLutBack);
-	this.custLutInfo = document.createElement('div');
-	this.custLutInfo.setAttribute('class','infotext');
-	var lut1 = document.createElement('div');
-	lut1.setAttribute('class','infoimage');
-	lut1.setAttribute('id','ins-cust-lut-1');
-	this.custLutInfo.appendChild(lut1);
-	this.addInfo(this.custLutInfo,false,null,'LUTAnalyst is a tool for reading LUT files and converting them for use on S-Log3/S-Gamut3.cine material.');
-	this.addInfo(this.custLutInfo,false,null,'It currently understands the following formats: .cube, .3dl, .ilut, .olut, .lut (Assimilate format), .spi1D, .spi3D and .vlt.');
-	this.addInfo(this.custLutInfo,false,null,'Once a file is loaded LUTCalc can create a generalised 1D LUT of the transfer function or gamut and a generally close approximation of the colour space.');
-	this.addInfo(this.custLutInfo,false,null,"There are several potential uses for the 'LALUTs' produced:");
-	this.addInfo(this.custLutInfo,true,'Information',"Visualise the response curves and exposure characteristics of customised or 'hand rolled' LUTs generated by grading software.");
-	this.addInfo(this.custLutInfo,true,'Exposure Adjustment','Ideally software should read video file metadata to automatically apply exposure adjustment. Frequently this does not currently happen, so combining exposure adjustment and colour correction into one LUT can help whilst preventing data loss to clipped values.');
-	this.addInfo(this.custLutInfo,true,'Camera Matching','If different camera models are used together, versions of a LUT tuned to each camera can be produced, hopefully simplifying the process of matching in post.');
-	this.addInfo(this.custLutInfo,false,null,"By selecting 'Load Existing Analysed LA LUT' LUTAnalyst can load a precalculated LALUT file and add the gamma and gamut to the list of available options. LALUT files end in either .lalut or .labin.");
-	this.addInfo(this.custLutInfo,false,null,"Selecting a functional cube LUT file under the 'Import New LUT' option starts a two-stage process.");
-	var lut2 = document.createElement('div');
-	lut2.setAttribute('class','infoimage');
-	lut2.setAttribute('id','ins-cust-lut-2');
-	this.custLutInfo.appendChild(lut2);
-	this.addInfo(this.custLutInfo,false,null,"If the LUT contains a title line, then this should appear under 'LUT Title'. If not, the filename is used which can then be changed.");
-	this.addInfo(this.custLutInfo,false,null,'The input gamma and gamut that the LUT is designed for should then be specified.');
-	this.addInfo(this.custLutInfo,false,null,'LUTAnalyst breaks up a LUT into a 1D transfer function and a 3D colour space. The dimension of the colour space LALUT can be 33x33x33 or 65x65x65. Whilst much larger, in this instance 65x65x65 is generally the best choice.');
-	this.addInfo(this.custLutInfo,false,null,'The final options are the input and output ranges of the LUT to be analysed. LUTCalc defaults to data in -> legal out as this is a common setup, but diferences between range settings can be surprisingly subtle, so testing may well be required.');
-	this.addInfo(this.custLutInfo,false,null,"Pressing 'New LUT' at any time restarts the whole process, but clicking 'Analyse' should start a process which takes a few seconds. When complete, the analysed LUT should appear as an option at the end of the gamma and gamut lists, and one or two new buttons should appear in the LUTAnalyst box.");
-	var lut3 = document.createElement('div');
-	lut3.setAttribute('class','infoimage');
-	lut3.setAttribute('id','ins-cust-lut-3');
-	this.custLutInfo.appendChild(lut3);
-	this.addInfo(this.custLutInfo,false,null,"'Save Cube' stores the 1D and 3D LUTAnalyst LUTs as a single file combining two cube files. 'Save Binary' stores them in a smaller, simpler binary format. LUTCalc For Mac cannot currently save the binary versions, though it can read them.");
-	this.addInfo(this.custLutInfo,false,null,"'Re-Analyse' reperforms the analysis, for example if the LUT Range was incorrectly set.");
-	this.custLut.style.display = 'none';
-	this.custLut.appendChild(this.custLutInfo);
-}
+};
+LUTInfoBox.prototype.createCustASC = function() {
+	this.custASC = document.createElement('div');
+	this.custASC.setAttribute('class','instructions');
+	this.custASC.setAttribute('id','cust-cdl');
+	this.custASCBack = document.createElement('input');
+	this.custASCBack.setAttribute('type','button');
+	this.custASCBack.value = 'Back';
+	this.custASC.appendChild(this.custASCBack);
+	this.custASCInfo = document.createElement('div');
+	this.custASCInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-asc-1');
+	this.custASCInfo.appendChild(fig1);
+	this.addInfo(this.custASCInfo,false,null,'The ASC-CDL is a set of transforms developed by the American Society of Cinematographers intended to provide consistent adjustments across software and cameras.');
+	this.addInfo(this.custASCInfo,false,null,'It is also a system of XML code for conveying those adjustments between systems and from frame to frame.');
+	this.addInfo(this.custASCInfo,false,null,'LUTCalc provides the controls as a simple and clear way of adjusting the picture, but does not implement the full ASC-CDL system.');
+	this.addInfo(this.custASCInfo,false,null,'The ASC-CDL is based around three basic parameters applied to each of the red, green and blue channels, plus a saturation parameter which couples all three:');
+	this.addInfo(this.custASCInfo,true,'Slope','Analogous to gain, an input value is multiplied by this. Defined as any value from 0 (a flat line) up, the default value is 1.0.');
+	this.addInfo(this.custASCInfo,true,null,'LUTCalc applies the ASC-CDL on linear data, so slope behaves like an exposure adjustment. 0.5 = one stop down, 0.25 = two stops. 2 = one stop up, 4 = two stops.');
+	this.addInfo(this.custASCInfo,true,'Offset',"The definition and implementation of 'lift' can change between pieces of software, so the ASC uses the term 'offset' and defines it as a value simply added or subtracted from an input value. In the ASC-CDL this is carried out after the slope");
+	this.addInfo(this.custASCInfo,true,'Power',"Analogous to 'gamma', once an input value has had the slope and offset applied, it is raised to the power of the power parameter. The range is any value from zero up.");
+	this.addInfo(this.custASCInfo,true,'Saturation','All other ASC-CDL controls are applied on a colour channel by colour channel basis. Saturation takes the luma value of the RGB colour and scales the components such that a value of 0 gives a Rec709 grayscale, 1.0 leaves the image unaffected and anything above 1.0 increases the colour saturation.');
+	this.addInfo(this.custASCInfo,false,null,'For simplicity, LUTCalc includes a luma channel alongside the red, green and blue and locking the individual channel adjustments together.');
+	this.custASC.style.display = 'none';
+	this.custASC.appendChild(this.custASCInfo);
+};
+LUTInfoBox.prototype.createCustHG = function() {
+	this.custHG = document.createElement('div');
+	this.custHG.setAttribute('class','instructions');
+	this.custHG.setAttribute('id','cust-gam');
+	this.custHGBack = document.createElement('input');
+	this.custHGBack.setAttribute('type','button');
+	this.custHGBack.value = 'Back';
+	this.custHG.appendChild(this.custHGBack);
+	this.custHGInfo = document.createElement('div');
+	this.custHGInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-hg-1');
+	this.custHGInfo.appendChild(fig1);
+	this.addInfo(this.custHGInfo,false,null,"With 'Highlight Gamut' a second colour space or gamut can be applied above a user-selectable exposure range.");
+	this.addInfo(this.custHGInfo,false,null,'The transition can be calculated linearly, over a range of reflectance percentages (eg between 18% gray and 90% white) or logarithmically, set in stops above or below 18% gray.');
+	this.addInfo(this.custHGInfo,false,null,'With this effects such as muted or black and white highlights with saturated midtones can be achieved in a LUT.');
+	this.custHG.style.display = 'none';
+	this.custHG.appendChild(this.custHGInfo);
+};
+LUTInfoBox.prototype.createCustBhi = function() {
+	this.custBhi = document.createElement('div');
+	this.custBhi.setAttribute('class','instructions');
+	this.custBhi.setAttribute('id','cust-bhi');
+	this.custBhiBack = document.createElement('input');
+	this.custBhiBack.setAttribute('type','button');
+	this.custBhiBack.value = 'Back';
+	this.custBhi.appendChild(this.custBhiBack);
+	this.custBhiInfo = document.createElement('div');
+	this.custBhiInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-bhi-1');
+	this.custBhiInfo.appendChild(fig1);
+	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level apply an offset and scaling after all other adjustments and conversions have been applied.');
+	var fig2 = document.createElement('div');
+	fig2.setAttribute('class','ins-cust-fig');
+	fig2.setAttribute('id','ins-cust-bhi-2');
+	this.custBhiInfo.appendChild(fig2);
+	this.addInfo(this.custBhiInfo,false,'Black Level','initially gives the % IRE level of 0% black in the output transfer function or gamma. This can then be fixed against highlight adjustments or reset, for example to thicken the black level by a measured amount.');
+	this.addInfo(this.custBhiInfo,false,null,'Black Level and Highlight Level include ASC-CDL adjustments in their calculations, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
+	this.addInfo(this.custBhiInfo,false,null,"By default LUTCalc resets the Black and highlight levels when the underlying base level changes (eg when the output gamma is changed). 'Lock Value' prevents LUTCalc from changing the customised level.");
+	var fig3 = document.createElement('div');
+	fig3.setAttribute('class','ins-cust-fig');
+	fig3.setAttribute('id','ins-cust-bhi-3');
+	this.custBhiInfo.appendChild(fig3);
+	this.addInfo(this.custBhiInfo,false,'Highlight Level','this will give the % IRE level of a selectable reflectance percentage (initially 90% white) for the output curve. Also shown is the equivalent % IRE in the Rec709 display gamma.');
+	this.addInfo(this.custBhiInfo,false,null,'The output level can then be altered and LUTCalc will scale the output curve.');
+	this.addInfo(this.custBhiInfo,false,null,'As with Black Level, Highlight Level incorporates ASC-CDL adjustments, so any ASC-CDL adjustments should be made before Black Level and Highlight Level adjustments.');
+	this.addInfo(this.custBhiInfo,false,null,'Black and Highlight Level adjustments work together, for example to adjust the LC709 and LC709A curves from being legal range - peaking just below 100% - to extended range (Reflected 1350% maps to 108.9%) without changing the black level.');
+	this.custBhi.style.display = 'none';
+	this.custBhi.appendChild(this.custBhiInfo);
+};
+LUTInfoBox.prototype.createCustFC = function() {
+	this.custFC = document.createElement('div');
+	this.custFC.setAttribute('class','instructions');
+	this.custFC.setAttribute('id','cust-fls');
+	this.custFCBack = document.createElement('input');
+	this.custFCBack.setAttribute('type','button');
+	this.custFCBack.value = 'Back';
+	this.custFC.appendChild(this.custFCBack);
+	this.custFCInfo = document.createElement('div');
+	this.custFCInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-fc-1');
+	this.custFCInfo.appendChild(fig1);
+	this.addInfo(this.custFCInfo,false,null,"'False Colour' changes luminance ranges to fixed colours as an exposure aid for wide dynamic range log recording.");
+	this.addInfo(this.custFCInfo,false,null,'The colours and ranges LUTCalc uses are based on those used by Sony. They are:');
+	this.addInfo(this.custFCInfo,true,'Purple','Black clip (actually 10 stops below 18% gray).');
+	this.addInfo(this.custFCInfo,true,'Blue','Just above black clip. Default is 6.1 stops below 18% gray, but this can be changed to taste.');
+	this.addInfo(this.custFCInfo,true,'Green','18% gray +/- 0.2 stops. Exposure datum.');
+	this.addInfo(this.custFCInfo,true,'Pink','One stop over 18% gray +/- 0.175 stops. Common reference for caucasian skin.');
+	this.addInfo(this.custFCInfo,true,'Orange','90% white +/- 0.175 stops. Off by default as not included by Sony, 90% white is a common datum in broadcast video.');
+	this.addInfo(this.custFCInfo,true,'Yellow','Just below white clip. The default is 0.26 stops below clip, but this can also be changed.');
+	this.addInfo(this.custFCInfo,true,'Red','White clip (5.95 stops above 18% gray).');
+	this.addInfo(this.custFCInfo,false,null,'False colours map to the original real world exposure levels, regardless of the chosen input and output colour spaces.');
+	this.addInfo(this.custFCInfo,false,null,'False colour LUTs should be 33x33x33 or larger.');
+	this.custFC.style.display = 'none';
+	this.custFC.appendChild(this.custFCInfo);
+};
+LUTInfoBox.prototype.createCustLA = function() {
+	this.custLA = document.createElement('div');
+	this.custLA.setAttribute('class','instructions');
+	this.custLA.setAttribute('id','cust-lut');
+	this.custLABack = document.createElement('input');
+	this.custLABack.setAttribute('type','button');
+	this.custLABack.value = 'Back';
+	this.custLA.appendChild(this.custLABack);
+	this.custLAInfo = document.createElement('div');
+	this.custLAInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-la-1');
+	this.custLAInfo.appendChild(fig1);
+	this.addInfo(this.custLAInfo,false,null,'LUTAnalyst is a tool for reading LUT files and converting them for use on S-Log3/S-Gamut3.cine material.');
+	this.addInfo(this.custLAInfo,false,null,'It currently understands the following formats: .cube, .3dl, .ilut, .olut, .lut (Assimilate format), .spi1D, .spi3D and .vlt.');
+	this.addInfo(this.custLAInfo,false,null,'Once a file is loaded LUTCalc can create a generalised 1D LUT of the transfer function or gamma and a generally close approximation of the colour space.');
+	this.addInfo(this.custLAInfo,false,null,"There are several potential uses for the 'LALUTs' produced:");
+	this.addInfo(this.custLAInfo,true,'Information',"Visualise the response curves and exposure characteristics of customised or 'hand rolled' LUTs generated by grading software.");
+	this.addInfo(this.custLAInfo,true,'Exposure Adjustment','Ideally software should read video file metadata to automatically apply exposure adjustment. Frequently this does not currently happen, so combining exposure adjustment and colour correction into one LUT can help whilst preventing data loss to clipped values.');
+	this.addInfo(this.custLAInfo,true,'Camera Matching','If different camera models are used together, versions of a LUT tuned to each camera can be produced, hopefully simplifying the process of matching in post.');
+	this.addInfo(this.custLAInfo,false,null,"By selecting 'Load Existing Analysed LA LUT' LUTAnalyst can load a precalculated LALUT file and add the gamma and gamut to the list of available options. LALUT files end in either .lalut or .labin.");
+	this.addInfo(this.custLAInfo,false,null,"Selecting a functional cube LUT file under the 'Import New LUT' option starts a two-stage process.");
+	var fig2 = document.createElement('div');
+	fig2.setAttribute('class','ins-cust-fig');
+	fig2.setAttribute('id','ins-cust-la-2');
+	this.custLAInfo.appendChild(fig2);
+	this.addInfo(this.custLAInfo,false,null,"If the LUT contains a title line, then this should appear under 'LUT Title'. If not, the filename is used which can then be changed.");
+	this.addInfo(this.custLAInfo,false,null,'The input gamma and gamut that the LUT is designed for should then be specified.');
+	this.addInfo(this.custLAInfo,false,null,'LUTAnalyst breaks up a LUT into a 1D transfer function and a 3D colour space. The dimension of the colour space LALUT can be 33x33x33 or 65x65x65. Whilst much larger, in this instance 65x65x65 is generally the best choice.');
+	this.addInfo(this.custLAInfo,false,null,'The final options are the input and output ranges of the LUT to be analysed. LUTCalc defaults to data in -> legal out as this is a common setup, but diferences between range settings can be surprisingly subtle, so testing may well be required.');
+	this.addInfo(this.custLAInfo,false,null,"Pressing 'New LUT' at any time restarts the whole process, but clicking 'Analyse' should start a process which takes a few seconds. When complete, the analysed LUT should appear as an option at the end of the gamma and gamut lists, and one or two new buttons should appear in the LUTAnalyst box.");
+	var fig3 = document.createElement('div');
+	fig3.setAttribute('class','ins-cust-fig');
+	fig3.setAttribute('id','ins-cust-la-3');
+	this.custLAInfo.appendChild(fig3);
+	this.addInfo(this.custLAInfo,false,null,"'Save Cube' stores the 1D and 3D LUTAnalyst LUTs as a single file combining two cube files. 'Save Binary' stores them in a smaller, simpler binary format. LUTCalc For Mac cannot currently save the binary versions, though it can read them.");
+	this.addInfo(this.custLAInfo,false,null,"'Re-Analyse' reperforms the analysis, for example if the LUT Range was incorrectly set.");
+	this.custLA.style.display = 'none';
+	this.custLA.appendChild(this.custLAInfo);
+};
 LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	var para = document.createElement('p');
 	if (indent) {
@@ -768,7 +786,7 @@ LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	}
 	para.appendChild(document.createTextNode(text));
 	infoBox.appendChild(para);
-}
+};
 LUTInfoBox.prototype.gammaInfo = function() {
 	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,13.5]);
 	this.tableIREVals = new Float64Array(7);
@@ -826,7 +844,7 @@ LUTInfoBox.prototype.gammaInfo = function() {
 	this.gammaInfoBox.appendChild(document.createElement('br'));
 	this.addText(this.gammaInfoBox,'%IRE mappings from reflected values:');
 	this.gammaInfoBox.appendChild(gamires);
-}
+};
 LUTInfoBox.prototype.gammaChart = function() {
 	var m = 129;
 	var d = m - 1;
@@ -875,7 +893,7 @@ LUTInfoBox.prototype.gammaChart = function() {
 	curiresBody.appendChild(curvarsRow);
 	curires.appendChild(curiresBody);
 	this.gammaChartBox.appendChild(curires);
-}
+};
 LUTInfoBox.prototype.buildChart = function() {
 	var point = '18';
 	var cwidth = 1120;
@@ -1134,7 +1152,7 @@ LUTInfoBox.prototype.buildChart = function() {
 	rgbCanvas3.style.display = 'none';
 	// Draw The Lines
 //	this.updateGamma();
-}
+};
 LUTInfoBox.prototype.addText = function(infoBox,text,bold) {
 	var para = document.createElement('p');
 	if (bold) {
@@ -1142,7 +1160,7 @@ LUTInfoBox.prototype.addText = function(infoBox,text,bold) {
 	}
 	para.appendChild(document.createTextNode(text));
 	infoBox.appendChild(para);
-}
+};
 LUTInfoBox.prototype.addRow = function(data,section) {
 	var max = data.length;
 	var row = document.createElement('tr');
@@ -1152,7 +1170,7 @@ LUTInfoBox.prototype.addRow = function(data,section) {
 		row.appendChild(col);
 	}
 	return row;
-}
+};
 LUTInfoBox.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -1171,24 +1189,24 @@ LUTInfoBox.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 // Event Responses
 LUTInfoBox.prototype.instructionsOpt = function() {
 	this.showMainscreen();
 	this.instructionsBox.style.display = 'block';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'none';
-}
+};
 LUTInfoBox.prototype.gammaInfoOpt = function() {
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'block';
 	this.gammaChartBox.style.display = 'none';
-}
+};
 LUTInfoBox.prototype.gammaChartOpt = function() {
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'block';
-}
+};
 LUTInfoBox.prototype.updateTables = function() {
 	for (var j=0; j<7; j++) {
 		if (this.tableIREVals[j] < -0.07305936073059) {
@@ -1205,7 +1223,7 @@ LUTInfoBox.prototype.updateTables = function() {
 			this.lutOutIREsChart[j+1].innerHTML = '-';
 		}
 	}
-}
+};
 LUTInfoBox.prototype.changeChart = function() {
 	if (this.chartType[0].checked) {
 		document.getElementById('chartcanvas1').style.display = 'block';
@@ -1244,7 +1262,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('outcanvas3').style.display = 'block';
 		document.getElementById('rgbcanvas3').style.display = 'block';
 	}
-}
+};
 LUTInfoBox.prototype.gotIOGammaNames = function(d) {
 	this.gammaInName = d.inName;
 	if (typeof d.inG !== 'undefined') {
@@ -1260,7 +1278,7 @@ LUTInfoBox.prototype.gotIOGammaNames = function(d) {
 	this.updateRefChart();
 	this.updateStopChart();
 	this.updateLutChart();
-}
+};
 LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.height);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.height);
@@ -1294,7 +1312,7 @@ LUTInfoBox.prototype.updateRefChart = function() { // Ref Against IRE
 	this.refChart.out.stroke();
 	this.refChart.rec.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
 	this.refChart.out.clearRect(0, 0, this.refChart.width, this.refChart.yMax);
-}
+};
 LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 	this.stopChart.rec.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
 	this.stopChart.out.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
@@ -1347,7 +1365,7 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 		this.stopChart.clip.lineTo(this.stopChart.x0 + (stopZero*this.stopChart.dX), this.stopChart.y0);
 		this.stopChart.clip.stroke();
 	}
-}
+};
 LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	var xMin = this.lutChart.x0 + (64*876/1023);
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
@@ -1368,7 +1386,7 @@ LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
 	var yMin = this.lutChart.h / 15;
 	this.lutChart.out.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
-}
+};
 LUTInfoBox.prototype.updateRGBChart = function(d) {
 	var rIn = new Float64Array(d.rIn);
 	var gIn = new Float64Array(d.gIn);
@@ -1416,11 +1434,11 @@ LUTInfoBox.prototype.updateRGBChart = function(d) {
 	this.lutChart.rgb.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);
 	var yMin = this.lutChart.h / 15;
 	this.lutChart.rgb.clearRect(0, this.lutChart.h - yMin, this.lutChart.width, this.lutChart.h);
-}
+};
 LUTInfoBox.prototype.updateGamma = function() {
 	this.messages.gaTx(this.p,10,null);
 	this.messages.gaTx(this.p,11,null);
-}
+};
 LUTInfoBox.prototype.gotChartVals = function(d) {
 	this.refX = new Float64Array(d.refX);
 	this.refIn = new Float64Array(d.refIn);
@@ -1435,4 +1453,4 @@ LUTInfoBox.prototype.gotChartVals = function(d) {
 	this.updateStopChart();
 	this.updateLutChart();
 	this.updateTables();
-}
+};

@@ -27,7 +27,7 @@ vltLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 vltLUT.prototype.header = function() {
 	var info = {};
 	this.messages.getInfo(info);
@@ -35,7 +35,7 @@ vltLUT.prototype.header = function() {
 	out += '# source vlt file ""' + "\n";
 	out += 'LUT_3D_SIZE ' + info.dimension.toString() + "\n\n";
 	return out;
-}
+};
 vltLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = false;
 	var size = false;
@@ -137,4 +137,4 @@ vltLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

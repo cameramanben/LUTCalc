@@ -36,14 +36,14 @@ spi3dLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 spi3dLUT.prototype.header = function(info) {
 	this.messages.getInfo(info);
 	var out = 'SPILUT 1.0' + "\n";
 	out += '3 3' + "\n";
 	var lutSize = info.dimension.toString() + ' ' + info.dimension.toString() + ' ' + info.dimension.toString() + "\n";
 	return out;
-}
+};
 spi3dLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = false;
 	var size = false;
@@ -125,4 +125,4 @@ spi3dLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

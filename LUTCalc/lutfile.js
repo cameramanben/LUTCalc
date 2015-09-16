@@ -21,6 +21,30 @@ function LUTFile(inputs) {
 LUTFile.prototype.save = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension);
+    } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
+		chrome.fileSystem.chooseEntry(
+			{
+				type: 'saveFile', 
+				suggestedName: this.filename(fileName) + '.' + extension,
+				accepts: [{
+					extensions: [extension]
+				}],
+				acceptsAllTypes: false
+			}, 
+			function(writableFileEntry) {
+				writableFileEntry.createWriter(
+					function(writer) {
+						writer.onwriteend = function(e) {
+							notifyUser('LUTCalc',writableFileEntry.name + ' saved');
+						};
+						writer.write(new Blob([data],{type: 'text/plain;charset=UTF-8'})); 
+					},
+					function() {
+						notifyUser('LUTCalc','File could not be saved');
+					}
+				);
+			}
+		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(fileName) + '.' + extension);
 		return true;
@@ -28,10 +52,34 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 		window.open("data:text/plain," + encodeURIComponent(data),"_blank");
 		return true;
 	}
-}
+};
 LUTFile.prototype.saveBinary = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension);
+    } else if (this.isChromeApp) { // Use Chrome App fileSystem API to select destination
+		chrome.fileSystem.chooseEntry(
+			{
+				type: 'saveFile', 
+				suggestedName: this.filename(fileName) + '.' + extension,
+				accepts: [{
+					extensions: [extension]
+				}],
+				acceptsAllTypes: false
+			}, 
+			function(writableFileEntry) {
+				writableFileEntry.createWriter(
+					function(writer) {
+						writer.onwriteend = function(e) {
+							notifyUser('LUTCalc',writableFileEntry.name + ' saved');
+						};
+						writer.write(new Blob([data],{type: 'text/plain;charset=UTF-8'})); 
+					},
+					function() {
+						notifyUser('LUTCalc','File could not be saved');
+					}
+				);
+			}
+		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName) + '.' + extension);
 		return true;
@@ -39,7 +87,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 		console.log('Browser does not support file saving.');
 		return false;
 	}
-}
+};
 LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, isTxt, destination, parentObject, next) {
 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.p, next);
@@ -105,7 +153,7 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, isTxt, dest
 			alert("LUTCalc does not understand this file.");
 		}
 	}
-}
+};
 LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination, parentObject, next) {
 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadImg(extensions.toString(), destination, parentObject.p, next);
@@ -157,10 +205,10 @@ LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination
 			alert("LUTCalc does not understand this image type.");
 		}
 	}
-}
+};
 LUTFile.prototype.filename = function(filename) {
 	return filename.replace(/[^a-z0-9_\-\ ]/gi, '').replace(/[^a-z0-9_\-]/gi, '_');
-}
+};
 // Functions available to native apps
 function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
 	lutInputs[destination].format = format;
@@ -179,6 +227,8 @@ function loadLUTFromApp(fileName, format, content, destination, parentIdx, next)
 		lutInputs[destination].isTxt = true;
 	}
 	switch (parseInt(parentIdx)) {
+		case 5: lutGenerate.followUp(parseInt(next));
+				break;
 		case 10: lutTweaksBox.followUp(parseInt(parentIdx),parseInt(next));
 				break;
 	}

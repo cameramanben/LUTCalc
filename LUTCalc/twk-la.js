@@ -115,7 +115,7 @@ TWKLA.prototype.io = function() {
 
 	// LUTAnalyst Object
 	lutInputs.addInput('lutAnalyst',new LUTAnalyst(this.inputs, this.messages));
-}
+};
 TWKLA.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -180,10 +180,10 @@ TWKLA.prototype.ui = function() {
 	this.box.appendChild(this.backButton);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
-}
+};
 TWKLA.prototype.toggleTweaks = function() {
 	// LUTAnalyst will always be visible
-}
+};
 TWKLA.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) !== this.inputs.gammaLA) {
@@ -244,21 +244,25 @@ TWKLA.prototype.toggleTweak = function() {
 			this.inputs.twkHGSelect.remove(this.inputs.twkHGSelect.options.length - 1);
 		}
 	}
-}
+};
 TWKLA.prototype.getTFParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKLA.prototype.getCSParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKLA.prototype.setParams = function(params) {
 	if (typeof params.twkLA !== 'undefined') {
 		var p = params.twkLA;
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
-}
+};
+TWKLA.prototype.getSettings = function(data) {
+};
+TWKLA.prototype.setSettings = function(settings) {
+};
 TWKLA.prototype.getInfo = function(info) {
-}
+};
 TWKLA.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -295,7 +299,7 @@ TWKLA.prototype.events = function() {
 	this.storeBinButton.onclick = function(here){ return function(){
 		here.store(false);
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKLA.prototype.createRadioElement = function(name, checked) {
     var radioInput;
@@ -315,7 +319,7 @@ TWKLA.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 TWKLA.prototype.getFile = function() {
 	var validExts = [];
 	var isTxt = [];
@@ -329,14 +333,14 @@ TWKLA.prototype.getFile = function() {
 	if (this.inputs.isApp || this.fileInput.value !== '') {
 		this.files.loadLUTFromInput(this.fileInput, validExts, isTxt, 'laFileData', this, 0);
 	}
-}
+};
 TWKLA.prototype.followUp = function(input) {
 	switch (input) {
 		case 0:	this.gotFile();
 				break;
 		default:break;
 	}
-}
+};
 TWKLA.prototype.gotFile = function() {
 	this.startBox.className = 'twk-tab-hide';
 	this.backButton.className = 'twk-button';
@@ -382,18 +386,18 @@ TWKLA.prototype.gotFile = function() {
 			this.reset();
 		}
 	}
-}
+};
 TWKLA.prototype.testGamma = function() {
 	if (this.gammaSelect.options[this.gammaSelect.options.selectedIndex].value == '9999') {
 		this.linGammaBox.className = 'twk-tab';
 	} else {
 		this.linGammaBox.className = 'twk-tab-hide';
 	}
-}
+};
 TWKLA.prototype.doStuff = function() {
 	this.cleanTitle();
 	this.inputs.lutAnalyst.getTF();
-}
+};
 TWKLA.prototype.doneStuff = function() {
 	this.tweakCheck.checked = true;
 	this.tweakCheck.className = 'twk-checkbox';
@@ -403,7 +407,7 @@ TWKLA.prototype.doneStuff = function() {
         this.storeBinButton.className = 'twk-button';
     }
 	this.toggleTweak();
-}
+};
 TWKLA.prototype.reset = function() {
 	this.tweakCheck.checked = false;
 	this.tweakCheck.className = 'twk-checkbox-hide';
@@ -436,7 +440,7 @@ TWKLA.prototype.reset = function() {
 	this.storeButton.className = 'twk-button-hide';
 	this.storeBinButton.className = 'twk-button-hide';
 	this.doButton.className = 'twk-button-hide';
-}
+};
 TWKLA.prototype.store = function(cube) {
 	if (cube) {
 		this.files.save(
@@ -465,7 +469,7 @@ TWKLA.prototype.store = function(cube) {
 		this.inputs.lutAnalyst.getL()
 	);
 */
-}
+};
 TWKLA.prototype.cleanTitle = function() {
 	this.title.value = this.title.value.replace(/[/"/']/gi, '');
 	if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) === this.inputs.gammaLA) {
@@ -480,4 +484,4 @@ TWKLA.prototype.cleanTitle = function() {
 	if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) === this.inputs.gamutLA) {
 		this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
-}
+};

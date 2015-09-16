@@ -24,7 +24,7 @@ TWKBLANK.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-}
+};
 TWKBLANK.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -39,7 +39,7 @@ TWKBLANK.prototype.ui = function() {
 
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
-}
+};
 TWKBLANK.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
@@ -54,14 +54,14 @@ TWKBLANK.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKBLANK.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKBLANK.prototype.getTFParams = function(params) {
 	// Parameters to be sent to the 'Gamma' (Transfer Function) web worker go here
 
@@ -79,7 +79,7 @@ TWKBLANK.prototype.getTFParams = function(params) {
 //
 //	params.twkBLANK = out;
 	// Leave function content blank if not parameters are relevent
-}
+};
 TWKBLANK.prototype.getCSParams = function(params) {
 	// Parameters to be sent to the 'Gamut' (Colour Space) web worker go here
 
@@ -97,14 +97,14 @@ TWKBLANK.prototype.getCSParams = function(params) {
 //
 //	params.twkBLANK = out;
 	// Leave function content blank if not parameters are relevent
-}
+};
 TWKBLANK.prototype.setParams = function(params) {
 	if (typeof params.twkBLANK !== 'undefined') {
 		var p = params.twkBLANK;
 		this.toggleTweaks();
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
-}
+};
 TWKBLANK.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -124,7 +124,7 @@ TWKBLANK.prototype.events = function() {
 //		i[0].widgetResponse(i[1]);
 //		here.messages.gtSetParams(); <- if appropriate
 //	};}([this,extra parameter]);
-}
+};
 // Tweak-Specific Code
 	// Methods called by event responses should go here
 	// Requirements:

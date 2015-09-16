@@ -198,7 +198,7 @@ TWKPSSTCDL.prototype.io = function() {
 	this.lumaScaleCheck.setAttribute('type','checkbox');
 	this.lumaScaleCheck.className = 'twk-checkbox';
 	this.lumaScaleCheck.checked = false;
-}
+};
 TWKPSSTCDL.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -331,7 +331,7 @@ TWKPSSTCDL.prototype.ui = function() {
 	this.box.appendChild(this.advancedCheck);
 	this.box.appendChild(this.advancedBox);
 	this.holder.appendChild(this.box);
-}
+};
 TWKPSSTCDL.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) {
@@ -346,17 +346,17 @@ TWKPSSTCDL.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKPSSTCDL.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKPSSTCDL.prototype.getTFParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKPSSTCDL.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -378,12 +378,12 @@ TWKPSSTCDL.prototype.getCSParams = function(params) {
 		out.doPSSTCDL = false;
 	}
 	params.twkPSSTCDL = out;
-}
+};
 TWKPSSTCDL.prototype.setParams = function(params) {
 	if (typeof params.twkPSSTCDL !== 'undefined') {
 		this.toggleTweaks();
 	}
-}
+};
 TWKPSSTCDL.prototype.psstColours = function(p) {
 	var before = new Uint8Array(p.b);
 	var after = new Uint8Array(p.a);
@@ -399,7 +399,206 @@ TWKPSSTCDL.prototype.psstColours = function(p) {
 		}
 	}
 	this.toggleTweaks();
-}
+};
+TWKPSSTCDL.prototype.getSettings = function(data) {
+	data.psstCDL = {
+		doPSSTCDL: this.tweakCheck.checked,
+		basic: this.basRef[0].checked,
+		channel: this.channelSelect.options[this.channelSelect.selectedIndex].lastChild.nodeValue,
+		control: this.rSelect.options[this.rSelect.selectedIndex].lastChild.nodeValue,
+		colour: this.taToString(this.vals[0]),
+		colourLock: this.checksToString(this.locks[0]),
+		saturation: this.taToString(this.vals[1]),
+		saturationLock: this.checksToString(this.locks[1]),
+		slope: this.taToString(this.vals[2]),
+		slopeLock: this.checksToString(this.locks[2]),
+		offset: this.taToString(this.vals[3]),
+		offsetLock: this.checksToString(this.locks[3]),
+		power: this.taToString(this.vals[4]),
+		powerLock: this.checksToString(this.locks[4]),
+		scaleChroma: this.chromaScaleCheck.checked,
+		scaleLuma: this.lumaScaleCheck.checked
+	};
+};
+TWKPSSTCDL.prototype.setSettings = function(settings) {
+	if (typeof settings.psstCDL !== 'undefined') {
+		var data = settings.psstCDL;
+		if (typeof data.doPSSTCDL === 'boolean') {
+			this.tweakCheck.checked = data.doPSSTCDL;
+			this.toggleTweak();
+		}
+		if (typeof data.basic === 'boolean') {
+			this.basRef[0].checked = data.basic;
+			this.basRef[1].checked = !data.basic;
+			this.toggleBasRef();
+		}
+		if (typeof data.channel !== 'undefined') {
+			var m = this.channelSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.channelSelect.options[j].lastChild.nodeValue === data.channel) {
+					this.channelSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.control !== 'undefined') {
+			var m = this.rSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.rSelect.options[j].lastChild.nodeValue === data.control) {
+					this.rSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.colour !== 'undefined') {
+			var m = this.vals[0].length;
+			var colour = data.colour.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				this.vals[0][j] = colour[j];
+				if (j%4 === 0) {
+					var baseCol = parseInt(j/4);
+					this.baseVals[0][baseCol] = colour[j];
+				}
+				if (j === 0) {
+					this.baseVals[0][7] = colour[j];
+				}
+			}
+			for (var j=0; j<6; j++) {
+				this.updateC(j);
+			}
+		}
+		if (typeof data.colourLock !== 'undefined') {
+			var m = this.rLock[0].length;
+			var colourLock = data.colourLock.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				if (colourLock[j] === 1) {
+					this.locks[0][j] = true;
+				} else {
+					this.locks[0][j] = false;
+				}
+			}
+		}
+		if (typeof data.saturation !== 'undefined') {
+			var m = this.vals[1].length;
+			var sat = data.saturation.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				this.vals[1][j] = sat[j];
+				if (j%4 === 0) {
+					var baseSat = parseInt(j/4);
+					this.baseVals[1][baseSat] = sat[j];
+				}
+				if (j === 0) {
+					this.baseVals[1][7] = sat[j];
+				}
+			}
+			for (var j=0; j<6; j++) {
+				this.updateSat(j);
+			}
+		}
+		if (typeof data.saturationLock !== 'undefined') {
+			var m = this.rLock[1].length;
+			var saturationLock = data.saturationLock.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				if (saturationLock[j] === 1) {
+					this.locks[1][j] = true;
+				} else {
+					this.locks[1][j] = false;
+				}
+			}
+		}
+		if (typeof data.slope !== 'undefined') {
+			var m = this.vals[2].length;
+			var slope = data.slope.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				this.vals[2][j] = slope[j];
+				if (j%4 === 0) {
+					var baseSlope = parseInt(j/4);
+					this.baseVals[2][baseSlope] = slope[j];
+				}
+				if (j === 0) {
+					this.baseVals[2][7] = slope[j];
+				}
+			}
+			for (var j=0; j<6; j++) {
+				this.updateS(j);
+			}
+		}
+		if (typeof data.slopeLock !== 'undefined') {
+			var m = this.rLock[2].length;
+			var slopeLock = data.slopeLock.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				if (slopeLock[j] === 1) {
+					this.locks[2][j] = true;
+				} else {
+					this.locks[2][j] = false;
+				}
+			}
+		}
+		if (typeof data.offset !== 'undefined') {
+			var m = this.vals[3].length;
+			var offset = data.offset.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				this.vals[3][j] = offset[j];
+				if (j%4 === 0) {
+					var baseOffset = parseInt(j/4);
+					this.baseVals[3][baseOffset] = offset[j];
+				}
+				if (j === 0) {
+					this.baseVals[3][7] = offset[j];
+				}
+			}
+			for (var j=0; j<6; j++) {
+				this.updateO(j);
+			}
+		}
+		if (typeof data.offsetLock !== 'undefined') {
+			var m = this.rLock[3].length;
+			var offsetLock = data.offsetLock.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				if (offsetLock[j] === 1) {
+					this.locks[3][j] = true;
+				} else {
+					this.locks[3][j] = false;
+				}
+			}
+		}
+		if (typeof data.power !== 'undefined') {
+			var m = this.vals[4].length;
+			var power = data.power.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				this.vals[4][j] = power[j];
+				if (j%4 === 0) {
+					var basePower = parseInt(j/4);
+					this.baseVals[4][basePower] = power[j];
+				}
+				if (j === 0) {
+					this.baseVals[4][7] = power[j];
+				}
+			}
+			for (var j=0; j<6; j++) {
+				this.updateP(j);
+			}
+		}
+		if (typeof data.powerLock !== 'undefined') {
+			var m = this.rLock[4].length;
+			var powerLock = data.powerLock.split(',').map(Number);
+			for (var j=0; j<m; j++) {
+				if (powerLock[j] === 1) {
+					this.locks[4][j] = true;
+				} else {
+					this.locks[4][j] = false;
+				}
+			}
+		}
+		this.updateRef();
+		if (typeof data.scaleChroma === 'boolean') {
+			this.chromaScaleCheck.checked = data.scaleChroma;
+		}
+		if (typeof data.scaleLuma === 'boolean') {
+			this.lumaScaleCheck.checked = data.scaleLuma;
+		}
+	}
+};
 TWKPSSTCDL.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -408,7 +607,7 @@ TWKPSSTCDL.prototype.getInfo = function(info) {
 	} else {
 		info.doPSSTCDL = false;
 	}
-}
+};
 TWKPSSTCDL.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -530,7 +729,7 @@ TWKPSSTCDL.prototype.events = function() {
 	this.lumaScaleCheck.onclick = function(here){ return function(){
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKPSSTCDL.prototype.createRadioElement = function(name, checked) {
     var radioInput;
@@ -550,7 +749,7 @@ TWKPSSTCDL.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 TWKPSSTCDL.prototype.initVals = function() {
 	this.vals = [];
 	this.locks = [];
@@ -593,7 +792,7 @@ TWKPSSTCDL.prototype.initVals = function() {
 		}
 		this.baseRings[j] = ring;
 	}
-}
+};
 TWKPSSTCDL.prototype.channelList = function() {
 	var channels = [
 		'Blue',
@@ -614,7 +813,7 @@ TWKPSSTCDL.prototype.channelList = function() {
 		}
 		this.channelSelect.appendChild(option);
 	}
-}
+};
 TWKPSSTCDL.prototype.changeChannel = function() {
 	var chan = this.channelSelect.selectedIndex;
 	for (var j=0; j<7; j++) {
@@ -624,7 +823,7 @@ TWKPSSTCDL.prototype.changeChannel = function() {
 			this.cssop[j].className = 'twk-tab-hide';
 		}
 	}
-}
+};
 TWKPSSTCDL.prototype.refineList = function() {
 	var controls = [
 		'Colour Shift',
@@ -643,7 +842,7 @@ TWKPSSTCDL.prototype.refineList = function() {
 		}
 		this.rSelect.appendChild(option);
 	}
-}
+};
 TWKPSSTCDL.prototype.toggleBasRef = function() {
 	if (this.basRef[0].checked) {
 		this.baseBox.className = 'twk-tab';
@@ -653,7 +852,7 @@ TWKPSSTCDL.prototype.toggleBasRef = function() {
 		this.refineBox.className = 'twk-tab';
 	}
 	this.updateRef();
-}
+};
 TWKPSSTCDL.prototype.toggleLock = function(colour) {
 	var control = this.rSelect.selectedIndex;
 	var locks = this.locks[control];
@@ -661,7 +860,7 @@ TWKPSSTCDL.prototype.toggleLock = function(colour) {
 	if (colour === 0) {
 		locks[28] = locks[0];
 	}
-}
+};
 TWKPSSTCDL.prototype.testR = function(colour) {
 	var control = this.rSelect.selectedIndex;
 	var vals = this.vals[control];
@@ -701,7 +900,7 @@ TWKPSSTCDL.prototype.testR = function(colour) {
 		vals[28] = vals[0];
 		this.baseVals[control][7] = vals[0];
 	}
-}
+};
 TWKPSSTCDL.prototype.updateR = function(control) {
 	var vals = this.vals[control];
 	var locks = this.locks[control];
@@ -714,7 +913,7 @@ TWKPSSTCDL.prototype.updateR = function(control) {
 			}
 		}
 	}
-}
+};
 TWKPSSTCDL.prototype.updateRef = function() {
 	var control = this.rSelect.selectedIndex;
 	var min,max,step;
@@ -763,7 +962,7 @@ TWKPSSTCDL.prototype.updateRef = function() {
 		}
 		this.rLock[j].checked = this.locks[control][j];
 	}
-}
+};
 TWKPSSTCDL.prototype.resetR = function() {
 	var control = this.rSelect.selectedIndex;
 	var vals = this.vals[control];
@@ -813,7 +1012,7 @@ TWKPSSTCDL.prototype.resetR = function() {
 		}
 	}
 	this.updateRef();
-}
+};
 TWKPSSTCDL.prototype.testC = function(chan,slider) {
 	var val = this.cInput[chan];
 	var sli = this.cSlider[chan];
@@ -833,13 +1032,13 @@ TWKPSSTCDL.prototype.testC = function(chan,slider) {
 		this.baseVals[0][7] = this.baseVals[0][0];
 	}
 	this.updateR(0);
-}
+};
 TWKPSSTCDL.prototype.updateC = function(chan) {
 	var val = this.cInput[chan];
 	var sli = this.cSlider[chan];
 	val.value = (this.baseVals[0][chan]*7).toString();
 	sli.value = (this.baseVals[0][chan]*7).toString();
-}
+};
 TWKPSSTCDL.prototype.resetC = function(chan) {
 	this.cSlider[chan].value = '0';
 	this.cInput[chan].value = '0';
@@ -848,7 +1047,7 @@ TWKPSSTCDL.prototype.resetC = function(chan) {
 		this.baseVals[0][7] = 0;
 	}
 	this.updateR(0);
-}
+};
 TWKPSSTCDL.prototype.resetAllC = function() {
 	for (j=0; j<7; j++) {
 		this.cSlider[j].value = '0';
@@ -857,7 +1056,7 @@ TWKPSSTCDL.prototype.resetAllC = function() {
 	}
 	this.baseVals[0][7] = 0;
 	this.updateR(0);
-}
+};
 TWKPSSTCDL.prototype.testSat = function(chan,slider) {
 	var val = this.satInput[chan];
 	var sli = this.satSlider[chan];
@@ -880,13 +1079,13 @@ TWKPSSTCDL.prototype.testSat = function(chan,slider) {
 		this.baseVals[1][7] = this.baseVals[1][0];
 	}
 	this.updateR(1);
-}
+};
 TWKPSSTCDL.prototype.updateSat = function(chan) {
 	var val = this.satInput[chan];
 	var sli = this.satSlider[chan];
 	val.value = this.baseVals[1][chan].toString();
 	sli.value = this.baseVals[1][chan].toString();
-}
+};
 TWKPSSTCDL.prototype.resetSat = function(chan) {
 	this.satSlider[chan].value = '1';
 	this.satInput[chan].value = '1';
@@ -895,7 +1094,7 @@ TWKPSSTCDL.prototype.resetSat = function(chan) {
 		this.baseVals[1][7] = 1;
 	}
 	this.updateR(1);
-}
+};
 TWKPSSTCDL.prototype.resetAllSat = function() {
 	for (j=0; j<7; j++) {
 		this.satSlider[j].value = '1';
@@ -904,7 +1103,7 @@ TWKPSSTCDL.prototype.resetAllSat = function() {
 	}
 	this.baseVals[1][7] = 1;
 	this.updateR(1);
-}
+};
 TWKPSSTCDL.prototype.testS = function(chan,slider) {
 	var val = this.sInput[chan];
 	var sli = this.sSlider[chan];
@@ -930,7 +1129,7 @@ TWKPSSTCDL.prototype.testS = function(chan,slider) {
 		this.baseVals[2][7] = this.baseVals[2][0];
 	}
 	this.updateR(2);
-}
+};
 TWKPSSTCDL.prototype.updateS = function(chan) {
 	var val = this.sInput[chan];
 	var sli = this.sSlider[chan];
@@ -940,7 +1139,7 @@ TWKPSSTCDL.prototype.updateS = function(chan) {
 	var c4 = -0.124947425;
 	val.value = this.baseVals[2][chan].toString();
 	sli.value = ((Math.log((this.baseVals[2][chan]-c4)/c3)-c2)/c1).toString();
-}
+};
 TWKPSSTCDL.prototype.resetS = function(chan) {
 	this.sSlider[chan].value = '1';
 	this.sInput[chan].value = '1';
@@ -949,7 +1148,7 @@ TWKPSSTCDL.prototype.resetS = function(chan) {
 		this.baseVals[2][7] = 1;
 	}
 	this.updateR(2);
-}
+};
 TWKPSSTCDL.prototype.resetAllS = function() {
 	for (j=0; j<7; j++) {
 		this.sSlider[j].value = '1';
@@ -958,7 +1157,7 @@ TWKPSSTCDL.prototype.resetAllS = function() {
 	}
 	this.baseVals[2][7] = 1;
 	this.updateR(2);
-}
+};
 TWKPSSTCDL.prototype.testO = function(chan,slider) {
 	var val = this.oInput[chan];
 	var sli = this.oSlider[chan];
@@ -978,13 +1177,13 @@ TWKPSSTCDL.prototype.testO = function(chan,slider) {
 		this.baseVals[3][7] = this.baseVals[3][0];
 	}
 	this.updateR(3);
-}
+};
 TWKPSSTCDL.prototype.updateO = function(chan) {
 	var val = this.oInput[chan];
 	var sli = this.oSlider[chan];
 	val.value = this.baseVals[3][chan].toString();
 	sli.value = this.baseVals[3][chan].toString();
-}
+};
 TWKPSSTCDL.prototype.resetO = function(chan) {
 	this.oSlider[chan].value = '0';
 	this.oInput[chan].value = '0';
@@ -993,7 +1192,7 @@ TWKPSSTCDL.prototype.resetO = function(chan) {
 		this.baseVals[3][7] = 0;
 	}
 	this.updateR(3);
-}
+};
 TWKPSSTCDL.prototype.resetAllO = function() {
 	for (j=0; j<7; j++) {
 		this.oSlider[j].value = '0';
@@ -1002,7 +1201,7 @@ TWKPSSTCDL.prototype.resetAllO = function() {
 	}
 	this.baseVals[3][7] = 0;
 	this.updateR(3);
-}
+};
 TWKPSSTCDL.prototype.testP = function(chan,slider) {
 	var val = this.pInput[chan];
 	var sli = this.pSlider[chan];
@@ -1028,7 +1227,7 @@ TWKPSSTCDL.prototype.testP = function(chan,slider) {
 		this.baseVals[4][7] = this.baseVals[4][0];
 	}
 	this.updateR(4);
-}
+};
 TWKPSSTCDL.prototype.updateP = function(chan) {
 	var val = this.pInput[chan];
 	var sli = this.pSlider[chan];
@@ -1038,7 +1237,7 @@ TWKPSSTCDL.prototype.updateP = function(chan) {
 	var c4 = -0.124947425;
 	val.value = this.baseVals[4][chan].toString();
 	sli.value = ((Math.log((this.baseVals[4][chan]-c4)/c3)-c2)/c1).toString();
-}
+};
 TWKPSSTCDL.prototype.resetP = function(chan) {
 	this.pSlider[chan].value = '1';
 	this.pInput[chan].value = '1';
@@ -1047,7 +1246,7 @@ TWKPSSTCDL.prototype.resetP = function(chan) {
 		this.baseVals[4][7] = 1;
 	}
 	this.updateR(4);
-}
+};
 TWKPSSTCDL.prototype.resetAllP = function() {
 	for (j=0; j<7; j++) {
 		this.pSlider[j].value = '1';
@@ -1056,11 +1255,31 @@ TWKPSSTCDL.prototype.resetAllP = function() {
 	}
 	this.baseVals[4][7] = 1;
 	this.updateR(4);
-}
+};
 TWKPSSTCDL.prototype.toggleAdvanced = function() {
 	if (this.advancedCheck.checked) {
 		this.advancedBox.className = 'twk-advanced';
 	} else {
 		this.advancedBox.className = 'twk-advanced-hide';
 	}
-}
+};
+TWKPSSTCDL.prototype.taToString = function(data) {
+	var out = [];
+	var m = data.length;
+	for (var j=0; j<m; j++) {
+		out[j] = data[j];
+	}
+	return out.toString();
+};
+TWKPSSTCDL.prototype.checksToString = function(data) {
+	var out = [];
+	var m = data.length;
+	for (var j=0; j<m; j++) {
+		if (data[j]) {
+			out[j] = 1;
+		} else {
+			out[j] = 0;
+		}
+	}
+	return out.toString();
+};

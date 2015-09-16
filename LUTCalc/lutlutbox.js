@@ -25,7 +25,7 @@ function LUTLutBox(fieldset, inputs, messages, formats) {
 }
 LUTLutBox.prototype.getFieldSet = function() {
 	return this.fieldset;
-}
+};
 LUTLutBox.prototype.io = function() {
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
@@ -114,7 +114,7 @@ LUTLutBox.prototype.io = function() {
 	this.nikonHueLabel = document.createElement('label');
 	this.lutClipCheck = document.createElement('input');
 	this.inputs.addInput('clipCheck',this.lutClipCheck);
-}
+};
 LUTLutBox.prototype.ui = function() {
 	// LUT title / filename
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Title / Filename')));
@@ -257,7 +257,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutClip.appendChild(this.lutClipCheck);
 	this.lutUsage.appendChild(document.createElement('br'));
 	this.lutUsage.appendChild(this.lutClip);
-}
+};
 LUTLutBox.prototype.events = function() {
 	this.lutName.onchange = function(here){ return function(){
 		here.cleanName();
@@ -299,11 +299,11 @@ LUTLutBox.prototype.events = function() {
 	this.nikonHue.oninput = function(here){ return function(){
 		here.nikonHueLabel.innerHTML = here.nikonHue.value;
 	};}(this);
-}
+};
 // Set Up Data
 LUTLutBox.prototype.cleanName = function() {
 	this.lutName.value = this.lutName.value.replace(/[/"/']/gi, '');
-}
+};
 LUTLutBox.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -322,14 +322,60 @@ LUTLutBox.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 // Event Responses
 LUTLutBox.prototype.changeGamma = function() {
 	this.formats.updateOptions();
-}
+};
 LUTLutBox.prototype.gotGammaLists = function(catList) {
 	this.catList = catList;
-}
+};
+LUTLutBox.prototype.getSettings = function(data) {
+	var m = this.inputs.dimension.length;
+	var meshSize;
+	for (var j=0; j<m; j++) {
+		if (this.inputs.dimension[j].checked) {
+			meshSize = parseInt(this.inputs.dimension[j].value);
+			break;
+		}
+	}
+	data.lutBox = {
+		oneD: this.lutOneD.checked,
+		meshSize: meshSize,
+		legalIn: this.lutInLegal.checked,
+		legalOut: this.lutOutLegal.checked,
+		hardClip: this.lutClipCheck.checked
+	};
+};
+LUTLutBox.prototype.setSettings = function(settings) {
+	if (typeof settings.lutBox !== 'undefined') {
+		var data = settings.lutBox;
+		if (typeof data.oneD === 'boolean') {
+			this.lutOneD.checked = data.oneD;
+			this.lutThreeD.checked = !data.oneD;
+		}
+		if (typeof data.meshSize === 'number') {
+			var m = this.inputs.dimension.length;
+			for (var j=0; j<m; j++) {
+				if (parseInt(this.inputs.dimension[j].value) === data.meshSize) {
+					this.inputs.dimension[j].checked = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.legalIn === 'boolean') {
+			this.lutInLegal.checked = data.legalIn;
+			this.lutInData.checked = !data.legalIn;
+		}
+		if (typeof data.legalOut === 'boolean') {
+			this.lutOutLegal.checked = data.legalOut;
+			this.lutOutData.checked = !data.legalIn;
+		}
+		if (typeof data.hardClip === 'boolean') {
+			this.lutClipCheck.checked = data.hardClip;
+		}
+	}
+};
 LUTLutBox.prototype.getInfo = function(info) {
 	info.name = this.lutName.value;
 	if (this.lutOneD.checked) {
@@ -372,4 +418,4 @@ LUTLutBox.prototype.getInfo = function(info) {
 	info.nikonSharp = parseInt(this.nikonShr.value);
 	info.nikonSat = parseInt(this.nikonSat.value);
 	info.nikonHue = parseInt(this.nikonHue.value);
-}
+};

@@ -64,7 +64,7 @@ TWKHG.prototype.io = function() {
 	this.logHigh.setAttribute('step','any');
 	this.logHigh.className = 'stopinput';
 	this.logHigh.value = (Math.log(5*parseFloat(this.linHigh.value)/90)/Math.LN2).toFixed(4).toString();
-}
+};
 TWKHG.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -111,7 +111,7 @@ TWKHG.prototype.ui = function() {
 
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
-}
+};
 TWKHG.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
@@ -126,17 +126,17 @@ TWKHG.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKHG.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKHG.prototype.getTFParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKHG.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -151,14 +151,52 @@ TWKHG.prototype.getCSParams = function(params) {
 		out.doHG = false;
 	}
 	params.twkHG = out;
-}
+};
 TWKHG.prototype.setParams = function(params) {
 	if (typeof params.twkHG !== 'undefined') {
 		var p = params.twkHG;
 		this.toggleTweaks();
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
-}
+};
+TWKHG.prototype.getSettings = function(data) {
+	data.highlightGamut = {
+		doHG: this.tweakCheck.checked,
+		gamut: this.gamutSelect.options[this.gamutSelect.selectedIndex].lastChild.nodeValue,
+		linear: this.linOpt.checked,
+		low: parseFloat(this.logLow.value),
+		high: parseFloat(this.logHigh.value)
+	};
+};
+TWKHG.prototype.setSettings = function(settings) {
+	if (typeof settings.highlightGamut !== 'undefined') {
+		var data = settings.highlightGamut;
+		if (typeof data.doHG === 'boolean') {
+			this.tweakCheck.checked = data.doHG;
+			this.toggleTweak();
+		}
+		if (typeof data.gamut !== 'undefined') {
+			var m = this.gamutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.gamutSelect.options[j].lastChild.nodeValue === data.gamut) {
+					this.gamutSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.linear === 'boolean') {
+			this.linOpt.checked = data.linear;
+			this.logOpt.checked = !data.linear;
+			this.toggleLinLog();
+		}
+		if (typeof data.low === 'number' && typeof data.high === 'number') {
+			this.logLow.value = data.low.toString();
+			this.logHigh.value = data.high.toString();
+			this.testLogLow();
+			this.testLogHigh();
+		}
+	}
+};
 TWKHG.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -168,7 +206,7 @@ TWKHG.prototype.getInfo = function(info) {
 		info.doHG = false;
 	}
 	info.twkHGGamutName = this.gamutSelect.options[this.gamutSelect.selectedIndex].lastChild.nodeValue;
-}
+};
 TWKHG.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -201,7 +239,7 @@ TWKHG.prototype.events = function() {
 		here.testLogHigh();
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKHG.prototype.createRadioElement = function(name, checked) {
     var radioInput;
@@ -221,7 +259,7 @@ TWKHG.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 TWKHG.prototype.gamutList = function(gamuts) {
 	max = gamuts.length;
 	for (var j=0; j<max; j++) {
@@ -230,7 +268,7 @@ TWKHG.prototype.gamutList = function(gamuts) {
 		option.appendChild(document.createTextNode(gamuts[j].name));
 		this.gamutSelect.appendChild(option);
 	}
-}
+};
 TWKHG.prototype.toggleLinLog = function() {
 	if (this.linOpt.checked) {
 		this.linBox.className = 'twk-tab';
@@ -239,7 +277,7 @@ TWKHG.prototype.toggleLinLog = function() {
 		this.linBox.className = 'twk-tab-hide';
 		this.logBox.className = 'twk-tab';
 	}
-}
+};
 TWKHG.prototype.testLinLow = function() {
 	if (/^([1-9]\d*)$/.test(this.linLow.value)) {
 		if (parseInt(this.linLow.value) >= parseInt(this.linHigh.value)) {
@@ -251,7 +289,7 @@ TWKHG.prototype.testLinLow = function() {
 		this.logLow.value = '0';
 		this.testLinLow();
 	}
-}
+};
 TWKHG.prototype.testLinHigh = function() {
 	if (/^([1-9]\d*)$/.test(this.linHigh.value)) {
 		if (parseInt(this.linHigh.value) <= parseInt(this.linLow.value)) {
@@ -265,7 +303,7 @@ TWKHG.prototype.testLinHigh = function() {
 		this.logHigh.value = (Math.log(5)/Math.LN2).toFixed(4).toString();
 		this.testLinHigh();
 	}
-}
+};
 TWKHG.prototype.testLogLow = function() {
 	if (!isNaN(parseFloat(this.logLow.value)) && isFinite(this.logLow.value)) {
 		if (parseFloat(this.logLow.value) >= parseFloat(this.logHigh.value)) {
@@ -277,7 +315,7 @@ TWKHG.prototype.testLogLow = function() {
 		this.logLow.value = '0';
 		this.testLogLow();
 	}
-}
+};
 TWKHG.prototype.testLogHigh = function() {
 	if (!isNaN(parseFloat(this.logHigh.value)) && isFinite(this.logHigh.value)) {
 		if (parseFloat(this.logHigh.value) <= parseFloat(this.logLow.value)) {
@@ -289,4 +327,4 @@ TWKHG.prototype.testLogHigh = function() {
 		this.logHigh.value = (Math.log(5)/Math.LN2).toFixed(4).toString();
 		this.testLogHigh();
 	}
-}
+};

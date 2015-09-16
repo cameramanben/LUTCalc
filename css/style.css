@@ -1,0 +1,184 @@
+/* GitHub Stuff */
+#forkme-banner {
+  display: block;
+  position: absolute;
+  top:0;
+  right: 10px;
+  z-index: 10;
+  padding: 10px 50px 10px 10px;
+  color: #fff;
+  background: url('../images/blacktocat.png') #0090ff no-repeat 95% 50%;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(0,0,0,.5);
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+/* General Elements */
+a {
+  text-decoration: none;
+  color: #3030bb;
+}
+a:hover {
+  text-decoration: none;
+  color: #101090;
+}
+.clear {	clear:both; height:0px; overflow:hidden;}
+/* Header */
+#header-wrap {
+	display: block;
+	width: 100%;
+	text-align:center;
+	background-color:#444444;
+}
+#header-content {
+	display:inline-block;
+	margin 0px auto;
+	min-width:30em;
+}
+#header-logo {
+	float:left;
+	width:11em;
+	height:11em;
+}
+#header-words{
+	float:left;
+	text-align:left;
+	padding: 2.5em 1em 1em;
+	color: #eeee44;
+	text-shadow: 0px 0px 0.5em #000000;
+}
+#header-title {
+	font-size: 400%;
+}
+#header-tagline {
+	font-size: 92%;
+}
+/* Table Of Contents */
+#nav-wrap {
+	display:block;
+}
+#toc {
+	clear:left;
+	float:left;
+	width:100%;
+	background:#80c8ff;
+	border-bottom:1px solid #49A9FF;
+	overflow:hidden;
+}
+#toc ul {
+	clear:left;
+	float:left;
+	list-style:none;
+	margin:0;
+	padding:0;
+	position:relative;
+	left:50%;
+	text-align:center;
+}
+#toc ul li {
+	display:block;
+	float:left;
+	list-style:none;
+	margin:0;
+	padding:0;
+	position:relative;
+	right:50%;
+}
+#toc ul li.first {
+	border-left:1px solid #49A9FF;
+}
+#toc ul li.last {
+	border-right:1px solid #99D8FF;
+}
+#toc ul li a {
+	display:block;
+	margin:0;
+	padding:.4em .8em;
+	color:#000;
+	text-decoration:none;
+	border-left:1px solid #99D8FF;
+	border-right:1px solid #49A9FF;
+	line-height:1.3em;
+}
+#toc ul li.active a {
+	font-weight:bold;
+}
+#toc ul li a:hover {
+	background: #202090;
+	color: #ffff00;
+	text-shadow: 0px 0px 0.25em #000000;
+}
+#toc ul li a span {
+	display:block;
+}
+/* Main Content */
+#main-wrap {
+	margin:1em;
+	margin-bottom:0;
+}
+.main-section {
+	width:80%;
+	margin:0px auto;
+	line-height:150%;
+	box-shadow:0.05em 0.05em 0.2em #808080;
+	-webkit-box-shadow:0.05em 0.05em 0.2em #808080;
+/*	-moz-box-shadow:0.05em 0.05em 0.2em #808080; */
+	padding: 1em 2em 1em 2em;
+	background-color: #f2f2f2;
+	color: #333333;
+	margin-bottom:1em;
+}
+.main-section ul{
+	list-style-type: disc;
+}
+.main-section li {
+	margin:0.25em 0 0.25em 2em;
+}
+.section-title {
+	margin:0px auto;
+	margin-bottom:1em;
+	text-align:center;
+	font-weight:bold;
+}
+.to-top {
+	display:block;
+	text-align:right;
+	font-size:75%;
+}
+/* About */
+#about p {
+	margin:0.5em 0 0.5em 0;
+}
+/* FAQ */
+.qs {
+	font-weight:bold;
+}
+.as {
+	margin-bottom:0.5em;
+}
+/* Technical Links */
+#tech-links {
+}
+#tech-links p {
+}
+/* Footer */
+#footer-wrap {
+	display: block;
+	width: 100%;
+	text-align:center;
+	background-color:#444444;
+}
+#footer-content {
+	display:inline-block;
+	margin 0px auto;
+	padding: 0.5em;
+	color: #eeee44;
+	text-shadow: 0px 0px 0.25em #000000;
+}
+#footer-content a {
+	color: #cccc99;
+	text-shadow: 0px 0px 0.25em #000000;
+}
+#footer-content a:hover {
+	color: #ffff99;
+}

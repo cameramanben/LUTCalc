@@ -68,6 +68,9 @@ TWKWHITE.prototype.io = function() {
 	this.ctReset.className = 'reset';
 	this.ctReset.setAttribute('value','Reset');
 	// Duv (Green / Magenta) Slider
+	this.duvHidden = document.createElement('input');
+	this.duvHidden.setAttribute('type','hidden');
+	this.duvHidden.setAttribute('value',0);
 	this.duvSlider = document.createElement('input');
 	this.duvSlider.setAttribute('type','range');
 	this.duvSlider.setAttribute('min',-1.5);
@@ -83,6 +86,9 @@ TWKWHITE.prototype.io = function() {
 	this.duvReset.className = 'reset';
 	this.duvReset.setAttribute('value','Reset');
 	// Dpl (Yellow / Blue) Slider
+	this.dplHidden = document.createElement('input');
+	this.dplHidden.setAttribute('type','hidden');
+	this.dplHidden.setAttribute('value',0);
 	this.dplSlider = document.createElement('input');
 	this.dplSlider.setAttribute('type','range');
 	this.dplSlider.setAttribute('min',-1.5);
@@ -107,10 +113,13 @@ TWKWHITE.prototype.io = function() {
 	this.advancedCheck.setAttribute('type','checkbox');
 	this.advancedCheck.className = 'twk-checkbox';
 	this.advancedCheck.checked = false;
+	// Lamp Nominal Temperature selected
+	this.lampTempSelect = document.createElement('select');
+	this.lampTempSelect.className = 'twk-select';
 	// Chromatic Adaptation Transform Model Selector
 	this.catSelect = document.createElement('select');
 	this.catSelect.className = 'twk-select';
-}
+};
 TWKWHITE.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -161,6 +170,7 @@ TWKWHITE.prototype.ui = function() {
 	this.duvBox.className = 'slider-holder';
 	this.duvBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Minus Green')));
 	this.duvBox.appendChild(this.duvSlider);
+	this.duvBox.appendChild(this.duvHidden);
 	this.duvBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Plus Green')));
 	this.duvBox.appendChild(document.createElement('br'));
 	this.duvBox.appendChild(this.duvSliderLabel);
@@ -174,6 +184,7 @@ TWKWHITE.prototype.ui = function() {
 	this.dplBox.className = 'slider-holder';
 	this.dplBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Yellow')));
 	this.dplBox.appendChild(this.dplSlider);
+	this.dplBox.appendChild(this.dplHidden);
 	this.dplBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Blue')));
 	this.dplBox.appendChild(document.createElement('br'));
 	this.dplBox.appendChild(this.dplSliderLabel);
@@ -190,6 +201,11 @@ TWKWHITE.prototype.ui = function() {
 	// Advanced settings Checkbox
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
 	this.box.appendChild(this.advancedCheck);
+	// Lamp Nominal Colour Temperature Selector
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Lamp Nominal Colour')));
+	this.lampList();
+	this.advancedBox.appendChild(this.lampTempSelect);
+	this.advancedBox.appendChild(document.createElement('br'));
 	// Chromatic Adaptation Transform Selection
 	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Chromatic Adaptation Model')));
 	this.advancedBox.appendChild(this.catSelect);
@@ -197,7 +213,7 @@ TWKWHITE.prototype.ui = function() {
 	// Build Box Hierarchy
 	this.box.appendChild(this.advancedBox);
 	this.holder.appendChild(this.box);
-}
+};
 TWKWHITE.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
@@ -212,7 +228,7 @@ TWKWHITE.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKWHITE.prototype.toggleTweak = function() {
 	if (this.inputs.showPreview) {
 		this.preBox.className = 'tweak';
@@ -224,10 +240,10 @@ TWKWHITE.prototype.toggleTweak = function() {
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKWHITE.prototype.getTFParams = function(params) {
 	// N parameters are relevent
-}
+};
 TWKWHITE.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -238,21 +254,79 @@ TWKWHITE.prototype.getCSParams = function(params) {
 		var refMired = 1000000/out.ref;
 		out.ctShift = (1000000/parseFloat(this.ctInput.value))-refMired;
 		out.lampShift = (1000000/parseFloat(this.lampInput.value))-refMired;
-		out.duv = parseFloat(this.duvSlider.value);
-		out.dpl = parseFloat(this.dplSlider.value);
+		out.duv = parseFloat(this.duvHidden.value);
+		out.dpl = parseFloat(this.dplHidden.value);
 		out.CAT = this.catSelect.selectedIndex;
 	} else {
 		out.doWB = false;
 	}
 	params.twkWB = out;
-}
+};
 TWKWHITE.prototype.setParams = function(params) {
 	if (typeof params.twkWHITE !== 'undefined') {
 		var p = params.twkWHITE;
 		this.toggleTweaks();
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
-}
+};
+TWKWHITE.prototype.getSettings = function(data) {
+	data.whiteBalance = {
+		doWB: this.tweakCheck.checked,
+		ref: parseFloat(this.refInput.value),
+		lampFree: this.lampFree,
+		newTemp: parseFloat(this.ctInput.value),
+		lampTemp: parseFloat(this.lampInput.value),
+		Duv: parseFloat(this.duvSlider.value),
+		Dpl: parseFloat(this.dplSlider.value),
+		advanced: this.advancedCheck.checked,
+		CAT: this.catSelect.options[this.catSelect.selectedIndex].lastChild.nodeValue
+	};
+};
+TWKWHITE.prototype.setSettings = function(settings) {
+	if (typeof settings.whiteBalance !== 'undefined') {
+		var data = settings.whiteBalance;
+		if (typeof data.doWB === 'boolean') {
+			this.tweakCheck.checked = data.doWB;
+			this.toggleTweak();
+		}
+		if (typeof data.ref === 'number') {
+			this.refInput.value = data.ref.toString();
+			this.testRefInput();
+		}
+		if (typeof data.lampFree === 'boolean') {
+			this.lampFree = data.lampFree;
+		}
+		if (typeof data.newTemp === 'number') {
+			this.ctInput.value = data.newTemp.toString();
+			this.testCTInput();
+		}
+		if (typeof data.lampTemp === 'number') {
+			this.lampInput.value = data.lampTemp.toString();
+			this.testLampInput();
+		}
+		if (typeof data.Duv === 'number') {
+			this.duvSlider.value = data.Duv.toString();
+			this.testDuvSlider();
+		}
+		if (typeof data.Dpl === 'number') {
+			this.dplSlider.value = data.Dpl.toString();
+			this.testDplSlider();
+		}
+		if (typeof data.advanced === 'boolean') {
+			this.advancedCheck.checked = data.advanced;
+			this.toggleAdvanced();
+		}
+		if (typeof data.CAT !== 'undefined') {
+			var m = this.catSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.catSelect.options[j].lastChild.nodeValue === data.CAT) {
+					this.catSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+	}
+};
 TWKWHITE.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -261,7 +335,7 @@ TWKWHITE.prototype.getInfo = function(info) {
 	} else {
 		info.doWB = false;
 	}
-}
+};
 TWKWHITE.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -315,10 +389,14 @@ TWKWHITE.prototype.events = function() {
 	this.advancedCheck.onclick = function(here){ return function(){
 		here.toggleAdvanced();
 	};}(this);
+	this.lampTempSelect.onchange = function(here){ return function(){
+		here.testLampTempSelect();
+		here.messages.gtSetParams();
+	};}(this);
 	this.catSelect.onchange = function(here){ return function(){
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKWHITE.prototype.testRefInput = function() {
 	var refTemp = Math.round(parseFloat(this.refInput.value));
@@ -341,7 +419,7 @@ TWKWHITE.prototype.testRefInput = function() {
 	} else {
 		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
 	}
-}
+};
 TWKWHITE.prototype.testCTInput = function() {
 	var refMired = 1000000 / Math.round(parseFloat(this.refInput.value));
 	var temp = Math.round(parseFloat(this.ctInput.value));
@@ -358,6 +436,13 @@ TWKWHITE.prototype.testCTInput = function() {
 	this.ctSlider.value = sliderVal;
 	if (!this.lampFree) {
 		this.lampInput.value = this.ctInput.value;
+		var m = this.lampTempL.length;
+		for (var j=0; j<m; j++) {
+			if (temp >= this.lampTempL[j] && temp <= this.lampTempH[j]) {
+				this.lampTempSelect.options[j].selected = true;
+				break;
+			}
+		}
 	}
 	if (Math.abs(sliderVal) < 0.0001) {
 		this.ctSliderLabel.innerHTML = 'Clear';
@@ -366,7 +451,47 @@ TWKWHITE.prototype.testCTInput = function() {
 	} else {
 		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
 	}
-}
+};
+TWKWHITE.prototype.lampList = function() {
+	var colours = [	'Warm Comfort Light',
+					'Warm White',
+					'Tungsten',
+					'White',
+					'Cool White',
+					'Daylight',
+					'Cool Daylight'
+	];
+	var temps = [	2500,
+					2800,
+					3200,
+					3500,
+					4300,
+					5500,
+					6500
+	];
+	this.lampTempL = [];
+	this.lampTempH = [];
+	var max = colours.length;
+	for (var j=0; j<max; j++) {
+		var option = document.createElement('option');
+		option.value = temps[j].toString();
+		option.appendChild(document.createTextNode(colours[j]));
+		if (temps[j] === parseInt(this.lampInput.value)) {
+			option.selected = true;
+		}
+		if (j === 0) {
+			this.lampTempL[j] = 0;
+			this.lampTempH[j] = (temps[j] + temps[j+1])/2;
+		} else if (j === max-1) {
+			this.lampTempL[j] = this.lampTempH[j-1]+1;
+			this.lampTempH[j] = 99999;
+		} else {
+			this.lampTempL[j] = this.lampTempH[j-1]+1;
+			this.lampTempH[j] = (temps[j] + temps[j+1])/2;
+		}
+		this.lampTempSelect.appendChild(option);
+	}
+};
 TWKWHITE.prototype.testLampInput = function() {
 	var temp = Math.round(parseFloat(this.lampInput.value));
 	if (isNaN(temp)) {
@@ -376,7 +501,21 @@ TWKWHITE.prototype.testLampInput = function() {
 	} else {
 		this.lampInput.value = temp.toString();
 	}
-}
+	var m = this.lampTempL.length;
+	for (var j=0; j<m; j++) {
+		if (temp >= this.lampTempL[j] && temp <= this.lampTempH[j]) {
+			this.lampTempSelect.options[j].selected = true;
+			break;
+		}
+	}
+};
+TWKWHITE.prototype.testLampTempSelect = function() {
+	this.lampInput.value = this.lampTempSelect.options[this.lampTempSelect.selectedIndex].value;
+	if (!this.lampFree) {
+		this.ctInput.value = this.lampInput.value;
+		this.testCTInput();
+	}
+};
 TWKWHITE.prototype.testCTSlider = function() {
 	var val = parseFloat(this.ctSlider.value);
 	var miredScale = (1000000/3200)-(1000000/5500); // scale mireds so that 3200 -> 5500 shift = 1 on slider
@@ -398,9 +537,10 @@ TWKWHITE.prototype.testCTSlider = function() {
 	} else {
 		this.ctSliderLabel.innerHTML = val.toString() + ' CTB';
 	}
-}
+};
 TWKWHITE.prototype.testDuvSlider = function() {
 	var val = parseFloat(this.duvSlider.value);
+	this.duvHidden.value = this.duvSlider.value;
 	if (Math.abs(val) < 0.0001) {
 		this.duvSliderLabel.innerHTML = 'Clear';
 	} else if (val<0) {
@@ -408,9 +548,21 @@ TWKWHITE.prototype.testDuvSlider = function() {
 	} else {
 		this.duvSliderLabel.innerHTML = val.toString() + ' Plus Green';
 	}
-}
+};
+TWKWHITE.prototype.testDuvHidden = function() {
+	var val = parseFloat(this.duvHidden.value);
+	this.duvSlider.value = this.duvHidden.value;
+	if (Math.abs(val) < 0.0001) {
+		this.duvSliderLabel.innerHTML = 'Clear';
+	} else if (val<0) {
+		this.duvSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
+	} else {
+		this.duvSliderLabel.innerHTML = val.toString() + ' Plus Green';
+	}
+};
 TWKWHITE.prototype.testDplSlider = function() {
 	var val = parseFloat(this.dplSlider.value);
+	this.dplHidden.value = this.dplSlider.value;
 	if (Math.abs(val) < 0.0001) {
 		this.dplSliderLabel.innerHTML = 'Clear';
 	} else if (val<0) {
@@ -418,19 +570,30 @@ TWKWHITE.prototype.testDplSlider = function() {
 	} else {
 		this.dplSliderLabel.innerHTML = val.toString() + ' Blue';
 	}
-}
+};
+TWKWHITE.prototype.testDplHidden = function() {
+	var val = parseFloat(this.dplHidden.value);
+	this.dplSlider.value = this.dplHidden.value;
+	if (Math.abs(val) < 0.0001) {
+		this.dplSliderLabel.innerHTML = 'Clear';
+	} else if (val<0) {
+		this.dplSliderLabel.innerHTML = Math.abs(val).toString() + ' Yellow';
+	} else {
+		this.dplSliderLabel.innerHTML = val.toString() + ' Blue';
+	}
+};
 TWKWHITE.prototype.resetCT = function() {
 	this.ctSlider.value = 0;
 	this.testCTSlider();
-}
+};
 TWKWHITE.prototype.resetDuv = function() {
 	this.duvSlider.value = 0;
 	this.testDuvSlider();
-}
+};
 TWKWHITE.prototype.resetDpl = function() {
 	this.dplSlider.value = 0;
 	this.testDplSlider();
-}
+};
 TWKWHITE.prototype.gotCATs = function(CATs) {
 	var max = CATs.length;
 	for (var j=0; j<max; j++) {
@@ -442,7 +605,7 @@ TWKWHITE.prototype.gotCATs = function(CATs) {
 		}
 		this.catSelect.appendChild(option);
 	}
-}
+};
 TWKWHITE.prototype.toggleSample = function() {
 	if (this.sample) {
 		this.sampleButton.value = 'Preview Click For White';
@@ -451,7 +614,7 @@ TWKWHITE.prototype.toggleSample = function() {
 		this.sampleButton.value = 'Stop Preview Click For White';
 		this.sample = true;
 	}
-}
+};
 TWKWHITE.prototype.toggleLamp = function() {
 	if (this.lampFree) {
 		this.lampButton.value = 'Unlock Lightsource From New White';
@@ -463,17 +626,17 @@ TWKWHITE.prototype.toggleLamp = function() {
 		this.lampBox.className = 'tweak';
 		this.lampFree = true;
 	}
-}
+};
 TWKWHITE.prototype.previewSample = function(x,y) {
 	if (this.tweakCheck.checked) {
 		if (this.sample) {
 			var rect = this.inputs.previewCanvas.getBoundingClientRect();
-			var x = (x - rect.left)/rect.width;
-			var y = (y - rect.top)/rect.height;
+			x = (x - rect.left)/rect.width;
+			y = (y - rect.top)/rect.height;
 			this.messages.getPreCCTDuv(x,y);
 		}
 	}
-}
+};
 TWKWHITE.prototype.gotPreCCTDuv = function(p) {
 	var refMired = 1000000 / parseFloat(this.refInput.value);
 	var sysMired = 1000000 / p.sys;
@@ -482,16 +645,16 @@ TWKWHITE.prototype.gotPreCCTDuv = function(p) {
 	this.ctInput.value = Math.round(1000000 / ctMiredRef);
 	this.testCTInput();
 	this.lampInput.value = Math.round(1000000 / lampMiredRef);
-	this.duvSlider.value = p.duv;
-	this.testDuvSlider();
-	this.dplSlider.value = p.dpl;
-	this.testDplSlider();
+	this.duvHidden.value = p.duv;
+	this.testDuvHidden();
+	this.dplHidden.value = p.dpl;
+	this.testDplHidden();
 	this.messages.gtSetParams();
-}
+};
 TWKWHITE.prototype.toggleAdvanced = function() {
 	if (this.advancedCheck.checked) {
 		this.advancedBox.className = 'twk-advanced';
 	} else {
 		this.advancedBox.className = 'twk-advanced-hide';
 	}
-}
+};

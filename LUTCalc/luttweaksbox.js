@@ -30,14 +30,14 @@ LUTTweaksBox.prototype.build = function() {
 	this.messages.gaSetParams();
 	this.messages.gtSetParams();
 	lutcalcReady(this.p);
-}
+};
 LUTTweaksBox.prototype.io = function() {
 	// Tweaks Checkbox
 	this.tweaks = document.createElement('input');
 	this.tweaks.setAttribute('type','checkbox');
 	this.tweaks.checked = true;
 	this.inputs.addInput('tweaks',this.tweaks);
-}
+};
 LUTTweaksBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Customisation')));
 	this.box.appendChild(this.tweaks);
@@ -58,7 +58,7 @@ LUTTweaksBox.prototype.ui = function() {
 	this.LA = this.tweaksList.length;
 	this.tweaksList.push(new TWKLA(this.holder, this.inputs, this.messages, this.files, this.formats));
 
-}
+};
 LUTTweaksBox.prototype.events = function() {
 	var max = this.tweaksList.length;
 	for (var j=0; j<max; j++) {
@@ -69,31 +69,31 @@ LUTTweaksBox.prototype.events = function() {
 		here.messages.gaSetParams();
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 //	Event Responses
 LUTTweaksBox.prototype.toggleTweaks = function() {
 	var max = this.tweaksList.length;
 	for (var j=0; j<max; j++) {
 		this.tweaksList[j].toggleTweaks();
 	}
-}
+};
 LUTTweaksBox.prototype.gotGammaLists = function() {
 	this.gaLists = true;
 	if (this.gtLists && !this.built) {
 		this.build();
 		this.built = true;
 	}
-}
+};
 LUTTweaksBox.prototype.gotGamutLists = function() {
 	this.gtLists = true;
 	if (this.gaLists && !this.built) {
 		this.build();
 		this.built = true;
 	}
-}
+};
 LUTTweaksBox.prototype.gotCATs = function(CATs) {
 	this.tweaksList[this.wb].gotCATs(CATs);
-}
+};
 LUTTweaksBox.prototype.getTFParams = function(params) {
 	if (typeof this.tweaks !== 'undefined' && this.tweaks.checked) {
 		params.tweaks = true;
@@ -104,7 +104,7 @@ LUTTweaksBox.prototype.getTFParams = function(params) {
 	for (var j=0; j<max; j++) {
 		this.tweaksList[j].getTFParams(params);
 	}
-}
+};
 LUTTweaksBox.prototype.getCSParams = function(params) {
 	if (typeof this.tweaks !== 'undefined' && this.tweaks.checked) {
 		params.tweaks = true;
@@ -115,16 +115,16 @@ LUTTweaksBox.prototype.getCSParams = function(params) {
 	for (var j=0; j<max; j++) {
 		this.tweaksList[j].getCSParams(params);
 	}
-}
+};
 LUTTweaksBox.prototype.setParams = function(params) {
 	var max = this.tweaksList.length;
 	for (var j=0; j<max; j++) {
 		this.tweaksList[j].setParams(params);
 	}
-}
+};
 LUTTweaksBox.prototype.psstColours = function(params) {
 	this.tweaksList[this.PSST].psstColours(params);
-}
+};
 LUTTweaksBox.prototype.getInfo = function(info) {
 	if (this.tweaks.checked) {
 		info.tweaks = true;
@@ -135,21 +135,43 @@ LUTTweaksBox.prototype.getInfo = function(info) {
 	for (var j=0; j<max; j++) {
 		this.tweaksList[j].getInfo(info);
 	}	
-}
+};
 LUTTweaksBox.prototype.followUp = function(tweak, input) {
 	switch (tweak) {
 		case 10:	this.tweaksList[this.LA].followUp(input);
 				break;
 		default:break;
 	}
-}
+};
+LUTTweaksBox.prototype.getSettings = function(data) {
+	data.tweaksBox = {
+		tweaks: this.tweaks.checked
+	};
+	var m = this.tweaksList.length;
+	for (var j=0; j<m; j++) {
+		this.tweaksList[j].getSettings(data.tweaksBox);
+	}	
+};
+LUTTweaksBox.prototype.setSettings = function(settings) {
+	if (typeof settings.tweaksBox !== 'undefined') {
+		var data = settings.tweaksBox;
+		if (typeof data.tweaks === 'boolean') {
+			this.tweaks.checked = data.tweaks;
+			this.toggleTweaks();
+		}
+		var m = this.tweaksList.length;
+		for (var j=0; j<m; j++) {
+			this.tweaksList[j].setSettings(data);
+		}	
+	}
+};
 LUTTweaksBox.prototype.getHeight = function() {
 	return this.box.clientHeight;
-}
+};
 LUTTweaksBox.prototype.setMaxHeight = function(height) {
 	height -= 96;
 	if (height < 150) {
 		height = 150;
 	}
 	this.holder.style.maxHeight = height.toString() + 'px';
-}
+};

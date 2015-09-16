@@ -31,13 +31,13 @@ Brent.prototype.setRange = function(a,b) {
 	this.b = b;			// For f(x), maximum value of x
 	this.fMax = this.func.f(b);
 	this.mid = this.func.f((a+b)/2);
-}
+};
 Brent.prototype.setDelta = function(d) {
 	this.delta = d;
-}
+};
 Brent.prototype.setTolerance = function(tol) {
 	this.tol = tol;
-}
+};
 Brent.prototype.minMax = function(x) {
 	if (x < this.a) {
 		this.a = x;
@@ -46,10 +46,10 @@ Brent.prototype.minMax = function(x) {
 		this.b = x;
 		this.fMax = this.o;
 	}
-}
+};
 Brent.prototype.getMinMax = function() {
 	return { a: this.a, fMin: this.fMin, b: this.b, fMax: this.fMax };
-}
+};
 Brent.prototype.findRoot = function(I,O) { // Public single root method, O is the f(x) to match to if not zero (root), finds closest root to I
 	var tol = this.tol;
 	if (typeof O === 'number') {
@@ -107,7 +107,7 @@ Brent.prototype.findRoot = function(I,O) { // Public single root method, O is th
 	} else {
 		return 65536;
 	}
-}
+};
 Brent.prototype.clamp = function(i) {
 	if (i > 65536) {
 		return 65536;
@@ -116,7 +116,7 @@ Brent.prototype.clamp = function(i) {
 	} else {
 		return i;
 	}
-}
+};
 Brent.prototype.brent = function(a,fa,b,fb,rtol) {
 	var eps = 2.22e-16; // Machine epsilon for Float64Arrays
 	var e = 0;
@@ -189,4 +189,4 @@ Brent.prototype.brent = function(a,fa,b,fb,rtol) {
     }
 console.log('none');
     return b;
-}
+};

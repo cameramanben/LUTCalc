@@ -341,7 +341,8 @@ background:transparent;
 #chartoutlabel {color:blue; margin-left:10px;}
 #genbutton { text-align:center; display:inline-block;}
 /* Preview canvases */
-#can-preview {margin:0px auto;cursor: crosshair;}
+#can-preview {margin:0px auto;cursor: crosshair; z-index: 1;}
+#can-overlay {margin:0px auto;margin-top: -18.25em; width 32em; height:18em; z-index: 2;}
 #can-hide {display:none;}
 #can-waveform {margin:0px auto;}
 #can-vector {margin:0px auto;}

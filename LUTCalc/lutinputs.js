@@ -30,7 +30,7 @@ LUTInputs.prototype.addInput = function(inputName,inputValue) {
 	} catch(err) {
 		return false;
 	}
-}
+};
 LUTInputs.prototype.isReady = function(ui) {
 	var ready = true;
 	var m = this.ready.length;
@@ -52,5 +52,5 @@ LUTInputs.prototype.isReady = function(ui) {
 		}
 	}
 	return ready;
-}
+};
 var lutInputs = new LUTInputs();

@@ -1,6 +1,6 @@
 /* twk-blkhi.js
 * Black level and highlight level adjustment object for the LUTCalc Web App.
-* 10th April 2015
+* 6th September 2015
 *
 * LUTCalc generates 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas, 
 * principally the Sony CineAlta line.
@@ -33,6 +33,11 @@ TWKBlkHi.prototype.io = function() {
 	this.blackLevelInput.setAttribute('type','number');
 	this.blackLevelInput.setAttribute('step','any');
 	this.blackLevelInput.className = 'ireinput';
+	// Black Level Value Lock
+	this.blackLevelLock = document.createElement('input');
+	this.blackLevelLock.setAttribute('type','checkbox');
+	this.blackLevelLock.className = 'twk-checkbox';
+	this.blackLevelLock.checked = false;
 
 	// Highlight Level Adjustment Checkbox
 	this.highLevelCheck = document.createElement('input');
@@ -52,7 +57,12 @@ TWKBlkHi.prototype.io = function() {
 	this.highLevelMap.setAttribute('type','number');
 	this.highLevelMap.setAttribute('step','any');
 	this.highLevelMap.className = 'ireinput';
-}
+	// Highlight Level Lock
+	this.highLevelLock = document.createElement('input');
+	this.highLevelLock.setAttribute('type','checkbox');
+	this.highLevelLock.className = 'twk-checkbox';
+	this.highLevelLock.checked = false;
+};
 TWKBlkHi.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -73,6 +83,9 @@ TWKBlkHi.prototype.ui = function() {
 	this.blackLevelBox.className = 'twk-tab-hide';
 	this.blackLevelBox.appendChild(this.blackLevelInput);
 	this.blackLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.blackLevelBox.appendChild(document.createElement('br'));
+	this.blackLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Lock Value')));
+	this.blackLevelBox.appendChild(this.blackLevelLock);
 	this.box.appendChild(this.blackLevelBox);
 	this.separator = document.createElement('div');
 	this.separator.className = 'twk-tab';
@@ -92,8 +105,11 @@ TWKBlkHi.prototype.ui = function() {
 	this.highLevelBox.appendChild(document.createElement('br'));
 	this.highLevelBox.appendChild(this.highLevelMap);
 	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.highLevelBox.appendChild(document.createElement('br'));
+	this.highLevelBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Lock Value')));
+	this.highLevelBox.appendChild(this.highLevelLock);
 	this.box.appendChild(this.highLevelBox);
-}
+};
 TWKBlkHi.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked) {
@@ -108,14 +124,14 @@ TWKBlkHi.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKBlkHi.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKBlkHi.prototype.getTFParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -147,20 +163,33 @@ TWKBlkHi.prototype.getTFParams = function(params) {
 	if (!isNaN(highMap)) {
 		out.highMap = highMap/100;
 	}
+	out.blackLock = this.blackLevelLock.checked;
+	out.highLock = this.highLevelLock.checked;
 	params.twkBlkHi = out;
-}
+};
 TWKBlkHi.prototype.getCSParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKBlkHi.prototype.setParams = function(params) {
 	if (typeof params.twkBlkHi !== 'undefined') {
 		var p = params.twkBlkHi;
 		this.blackDefault = (p.blackDef*100).toFixed(2).toString();
+		this.highDefault = (p.highDef*100).toFixed(2).toString();
 		if (typeof params.changedGamma === 'boolean' && params.changedGamma) {
-			this.blackLevelInput.value = (p.blackDef*100).toFixed(2).toString();
-			this.highLevelRef.value = (p.highRef*100).toFixed(2).toString();
-			this.highLevelMap.value = (p.highDef*100).toFixed(2).toString();
-			this.highLevelRec.innerHTML = (p.high709*100).toFixed(2).toString();
+			if (this.blackLevelLock.checked) {
+				this.blackLevelInput.value = (p.blackLevel*100).toFixed(2).toString();
+			} else {
+				this.blackLevelInput.value = (p.blackDef*100).toFixed(2).toString();
+			}
+			if (this.highLevelLock.checked) {
+				this.highLevelRef.value = (p.highRef*100).toFixed(2).toString();
+				this.highLevelMap.value = (p.highMap*100).toFixed(2).toString();
+				this.highLevelRec.innerHTML = (p.high709*100).toFixed(2).toString();
+			} else {
+				this.highLevelRef.value = (p.highRef*100).toFixed(2).toString();
+				this.highLevelMap.value = (p.highDef*100).toFixed(2).toString();
+				this.highLevelRec.innerHTML = (p.high709*100).toFixed(2).toString();
+			}
 		} else {
 			this.blackLevelInput.value = (p.blackLevel*100).toFixed(2).toString();
 			this.highLevelRef.value = (p.highRef*100).toFixed(2).toString();
@@ -169,7 +198,55 @@ TWKBlkHi.prototype.setParams = function(params) {
 		}
 		this.toggleTweaks();
 	}
-}
+};
+TWKBlkHi.prototype.getSettings = function(data) {
+	data.blackHighlight = {
+		doBH: this.tweakCheck.checked,
+		doBlack: this.blackLevelCheck.checked,
+		doHigh: this.highLevelCheck.checked,
+		blackLevel: parseFloat(this.blackLevelInput.value),
+		blackLock: this.blackLevelLock.checked,
+		highRef: parseFloat(this.highLevelRef.value),
+		highMap: parseFloat(this.highLevelMap.value),
+		highLock: this.highLevelLock.checked
+	};
+	if (this.blackLevelInput.value !== this.blackDefault) {
+		data.blackHighlight.blackLock = true;
+	}
+	if (this.highLevelMap.value !== this.highDefault) {
+		data.blackHighlight.highLock = true;
+	}
+};
+TWKBlkHi.prototype.setSettings = function(settings) {
+	if (typeof settings.blackHighlight !== 'undefined') {
+		var data = settings.blackHighlight;
+		if (typeof data.doBH === 'boolean') {
+			this.tweakCheck.checked = data.doBH;
+			this.toggleTweak();
+		}
+		if (typeof data.doBlack === 'boolean') {
+			this.blackLevelCheck.checked = data.doBlack;
+			this.toggleBlack();
+		}
+		if (typeof data.doHigh === 'boolean') {
+			this.highLevelCheck.checked = data.doHigh;
+			this.toggleHigh();
+		}
+		if (typeof data.blackLock === 'boolean') {
+			this.blackLevelLock.checked = data.blackLock;
+		}
+		if (typeof data.highLock === 'boolean') {
+			this.highLevelLock.checked = data.highLock;
+		}
+		if (typeof data.blackLevel === 'number') {
+			this.blackLevelInput.value = data.blackLevel.toString();
+		}
+		if (typeof data.highRef === 'number' && typeof data.highMap === 'number') {
+			this.highLevelRef.value = data.highRef.toString();
+			this.highLevelMap.value = data.highMap.toString();
+		}
+	}
+};
 TWKBlkHi.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -180,7 +257,7 @@ TWKBlkHi.prototype.getInfo = function(info) {
 		info.doBlk = false;
 		info.blackLevel = this.blackDefault;
 	}
-}
+};
 TWKBlkHi.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -206,7 +283,7 @@ TWKBlkHi.prototype.events = function() {
 		here.testHighMap();
 		here.messages.gaSetParams();
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKBlkHi.prototype.toggleBlack = function() {
 	if (this.blackLevelCheck.checked) {
@@ -216,30 +293,30 @@ TWKBlkHi.prototype.toggleBlack = function() {
 		this.blackLevelBox.className = 'twk-sub-box-hide';
 		this.separator.className = 'twk-tab';
 	}
-}
+};
 TWKBlkHi.prototype.testBlack = function() {
 	if (!isNaN(parseFloat(this.blackLevelInput.value)) && isFinite(this.blackLevelInput.value) && (parseFloat(this.blackLevelInput.value)>-7.3)) {
 	} else {
 			this.blackLevelInput.value = null;
 	}
-}
+};
 TWKBlkHi.prototype.toggleHigh = function() {
 	if (this.highLevelCheck.checked) {
 		this.highLevelBox.className = 'twk-sub-box';
 	} else {
 		this.highLevelBox.className = 'twk-sub-box-hide';
 	}
-}
+};
 TWKBlkHi.prototype.testHighRef = function() {
 	if (!isNaN(parseFloat(this.highLevelRef.value)) && isFinite(this.highLevelRef.value) && (parseFloat(this.highLevelRef.value)>0)) {
 	} else {
 		this.highLevelRef.value = '90';
 		this.highLevelMap.value = null;
 	}
-}
+};
 TWKBlkHi.prototype.testHighMap = function() {
 	if (!isNaN(parseFloat(this.highLevelMap.value)) && isFinite(this.highLevelMap.value) && (parseFloat(this.highLevelMap.value)>-7.3)) {
 	} else {
 		this.highLevelMap.value = null;
 	}
-}
+};

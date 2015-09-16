@@ -30,7 +30,7 @@ lutLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 lutLUT.prototype.header = function() {
 	var info = {};
 	this.messages.getInfo(info);
@@ -68,7 +68,7 @@ lutLUT.prototype.header = function() {
 	}
 	out += 'LUT: 3 ' + info.dimension.toString() + "\n";
 	return out;
-}
+};
 lutLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;
 	var channels = false;
@@ -155,4 +155,4 @@ lutLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

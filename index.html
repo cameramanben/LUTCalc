@@ -1,125 +1,172 @@
 <!DOCTYPE html>
 <html>
+	<head>
+		<meta charset='utf-8'>
+    	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+    	<meta name="description" content="LUTCalc: A Web App for generating, analysing and visualising 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.">
+    	<link rel="stylesheet" type="text/css" media="screen" href="css/reset.css">
+    	<link rel="stylesheet" type="text/css" media="screen" href="css/fonts.css">
+    	<link rel="stylesheet" type="text/css" media="screen" href="css/style.css">
+    	<title>LUTCalc</title>
+    </head>
 
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="LUTCalc : A Web App for generating, analysing and visualising 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>LUTCalc</title>
-  </head>
-
-  <body>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/cameramanben/LUTCalc">View on GitHub</a>
-
-          <h1 id="project_title">LUTCalc</h1>
-          <h2 id="project_tagline">A Web App for generating, analysing and previewing 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.</h2>
-
-            <section id="downloads">
-              <a class="tar_download_link" href="https://github.com/cameramanben/LUTCalc/tarball/master">Download LUTCalc Webapp as a tar.gz file</a>
-              <a class="zip_download_link" href="https://github.com/cameramanben/LUTCalc/zipball/master">Download LUTCalc Webapp as a zip file</a>
-              <a class="yos_download_link" href="LUTCalc_v1.9RC17_Yosemite.zip">Download LUTCalc For Mac Yosemite</a>
-              <a class="mav_download_link" href="LUTCalc_v1.9RC17_Mavericks.zip">Download LUTCalc For Mac Mavericks</a>
-              <a class="mou_download_link" href="LUTCalc_v1.9RC17_MountainLion.zip">Download LUTCalc For Mac Mountain Lion</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a id="install-lutcalc" class="anchor" href="#install-lutcalc" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install LUTCalc</h3>
-
-<p>LUTCalc is a Javascript web app. It can be tried out on any recent browser online here: <a href="http://cameramanben.github.io/LUTCalc/LUTCalc/index.html">LUTCalc Online</a>, though it is designed for offline use as a self-contained application.</p>
-
-<p>Offline installation is as follows for different preferred browsers:</p>
-
-<p><strong>Firefox</strong> - LUTCalc can be installed from Firefox as a self-contained packaged app which looks like a conventional application by clicking <input type="button" id="firefox-app" value="here" />.</p>
-
-<p>On Windows Firefox will place a shortcut to the LUTCalc app on the desktop. Double clicking will open and run it as any other application. On a Mac LUTCalc is installed in the Applications folder, though when running for the first time you will need to ctrl-click and choose 'Open'. This brings up a warning that it is a downloaded app to make sure that you are happy to run it. After the first time it will open just as any other application.</p>
-
-<p><strong>Safari</strong> - Safari allows very limited file access to Javascript in the browser, so LUTCalc's sister project <a href="https://github.com/cameramanben/LUTCalc-For-Mac/releases">LUTCalc For Mac</a> creates a native app wrapped around LUTCalc and Safari's webkit engine providing full read and write access and the look of a conventional application.</p>
-
-<p>The binaries are codesigned with my Apple developer ID, though as the download is not through the App Store you will be asked to confirm before running the first time.</p>
-
-<p><strong>Chrome</strong> - LUTCalc should be installed as a Chrome Web App. Download and open / unpack the zip or tar.gzip files above and then in Chrome either click <strong>Windows-&gt;Extensions</strong> from the menu bar or enter <strong>chrome://extensions</strong> in the address bar.</p>
-
-<p>On the top right hand side should be a checkbox marked 'Developer Mode'. Make sure that this is ticked. Towards the left should be a button marked 'Load unpacked extension...'. Click that, look for the folder containing the unpacked LUTCalc files and click 'Select'.</p>
-
-<p>You should now see LUTCalc in the list of installed extensions. You can now untick developer mode. LUTcalc can be started by clicking the 'Launch' button here, or from the Chrome App Launcher.
-The only restriction in Chrome is that files will save to Chrome's download folder.</p>
-
-<p><strong>Internet Explorer</strong> - recent (IE10+) versions can use the <a href="http://cameramanben.github.io/LUTCalc/LUTCalc/index.html">online version</a>, though there is currently no IE standalone application option.</p>
-
-<h3>
-<a id="cinematic-cameras--log-recording" class="anchor" href="#cinematic-cameras--log-recording" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cinematic Cameras &amp; Log Recording.</h3>
-
-<p>Modern video cameras such as Sony's F55, F5 and FS7, Canons CineEOSes and Arri Alexas and Amiras are able to resolve huge dynamic ranges and wide colour spaces, and coupled with the availability of sophisticated grading tools log recording has developed to offer the greatest flexibility of data storage within the limitations of 10, 12 or in the case of the C300 8-bit codecs.</p>
-
-<p>Log recordings attempt to distribute picture information evenly over each recorded stop so that highlights can be manipulated to the same degree as midtones and - allowing for noise - shadows. The downsides are that this results in a flat, bland picture (particularly when combined with a wide colour gamut) and that if using a waveform for exposure, the low contrast log signal is not well suited to easy, accurate exposure judgement.</p>
-
-<p>An elegant solution is that many cameras can use lookup tables or LUTs to map the base log data into more attractive forms designed around displays and their colour space and contrast characteristics. These are typically either base looks provided by manufacturers or LUTs generated from graded material to ensure a consistent look across a production.</p>
-
-<p>In addition, some cameras can 'burn-in' LUTs, recording a 'graded' picture where postproduction resources or time do not lend themselves to a fully log workflow.</p>
-
-<h3>
-<a id="lutcalc-the-information-tool" class="anchor" href="#lutcalc-the-information-tool" aria-hidden="true"><span class="octicon octicon-link"></span></a>LUTCalc The Information Tool</h3>
-
-<p>LUTCalc has been written to utilise publically available information about various manufacturers log equations and finishing looks. From that LUTCalc can produce tables and charts of exposure values suitable for a given recording and desired end look and quickly and easily preview how different LUTs will alter the picture using test image.</p>
-
-<p>In addition to the built-in colour spaces and transfer functions, LUTCalc can also read LUTs in the widespread .cube format using the LUTAnalyst tool. Then, if given the expected input gamma and colour space of that LUT it will break down the contrast and colour elements of the LUT and allow them to be used and visualised in the same way as any of the built-in options.</p>
-
-<h3>
-<a id="lutcalc-the-adjustment-tool" class="anchor" href="#lutcalc-the-adjustment-tool" aria-hidden="true"><span class="octicon octicon-link"></span></a>LUTCalc The Adjustment Tool</h3>
-
-<p>As well as displaying the basic appearance of different looks, LUTCalc can make a number of adjustments. Output levels can be scaled to preferred values for black and arbitrary reflectances, different colour spaces can be applied to shadows and highlights and the colour temperature can be adjusted, either as a CTO / CTB shift or by directly setting recorded and output temperatures.</p>
-
-<p>Once the input, output and adjustment options have been set LUTCalc can then output .cube LUTs suitable for use in camera as monitor LUTs or in post to provide one-click base looks.</p>
- 
-<h3>
-<a id="sources-of-information" class="anchor" href="#sources-of-information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sources Of Information</h3>
-
-<p>Sony S-Log3 - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/2/TechnicalSummary_for_S-Gamut3Cine_S-Gamut3_S-Log3_V1_00.pdf">Technical Summary for S-Gamut3.Cine/S-Log3 and S-Gamut3/S-Log3</a></p>
-<p>Sony S-Gamut3 / S-Gamut3.cine - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/3/S-Gamut3_S-Gamut3Cine_Matrix.xlsx">Sony Excel spreadsheet of various gamut matrices</a></p>
-<p>Sony S-Log - <a href="https://pro.sony.com/bbsccms/assets/files/mkt/cinema/solutions/slog_manual.pdf">S-Log: A new LUT for digital production mastering and interchange applications</a></p>
-<p>Sony Look Profile LUTs - <a href="http://community.sony.com/t5/F5-F55/Release-version-3DLUT-s-for-S-Gamut3-Cine-S-Log3/td-p/287847">Sony Community Website</a></p>
-<p>Arri LogC / Wide Gamut - <a href="http://www.arri.com/?eID=registration&amp;file_uid=8026">ALEXA Log C Curve - Usage in VFX</a></p>
-<p>Canon C-Log - <a href="http://learn.usa.canon.com/app/pdfs/white_papers/White_Paper_Clog_optoelectronic.pdf">Canon-Log Cine Optoelectronic Transfer Function</a></p>
-<p>Canon LUTs and Gamut Information - <a href="http://www.canon-europe.com/Support/Consumer_Products/products/digital_cinema/digital_cinema_camera/EOS_C500.aspx?type=download">Canon C500 Support Site</a></p>
-<p>Canon C300 Input Device Transform (IDT) - <a href="http://www.usa.canon.com/cusa/professional/products/professional_cameras/cinema_eos_cameras/eos_c300#DriversAndSoftware">Canon C300 Support Site</a> - under 'Software'. You have to specify 'Mountain Lion' on a Mac or 'Windows XP' on a PC for it to be displayed. C500 and C100 have the same IDTs for CP Lock, though the C500 also offers 'Cinema Gamut' (see above link).</p>
-<p>Panasonic Varicam V-Log and V-Gamut - <a href="http://pro-av.panasonic.net/en/varicam/common/pdf/VARICAM_V-Log_V-Gamut.pdf">V-Log/V-Gamut Reference Manual</a></p>
-<p>Cineon - <a href="http://www.digital-intermediate.co.uk/film/pdf/Cineon.pdf">Understanding Cineon</a></p>
-<p>Rec709 - <a href="http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-5-200204-I!!PDF-E.pdf">ITU BT.709-5</a></p>
-<p>sRGB - <a href="http://en.wikipedia.org/wiki/SRGB">Wikipedia entry</a></p>
-<p>Dolby PQ and alternative prospective transfer functions for HDR displays - <a href="http://www.bbc.co.uk/rd/publications/whitepaper283">Non-linear Opto-Electrical Transfer Functions for High Dynamic Range Television</a></p>
-<p>Chromatic adaptation and Von Kries transform for colour temperature adjustments - <a href="http://en.wikipedia.org/wiki/Chromatic_adaptation">Wikipedia article</a></p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">LUTCalc maintained by <a href="https://github.com/cameramanben">cameramanben</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-	<script type="text/javascript" src="lutcalcpage.js"></script>
-	<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	<body>
+    	<!-- HEADER -->
+    	<div id="header-wrap">
+    		<header id="header-content">
+    			<a id="forkme-banner" href="https://github.com/cameramanben/LUTCalc" target="_blank">View on GitHub</a>
+    			<img id="header-logo" src="images/logo256.png">
+    			<div id="header-words">
+	    			<h1 id="header-title">LUTCalc</h1>
+	    			<h2 id="header-tagline">Camera Tools From A Cameraman</h2>
+	    		</div>
+    		</header>
+    	</div>
+    	<!-- NAVIGATION -->
+    	<div id="nav-wrap">
+    		<nav id="toc">
+    			<ul>
+    				<li><a id="toc-about" href="#about">About LUTCalc</a></li>
+    				<li><a id="toc-install" href="#install">Run LUTCalc</a></li>
+    				<li><a id="toc-features" href="#features">Features</a></li>
+    				<li><a id="toc-faq" href="#faq">FAQ</a></li>
+    				<li><a id="toc-tech-links" href="#tech-links">Colour Space Links</a></li>
+    			</ul
+    		</nav>
+    	</div>
+    	<!-- MAIN CONTENT -->
+    	<div class="clear">
+    	</div>
+    	<div id="main-wrap">
+    		<section id="main">
+    			<!-- About LUTCalc -->
+    			<div id="about" class="main-section">
+    				<h1 class="section-title">About LUTCalc</h1>
+    				<p>LUTCalc is an app for generating, analysing and previewing 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.</p>
+    				<p>It started out as a simple spreadsheet for generating S-Log2 exposure shift LUTs for Sony's F5 and F55 cameras. What began as a hobby gradually became more of an obsession which has developed into a flexible tool for creating and then shooting with 'looks'.</p>
+    				<p>My name is Ben Turley and I am a professional lighting cameraman and DoP in the UK. I have written LUTCalc from scratch to help me with my day to day work. I use it to create MLUTs for the Sony F cameras I currently most often use. If shooting log I also make grading versions so that post can start off working with 'my' look. The charts and exposure values have also helped me to understand the way that modern cameras handle wide exposure ranges giving me good, consistent results. Many of my clients do not currently want or need log, and I frequently bake-in my personalised looks developed with LUTCalc.</p>
+    				<p>I have worked to make the tools familiar to <i>me</i> in my work with film and video cameras; for example colour temperature can be set directly but also with a CTO / CTB slider akin to lighting gels.</p>
+    				<p>I have also come to realise that at present it is far too easy for LUTs to behave inconsistently between bits of software (or cameras). LUTCalc allows you to set all levels as you wish, but also offers simple presets to help consistency in various applications. This is an ongoing process and I am grateful for the help I have had in checking results and discovering when I have made mistakes!</p>
+    				<p>More details about LUTCalc can be found in the '<a id="about-1" href="#features">Features</a>' section</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+    			<!-- INSTALLATION -->
+    			<div id="install" class="main-section">
+    				<h1 class="section-title">Run LUTCalc</h1>
+    				<p>LUTCalc is currently available in three versions: as an online Web App, as a Mac OSX App and as a Google Chrome Desktop App.</p>
+    				<br />
+    				<p><strong><a href="LUTCalc/index.html">LUTCalc Online</a></strong> - free and run from this website. As a web app this runs in the web browser </p>
+    				<p><strong><a href="http://appstore.com/mac/lutcalc" target="_blank">LUTCalc For Mac</a></strong> - available from the Mac App Store - accepted today (16th September 2015) so may take a few hours to become active. Runs like a native Mac App and has the advantages of quick starting from disk without needing an internet connection, flexible file saving and the ability to load 16-bit TIFFs and PNGs as preview images (the online version is limited to 8-bit images).</p>
+    				<p><strong><a href="https://chrome.google.com/webstore/detail/lutcalc/klmbnjilonndlfjiopbjemeokkodmagm" target="_blank">LUTCalc For Chrome</a></strong> - available from the Google Web Store. Runs in a window like a native app and has flexible file saving. As a Chrome app it works on both Macs and Windows PCs. It has most of the advantages of the Mac version, though preview images are currently limited to 8-bit as with the online version.</p>
+    				<br />
+    				<p>Instructions and information about all the options in LUTCalc can be found when running the app by clicking 'Instructions' on the right hand side of the main window.</p>
+    				<br />
+    				<p>Alongside the time spent in developing LUTCalc, there are ongoing costs involved in developing for the Mac App Store and Google Web Store. As such there is a small charge for these versions.</p>
+    				<p>The sourcecode for LUTCalc is open and available from GitHub here: <a href="https://github.com/cameramanben/LUTCalc" target="_blank">LUTCalc Project Page</a>. The additional code for Mac OSX is also freely available on GitHub here: <a href="https://github.com/cameramanben/LUTCalc-For-Mac" target="_blank">LUTCalc For Mac project page</a>.</p>
+    				<p>The offline versions offer significant conveniences and I've kept the cost less than a coffee. If you find the online version useful, I'd really appreciate anyone buying an App Store version!</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+    			<!-- FEATURES -->
+    			<div id="features" class="main-section">
+    				<h1 class="section-title">Features</h1>
+					<h4>LUT Generator</h4>
+					<ul>
+						<li>LUTCalc understands almost all log flavours in use today, plus standard gammas such as Rec709 and manufacturer-tuned versions. Log and conventional gamma data has been taken from manufacturer-published documentation or standards papers.</li>
+						<li>LUTCalc can produce accurate exposure adjustment LUTs for use in post where a simple tool is often not currently available, such as with Sony's CineEI.</li>
+						<li>Convert between any of the included log and conventional gammas or to one of a number of creative looks modelled after those available in camera, either as a 1D tone curve only conversion, or as a full 3D colourspace conversion (such as S-Log3/S-Gamut3.cine to Rec709(800%).</li>
+						<li>Change the input settings but not the output settings as a base when working with different camera models on a multi camera shoot.</li>
+						<li>Customise looks to taste, from simple black level and saturation adjustments to more complex effects such as desaturating specific colour ranges.</li>
+						<li>Adjust colour temperature either by CTO / CTB as with gels or by source and desired colour temperature.</li>
+						<li>Plus Green / Minus Green slider to correct for fluorescent lighting.</li>
+						<li>Take white balances from test images.</li>
+						<li>Output to any of a number of common LUT formats, automatically adjusted for the intended use (MLUT or specific post software).</li>
+						<li>Produces MLUTs suitable for loading directly into Sony's cameras (as User 3D MLUTs), with other in-camera options in development.</li>
+					</ul>
+					<br />
+					<h4>LUT Analyser</h4>
+					<ul>
+						<li>LUTCalc provides detailed exposure information about any look it generates, such as the recorded levels for absolute black, a correctly exposed 18% grey card or 90% white card and others. It takes into account any adjustments and tweaks that have been made. The levels would ensure that when working to a monitor LUT the log recording would be correctly exposed as designed.</li>
+						<li>Charts show the tone curves for the recording and the output, plus indicate the absolute dynamic range of the camera - black clip and white clip - where it is known.</li>
+						<li>The 'LUTAnalyst' tool can read LUTs in a number of formats. Where the recorded log and colourspace flavours it is designed for are known it will attempt to convert it for use as with any of the built-in options, and provide the same exposure and tone curve information.</li>
+						<li>A 'False Colour' option can be used to generate accurate, log-curve specific exposure assistance MLUTs where it is not available in camera. Just don't bake it in!</li>
+						<li>Full instructions and details of all options are provided.</li>
+					</ul>
+					<br />
+					<h4>LUT Visualiser</h4>
+					<ul>
+						<li>LUTCalc includes a number of built-in test images with charts such as high contrast and low contrast, greyscale and full colour gamut along with the option to load a .png, .jpg or .bmp.</li>
+						<li>Waveform, vectorscope and RGB parade scopes.</li>
+						<li>xy / uv Chromacity preview image displays the recorded and output gamut triangles and white points, incorporating adjustments.</li>
+						<li>Tone curve charts as stop in / recorded level out, linear in / linear out and LUT in / LUT out.</li>
+						<li>Provides 10-bit RGB readings from the Preview image.</li>
+					</ul>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+      			</div>
+    			<!-- FAQ -->
+    			<div id="faq" class="main-section">
+    				<h1 class="section-title">FAQ</h1>
+    				<p class="qs">Q: What does 'log recording' mean?</p>
+    				<p class="as">A: Log recording is a method for efficiently storing the useful information across wide dynamic ranges within limited bit depths (typically 10-bit, though in the case of the Canon C300 mk I 8-bit). I was asked to write an article for the UK's Guild Of Television Cameramen which explains log in depth and they have let me include a pdf: <a href="articles/ZerbLogArticle.pdf" target="_blank">'A Bit More Than You Ever Wanted To Know About Shooting Log'</a>. It was first published in their '<a href="http://www.gtc.org.uk/publications/zerb.aspx">Zerb</a>' magazine.</p>
+    				<br />
+    				<p class="qs">Q: What is a 'LUT'?</p>
+    				<p class="as">A: LUT is short for (L)ook(U)p (T)able and in computing is a very common way to replace complex calculations with a limited number of precaculated values and then use interpolation to approximate the values in between.</p>
+    				<p class="as">It is a very efficient technique in terms of processing and if done well can be very accurate.</p>
+    				<p class="as">The most common use in video applications is in converting the spread of a camera's recorded levels (generally linear, with a gamma value applied or log) to a more visually appealing tone curve. This is known as a 1D LUT as the colour channels are fed to the LUT <i>independently</i> with a given input value leading to consistent output value.</p>
+    				<p class="as">Increasingly common are 3D LUTs, where <i>combinations</i> of colour channel values lead to combinations of output values. This allows for complex colour adjustments as well as the contrast of 1D LUTs, but also potentially leads to very large LUTs. To help with this, 3D LUTs tend to have much smaller dimensions than 1D LUTs, and then use interpolation.</p>
+    				<br />
+    				<p class="qs">Q: What is interpolation?</p>
+    				<p class="as">A: Interpolation means estimating values in between points on a graph. There are a number of techniques available, the simplest of which is linear interpolation.</p>
+    				<p class="as">LUTCalc uses cubic interpolation for 1D calculations and tricubic for 3D calculations to give very smooth estimates and generally very accurate values.</p>
+    				<br />
+    				<p class="qs">Q: How do I install LUTs in a Sony FS7 / F5 / F55</p>
+    				<p class="as">A: On the top right hand side of LUTCalc check 'Camera LUT (MLUT)'. Make sure that 'Sony User 3D MLUT (.cube) is selected.</p>
+    				<p class="as">On an SD card formatted in the camera, there needs to be the following folder structure: PRIVATE\SONY\PRO\CAMERA\PMWF55_F5</p>
+    				<p class="as">This is the case whether the camera is an FS7, an F5 or an F55. Copy the cube file generated by LUTCalc to the 'PMWF55_F5' folder and then load the SD card into the camera. In the camera's 'Files' menu there should be an option for 'Monitor 3D LUT' and in that 'Load SD Card'.</p>
+    				<p class="as">Select one of the available memory banks and then the camera will show a list of the LUTs available on the card. If you see any filenames beginning '._', scroll past them; they are hidden files created by OSX which the camera displays even though it shouldn't and just cause confusion. The correct files will be shown without a preceding '._'. Once loaded, they should then be available for use.</p>
+    				<p class="as">An important note is that in the 'Video' menu under 'Monitor LUT', setting 'SDI(Main) & Internal Rec' will irreversibly bake-in the look to the recording.</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+    			<!-- TECHNICAL LINKS -->
+    			<div id="tech-links" class="main-section">
+    				<h1 class="section-title">Colour Space Links</h1>
+	    			<p><strong>Sony S-Log3</strong> - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/2/TechnicalSummary_for_S-Gamut3Cine_S-Gamut3_S-Log3_V1_00.pdf">Technical Summary for S-Gamut3.Cine/S-Log3 and S-Gamut3/S-Log3</a></p>
+					<p><strong>Sony S-Gamut3 / S-Gamut3.cine</strong> - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/3/S-Gamut3_S-Gamut3Cine_Matrix.xlsx">Sony Excel spreadsheet of various gamut matrices</a></p>
+	    			<p><strong>Sony S-Log2</strong> - <a href="https://pro.sony.com/bbsccms/assets/files/micro/dmpc/training/S-Log2_Technical_PaperV1_0.pdf">Sony Technical Paper On S-Log2</a></p>
+					<p><strong>Sony S-Log</strong> - <a href="https://pro.sony.com/bbsccms/assets/files/mkt/cinema/solutions/slog_manual.pdf">S-Log: A new LUT for digital production mastering and interchange applications</a></p>
+					<p><strong>Sony Look Profile LUTs</strong> - <a href="http://community.sony.com/t5/F5-F55/Release-version-3DLUT-s-for-S-Gamut3-Cine-S-Log3/td-p/287847" target="_blank">Sony Community Website</a></p>
+					<p><strong>Arri LogC / Wide Gamut</strong> - <a href="http://www.arri.com/?eID=registration&amp;file_uid=8026">ALEXA Log C Curve - Usage in VFX</a></p>
+					<p><strong>Canon C-Log</strong> - <a href="http://learn.usa.canon.com/app/pdfs/white_papers/White_Paper_Clog_optoelectronic.pdf">Canon-Log Cine Optoelectronic Transfer Function</a></p>
+					<p><strong>Canon LUTs and Gamut Information</strong> - <a href="http://www.canon-europe.com/Support/Consumer_Products/products/digital_cinema/digital_cinema_camera/EOS_C500.aspx?type=download" target="_blank">Canon C500 Support Site</a></p>
+					<p><strong>Canon C300 Input Device Transform (IDT)</strong> - <a href="http://www.usa.canon.com/cusa/professional/products/professional_cameras/cinema_eos_cameras/eos_c300#DriversAndSoftware" target="_blank">Canon C300 Support Site</a> - under 'Software'. You have to specify 'Mountain Lion' on a Mac or 'Windows XP' on a PC for it to be displayed. C500 and C100 have the same IDTs for CP Lock, though the C500 also offers 'Cinema Gamut' (see above link).</p>
+					<p><strong>Panasonic Varicam V-Log and V-Gamut</strong> - <a href="http://pro-av.panasonic.net/en/varicam/common/pdf/VARICAM_V-Log_V-Gamut.pdf">V-Log/V-Gamut Reference Manual</a></p>
+					<p><strong>Cineon</strong> - <a href="http://www.digital-intermediate.co.uk/film/pdf/Cineon.pdf">Understanding Cineon</a></p>
+					<p><strong>Rec709</strong> - <a href="http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.709-5-200204-I!!PDF-E.pdf">ITU BT.709-5</a></p>
+					<p><strong>Rec2020</strong> - <a href="http://en.wikipedia.org/wiki/Rec._2020" target="_blank">Wikipedia entry</a></p>
+					<p><strong>sRGB</strong> - <a href="http://en.wikipedia.org/wiki/SRGB" target="_blank">Wikipedia entry</a></p>
+					<p><strong>Dolby PQ and alternative prospective transfer functions for HDR displays</strong> - <a href="http://www.bbc.co.uk/rd/publications/whitepaper283" target="_blank">Non-linear Opto-Electrical Transfer Functions for High Dynamic Range Television</a></p>
+					<p><strong>XYZ (CIE 1931)</strong> - <a href="http://en.wikipedia.org/wiki/CIE_1931_color_space" target="_blank">Wikipedia entry</a></p>
+					<p><strong>uv Chromacity (CIE 1960)</strong> - <a href="http://en.wikipedia.org/wiki/CIE_1960_color_space" target="_blank">Wikipedia entry</a></p>
+					<p><strong>Chromatic adaptation and Von Kries transform for colour temperature adjustments</strong> - <a href="http://en.wikipedia.org/wiki/Chromatic_adaptation" target="_blank">Wikipedia article</a></p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+    		</section>
+    	</div>
+    	<!-- FOOTER  -->
+    	<div id="footer-wrap">
+    		<footer id="footer-content">
+    			<p class="copyright">LUTCalc maintained by <a href="https://github.com/cameramanben">Ben Turley (cameramanben)</a></p>
+    			<p>Published on <a href="http://pages.github.com">GitHub Pages</a></p>
+    		</footer>
+    	</div>
+    	<!-- JAVASCRIPT -->
+    	<script type="text/javascript" src="sections.js"></script>
+    	<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
   ga('create', 'UA-60364043-1', 'auto');
   ga('send', 'pageview');
-	</script>
-  </body>
+		</script>
+	</body>
 </html>

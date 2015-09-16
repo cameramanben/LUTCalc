@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Set Up Events
 	window.onresize = function(){
 		maxHeights();
-	}
+	};
 });
 // Window resize adjustments
 function maxHeights() {
@@ -93,4 +93,23 @@ function fieldSet(parentElement,shadow,id) {
 	}
 	parentElement.appendChild(box);
 	return box;
+}
+function notifyUser(title,message) {
+	if (lutInputs.canChromeNotify) {
+		chrome.notifications.create(
+			'lutcalc-' + Math.random().toString(),
+			{
+				type: 'basic',
+				iconUrl: 'img/logo64.png',
+				title: title,
+				message: message,
+				priority: 0
+			},
+			function(id) {
+				timer = setTimeout(function(){
+					chrome.notifications.clear(id);
+				}, 2500);
+			}
+		);
+	}
 }

@@ -1,5 +1,19 @@
 LUTCalc Changelog
 =================
+v2.0
+----
+* Updated instructions to reflect added features and changes to the interface.
+* Added 'Lock Value' options to black level and highlight level adjustments.
+* Black / highlight bug when loading settings fixed by 'Lock Value' options.
+* Reintroduced nominal colour temperature select box for fluorescent adjustments.
+* Removed fileSaver.js and Blob.js from Chrome App version - now all original code.
+
+v1.9 RC18
+---------
+* Current settings can now be saved and loaded later. At present black level / highlight level settings do not reload.
+* CIE chromacity chart preview now overlays the output gamut triangle and white point where possible (currently all matrix-based colourspaces). It adapts to whitepoint and saturation shifts, though does not take into account PSST-CDL, with its scope for extreme nonlinearity.
+* White balance picker handles more extreme colour choices.
+
 v1.9 RC17
 ---------
 * Further improvement of White Balance code.
