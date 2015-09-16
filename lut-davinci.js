@@ -28,7 +28,7 @@ davinciiLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 davinciiLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;
 	var size = 16384;
@@ -77,7 +77,7 @@ davinciiLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};
 function davincioLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
@@ -99,7 +99,7 @@ davincioLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 davincioLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;
 	var size = 4096;
@@ -148,4 +148,4 @@ davincioLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

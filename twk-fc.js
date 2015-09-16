@@ -73,7 +73,7 @@ TWKFC.prototype.io = function() {
 	this.redInput.setAttribute('step','any');
 	this.redInput.className = 'stopinput';
 	this.redInput.value = '6';
-}
+};
 TWKFC.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -131,7 +131,7 @@ TWKFC.prototype.ui = function() {
 	this.box.appendChild(redBox);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
-}
+};
 TWKFC.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
@@ -146,17 +146,17 @@ TWKFC.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKFC.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKFC.prototype.getTFParams = function(params) {
 	// No Relevant Parameters For This Tweak
-}
+};
 TWKFC.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -179,14 +179,68 @@ TWKFC.prototype.getCSParams = function(params) {
 	out.yellow = parseFloat(this.yellowInput.value);
 	out.red = parseFloat(this.redInput.value);
 	params.twkFC = out;
-}
+};
 TWKFC.prototype.setParams = function(params) {
 	if (typeof params.twkBLANK !== 'undefined') {
 		var p = params.twkBLANK;
 		this.toggleTweaks();
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
-}
+};
+TWKFC.prototype.getSettings = function(data) {
+	data.falseColour = {
+		doFC: this.tweakCheck.checked,
+		doPurple: this.purpleCheck.checked,
+		doBlue: this.blueCheck.checked,
+		doGreen: this.greenCheck.checked,
+		doPink: this.pinkCheck.checked,
+		doOrange: this.orangeCheck.checked,
+		doYellow: this.yellowCheck.checked,
+		doRed: this.redCheck.checked,
+		blue: parseFloat(this.blueInput.value),
+		yellow: parseFloat(this.yellowInput.value),
+		red: parseFloat(this.redInput.value)
+	};
+};
+TWKFC.prototype.setSettings = function(settings) {
+	if (typeof settings.falseColour !== 'undefined') {
+		var data = settings.falseColour;
+		if (typeof data.doFC === 'boolean') {
+			this.tweakCheck.checked = data.doFC;
+			this.toggleTweak();
+		}
+		if (typeof data.doPurple === 'boolean') {
+			this.purpleCheck.checked = data.doPurple;
+		}
+		if (typeof data.doBlue === 'boolean') {
+			this.blueCheck.checked = data.doBlue;
+		}
+		if (typeof data.doGreen === 'boolean') {
+			this.greenCheck.checked = data.doGreen;
+		}
+		if (typeof data.doPink === 'boolean') {
+			this.pinkCheck.checked = data.doPink;
+		}
+		if (typeof data.doOrange === 'boolean') {
+			this.orangeCheck.checked = data.doOrange;
+		}
+		if (typeof data.doYellow === 'boolean') {
+			this.yellowCheck.checked = data.doYellow;
+		}
+		if (typeof data.doRed === 'boolean') {
+			this.redCheck.checked = data.doRed;
+		}
+		if (typeof data.blue === 'number') {
+			this.blueInput.value = data.blue.toString();
+		}
+		if (typeof data.yellow === 'number') {
+			this.yellowInput.value = data.yellow.toString();
+		}
+		if (typeof data.red === 'number') {
+			this.redInput.value = data.red.toString();
+		}
+	}
+};
 TWKFC.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -195,7 +249,7 @@ TWKFC.prototype.getInfo = function(info) {
 	} else {
 		info.doFC = false;
 	}
-}
+};
 TWKFC.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -236,7 +290,7 @@ TWKFC.prototype.events = function() {
 		here.testRed();
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 // Tweak-Specific Code
 TWKFC.prototype.testBlue = function() {
 	if (!isNaN(parseFloat(this.blueInput.value)) && isFinite(this.blueInput.value)) {
@@ -246,7 +300,7 @@ TWKFC.prototype.testBlue = function() {
 	} else {
 		this.blueInput.value = '6.1';
 	}
-}
+};
 TWKFC.prototype.testYellow = function() {
 	if (!isNaN(parseFloat(this.yellowInput.value)) && isFinite(this.yellowInput.value)) {
 		 if (parseFloat(this.yellowInput.value)<0.0001) {
@@ -257,7 +311,7 @@ TWKFC.prototype.testYellow = function() {
 	} else {
 		this.yellowInput.value = '0.5';
 	}
-}
+};
 TWKFC.prototype.testRed = function() {
 	if (!isNaN(parseFloat(this.redInput.value)) && isFinite(this.redInput.value)) {
 		 if (parseFloat(this.redInput.value)<3.5) {
@@ -266,4 +320,4 @@ TWKFC.prototype.testRed = function() {
 	} else {
 		this.redInput.value = '6';
 	}
-}
+};

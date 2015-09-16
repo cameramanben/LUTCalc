@@ -102,7 +102,7 @@ ncpLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: 'PICCON' + bank,
 		ext: 'NCP'
 	};
-}
+};
 ncpLUT.prototype.header = function(out, yMin, yMax, info) {
 	var t = new Uint32Array(out.buffer);
 	var s = new Uint16Array(out.buffer);
@@ -178,7 +178,7 @@ ncpLUT.prototype.header = function(out, yMin, yMax, info) {
 	k++;
 // The rest is the polynomial table (compressed LUT) and full 255-point LUT so return the header
 	return out;
-}
+};
 ncpLUT.prototype.beWord = function(input) {
 // Turn values into 4-byte big-endian words
 	var t = new Uint32Array([input]);
@@ -188,7 +188,7 @@ ncpLUT.prototype.beWord = function(input) {
 	} else {
 		return e;
 	}
-}
+};
 ncpLUT.prototype.beShort = function(input) {
 // Turn values into 16-bit big-endian short
 	var t = new Uint16Array([input]);
@@ -198,10 +198,10 @@ ncpLUT.prototype.beShort = function(input) {
 	} else {
 		return e;
 	}
-}
+};
 ncpLUT.prototype.beString = function(text,out,idx) {
 	var m = text.length;
 	for (var j=0; j<m; j++) {
 		out[idx + j] = text.charCodeAt(j);
 	}
-}
+};

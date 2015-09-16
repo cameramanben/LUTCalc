@@ -29,13 +29,13 @@ LUTAnalyst.prototype.getTitle = function(lut) {
 					break;
 	}
 	return this.title;
-}
+};
 LUTAnalyst.prototype.reset = function() {
 	this.title = 'LUT Analyst';
 	this.inLUT = new LUTs();
 	this.tf = new LUTs();
 	this.cs = new LUTs();
-}
+};
 LUTAnalyst.prototype.lutRange = function() {
 	if (this.inputs.laRange[3].checked || this.inputs.laRange[2].checked) {
 		this.legIn = true;
@@ -47,14 +47,13 @@ LUTAnalyst.prototype.lutRange = function() {
 	} else {
 		this.legOut = false;
 	}
-}
+};
 LUTAnalyst.prototype.is1D = function() {
 	return this.inLUT.is1D();
-}
+};
 LUTAnalyst.prototype.is3D = function() {
 	return this.inLUT.is3D();
-}
-
+};
 LUTAnalyst.prototype.getTF = function() {
 	this.lutRange();
 	this.pass = 0;
@@ -71,18 +70,17 @@ LUTAnalyst.prototype.getTF = function() {
 		legIn: this.legIn,
 		gamma: this.gammaIn
 	});
-}
+};
 LUTAnalyst.prototype.updateLATF = function() {
 	this.gaT = this.messages.getGammaThreads();
 	var dets = this.tf.getDetails();
 	var rev = new LUTSpline(dets.C[0].slice(0));
 	dets.R = [rev.getReverse()];
 	this.messages.gaTxAll(this.p,6,dets);
-}
+};
 LUTAnalyst.prototype.getL = function() {
 	return this.tf.getL();
-}
-
+};
 LUTAnalyst.prototype.getCS = function() {
 	this.gamutIn = parseInt(this.inputs.laGamutSelect.options[this.inputs.laGamutSelect.selectedIndex].value);
 	var dim;
@@ -97,7 +95,7 @@ LUTAnalyst.prototype.getCS = function() {
 		gamma: this.gammaIn,
 		gamut: this.gamutIn
 	});
-}
+};
 LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 	if (this.pass === 0) { // Transfer function pass
 		var C = new Float64Array(buff);
@@ -171,14 +169,14 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		this.updateLATF();
 		this.updateLACS();
 	}
-}
+};
 LUTAnalyst.prototype.revTF = function(guess,goal) { // Brent Method
 	return this.brent.findRoot(guess,goal);
-}
+};
 LUTAnalyst.prototype.updateLACS = function() {
 	this.gtT = this.messages.getGamutThreads();
 	this.messages.gtTxAll(this.p,6,this.cs.getDetails());
-}
+};
 LUTAnalyst.prototype.getRGB = function() {
 	return this.cs.getRGB();
-}
+};

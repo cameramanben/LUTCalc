@@ -13,6 +13,7 @@ function LUTColourSpace() {
 	this.g = [];
 	this.csIn = [];
 	this.csOut = [];
+	this.csM = [];
 	this.cat02 = new Float64Array([
 		 0.7328, 0.4296,-0.1624,
 		-0.7036, 1.6975, 0.0061,
@@ -89,8 +90,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Sony S-Gamut'));
 	this.csIn.push(this.toSys('Alexa Wide Gamut'));
 	this.csIn.push(this.toSys('Canon Cinema Gamut'));
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m));
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m));
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
@@ -104,7 +105,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Canon DCI-P3+'));
 	this.csIn.push(this.toSys('Adobe RGB'));
 	this.csIn.push(this.toSys('Adobe Wide Gamut RGB'));
-	this.csIn.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1])));
+	this.csIn.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 
 	this.csOut.push(this.fromSys('Sony S-Gamut3.cine'));
 	this.csOut.push(this.fromSys('Sony S-Gamut3'));
@@ -114,51 +115,82 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Panasonic V-Gamut'));
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
-	this.csOut.push(new CSLUT('LC709',
-		{
-			format: 'cube',
-			min: [0,0,0],
-			max: [1,1,1],
-			filename: 'LC709.labin',
-			le: this.isLE
-		}));
-	this.csOut.push(new CSLUT('LC709A',
-		{
-			format: 'cube',
-			min: [0,0,0],
-			max: [1,1,1],
-			filename: 'LC709A.labin',
-			le: this.isLE
-		}));
-	this.csOut.push(new CSLUT('Canon CP IDT (Daylight)',
-		{
-			format: 'cube',
-			min: [0,0,0],
-			max: [1,1,1],
-			filename: 'cpouttungsten.labin',
-			le: this.isLE
-		}));
-	this.csOut.push(new CSLUT('Canon CP IDT (Tungsten)',
-		{
-			format: 'cube',
-			min: [0,0,0],
-			max: [1,1,1],
-			filename: 'cpoutdaylight.labin',
-			le: this.isLE
-		}));
-	this.csOut.push(new CSLUT('Varicam V709',
-		{
-			format: 'cube',
-			min: [0,0,0],
-			max: [1,1,1],
-			filename: 'V709.labin',
-			le: this.isLE
-		}));
+	this.csOut.push(
+		this.fromSysLUT('LC709',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				filename: 'LC709.labin',
+				le: this.isLE,
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
+			this.illuminant('d65')
+		)
+	);
+	this.csOut.push(
+		this.fromSysLUT('LC709A',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				filename: 'LC709A.labin',
+				le: this.isLE,
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
+			this.illuminant('d65')
+		)
+	);
+	this.csOut.push(
+		this.fromSysLUT('Canon CP IDT (Daylight)',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				filename: 'cpouttungsten.labin',
+				le: this.isLE,
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.6509, 0.2827, 0.3177, 0.8953, 0.1289, -0.0468]),
+			this.illuminant('d65')
+		)
+	);
+	this.csOut.push(
+		this.fromSysLUT('Canon CP IDT (Tungsten)',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				filename: 'cpoutdaylight.labin',
+				le: this.isLE,
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.6577, 0.2653, 0.3417, 1.0909, 0.1475, -0.0018]),
+			this.illuminant('d65')	
+		)
+	);
+	this.csOut.push(
+		this.fromSysLUT('Varicam V709',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				filename: 'V709.labin',
+				le: this.isLE,
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
+			this.illuminant('d65')
+		)
+	);
 	this.csOut.push(this.fromSys('Rec2020'));
 	this.csOut.push(this.fromSys('sRGB'));
-	this.csOut.push(new CSMatrix('Luma B&W', new Float64Array([ this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2] ])));
+	this.csOut.push(this.fromSysMatrix('Luma B&W', new Float64Array([ this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2] ]), this.system.white.buffer.slice(0)));
 	this.csOut.push(this.fromSys('ACES AP0'));
 	this.csOut.push(this.fromSys('ACEScg AP1'));
+	this.XYZOut = this.csOut.length;
 	this.csOut.push(this.fromSys('XYZ'));
 	this.csOut.push(this.fromSys('DCI-P3'));
 	this.csOut.push(this.fromSys('DCI-P3D60'));
@@ -166,9 +198,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Adobe RGB'));
 	this.csOut.push(this.fromSys('Adobe Wide Gamut RGB'));
 	this.LA = this.csOut.length;
-	this.csOut.push(new CSLA('LA'));
+	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
 	this.pass = this.csOut.length;
-	this.csOut.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1])));
+	this.csOut.push(this.fromSysMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 
 	var max = this.csIn.length;
 	for (var j=0; j<max; j++) {
@@ -191,7 +223,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 			}
 		}
 	}
-}
+};
 // Colour calculations
 LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 //	xy = [	xr, yr,
@@ -213,7 +245,7 @@ LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 		S[0]*XYZ[3], S[1]*XYZ[4], S[2]*XYZ[5],
 		S[0]*XYZ[6], S[1]*XYZ[7], S[2]*XYZ[8]
 	]);
-}
+};
 LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
 	var s = this.mMult(this.cat02, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
 	var d = this.mMult(this.cat02, new Float64Array([wd[0]/wd[1],1,wd[2]/wd[1]]));
@@ -224,25 +256,102 @@ LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
 	]);
 	var cat02 = this.mMult(this.invCat02,this.mMult(CAT,this.cat02));
 	return this.mMult(cat02,m);
-}
+};
 LUTColourSpace.prototype.toSys = function(name) {
 	var max = this.g.length;
 	for (var j=0; j<max; j++) {
 		if (name === this.g[j].name) {
-			return new CSMatrix(name, this.g[j].toSys);
+			return new CSMatrix(name, this.g[j].toSys, this.g[j].white.buffer.slice(0));
 		}
 	}
 	return false;
-}
+};
 LUTColourSpace.prototype.fromSys = function(name) {
 	var max = this.g.length;
 	for (var j=0; j<max; j++) {
 		if (name === this.g[j].name) {
-			return new CSMatrix(name, this.mInverse(this.g[j].toSys));
+			var out = new CSMatrix(name, this.mInverse(this.g[j].toSys), this.g[j].white.buffer.slice(0));
+			this.csM.push(out);
+			return out;
 		}
 	}
 	return false;
-}
+};
+LUTColourSpace.prototype.fromSysMatrix = function(name,matrix,white) {
+	var out = new CSMatrix(name, matrix, white);
+	this.csM.push(out);
+	return out;
+};
+LUTColourSpace.prototype.fromSysLUT = function(name,params,xy,white) {
+	var toXYZ = this.RGBtoXYZ(xy,white);
+	this.csM.push(new CSMatrix(
+		name,
+		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
+		white
+	));
+	return new CSLUT(name, params);
+};
+LUTColourSpace.prototype.fromSysLA = function(name,white) {
+	this.csM.push(this.csOut[this.rec709Out]);
+	return new CSLA(name, white);
+};
+LUTColourSpace.prototype.fx = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var y = this.y;
+	var Y;
+// Colour Temperature Shift
+	if (this.doWB) {
+		this.wb.lc(buff);
+	}
+// ASC-CDL
+	if (this.doASCCDL) {
+		for (var j=0; j<m; j += 3) {
+			o[ j ] = (o[ j ]*this.asc[0])+this.asc[3];
+			o[ j ] = ((o[ j ]<0)?o[ j ]:Math.pow(o[ j ],this.asc[6]));
+			o[ j ] = (isNaN(o[ j ])?0:o[ j ]);
+			o[j+1] = (o[j+1]*this.asc[1])+this.asc[4];
+			o[j+1] = ((o[j+1]<0)?o[j+1]:Math.pow(o[j+1],this.asc[7]));
+			o[j+1] = (isNaN(o[j+1])?0:o[j+1]);
+			o[j+2] = (o[j+2]*this.asc[2])+this.asc[5];
+			o[j+2] = ((o[j+2]<0)?o[j+2]:Math.pow(o[j+2],this.asc[8]));
+			o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
+			Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
+			o[ j ] = Y + (this.asc[9]*(o[ j ]-Y));
+			o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
+			o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
+		}
+	}
+	this.csM[this.curOut].lc(buff);
+	return o;
+};
+LUTColourSpace.prototype.firstGuess = function(goal, rgb, d) {
+	var d2 = d*2;
+	var data = new Float64Array([
+		rgb[0]		,rgb[1]		,rgb[2],
+		rgb[0] + d	,rgb[1]		,rgb[2],
+		rgb[0] - d	,rgb[1]		,rgb[2],
+		rgb[0]		,rgb[1] + d	,rgb[2],
+		rgb[0]		,rgb[1] - d	,rgb[2],
+		rgb[0]		,rgb[1]		,rgb[2] + d,
+		rgb[0]		,rgb[1]		,rgb[2] - d
+	]);
+	var g = this.fx(data.buffer);
+//
+//if (goal[0] === goal[1] && goal[0] === goal[2]) {
+//	self.postMessage({msg:true,details:g});
+//}
+//
+	return {
+		x: rgb,
+		f: new Float64Array([g[0]-goal[0],g[1]-goal[1],g[2]-goal[2]]),
+		J: new Float64Array([
+			(g[3]-g[6])/d2, (g[ 9]-g[12])/d2, (g[15]-g[18])/d2,
+			(g[4]-g[7])/d2, (g[10]-g[13])/d2, (g[16]-g[19])/d2,
+			(g[5]-g[8])/d2, (g[11]-g[14])/d2, (g[17]-g[20])/d2,
+		])
+	};
+};
 // Matrix operations
 LUTColourSpace.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
@@ -266,7 +375,7 @@ LUTColourSpace.prototype.mInverse = function(m) {
 		mc[3]/det, mc[4]/det, mc[5]/det,
 		mc[6]/det, mc[7]/det, mc[8]/det
 	]);
-}
+};
 LUTColourSpace.prototype.mMult = function(m1,m2) {
 	if (m1.length !== 9) {
 		return false;
@@ -293,7 +402,7 @@ LUTColourSpace.prototype.mMult = function(m1,m2) {
 	} else {
 		return false;
 	}
-}
+};
 // Base colour data
 LUTColourSpace.prototype.illuminant = function(name) {
 	switch (name.toLowerCase()) {
@@ -322,7 +431,7 @@ LUTColourSpace.prototype.illuminant = function(name) {
 		case 'f11':	return new Float64Array([ 0.38052, 0.37713, 0.24235 ]);
 		case 'f12':	return new Float64Array([ 0.43695, 0.40441, 0.15864 ]);
 	}
-}
+};
 LUTColourSpace.prototype.xyzMatrices = function() {
 // S-Gamut3.cine
 	this.sysIdx = this.g.length;
@@ -373,6 +482,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	rec709.xy = new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]);
 	rec709.white = this.illuminant('d65');
 	rec709.toXYZ = this.RGBtoXYZ(rec709.xy,rec709.white);
+	this.rec709Idx = this.g.length;
 	this.g.push(rec709);
 // Rec2020
 	var rec2020 = {};
@@ -444,7 +554,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	adobewg.white = this.illuminant('d50');
 	adobewg.toXYZ = this.RGBtoXYZ(adobewg.xy,adobewg.white);
 	this.g.push(adobewg);
-}
+};
 LUTColourSpace.prototype.systemMatrices = function() {
 	var max = this.g.length;
 	for (var j=0; j<max; j++) {
@@ -458,7 +568,7 @@ LUTColourSpace.prototype.systemMatrices = function() {
 			this.g[j].toSys = this.mMult(this.system.inv, this.g[j].toXYZ);
 		}
 	}
-}
+};
 LUTColourSpace.prototype.initPSSTCDL = function() {
 	this.psstMC = true;
 	this.psstYC = false;
@@ -579,7 +689,7 @@ LUTColourSpace.prototype.initPSSTCDL = function() {
 		]).buffer,
 		p: false
 	});
-}
+};
 LUTColourSpace.prototype.setYCoeffs = function() {
 	var max = this.g.length;
 	var p = new Float64Array(3);
@@ -591,16 +701,10 @@ LUTColourSpace.prototype.setYCoeffs = function() {
 	var rec709 = new Float64Array([ 0.2126, 0.7152, 0.0722 ]);
 	var p2 = this.mInverse(new Float64Array([p[0],p[3],p[6], p[1],p[4],p[7], p[2],p[5],p[8]]));
 	this.y = this.mMult(p2,rec709);
-}
+};
 LUTColourSpace.prototype.setSaturated = function() {
 	var max = this.g.length;
-	var idx;
-	for (var j=0; j<max; j++) {
-		if (this.g[j].name === 'Rec709') {
-			idx = j;
-			break;
-		}
-	}
+	var idx = this.rec709Idx;
 	var y = this.mMult(this.g[idx].toSys, new Float64Array([ 1,1,0 ]));
 	var c = this.mMult(this.g[idx].toSys, new Float64Array([ 0,1,1 ]));
 	var g = this.mMult(this.g[idx].toSys, new Float64Array([ 0,1,0 ]));
@@ -615,7 +719,7 @@ LUTColourSpace.prototype.setSaturated = function() {
 		r[0],r[1],r[2],
 		b[0],b[1],b[2]
 	]).buffer;
-}
+};
 // Parameter setting functions
 LUTColourSpace.prototype.setWB = function(params) {
 	var out = {};
@@ -638,7 +742,7 @@ LUTColourSpace.prototype.setWB = function(params) {
 	}
 	out.doWB = this.doWB;
 	return out;
-}
+};
 LUTColourSpace.prototype.setASCCDL = function(params) {
 	var out = {};
 	this.doASCCDL = false;
@@ -647,7 +751,7 @@ LUTColourSpace.prototype.setASCCDL = function(params) {
 		var p = params.twkASCCDL;
 		if (typeof p.doASCCDL === 'boolean') {
 			var didASCCDL = this.doASCCDL;
-			this.doASCCDL = p.doASCCDL		
+			this.doASCCDL = p.doASCCDL;		
 			if (didASCCDL && !this.doASCCDL) {
 				this.changedASCCDL = true;
 			}
@@ -667,7 +771,7 @@ LUTColourSpace.prototype.setASCCDL = function(params) {
 	}
 	out.doASCCDL = this.doASCCDL;
 	return out;
-}
+};
 LUTColourSpace.prototype.setPSSTCDL = function(params) {
 	var out = {};
 	this.doPSSTCDL = false;
@@ -700,7 +804,7 @@ LUTColourSpace.prototype.setPSSTCDL = function(params) {
 	}
 	out.doPSSTCDL = this.doPSSTCDL;
 	return out;
-}
+};
 LUTColourSpace.prototype.setHG = function(params) {
 	var out = {};
 	this.doHG = false;
@@ -738,7 +842,7 @@ LUTColourSpace.prototype.setHG = function(params) {
 	out.gamut = this.curHG;
 	out.doHG = this.doHG;
 	return out;
-}
+};
 LUTColourSpace.prototype.setFC = function(params) {
 	var out = {};
 	this.doFC = false;
@@ -831,7 +935,7 @@ LUTColourSpace.prototype.setFC = function(params) {
 	out.red = Math.log(this.fcVals[9]/0.2)/Math.log(2);
 	out.doFC = this.doFC;
 	return out;
-}
+};
 // Colour space data objects
 function CCTxy(LUT) {
 	this.lut = LUT;
@@ -841,11 +945,11 @@ function CCTxy(LUT) {
 CCTxy.prototype.setxy = function(x,y) {
 	this.u = (4*x)/((-2*x) + (12*y) + 3);
 	this.v = (6*y)/((-2*x) + (12*y) + 3);
-}
+};
 CCTxy.prototype.setuv = function(u,v) {
 	this.u = u;
 	this.v = v;
-}
+};
 CCTxy.prototype.f = function(T) {
 	var T0 = T - 0.05;
 	var T1 = T + 0.05;
@@ -862,7 +966,7 @@ CCTxy.prototype.f = function(T) {
 	var d0 = Math.pow(Math.pow(this.u - uv0[0],2) + Math.pow(this.v - uv0[1],2),0.5);
 	var d1 = Math.pow(Math.pow(this.u - uv1[0],2) + Math.pow(this.v - uv1[1],2),0.5);
 	return (d0-d1)*10;
-}
+};
 function Planck() {
 	this.loci = new LUTs();
 	this.setLoci();
@@ -1042,7 +1146,7 @@ Planck.prototype.setLoci = function() {
 			]).buffer
 		]
 	});
-}
+};
 Planck.prototype.getCCT = function(white) {
 	if (white[0] < 0 || white[1] < 0 || white[0]+white[1] > 1) {
 		return false;
@@ -1086,7 +1190,7 @@ Planck.prototype.getCCT = function(white) {
 		}
 		return Math.round(best);
 	}
-}
+};
 Planck.prototype.getDuvMag = function(white,T) {
 	var xy = this.loci.lRCub(T);
 	var xy1 = this.loci.lRCub(T + 0.1);
@@ -1117,14 +1221,14 @@ Planck.prototype.getDuvMag = function(white,T) {
 		out[0] = 0;
 	}
 	if (tLeft > 0 && tMag > 0.0000001) {
-		out[1] = -tMag;
-	} else if (tMag > 0.0000001) {
 		out[1] = tMag;
+	} else if (tMag > 0.0000001) {
+		out[1] = -tMag;
 	} else {
 		out[1] = 0;
 	}
 	return out;
-}
+};
 Planck.prototype.getDxy = function(white,T) {
 	var xyY = this.loci.lRCub(T);
 	var xyY1 = this.loci.lRCub(T + 0.1);
@@ -1160,24 +1264,24 @@ Planck.prototype.getDxy = function(white,T) {
 	} else {
 		return mag;
 	}
-}
+};
 Planck.prototype.xyY = function(T) {
 	var out = this.loci.lRCub(T);
 	out[2] = 1;
 	return out;
-}
+};
 Planck.prototype.xyz = function(T) {
 	var xyY = this.loci.lRCub(T);
 	return new Float64Array([
 		xyY[0],xyY[1],1-xyY[0]-xyY[1]
 	]);
-}
+};
 Planck.prototype.XYZ = function(T) {
 	var xyY = this.loci.lRCub(T);
 	return new Float64Array([
 		xyY[0]/xyY[1],1,(1-xyY[0]-xyY[1])/xyY[1]
 	]);
-}
+};
 Planck.prototype.uv = function(T) {
 	var xy = this.loci.lRCub(T);
 	var den = (-2*xy[0]) + (12*xy[1]) + 3;
@@ -1185,14 +1289,14 @@ Planck.prototype.uv = function(T) {
 		4*xy[0] / den,
 		6*xy[1] / den
 	]);
-}
+};
 Planck.prototype.xy2uv = function(xy) {
 	var den = (-2*xy[0]) + (12*xy[1]) + 3;
 	return new Float64Array([
 		4*xy[0] / den,
 		6*xy[1] / den
 	]);
-}
+};
 Planck.prototype.uv2xy = function(uv) {
 	var den = (2*uv[0]) - (8*uv[1]) + 4;
 	return new Float64Array([
@@ -1200,7 +1304,7 @@ Planck.prototype.uv2xy = function(uv) {
 		2*uv[1] / den,
 		1 - (((3*uv[0]) + (2*uv[1])) / den)
 	]);
-}
+};
 Planck.prototype.uv2XYZ = function(uv) {
 	var xy = this.uv2xy(uv);
 	return new Float64Array([
@@ -1208,7 +1312,7 @@ Planck.prototype.uv2XYZ = function(uv) {
 		1,
 		xy[2]/xy[1]
 	]);
-}
+};
 Planck.prototype.Dxy = function(T) {
 	var xyY = this.loci.lRCub(T);
 	var xyY1 = this.loci.lRCub(T + 0.1);
@@ -1236,7 +1340,7 @@ Planck.prototype.Dxy = function(T) {
 	var dy = y - xyY[1];
 	var mag = Math.pow((dx*dx)+(dy*dy),0.5);
 	return new Float64Array([mag, Math.atan2(dy, dx)]);
-}
+};
 Planck.prototype.Duv = function(T) {
 	var uv1 = this.uv(T + 1);
 	var uv2 = this.uv(T - 1);
@@ -1245,7 +1349,7 @@ Planck.prototype.Duv = function(T) {
 	var norm = Math.atan2(du,-dv); // Locus offset (normal)
 	var tang = Math.atan2(dv, du); // Planck slope (tangent)
 	return new Float64Array([norm,tang]);
-}
+};
 function CSCAT() {
 	this.names = [];
 	this.M = [];
@@ -1259,17 +1363,17 @@ CSCAT.prototype.models = function() {
 	this.addModel('Sharp', new Float64Array([1.2694,-0.0988,-0.1706, -0.8364,1.8006,0.0357, 0.0297,-0.0315,1.0018]));
 	this.addModel('CMCCAT2000', new Float64Array([0.7982,0.3389,-0.1371, -0.5918,1.5512,0.0406, 0.0008,0.0239,0.9753]));
 	this.addModel('XYZ Scaling', new Float64Array([1,0,0, 0,1,0, 0,0,1]));
-}
+};
 CSCAT.prototype.addModel = function(name,M) {
 	this.names.push(name);
 	this.M.push(M);
-}
+};
 CSCAT.prototype.getModel = function(idx) {
 	return new Float64Array(this.M[idx]);
-}
+};
 CSCAT.prototype.getModels = function() {
 	return this.names.slice(0);
-}
+};
 // Adjustment objects
 function CSWB(sysWhite, toXYZ, planck, CATs) {
 	this.fromSys = toXYZ;
@@ -1298,14 +1402,14 @@ function CSWB(sysWhite, toXYZ, planck, CATs) {
 }
 CSWB.prototype.getSys = function() {
 	return this.CCT0;
-}
+};
 CSWB.prototype.setModel = function(idx) {
 	this.cur = idx;
 	this.M = this.CATs.getModel(idx);
 	this.Minv = this.mInverse(this.M);
 	this.setToLocus();
 	this.setCAT();
-}
+};
 CSWB.prototype.setToLocus = function() {
 	var Msys = this.mMult(this.M,this.sysWhiteXYZ);
 	var Mcct = this.mMult(this.M,this.planck.XYZ(this.CCT0));
@@ -1315,7 +1419,7 @@ CSWB.prototype.setToLocus = function() {
 		0,					0,					Mcct[2]/Msys[2]
 	]);
 	this.Ntolocus = this.mMult(this.Minv,this.mMult(Mtolocus, this.M));
-}
+};
 CSWB.prototype.setCAT = function() {
 	var Msys = this.mMult(this.M,this.planck.XYZ(this.CCT0));
 	var Mctd = this.mMult(this.M,this.planck.XYZ(this.base));
@@ -1343,7 +1447,8 @@ CSWB.prototype.setCAT = function() {
 
 	var Mnet = this.mMult(this.mMult(this.mMult(Mduv,Mct), this.M),this.fromSys);
 	this.N = this.mMult(this.toSys,this.mMult(this.Minv,Mnet));
-}
+	this.Ninv = this.mMult(this.toSys,this.mMult(this.Minv,Mnet));
+};
 CSWB.prototype.uvAdd = function(uv, du, dv) {
 	uv[0] += du;
 	uv[1] += dv;
@@ -1363,7 +1468,7 @@ CSWB.prototype.uvAdd = function(uv, du, dv) {
 	var uv2 = this.planck.xy2uv(xyz);
 	uv[0] = uv2[0];
 	uv[1] = uv2[1];
-}
+};
 CSWB.prototype.setVals = function(ref,ctShift,lampShift,duv,dpl) {
 	// Colour Temperature Shift
 	this.base = this.CCT0;
@@ -1383,14 +1488,14 @@ CSWB.prototype.setVals = function(ref,ctShift,lampShift,duv,dpl) {
 	this.duv = -duv * 0.0175;
 	this.dpl = dpl * 0.0175;
 	this.setCAT();
-}
+};
 CSWB.prototype.toLocus = function(XYZ) {
 	return new Float64Array([
 		(this.Ntolocus[0]*XYZ[0])+(this.Ntolocus[1]*XYZ[1])+(this.Ntolocus[2]*XYZ[2]),
 		(this.Ntolocus[3]*XYZ[0])+(this.Ntolocus[4]*XYZ[1])+(this.Ntolocus[5]*XYZ[2]),
 		(this.Ntolocus[6]*XYZ[0])+(this.Ntolocus[7]*XYZ[1])+(this.Ntolocus[8]*XYZ[2])
 	]);
-}
+};
 CSWB.prototype.mInverse = function(m) {
 	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
 				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
@@ -1413,7 +1518,7 @@ CSWB.prototype.mInverse = function(m) {
 		mc[3]/det, mc[4]/det, mc[5]/det,
 		mc[6]/det, mc[7]/det, mc[8]/det
 	]);
-}
+};
 CSWB.prototype.mMult = function(m1,m2) {
 	if (m1.length !== 9) {
 		return false;
@@ -1440,7 +1545,7 @@ CSWB.prototype.mMult = function(m1,m2) {
 	} else {
 		return false;
 	}
-}
+};
 CSWB.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var max = c.length;
@@ -1453,12 +1558,19 @@ CSWB.prototype.lc = function(buff) {
 		c[j+1] = (this.N[3]*r)+(this.N[4]*g)+(this.N[5]*b);
 		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
 	}
-}
+};
 // Colour space calculation objects
-function CSMatrix(name,params) {
+function CSMatrix(name,params,wp) {
 	this.name = name;
 	this.m = params;
+	this.wp = wp;
 }
+CSMatrix.prototype.getWP = function() {
+	return new Float64Array(this.wp.slice(0));
+};
+CSMatrix.prototype.isMatrix = function() {
+	return true;
+};
 CSMatrix.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var max = c.length;
@@ -1471,7 +1583,7 @@ CSMatrix.prototype.lc = function(buff) {
 		c[j+1] = (this.m[3]*r)+(this.m[4]*g)+(this.m[5]*b);
 		c[j+2] = (this.m[6]*r)+(this.m[7]*g)+(this.m[8]*b);
 	}
-}
+};
 CSMatrix.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var max = c.length;
@@ -1484,15 +1596,16 @@ CSMatrix.prototype.lf = function(buff) {
 		c[j+1] = (this.m[3]*r)+(this.m[4]*g)+(this.m[5]*b);
 		c[j+2] = (this.m[6]*r)+(this.m[7]*g)+(this.m[8]*b);
 	}
-}
+};
 function CSLUT(name,params) {
 	this.name = name;
+	this.wp = params.wp.buffer;
 	this.lut = new LUTs();
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', params.filename, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.onload = (function(lut) {
-		var lut = lut;
+//		var lut = lut;
 		return function(e) {
 			var lutBuf = this.response;
   			if (!lut.le) { // files are little endian, swap if system is big endian
@@ -1547,6 +1660,12 @@ self.postMessage({msg:true,details:'Gamut LUTs: Big Endian System'});
 	});
 	xhr.send();
 }
+CSLUT.prototype.getWP = function() {
+	return new Float64Array(this.wp.slice(0));
+};
+CSLUT.prototype.isMatrix = function() {
+	return false;
+};
 CSLUT.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1565,7 +1684,7 @@ CSLUT.prototype.lc = function(buff) {
 			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
 		}
 	}
-}
+};
 CSLUT.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1584,17 +1703,24 @@ CSLUT.prototype.lf = function(buff) {
 			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
 		}
 	}
-}
-function CSLA(name) {
+};
+function CSLA(name,wp) {
 	this.name = name;
+	this.wp = wp.buffer;
 }
+CSLA.prototype.getWP = function() {
+	return new Float64Array(this.wp.slice(0));
+};
 CSLA.prototype.setLUT = function(lut) {
 	this.lut = new LUTs();
 	this.lut.setDetails(lut);
-}
+};
 CSLA.prototype.setTitle = function(name) {
 	this.name = name;
-}
+};
+CSLA.prototype.isMatrix = function() {
+	return false;
+};
 CSLA.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1613,7 +1739,7 @@ CSLA.prototype.lc = function(buff) {
 			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
 		}
 	}
-}
+};
 CSLA.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1632,13 +1758,17 @@ CSLA.prototype.lf = function(buff) {
 			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
 		}
 	}
-}
-function CSCanonIDT(name, day, toSys) {
+};
+function CSCanonIDT(name, day, toSys, wp) {
 	this.name = name;
 	this.day = day;
 	this.toSys = toSys;
+	this.wp = wp;
 	this.setParams();
 }
+CSCanonIDT.prototype.getWP = function() {
+	return new Float64Array(this.wp.slice(0));
+};
 CSCanonIDT.prototype.setParams = function() {
 	if (this.day) {
 		this.cR = new Float64Array([
@@ -1695,7 +1825,7 @@ CSCanonIDT.prototype.setParams = function() {
 			0.073013542,-0.066540862,0.99352732
 		]));
 	}
-}
+};
 CSCanonIDT.prototype.mMult = function(m1,m2) {
 	var out = new Float64Array(9);
 	out[0] = (m1[0]*m2[0]) + (m1[1]*m2[3]) + (m1[2]*m2[6]);
@@ -1708,7 +1838,10 @@ CSCanonIDT.prototype.mMult = function(m1,m2) {
 	out[7] = (m1[6]*m2[1]) + (m1[7]*m2[4]) + (m1[8]*m2[7]);
 	out[8] = (m1[6]*m2[2]) + (m1[7]*m2[5]) + (m1[8]*m2[8]);
 	return out;
-}
+};
+CSCanonIDT.prototype.isMatrix = function() {
+	return false;
+};
 CSCanonIDT.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1763,10 +1896,10 @@ CSCanonIDT.prototype.lc = function(buff) {
 		c[j+1] = Math.min(65504,(this.sys[3] * lin[0]) + (this.sys[4] * lin[1]) + (this.sys[5] * lin[2]));
 		c[j+2] = Math.min(65504,(this.sys[6] * lin[0]) + (this.sys[7] * lin[1]) + (this.sys[8] * lin[2]));
 	}
-}
+};
 CSCanonIDT.prototype.lf = function(buff) {
 	this.lc(buff);
-}
+};
 // IO functions
 LUTColourSpace.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
@@ -1800,7 +1933,7 @@ LUTColourSpace.prototype.setParams = function(params) {
 	this.ver = params.v;
 	out.v = this.ver;
 	return out;
-}
+};
 LUTColourSpace.prototype.calc = function(p,t,i,g) {
 	var buff = i.o;
 	var o = new Float64Array(buff);
@@ -1982,13 +2115,13 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}
 	}
 	return out;
-}
+};
 LUTColourSpace.prototype.laCalc = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
 	this.csOut[i.gamut].lc(i.o);
 	out.to = ['o'];
 	return out;
-}
+};
 LUTColourSpace.prototype.getLists = function(p,t) {
 	return {
 		p: p,
@@ -2000,22 +2133,22 @@ LUTColourSpace.prototype.getLists = function(p,t) {
 		pass: this.pass,
 		LA: this.LA
 	};
-}
+};
 LUTColourSpace.prototype.setLA = function(p,t,i) {
 	this.csOut[this.LA].setLUT(i);
 	return { p: p, t:t+20, v: this.ver, i: i.title };
-}
+};
 LUTColourSpace.prototype.setLATitle = function(p,t,i) {
 	this.csOut[this.LA].setTitle(i);
 	return { p: p, t:t+20, v: this.ver, i: i };
-}
+};
 LUTColourSpace.prototype.ioNames = function(p,t) {
 	var out = {};
 	out.inName = this.csIn[this.curIn].name;
 	out.outName = this.csOut[this.curOut].name;
 	out.hgName = this.csOut[this.curHG].name;
 	return {p: p, t: t+20, v: this.ver, o: out};
-}
+};
 LUTColourSpace.prototype.chartVals = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver};
 	if (typeof i.colIn !== 'undefined') {
@@ -2234,7 +2367,7 @@ LUTColourSpace.prototype.chartVals = function(p,t,i) {
 		out.to = ['rIn', 'gIn', 'bIn', 'rOut', 'gOut', 'bOut'];
 	}
 	return out;
-}
+};
 LUTColourSpace.prototype.getCATs = function(p,t) {
 	return {
 		p: p,
@@ -2242,18 +2375,18 @@ LUTColourSpace.prototype.getCATs = function(p,t) {
 		v: this.ver,
 		o: this.CATs.getModels()
 	};
-}
+};
 LUTColourSpace.prototype.previewLin = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, gamma: i.gamma, gamut: i.gamut, legal: i.legal, i: i.i, o: i.o };
 	this.csIn[i.gamut].lc(i.o);
 	out.to = ['i','o'];
 	return out;
-}
+};
 LUTColourSpace.prototype.getPrimaries = function(p,t) {
 	var c = this.clrs.slice(0);
 	this.csOut[this.curOut].lc(c);
 	return {p: p, t: t+20, v: this.ver, o: c, to: ['o']};
-}
+};
 LUTColourSpace.prototype.psstColours = function(p,t) {
 	var out = { p: p, t: t+20, v: this.ver };
 	var bef64 = new Float64Array(84);
@@ -2315,11 +2448,11 @@ LUTColourSpace.prototype.psstColours = function(p,t) {
 	}
 	this.csOut[this.curOut].lc(bef64.buffer);
 	this.csOut[this.curOut].lc(aft64.buffer);
-	out.b = bef64.buffer
-	out.a = aft64.buffer
+	out.b = bef64.buffer;
+	out.a = aft64.buffer;
 	out.to = ['b','a'];
 	return out;
-}
+};
 LUTColourSpace.prototype.getCCTDuv = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver };
 	var rgb = new Float64Array(i.rgb);
@@ -2331,12 +2464,147 @@ LUTColourSpace.prototype.getCCTDuv = function(p,t,i) {
 	out.sys = this.wb.getSys();
 	out.ct = CCT;
 	out.lamp = out.ct;
-	out.duv = (-delta[0] / 0.0175).toFixed(4);
-//	out.dpl = (-delta[1] / 0.0175).toFixed(4);
+	out.duv = (-delta[0] / 0.0175).toFixed(2);
+//	out.dpl = (-delta[1] / 0.0175).toFixed(2);
 	out.dpl = 0;
 	this.wb.setVals(out.sys,out.ct,out.lamp,out.duv,out.dpl);
 	return out;
-}
+};
+LUTColourSpace.prototype.calcPrimaries = function(p,t) {
+	var d = 0.001;
+	var B = new Float64Array(9);
+	var g = new Float64Array([
+		0.2,0.2,0.2,
+		0.2,0,0,
+		0,0.2,0,
+		0,0,0.2
+	]);
+	var m = Math.round(g.length)/3;
+	var a = new Float64Array(m*3);
+	var xy = new Float64Array(m*2*2);
+	var goal;
+	var guess,g0;
+	
+	var x0,x1,dx1;
+	var den;
+	var f0,f1,df1;
+	var J0,iJ0,dJ1,diJ1,J1,iJdf;
+	var delta;
+	var k;
+	for (var i=0; i<m; i++) {
+		k = i*3;
+		goal = new Float64Array([g[k],g[k+1],g[k+2]]);
+		g0 = new Float64Array([ g[k],g[k+1],g[k+2] ]);
+		guess = this.firstGuess(
+			goal,
+			g0,
+			d
+		);
+		x0 = guess.x;
+		f0 = guess.f;
+		if (isNaN(f0[0]) || isNaN(f0[1]) || isNaN(f0[2])) {
+			a[ k ] = NaN;
+			a[k+1] = NaN;
+			a[k+2] = NaN;
+			break;
+		} else if (Math.pow(Math.pow(f0[0],2)+Math.pow(f0[1],2)+Math.pow(f0[2],2),0.5) < 0.00001) {
+			a[ k ] = x0[0];
+			a[k+1] = x0[1];
+			a[k+2] = x0[2];
+		} else {
+			J0 = guess.J;
+			iJ0 = this.mInverse(J0);
+			for (var j=0; j<15; j++) {
+				delta = this.mMult(iJ0,f0);
+				x1 = new Float64Array([x0[0]-delta[0],x0[1]-delta[1],x0[2]-delta[2]]);
+				dx1 = new Float64Array([x1[0]-x0[0],x1[1]-x0[1],x1[2]-x0[2]]);
+				f1 = this.fx(x1.buffer.slice(0));
+				f1[0] -= goal[0];
+				f1[1] -= goal[1];
+				f1[2] -= goal[2];
+				df1 = new Float64Array([f1[0]-f0[0],f1[1]-f0[1],f1[2]-f0[2]]);
+				if (isNaN(f1[0]) || isNaN(f1[1]) || isNaN(f1[2])) {
+					a[ k ] = NaN;
+					a[k+1] = NaN;
+					a[k+2] = NaN;
+					break;
+				} else if (Math.pow(Math.pow(f1[0],2)+Math.pow(f1[1],2)+Math.pow(f1[2],2),0.5) < 0.00001) {
+					a[ k ] = x1[0];
+					a[k+1] = x1[1];
+					a[k+2] = x1[2];
+					break;
+				} else {
+					// Good Broyden's
+/*
+					dJ1 = this.mMult(J0,dx1);
+					den = Math.pow(dx1[0],2) + Math.pow(dx1[1],2) + Math.pow(dx1[2],2);
+					dJ1[0] = (df1[0] - dJ1[0])/den;
+					dJ1[1] = (df1[1] - dJ1[1])/den;
+					dJ1[2] = (df1[2] - dJ1[2])/den;
+					J1 = new Float64Array([
+						J0[0]+(dJ1[0]*x1[0]), J0[1]+(dJ1[0]*x1[1]), J0[2]+(dJ1[0]*x1[2]),
+						J0[3]+(dJ1[1]*x1[0]), J0[4]+(dJ1[1]*x1[1]), J0[5]+(dJ1[1]*x1[2]),
+						J0[6]+(dJ1[2]*x1[0]), J0[7]+(dJ1[2]*x1[1]), J0[8]+(dJ1[2]*x1[2])
+					]);
+					iJ0 = this.mInverse(J1);
+					x0 = x1;
+					f0 = f1;
+*/
+					// Bad Broyden's
+
+					diJ1 = this.mMult(iJ0,df1);
+					den = Math.pow(df1[0],2) + Math.pow(df1[1],2) + Math.pow(df1[2],2);
+					diJ1[0] = (dx1[0] - diJ1[0])/den;
+					diJ1[1] = (dx1[1] - diJ1[1])/den;
+					diJ1[2] = (dx1[2] - diJ1[2])/den;
+					iJ0 = new Float64Array([
+						J0[0]+(diJ1[0]*f1[0]), J0[1]+(diJ1[0]*f1[1]), J0[2]+(diJ1[0]*f1[2]),
+						J0[3]+(diJ1[1]*f1[0]), J0[4]+(diJ1[1]*f1[1]), J0[5]+(diJ1[1]*f1[2]),
+						J0[6]+(diJ1[2]*f1[0]), J0[7]+(diJ1[2]*f1[1]), J0[8]+(diJ1[2]*f1[2])
+					]);
+					x0 = x1;
+					f0 = f1;
+
+				}
+			}
+		}
+	}
+	var k,l,den;
+	var wd,ws;
+	var XYZ;
+
+	this.csIn[this.curIn].lc(g.buffer);
+	this.csOut[this.XYZOut].lc(g.buffer);
+	wd = this.csIn[this.curIn].getWP();
+	ws = this.system.white;
+	for (var j=0; j<m; j++) {
+		k = j*3;
+		l = j*2;
+		XYZ = this.ciecat02(new Float64Array([g[k],g[k+1],g[k+2]]),ws,wd);
+		den = XYZ[0] + XYZ[1] + XYZ[2];
+		xy[ l ] = (XYZ[0]/den);
+		xy[l+1] = (XYZ[1]/den);
+	}
+
+	var step = m*2;
+	this.csOut[this.XYZOut].lc(a.buffer);
+	wd = this.csOut[this.curOut].getWP();
+	ws = this.system.white;
+	for (var j=0; j<m; j++) {
+		k = j*3;
+		l = j*2;
+		XYZ = this.ciecat02(new Float64Array([a[k],a[k+1],a[k+2]]),ws,wd);
+		den = XYZ[0] + XYZ[1] + XYZ[2];
+		xy[ l+step ] = (XYZ[0]/den);
+		xy[l+step+1] = (XYZ[1]/den);
+	}
+	return {
+		p: p,
+		t: t+20,
+		v: this.ver,
+		xy: xy
+	};
+};
 // Web worker messaging functions
 function sendMessage(d) {
 	if (cs.isTrans && typeof d.to !== 'undefined') {
@@ -2387,6 +2655,8 @@ this.addEventListener('message', function(e) {
 			case 17:sendMessage(cs.getCATs(d.p,d.t));
 					break;
 			case 18:sendMessage(cs.getCCTDuv(d.p,d.t,d.d));
+					break;
+			case 19:sendMessage(cs.calcPrimaries(d.p,d.t));
 					break;
 		}
 	}

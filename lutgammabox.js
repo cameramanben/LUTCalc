@@ -24,7 +24,7 @@ function LUTGammaBox(fieldset,inputs,messages) {
 LUTGammaBox.prototype.build = function() {
 	this.io();
 	this.ui();
-}
+};
 LUTGammaBox.prototype.io = function() {
 	this.inGammaSelect = document.createElement('select');
 	this.inputs.addInput('inGamma',this.inGammaSelect);
@@ -38,7 +38,7 @@ LUTGammaBox.prototype.io = function() {
 	this.inputs.addInput('outLinGamma',this.outLinSelect);
 	this.outGamutSelect = document.createElement('select');
 	this.inputs.addInput('outGamut',this.outGamutSelect);
-}
+};
 LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Recorded Gamma')));
 	this.box.appendChild(this.inGammaSelect);
@@ -66,7 +66,7 @@ LUTGammaBox.prototype.ui = function() {
 	this.inGamutBox.style.display = 'none';
 	this.outLin.style.display = 'none';
 	this.outGamutBox.style.display = 'none';
-}
+};
 LUTGammaBox.prototype.events = function() {
 	this.inGammaSelect.onchange = function(here){ return function(){
 		here.changeGammaIn();
@@ -92,7 +92,7 @@ LUTGammaBox.prototype.events = function() {
 		here.changeOutGamut();
 		here.messages.gtSetParams();
 	};}(this);
-}
+};
 // Set Up Data
 LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {
 	this.inGammaSelect.length = 0;
@@ -124,7 +124,7 @@ LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {
 		this.inLinSelect.appendChild(option);
 		this.outLinSelect.appendChild(option2);
 	}
-}
+};
 LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	max = inList.length;
 	for (var i=0; i < max; i++) {
@@ -142,7 +142,7 @@ LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	}
 	this.gamutPass = pass;
 	this.gamutLA = LA;
-}
+};
 LUTGammaBox.prototype.defaultGam = function() {
 	var max = this.inGammaSelect.length;
 	var defGamma = this.inputs.defGammaIn;
@@ -161,7 +161,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 			break;
 		}
 	}
-}
+};
 // Event Responses
 LUTGammaBox.prototype.changeGammaIn = function() {
 	if (this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].value === '9999') {
@@ -169,14 +169,14 @@ LUTGammaBox.prototype.changeGammaIn = function() {
 	} else {
 		this.inLin.style.display = 'none';
 	}
-}
+};
 LUTGammaBox.prototype.changeGammaOut = function() {
 	if (this.outGammaSelect.options[this.outGammaSelect.options.selectedIndex].value == '9999') {
 		this.outLin.style.display = 'block';
 	} else {
 		this.outLin.style.display = 'none';
 	}
-}
+};
 LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
 		var max = this.outGamutSelect.options.length;
@@ -189,7 +189,7 @@ LUTGammaBox.prototype.changeInGamut = function() {
 	} else if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.outGamutSelect.options[0].selected = true;
 	}
-}
+};
 LUTGammaBox.prototype.changeOutGamut = function() {
 	if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected = true;
@@ -203,7 +203,7 @@ LUTGammaBox.prototype.changeOutGamut = function() {
 			}
 		}
 	}
-}
+};
 LUTGammaBox.prototype.oneOrThree = function() {
 	if (this.inputs.d[0].checked) {
 		this.inGamutBox.style.display = 'none';
@@ -212,7 +212,7 @@ LUTGammaBox.prototype.oneOrThree = function() {
 		this.inGamutBox.style.display = 'block';
 		this.outGamutBox.style.display = 'block';
 	}
-}
+};
 LUTGammaBox.prototype.getInfo = function(info) {
 	if (this.inGammaSelect.options[this.inGammaSelect.selectedIndex].value !== '9999') {
 		info.inGammaName = this.inGammaSelect.options[this.inGammaSelect.selectedIndex].lastChild.nodeValue;
@@ -231,7 +231,80 @@ LUTGammaBox.prototype.getInfo = function(info) {
 	}
 	info.inGamutName = this.inGamutSelect.options[this.inGamutSelect.selectedIndex].lastChild.nodeValue;
 	info.outGamutName = this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue;
-}
+};
+LUTGammaBox.prototype.getSettings = function(data) {
+	data.gammaBox = {
+		recGamma: this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].lastChild.nodeValue,
+		recLinGamma: this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1),
+		recGamut: this.inGamutSelect.options[this.inGamutSelect.options.selectedIndex].lastChild.nodeValue,
+		outGamma: this.outGammaSelect.options[this.outGammaSelect.options.selectedIndex].lastChild.nodeValue,
+		outLinGamma: this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1),
+		outGamut: this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].lastChild.nodeValue
+	};
+};
+LUTGammaBox.prototype.setSettings = function(settings) {
+	if (typeof settings.gammaBox !== 'undefined') {
+		var data = settings.gammaBox;
+		if (typeof data.recGamma !== 'undefined') {
+			var m = this.inGammaSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inGammaSelect.options[j].lastChild.nodeValue === data.recGamma) {
+					this.inGammaSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.recLinGamma !== 'undefined') {
+			var m = this.inLinSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inLinSelect.options[j].lastChild.nodeValue.substring(0, this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1) === data.recLinGamma) {
+					this.inLinSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.recGamut !== 'undefined') {
+			var m = this.inGamutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inGamutSelect.options[j].lastChild.nodeValue === data.recGamut) {
+					this.inGamutSelect.options[j].selected = true;
+					break;
+				}
+			}
+			this.changeInGamut();
+		}
+		if (typeof data.outGamma !== 'undefined') {
+			var m = this.outGammaSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.outGammaSelect.options[j].lastChild.nodeValue === data.outGamma) {
+					this.outGammaSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.outLinGamma !== 'undefined') {
+			var m = this.outLinSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.outLinSelect.options[j].lastChild.nodeValue.substring(0, this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1) === data.outLinGamma) {
+					this.outLinSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.outGamut !== 'undefined') {
+			var m = this.outGamutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.outGamutSelect.options[j].lastChild.nodeValue === data.outGamut) {
+					this.outGamutSelect.options[j].selected = true;
+					break;
+				}
+			}
+			this.changeOutGamut();
+		}
+		this.changeGammaIn();
+		this.changeGammaOut();
+	}
+};
 LUTGammaBox.prototype.getHeight = function() {
 	return this.box.clientHeight;
-}
+};

@@ -18,7 +18,7 @@ function Ring() {
 }
 Ring.prototype.getSize = function() {
 	return this.s;
-}
+};
 Ring.prototype.getDetails = function() {
 	var out = {
 			title: this.title,
@@ -26,9 +26,9 @@ Ring.prototype.getDetails = function() {
 			r: this.r,
 			p: this.p,
 			L: this.L.buffer
-	}
+	};
 	return out;
-}
+};
 Ring.prototype.setDetails = function(d) {
 	this.title = d.title;
 	if (typeof d.L !== 'undefined') {
@@ -51,20 +51,20 @@ Ring.prototype.setDetails = function(d) {
 	} else {
 		this.mod = false;
 	}
-}
+};
 Ring.prototype.reset = function() {
 	this.title = '';
 	this.s = 1024;
 	this.r = 1;
 	this.p = false;
-}
+};
 Ring.prototype.setL = function(bufL) {
 	this.L = new Float64Array(bufL);
 	this.s = this.L.length;
-}
+};
 Ring.prototype.getL = function() {
 	return this.L.buffer;
-}
+};
 Ring.prototype.f = function(L) {
 	var top = (this.s - 1);
 	L = L%1;
@@ -97,21 +97,21 @@ Ring.prototype.f = function(L) {
 	var d = p0;
 	L -= f;
 	return (((((a * L) + b) * L) + c) * L) + d;
-}
+};
 Ring.prototype.lLCub = function(L) {
 	if (this.mod) {
 		return this.cubMod(L);
 	} else {
 		return this.cub(L);
 	}
-}
+};
 Ring.prototype.lLLin = function(L) {
 	if (this.mod) {
 		return this.linMod(L);
 	} else {
 		return this.lin(L);
 	}
-}
+};
 Ring.prototype.cub = function(L) {
 	var top = (this.s - 1);
 	L = L%1;
@@ -144,7 +144,7 @@ Ring.prototype.cub = function(L) {
 	var d = p0;
 	L -= f;
 	return (((((a * L) + b) * L) + c) * L) + d;
-}
+};
 Ring.prototype.cubMod = function(L) {
 	var top = (this.s - 1);
 	L = L%1;
@@ -201,7 +201,7 @@ Ring.prototype.cubMod = function(L) {
 	var d = p0;
 	L -= f;
 	return (((((a * L) + b) * L) + c) * L) + d;
-}
+};
 Ring.prototype.lin = function(L) {
 	var top = this.s - 1;
 	L = L%1;
@@ -216,7 +216,7 @@ Ring.prototype.lin = function(L) {
 	} else {
 		return (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
 	}
-}
+};
 Ring.prototype.linMod = function(L) {
 	var top = this.s - 1;
 	var mod = this.mod;
@@ -242,14 +242,14 @@ Ring.prototype.linMod = function(L) {
 	}
 	p1 = p1%mod;
 	return (p0 * (1 - dy)) + (p1 * dy);
-}
+};
 Ring.prototype.lLsCub = function(buff) {
 	if (this.mod) {
 		this.cubsMod(buff);
 	} else {
 		this.cubs(buff);
 	}
-}
+};
 Ring.prototype.cubs = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -288,7 +288,7 @@ Ring.prototype.cubs = function(buff) {
 		o[j] -= f;
 		o[j] = (((((a * o[j]) + b) * o[j]) + c) * o[j]) + d;
 	}
-}
+};
 Ring.prototype.cubsMod = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -351,14 +351,14 @@ Ring.prototype.cubsMod = function(buff) {
 		o[j] -= f;
 		o[j] = (((((a * o[j]) + b) * o[j]) + c) * o[j]) + d;
 	}
-}
+};
 Ring.prototype.lLsLin = function(buff) {
 	if (this.mod) {
 		this.linsMod(buff);
 	} else {
 		this.lins(buff);
 	}
-}
+};
 Ring.prototype.lins = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -378,7 +378,7 @@ Ring.prototype.lins = function(buff) {
 			o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
 		}
 	}
-}
+};
 Ring.prototype.linMod = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -409,4 +409,4 @@ Ring.prototype.linMod = function(buff) {
 		p1 = p1%mod;
 		o[j] = (p0 * (1 - dy)) + (p1 * dy);
 	}
-}
+};

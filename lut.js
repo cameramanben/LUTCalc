@@ -21,30 +21,29 @@ function LUTs() {
 	this.scale = false;
 	this.comp = false;
 	this.spln = false;
-	this.spline;
 	this.C = [];
 	this.rgbl = false;
 }
 LUTs.prototype.getSize = function() {
 	return this.s;
-}
+};
 LUTs.prototype.is1D = function() {
 	if (this.d === 1) {
 		return true;
 	} else {
 		return false;
 	}
-}
+};
 LUTs.prototype.is3D = function() {
 	if (this.d === 3) {
 		return true;
 	} else {
 		return false;
 	}
-}
+};
 LUTs.prototype.getTitle = function() {
 	return this.title;
-}
+};
 LUTs.prototype.getDetails = function() {
 	var out = {
 			title: this.title,
@@ -54,14 +53,14 @@ LUTs.prototype.getDetails = function() {
 			min: this.min,
 			max: this.max,
 			rgbl: this.rgbl
-		}
+		};
 	if (this.d === 3 || this.C.length === 3) {
 		out.C = [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer];
 	} else {
 		out.C = [this.L.buffer];
 	}
 	return out;
-}
+};
 LUTs.prototype.setDetails = function(d) {
 	this.title = d.title;
 	this.format = d.format;
@@ -75,7 +74,7 @@ LUTs.prototype.setDetails = function(d) {
 		this.scale = true;
 		if (this.min[0] !== this.min[1] || this.min[1] !== this.min[2] || this.min[2] !== this.min[0]) {
 			this.comp = true;
-			var min = this.min.slice(0).sort(function(a,b){return a-b});
+			var min = this.min.slice(0).sort(function(a,b){return a-b;});
 			this.minL = min[0];
 		} else {
 			this.minL = this.min[0];
@@ -87,7 +86,7 @@ LUTs.prototype.setDetails = function(d) {
 		this.scale = true;
 		if (this.max[0] !== this.max[1] || this.max[1] !== this.max[2] || this.max[2] !== this.max[0]) {
 			this.comp = true;
-			var max = this.max.slice(0).sort(function(a,b){return b-a});
+			var max = this.max.slice(0).sort(function(a,b){return b-a;});
 			this.maxL = max[0];
 		} else {
 			this.maxL = this.max[0];
@@ -108,11 +107,11 @@ LUTs.prototype.setDetails = function(d) {
 			this.addLUT(d.C[0].slice(0),d.C[0].slice(0),d.C[0]);
 		}
 	}
-}
+};
 LUTs.prototype.setSpline = function(buff) {
 	this.spline = new Float64Array(buff);
 	this.spln = true;
-}
+};
 LUTs.prototype.reset = function() {
 	this.title = '';
 	this.format = '';
@@ -127,7 +126,7 @@ LUTs.prototype.reset = function() {
 	this.spln = true;
 	this.C.length = 0;
 	this.rgbl = false;
-}
+};
 LUTs.prototype.addLUT = function(bufR,bufG,bufB) {
 	if (this.d === 3 || ((typeof bufG !== 'undefined') && (typeof bufB !== 'undefined'))) {
 		this.C = [	new Float64Array(bufR),
@@ -139,7 +138,7 @@ LUTs.prototype.addLUT = function(bufR,bufG,bufB) {
 		this.rgbl = false;
 		this.L = new Float64Array(bufR);
 	}
-}
+};
 LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each channel, but don't need to be. one time luma calculation to speed things up later
 	this.L = new Float64Array(this.s);
 	if (this.d === 3) {
@@ -198,7 +197,7 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 			}
 		}
 	}
-}
+};
 LUTs.prototype.l = function(L,C) {
 	var max = this.s - 1;
 	L = L * max;
@@ -230,7 +229,7 @@ LUTs.prototype.l = function(L,C) {
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
-}
+};
 LUTs.prototype.l3 = function(o) {
 	var max = this.s - 1;
 	var i = new Float64Array(3);
@@ -314,15 +313,15 @@ LUTs.prototype.l3 = function(o) {
 	} else {
 		o[2] = this.tC(this.C[2], max, i);
 	}
-}
+};
 LUTs.prototype.getL = function() {
 	return this.L.buffer;
-}
+};
 LUTs.prototype.getRGB = function() {
 	return [this.C[0].buffer,
 			this.C[1].buffer,
 			this.C[2].buffer];
-}
+};
 LUTs.prototype.f = function(L) {
 	if (this.scale) {
 		L =	(L-this.minL)/(this.maxL-this.minL);
@@ -360,7 +359,7 @@ LUTs.prototype.f = function(L) {
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
-}
+};
 LUTs.prototype.fs = function(L) {
 	var max = this.s - 1;
 	L = L * max;
@@ -392,7 +391,7 @@ LUTs.prototype.fs = function(L) {
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
-}
+};
 LUTs.prototype.lLCub = function(L) {
 	if (this.rgbl && this.comp) {
 		var out = this.lRCub(L);
@@ -435,7 +434,7 @@ LUTs.prototype.lLCub = function(L) {
 			return (((((a * L) + b) * L) + c) * L) + d;
 		}
 	}
-}
+};
 LUTs.prototype.lRCub = function(Y) {
 	var max = this.s - 1;
 	var out = new Float64Array(3);
@@ -460,7 +459,7 @@ LUTs.prototype.lRCub = function(Y) {
 				var p0 = this.L[base];
 				var p1 = this.L[base + 1];
 				var d0,d1;
-				if (base == 0) {
+				if (base === 0) {
 					d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
 				} else {
 					d0 = (this.L[base + 1] - this.L[base - 1])/2;
@@ -503,7 +502,7 @@ LUTs.prototype.lRCub = function(Y) {
 					var p0 = C[base];
 					var p1 = C[base + 1];
 					var d0,d1;
-					if (base == 0) {
+					if (base === 0) {
 						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
 					} else {
 						d0 = (C[base + 1] - C[base - 1])/2;
@@ -540,7 +539,7 @@ LUTs.prototype.lRCub = function(Y) {
 		this.l3(out);
 		return out;
 	}
-}
+};
 LUTs.prototype.lLsCub = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -590,7 +589,7 @@ LUTs.prototype.lLsCub = function(buff) {
 			}
 		}
 	}
-}
+};
 LUTs.prototype.lLsLin = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -624,7 +623,7 @@ LUTs.prototype.lLsLin = function(buff) {
 			}
 		}
 	}
-}
+};
 LUTs.prototype.rRsCub = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -787,7 +786,7 @@ LUTs.prototype.rRsCub = function(buff) {
 			}
 		}
 	}
-}
+};
 LUTs.prototype.rRsLin = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -927,7 +926,7 @@ LUTs.prototype.rRsLin = function(buff) {
 			}
 		}
 	}
-}
+};
 LUTs.prototype.tC = function(C, max, RGB) {
 	var rB = Math.floor(RGB[0]);
 	var r = RGB[0] - rB;
@@ -1136,7 +1135,7 @@ LUTs.prototype.tC = function(C, max, RGB) {
 	var Pgb = (a * r * r * r) + (b * r * r) + (rDogb * r) + Pogb; // Pgb
 // Now calculate slope along green axis at the new control points
 	var gDnoo, gDngo, gDnob, gDngb;
-	if (rB == 0) {
+	if (rB === 0) {
 		gDnoo = gDooo;
 		gDngo = gDogo;
 		gDnob = gDoob;
@@ -1414,7 +1413,7 @@ LUTs.prototype.tC = function(C, max, RGB) {
 	a = (2 * Po) + bDo - (2 * Pb) + bDb;
 	b = - (3 * Po) - (2 * bDo) + (3 * Pb) - bDb;
 	return ((a * bl * bl * bl) + (b * bl * bl) + (bDo * bl) + Po); // P
-}
+};
 LUTs.prototype.tL = function(C, max, RGB) {
 	var rB = Math.floor(RGB[0]);
 	var r = RGB[0] - rB;
@@ -1435,7 +1434,7 @@ LUTs.prototype.tL = function(C, max, RGB) {
 	var Prgb = C[o+1+s1+s2];
 	return	(((((Pooo*(1-r))+(Proo*r))*(1-g))+(((Pogo*(1-r))+(Prgo*r))*g))*(1-bl))+
 			(((((Poob*(1-r))+(Prob*r))*(1-g))+(((Pogb*(1-r))+(Prgb*r))*g))*bl);
-}
+};
 function LUTSpline(buff) {
 	this.fs = new Float64Array(buff);
 	var max = this.fs.length;
@@ -1477,7 +1476,7 @@ LUTSpline.prototype.f = function(L) {
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
-}
+};
 LUTSpline.prototype.r = function(L) {
 	var max = this.s - 1;
 	L = L * max;
@@ -1509,7 +1508,7 @@ LUTSpline.prototype.r = function(L) {
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
-}
+};
 LUTSpline.prototype.getReverse = function() {
 	return this.rs.buffer.slice(0);
-}
+};

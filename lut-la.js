@@ -35,7 +35,7 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff) {
 		out += cs[0][j].toFixed(8).toString() + "\t" + cs[1][j].toFixed(8).toString() + "\t" + cs[2][j].toFixed(8).toString() + "\n";
 	}
 	return out;
-}
+};
 lacubeLUT.prototype.parse = function(title, text, gammaLut, gamutLut) {
 	var max = text.length;
 	var parsed = false;
@@ -62,7 +62,7 @@ lacubeLUT.prototype.parse = function(title, text, gammaLut, gamutLut) {
 		parsed = gamutCube.parse(title, gamutText, gamutLut);
 	}
 	return parsed;
-}
+};
 function labinLUT(messages, isLE) {
 	this.messages = messages;
 	this.isLE = isLE;
@@ -112,7 +112,7 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff) {
   		}
   	}
   	return out.buffer;
-}
+};
 labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
 	if (!this.isLE) { // files are little endian, swap if system is big endian
 		console.log('Gamut LUTs: Big Endian System');
@@ -175,4 +175,4 @@ labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
 	} else {
 		return false;
 	}
-}
+};

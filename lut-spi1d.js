@@ -33,7 +33,7 @@ spi1dLUT.prototype.build = function(buff, fileName, ext) {
 		fileName: fileName,
 		ext: ext
 	};
-}
+};
 spi1dLUT.prototype.header = function(info) {
 	var out = '';
 	out += 'Version 1' + "\n";
@@ -45,7 +45,7 @@ spi1dLUT.prototype.header = function(info) {
 		out += 'Components 1' + "\n";
 	}
 	return out;
-}
+};
 spi1dLUT.prototype.parse = function(title, text, lut) {
 	var dimensions = 1;
 	var channels = false;
@@ -131,4 +131,4 @@ spi1dLUT.prototype.parse = function(title, text, lut) {
 	} else {
 		return false;
 	}
-}
+};

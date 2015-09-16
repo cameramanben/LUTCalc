@@ -22,7 +22,7 @@ function LUTCameraBox(fieldset, inputs, messages) {
 LUTCameraBox.prototype.build = function() {
 	this.io();
 	this.ui();
-}
+};
 LUTCameraBox.prototype.io = function() {
 	this.cameras = [];
 	this.cameraList();
@@ -52,7 +52,7 @@ LUTCameraBox.prototype.io = function() {
 	this.inputs.addInput('stopShift',this.shiftInput);
 	this.inputs.addInput('defGammaIn',this.cameras[this.current].defgamma);
 	this.inputs.addInput('defGamutIn',this.cameras[this.current].defgamut);
-}
+};
 LUTCameraBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera')));
 	this.box.appendChild(this.cameraSelect);
@@ -70,7 +70,7 @@ LUTCameraBox.prototype.ui = function() {
 	this.shifted.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop Correction')));
 	this.shifted.appendChild(this.shiftInput);
 	this.box.appendChild(this.shifted);
-}
+};
 LUTCameraBox.prototype.events = function() {
 	this.cameraSelect.onchange = function(here){ return function(){
 		here.changeCamera();
@@ -84,7 +84,7 @@ LUTCameraBox.prototype.events = function() {
 		here.changeShift();
 		here.messages.gaSetParams();
 	};}(this);
-}
+};
 // Set Up Data
 LUTCameraBox.prototype.cameraList = function() {
 // Type: 0 == CineEI, 1 == Variable Parameters (Arri), 2 == Baked In Gain (Canon)
@@ -101,7 +101,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon Log 2 (Approx)",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
 	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
-}
+};
 LUTCameraBox.prototype.cameraOptions = function() {
 	var max = this.cameras.length;
 	for (var i=0; i<max; i++) {
@@ -110,7 +110,7 @@ LUTCameraBox.prototype.cameraOptions = function() {
 		option.appendChild(document.createTextNode(this.cameras[i].make + ' ' + this.cameras[i].model));
 		this.cameraSelect.appendChild(option);
 	}
-}
+};
 // Event Responses
 LUTCameraBox.prototype.changeCamera = function() {
 	this.current = this.cameraSelect.options.selectedIndex;
@@ -135,7 +135,7 @@ LUTCameraBox.prototype.changeCamera = function() {
 		this.cineeiLabel.innerHTML = 'CineEI ISO';
 	}
 	this.cameraType.value = this.cameras[this.current].type;
-}
+};
 LUTCameraBox.prototype.changeCineEI = function(){
 	if (/^([1-9]\d*)$/.test(this.cineeiInput.value)) {
 	} else {
@@ -145,7 +145,7 @@ LUTCameraBox.prototype.changeCineEI = function(){
 		var stopShift = (Math.log(parseFloat(this.cineeiInput.value)/parseFloat(this.nativeLabel.innerHTML))/Math.LN2);
 		this.shiftInput.value = stopShift.toFixed(4).toString();
 	}
-}
+};
 LUTCameraBox.prototype.changeShift = function() {
 	if (!isNaN(parseFloat(this.shiftInput.value)) && isFinite(this.shiftInput.value)) {
 	} else {
@@ -155,11 +155,38 @@ LUTCameraBox.prototype.changeShift = function() {
 		this.cineeiInput.value = Math.round((Math.pow(2,parseFloat(this.shiftInput.value)))*parseFloat(this.nativeLabel.innerHTML)).toString();
 	}
 
-}
+};
 LUTCameraBox.prototype.getInfo = function(info) {
 	info.camera = this.cameraSelect.options[this.cameraSelect.selectedIndex].lastChild.nodeValue;
 	info.cineEI = parseFloat(this.shiftInput.value);
-}
+};
+LUTCameraBox.prototype.getSettings = function(data) {
+	var camIdx = this.cameraSelect.selectedIndex;
+	data.cameraBox = {
+		make: this.cameras[camIdx].make,
+		model: this.cameras[camIdx].model,
+		shift: parseFloat(this.shiftInput.value)
+	};
+};
+LUTCameraBox.prototype.setSettings = function(settings) {
+	if (typeof settings.cameraBox !== 'undefined') {
+		var data = settings.cameraBox;
+		if (typeof data.model === 'string') {
+			var m = this.cameras.length;
+			for (var j=0; j<m; j++) {
+				if (this.cameras[j].model === data.model) {
+					this.cameraSelect.options[j].selected = true;
+					break;
+				}
+			}
+			this.changeCamera();
+		}
+		if (typeof data.shift === 'number') {
+			this.shiftInput.value = data.shift.toString();
+			this.changeShift();
+		}
+	}
+};
 LUTCameraBox.prototype.getHeight = function() {
 	return this.box.clientHeight;
-}
+};

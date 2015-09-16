@@ -54,7 +54,7 @@ LUTFormats.prototype.io = function() {
 	this.inputs.addInput('mlutSelect', mlutSelect);
 	this.inputs.addInput('bClip', 0);
 	this.inputs.addInput('wClip', 67025937); // 1023 * 65519 (the largest integer representable with a 16-bit half float)
-}
+};
 LUTFormats.prototype.events = function() {
 	this.inputs.lutUsage[0].onclick = function(here){ return function(){
 		here.gradeMLUT();
@@ -72,7 +72,7 @@ LUTFormats.prototype.events = function() {
 		here.updateOptions();
 		here.messages.changeFormat();
 	};}(this);
-}
+};
 LUTFormats.prototype.formatsList = function() {
 	this.addFormat('cube1','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 1));
 	this.addFormat('cube2','cube',true,new cubeLUT(this.messages, this.inputs.isLE, 2));
@@ -87,13 +87,13 @@ LUTFormats.prototype.formatsList = function() {
 	this.addFormat('spi1d','spi1d',true,new spi1dLUT(this.messages, this.inputs.isLE));
 	this.addFormat('spi3d','spi3d',true,new spi3dLUT(this.messages, this.inputs.isLE));
 	this.addFormat('ncp','ncp',false,new ncpLUT(this.messages, this.inputs.isLE));
-}
+};
 LUTFormats.prototype.addFormat = function(type,ext,txt,format) {
 	this.types.push(type);
 	this.exts.push(ext);
 	this.txt.push(txt);
 	this.formats.push(format);
-}
+};
 LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'General cube LUT (.cube)', type: 'cube1',
@@ -261,7 +261,7 @@ LUTFormats.prototype.gradesList = function() {
 			}
 		}
 	}
-}
+};
 LUTFormats.prototype.mlutsList = function() {
 	this.mluts.push({
 		title: 'Sony User 3D MLUT (.cube)', type: 'cube1',
@@ -276,7 +276,6 @@ LUTFormats.prototype.mlutsList = function() {
 		resSDI: 1,
 		bClip: 64, wClip: 1019, hard: false
 	});
-/*
 	this.mluts.push({
 		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
 		oneD: false, threeD: true, defThree: true,
@@ -290,7 +289,6 @@ LUTFormats.prototype.mlutsList = function() {
 		resSDI: false,
 		bClip: 0, wClip: 1019, hard: true
 	});
-*/
 	this.mluts.push({
 		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
 		oneD: true, threeD: false, defThree: false,
@@ -314,13 +312,13 @@ LUTFormats.prototype.mlutsList = function() {
 			}
 		}
 	}
-}
+};
 LUTFormats.prototype.validExts = function() {
 	return this.exts.slice(0);
-}
+};
 LUTFormats.prototype.isTxt = function() {
 	return this.txt.slice(0);
-}
+};
 LUTFormats.prototype.gradeMLUT = function() {
 	if (this.inputs.lutUsage[0].checked) {
 		this.inputs.gradeSelect.className = 'lut-opt';
@@ -330,14 +328,14 @@ LUTFormats.prototype.gradeMLUT = function() {
 		this.inputs.mlutSelect.className = 'lut-opt';
 	}
 	this.updateOptions();
-}
+};
 LUTFormats.prototype.oneOrThree = function() {
 	var cur;
 	if (this.inputs.lutUsage[0].checked) {
-		var idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
+		var idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
 		cur = this.grades[idx];
 	} else {
-		var idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
+		var idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
 	// 1D or 3D
@@ -372,7 +370,7 @@ LUTFormats.prototype.oneOrThree = function() {
 			}
 		}
 	}
-}
+};
 LUTFormats.prototype.updateOptions = function() {
 	var curIdx = this.curIdx;
 	var changedType = false;
@@ -382,14 +380,14 @@ LUTFormats.prototype.updateOptions = function() {
 			changedType = true;
 			this.curType = 0;
 		}
-		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value)
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
 		cur = this.grades[idx];
 	} else {
 		if (this.curType === 0) {
 			changedType = true;
 			this.curType = 1;
 		}
-		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value)
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
 	// Special settings fo particular formats
@@ -456,7 +454,7 @@ LUTFormats.prototype.updateOptions = function() {
 		this.inputs.dimension[1].className = 'lut-opt-hide';	
 		this.inputs.dimensionLabel[1].className = 'lut-opt-hide';
 		if (cur.oneDim.length > 0) {
-			dim = cur.oneDim[0].toString()
+			dim = cur.oneDim[0].toString();
 			this.inputs.dimension[0].value = dim;
 			if (cur.defDim === cur.oneDim[0]) {
 				this.inputs.dimension[0].checked = true;
@@ -467,7 +465,7 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimensionLabel[0].className = 'lut-opt';
 		}
 		if (cur.oneDim.length === 2) {
-			dim = cur.oneDim[1].toString()
+			dim = cur.oneDim[1].toString();
 			this.inputs.dimension[1].value = dim;
 			if (cur.defDim === cur.oneDim[1]) {
 				this.inputs.dimension[1].checked = true;
@@ -480,6 +478,7 @@ LUTFormats.prototype.updateOptions = function() {
 	}
 	// 3D size options
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
+		var dim;
 		this.inputs.dimension[2].className = 'lut-opt-hide';
 		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
 		this.inputs.dimension[3].className = 'lut-opt-hide';	
@@ -590,7 +589,7 @@ LUTFormats.prototype.updateOptions = function() {
 	}
 	// Line up current and changed indeces
 	this.curIdx = idx;
-}
+};
 LUTFormats.prototype.resetOptions = function() {
 	// 1D or 3D
 	this.inputs.d[0].disabled = false;
@@ -646,7 +645,7 @@ LUTFormats.prototype.resetOptions = function() {
 	// Release hard clip option
 	this.inputs.clipCheck.disabled = false;
 	this.inputs.clipCheck.checked = false;
-}
+};
 LUTFormats.prototype.output = function(buff) {
 	var idx;
 	if (this.inputs.lutUsage[0].checked) {
@@ -662,7 +661,41 @@ LUTFormats.prototype.output = function(buff) {
 			this.file.saveBinary(out.lut, out.fileName, out.ext);
 		}
 	}
-}
+};
+LUTFormats.prototype.getSettings = function(data) {
+	data.formats = {
+		grading: this.inputs.lutUsage[0].checked,
+		gradeOption: this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
+		mlutOption: this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
+	};
+};
+LUTFormats.prototype.setSettings = function(settings) {
+	if (typeof settings.lutBox !== 'undefined') {
+		var data = settings.lutBox;
+		if (typeof data.gradeOption === 'string') {
+			var m = this.inputs.gradeSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inputs.gradeSelect.options[j].lastChild.nodeValue.replace(/ *\([^)]*\) */g, "") === data.gradeOption) {
+					this.inputs.gradeSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.mlutOption === 'string') {
+			var m = this.inputs.mlutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inputs.mlutSelect.options[j].lastChild.nodeValue.replace(/ *\([^)]*\) */g, "") === data.mlutOption) {
+					this.inputs.mlutSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.grading === 'boolean') {
+			this.inputs.lutUsage[0].checked = data.grading;
+		}
+		this.gradeMLUT();
+	}
+};
 LUTFormats.prototype.build = function(type,buff) {
 	var max = this.types.length;
 	for (var j=0; j<max; j++) {
@@ -671,7 +704,7 @@ LUTFormats.prototype.build = function(type,buff) {
 		}
 	}
 	return false;
-}
+};
 LUTFormats.prototype.parse = function(ext, title, data, lut) {
 	var max = this.types.length;
 	for (var j=0; j<max; j++) {
@@ -680,4 +713,4 @@ LUTFormats.prototype.parse = function(ext, title, data, lut) {
 		}
 	}
 	return false;
-}
+};

@@ -40,6 +40,7 @@ LUTPreview.prototype.io = function() {
 		'xy / uv Chromacity',
 		'Grayscale'
 	];
+	this.chromOpt = 3;
 	for (var j=0; j<5; j++) {
 		var option = document.createElement('option');
 		option.value = j;
@@ -83,7 +84,7 @@ LUTPreview.prototype.io = function() {
 	// Windowless buttons
 	this.sizeButton.style.display = 'none';
 	this.fileButton.style.display = 'none';
-}
+};
 LUTPreview.prototype.ui = function() {
 	this.buttonHolder.appendChild(this.sizeButton);
 	this.buttonHolder.appendChild(this.defSelect);
@@ -130,7 +131,7 @@ LUTPreview.prototype.ui = function() {
 	this.fieldset.appendChild(this.box);
 
 	this.uiPopup();
-}
+};
 LUTPreview.prototype.uiCanvases = function() {
 	this.width = 960;
 	this.height = 540;
@@ -158,6 +159,15 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.pRaw = new Float64Array(this.width * this.height * 3);
 	this.inputs.addInput('preRaw',this.pRaw);
 	this.box.appendChild(this.pCan);
+	this.oCan = document.createElement('canvas');
+	this.oCan.setAttribute('id','can-overlay');
+	this.oCan.width = this.width.toString();
+	this.oCan.height = this.height.toString();
+	this.oCan.style.width = '32em';
+	this.oCan.style.height = '18em';
+	this.oCan.style.display = 'none';
+	this.oCtx = this.oCan.getContext('2d');
+	this.box.appendChild(this.oCan);
 	this.lCan = document.createElement('canvas');
 	this.lCan.setAttribute('id','can-hide');
 	this.lCan.width = this.width.toString();
@@ -204,7 +214,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.defNext = 4;
 	this.defOpt = 0;
 	this.loadDefault(this.defNext);
-}
+};
 LUTPreview.prototype.uiPopup = function() {
 	this.preCSBoxHolder.style.display = 'none';
 	this.preCSBoxHolder.setAttribute('class','popupholder');
@@ -227,18 +237,18 @@ LUTPreview.prototype.uiPopup = function() {
 	this.preCSBox.appendChild(this.preCancelButton);
 	this.preCSBoxHolder.appendChild(this.preCSBox);
 	document.getElementById('body').appendChild(this.preCSBoxHolder);
-}
+};
 LUTPreview.prototype.uiExternal = function(genBox) {
 	this.generateButton = genBox.button;
 	genBox.box.insertBefore(this.preButton, genBox.button);
 	this.defSelect.style.display = 'none';
-}
+};
 LUTPreview.prototype.events = function() {
 	this.fileButton.onclick = function(here){ return function(){
 		var e = new MouseEvent('click');
 		here.fileInput.dispatchEvent(e);
 	};}(this);
-	if (lutInputs.isApp) {
+	if (this.inputs.isApp) {
 		this.fileInput.onclick = function(here){ return function(){
 			here.preGetImg();
 		};}(this);
@@ -281,7 +291,7 @@ LUTPreview.prototype.events = function() {
 	this.pCan.onmousemove = function(here){ return function(e){
 		here.rgbVals(e.clientX, e.clientY);
 	};}(this);
-}
+};
 // Base data
 LUTPreview.prototype.initPrimaries = function() {
 	this.pName = ['Yl','Cy','G','Mg','R','B'];
@@ -303,9 +313,9 @@ LUTPreview.prototype.initPrimaries = function() {
 		this.pTextx.push(0.5*(this.p100x[j]+this.p75x[j]));
 		this.pTexty.push(0.5*(this.p100y[j]+this.p75y[j]));
 	}
-}
+};
 LUTPreview.prototype.updatePrimaries = function(data) {
-	var d = new Float64Array(data)
+	var d = new Float64Array(data);
 	var Y,Pr,Pb;
 	for (var j=0; j<18; j += 3) {
 		Y = (0.2126*d[j]) + ((1-0.2126-0.0722)*d[j+1]) + (0.0722*d[j+2]);
@@ -314,7 +324,7 @@ LUTPreview.prototype.updatePrimaries = function(data) {
 		this.pCurx[j/3] = Math.round((Pb*this.vscale)+480);
 		this.pCury[j/3] = Math.round(270-(Pr*this.vscale));
 	}
-}
+};
 // Image loading
 LUTPreview.prototype.loadDefault = function(opt) {
 	this.gotMSB = false;
@@ -367,7 +377,7 @@ LUTPreview.prototype.loadDefault = function(opt) {
 			lsb.src = "GrayLSB.png";
 			break;
 	}
-}
+};
 LUTPreview.prototype.loadedDefault = function() {
 	if (this.gotLSB && this.gotMSB) {
 		// Convert 8-bit Most Significant Bits (MSB) and Least Significant Bits (LSB) S-Log3 pngs into a Float64 Array
@@ -404,7 +414,7 @@ LUTPreview.prototype.loadedDefault = function() {
 			lutcalcReady(this.p);
 		}
 	}
-}
+};
 LUTPreview.prototype.updatePopup = function() {
 	this.preGammaSelect.length = 0;
 	this.preGamutSelect.length = 0;
@@ -435,24 +445,24 @@ LUTPreview.prototype.updatePopup = function() {
 		}
 	}
 	this.preCSBoxHolder.style.display = 'block';
-}
+};
 LUTPreview.prototype.preGetImg = function() {
     var validExts;
     if (this.inputs.isApp) {
-        var validExts = ['jpg','jpeg','png','bmp','tiff','tif'];
+        validExts = ['jpg','jpeg','png','bmp','tiff','tif'];
     } else {
-        var validExts = ['jpg','jpeg','png','bmp'];
+        validExts = ['jpg','jpeg','png','bmp'];
     }
 	if (this.inputs.isApp || this.fileInput.value !== '') {
 		this.file.loadImgFromInput(this.fileInput, validExts, 'preFileData', this, 0);
 	}
-}
+};
 LUTPreview.prototype.followUp = function(d) {
 	switch (d) {
         case 0: this.preGotImg();
 			break;
 	}
-}
+};
 LUTPreview.prototype.preGotImg = function() {
 	if (this.inputs.isApp) {
 		this.preIn = this.inputs.preFileData.imageData;
@@ -478,7 +488,7 @@ LUTPreview.prototype.preGotImg = function() {
 		}
 	}
 	this.updatePopup();
-}
+};
 LUTPreview.prototype.prepPreview = function() {
 	this.messages.gaTx(8,14,{
 		gamma: parseInt(this.preGammaSelect.options[this.preGammaSelect.options.selectedIndex].value),
@@ -486,7 +496,7 @@ LUTPreview.prototype.prepPreview = function() {
 		legal: this.preLegalRange.checked,
 		i: this.preIn.buffer
 	});
-}
+};
 LUTPreview.prototype.preppedPreview = function(buff) {
 	this.def[5] = new Float64Array(buff);
 	this.pre = this.def[5];
@@ -500,7 +510,7 @@ LUTPreview.prototype.preppedPreview = function(buff) {
 	this.defSelect.options[5].appendChild(document.createTextNode(this.inputs.preFileData.title));
 	this.defSelect.options[5].selected = true;
 	this.refresh();
-}
+};
 // Scope drawing
 LUTPreview.prototype.clearWaveform = function() {
 	var max = 960*540*4;
@@ -510,7 +520,7 @@ LUTPreview.prototype.clearWaveform = function() {
 		this.wData.data[j+2] = 0;
 		this.wData.data[j+3] = 255;
 	}
-}
+};
 LUTPreview.prototype.clearVectorScope = function() {
 	var max = 960*540*4;
 	for (var j=0; j<max; j += 4) {
@@ -519,7 +529,7 @@ LUTPreview.prototype.clearVectorScope = function() {
 		this.vData.data[j+2] = 0;
 		this.vData.data[j+3] = 255;
 	}
-}
+};
 LUTPreview.prototype.clearParade = function() {
 	var max = 960*540*4;
 	for (var j=0; j<max; j += 4) {
@@ -528,7 +538,7 @@ LUTPreview.prototype.clearParade = function() {
 		this.rgbData.data[j+2] = 0;
 		this.rgbData.data[j+3] = 255;
 	}
-}
+};
 LUTPreview.prototype.drawWaveform = function() {
 	this.wCtx.beginPath();
 	this.wCtx.strokeStyle = '#307030';
@@ -544,7 +554,7 @@ LUTPreview.prototype.drawWaveform = function() {
 		this.wCtx.strokeText((j * 10).toString() + '%',940,y);
 	}
 	this.wCtx.stroke();
-}
+};
 LUTPreview.prototype.drawVectorScope = function() {
 	var s = this.vscale;
 	this.vCtx.beginPath();
@@ -578,7 +588,7 @@ LUTPreview.prototype.drawVectorScope = function() {
 		this.vCtx.arc(this.pCurx[j],this.pCury[j],10,0,2*Math.PI);
 		this.vCtx.stroke();
 	}
-}
+};
 LUTPreview.prototype.drawParade = function() {
 	this.rgbCtx.beginPath();
 	this.rgbCtx.strokeStyle = '#707070';
@@ -594,7 +604,7 @@ LUTPreview.prototype.drawParade = function() {
 		this.rgbCtx.strokeText((j * 10).toString() + '%',940,y);
 	}
 	this.rgbCtx.stroke();
-}
+};
 // Preview drawing
 LUTPreview.prototype.isChanged = function(eiMult) {
 	this.changed = true;
@@ -604,7 +614,7 @@ LUTPreview.prototype.isChanged = function(eiMult) {
 	if (this.show) {
 		this.refresh();
 	}
-}
+};
 LUTPreview.prototype.gotLine = function(data) {
 	if (data.upd === this.upd) {
 		var raster8 = new Uint8Array(data.o);
@@ -716,7 +726,14 @@ LUTPreview.prototype.gotLine = function(data) {
 			}
 		} else if (this.show) {
 			this.line++;
-			var input = {line: this.line, upd: data.upd, o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize), leg: this.leg, eiMult: this.eiMult, to: ['o']}
+			var input = {
+				line: this.line,
+				upd: data.upd,
+				o: this.pre.buffer.slice(this.line*this.rastSize,(this.line+1)*this.rastSize),
+				leg: this.leg,
+				eiMult: this.eiMult,
+				to: ['o']
+			};
 			if (this.inputs.d[0].checked) {
 				this.messages.gaTx(this.p,12,input);
 			} else {
@@ -724,7 +741,7 @@ LUTPreview.prototype.gotLine = function(data) {
 			}
 		}
 	}
-}
+};
 LUTPreview.prototype.refresh = function() {
 	if (typeof this.pre !== 'undefined') {
 		this.changed = false;
@@ -749,7 +766,99 @@ LUTPreview.prototype.refresh = function() {
 			}
 		}
 	}
-}
+};
+LUTPreview.prototype.testXY = function() {
+	if (this.show && this.defOpt === this.chromOpt) {
+		this.messages.gtTx(3,19,{});
+	}
+};
+LUTPreview.prototype.updateXY = function(data) {
+	var scale = 0.9 * this.height;
+	var width = this.width;
+	var height = this.height;
+	var offset = (height - scale) / 2;
+	var m = data.length;
+	var b = m/2;
+	var ctx = this.oCtx;
+	ctx.clearRect(0, 0, this.width, this.height);
+	var x,y;
+	var u,v,den;
+	ctx.font = '18pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+	ctx.textBaseline = 'middle';
+	ctx.textAlign = 'left';
+	// Input
+	ctx.beginPath();
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = 'RGB(240,64,64)';
+	ctx.fillStyle = 'RGB(240,64,64)';
+	x = offset + (scale * data[0]);
+	y = scale * (1 - data[1]);
+	ctx.moveTo(x + 2.5, y);
+	ctx.arc(x, y, 2.5, 0, 2 * Math.PI, false);
+	x = offset + (scale * data[2]);
+	y = scale * (1 - data[3]);
+	ctx.moveTo(x, y);
+	for (var j=2; j<b; j += 2) {
+		x = offset + (scale * data[j]);
+		y = scale * (1 - data[j+1]);
+		ctx.lineTo(x,y);
+	}
+	ctx.closePath();
+	den = (12 * data[1]) - (2 * data[0]) + 3;
+	u = ((4*data[0]/den)*scale/0.65) - (1.5*offset) + (width/2);
+	v = scale - ((6*data[1]/den)*scale/0.65) - (1.5*offset);
+	ctx.moveTo(u + 2.5, v);
+	ctx.arc(u, v, 2.5, 0, 2 * Math.PI, false);
+	den = (12 * data[3]) - (2 * data[2]) + 3;
+	u = ((4*data[2]/den)*scale/0.65) - (1.5*offset) + (width/2);
+	v = scale - ((6*data[3]/den)*scale/0.65) - (1.5*offset);
+	ctx.moveTo(u, v);
+	for (var j=2; j<b; j += 2) {
+		den = (12 * data[j+1]) - (2 * data[j]) + 3;
+		u = ((4*data[j]/den)*scale/0.65) - (1.5*offset) + (width/2);
+		v = scale - ((6*data[j+1]/den)*scale/0.65) - (1.5*offset);
+		ctx.lineTo(u,v);
+	}
+	ctx.closePath();
+	ctx.fillText('Recorded: ' + this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].lastChild.nodeValue, width/4,0.15*height);
+	ctx.stroke();
+	// Output
+	ctx.beginPath();
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = 'RGB(90,90,240)';
+	ctx.fillStyle = 'RGB(90,90,240)';
+	x = offset + (scale * data[b]);
+	y = scale * (1 - data[b+1]);
+	ctx.moveTo(x + 2.5, y);
+	ctx.arc(x, y, 2.5, 0, 2 * Math.PI, false);
+	x = offset + (scale * data[b+2]);
+	y = scale * (1 - data[b+3]);
+	ctx.moveTo(x, y);
+	for (var j=b+2; j<m; j += 2) {
+		x = offset + (scale * data[j]);
+		y = scale * (1 - data[j+1]);
+		ctx.lineTo(x,y);
+	}
+	ctx.closePath();
+	den = (12 * data[b+1]) - (2 * data[b]) + 3;
+	u = ((4*data[b]/den)*scale/0.65) - (1.5*offset) + (width/2);
+	v = scale - ((6*data[b+1]/den)*scale/0.65) - (1.5*offset);
+	ctx.moveTo(u + 2.5, v);
+	ctx.arc(u, v, 2.5, 0, 2 * Math.PI, false);
+	den = (12 * data[b+3]) - (2 * data[b+2]) + 3;
+	u = ((4*data[b+2]/den)*scale/0.65) - (1.5*offset) + (width/2);
+	v = scale - ((6*data[b+3]/den)*scale/0.65) - (1.5*offset);
+	ctx.moveTo(u, v);
+	for (var j=b+2; j<m; j += 2) {
+		den = (12 * data[j+1]) - (2 * data[j]) + 3;
+		u = ((4*data[j]/den)*scale/0.65) - (1.5*offset) + (width/2);
+		v = scale - ((6*data[j+1]/den)*scale/0.65) - (1.5*offset);
+		ctx.lineTo(u,v);
+	}
+	ctx.closePath();
+	ctx.fillText('Output: ' + this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue, width/4,(0.15*height)+30);
+	ctx.stroke();
+};
 // General helper functions
 LUTPreview.prototype.sl3ToLin = function(input) {
  	if (input >= 0.1673609920) {
@@ -757,7 +866,7 @@ LUTPreview.prototype.sl3ToLin = function(input) {
 	} else {
 		return (0.1677922920*input) - 0.0155818840;
 	}
-}
+};
 LUTPreview.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -776,7 +885,7 @@ LUTPreview.prototype.createRadioElement = function(name, checked) {
         }
     }
     return radioInput;
-}
+};
 LUTPreview.prototype.getCanVal = function(x,y) {
 	x = Math.round(x*960);
 	y = Math.round(y*540);
@@ -813,7 +922,7 @@ LUTPreview.prototype.getCanVal = function(x,y) {
 	}
 	var s = Math.pow(Math.pow(out[0],2) + Math.pow(out[1],2) + Math.pow(out[2],2),0.5);
 	return out;
-}
+};
 // Event responses
 LUTPreview.prototype.toggle = function() {
 	if (this.show) {
@@ -843,13 +952,16 @@ LUTPreview.prototype.toggle = function() {
 	}
 	this.inputs.showPreview = this.show;
 	this.messages.showPreview();
-}
+};
 LUTPreview.prototype.toggleSize = function() {
 	if (this.small) {
 		main.style.width = '86em';
 		right.style.width = '52em';
 		this.pCan.style.width = '48em';
 		this.pCan.style.height = '27em';
+		this.oCan.style.width = '48em';
+		this.oCan.style.height = '27em';
+		this.oCan.style.marginTop = '-27.25em';
 		this.lCan.style.width = '48em';
 		this.lCan.style.height = '27em';
 		this.wCan.style.width = '48em';
@@ -865,6 +977,9 @@ LUTPreview.prototype.toggleSize = function() {
 		right.style.width = '36em';
 		this.pCan.style.width = '32em';
 		this.pCan.style.height = '18em';
+		this.oCan.style.width = '32em';
+		this.oCan.style.height = '18em';
+		this.oCan.style.marginTop = '-18.25em';
 		this.lCan.style.width = '32em';
 		this.lCan.style.height = '18em';
 		this.wCan.style.width = '32em';
@@ -876,13 +991,19 @@ LUTPreview.prototype.toggleSize = function() {
 		this.sizeButton.value = 'Large Image';
 		this.small = true;
 	}
-}
+};
 LUTPreview.prototype.toggleDefault = function() {
 	this.defOpt = this.defSelect.options.selectedIndex;
+	if (this.defOpt === this.chromOpt) {
+		this.oCan.style.display = 'block';
+		this.testXY();
+	} else {
+		this.oCan.style.display = 'none';
+	}
 	this.changed = true;
 	this.pre = this.def[this.defOpt];
 	this.refresh();
-}
+};
 LUTPreview.prototype.toggleRange = function() {
 	if (this.preLeg.checked) {
 		this.leg = true;
@@ -890,7 +1011,7 @@ LUTPreview.prototype.toggleRange = function() {
 		this.leg = false;
 	}
 	this.refresh();
-}
+};
 LUTPreview.prototype.toggleWaveform = function() {
 	if (this.wavCheck.checked) {
 		this.wform = true;
@@ -900,7 +1021,7 @@ LUTPreview.prototype.toggleWaveform = function() {
 		this.wCan.style.display = 'none';
 	}
 	this.refresh();
-}
+};
 LUTPreview.prototype.toggleVectorscope = function() {
 	if (this.vecCheck.checked) {
 		this.vscope = true;
@@ -911,7 +1032,7 @@ LUTPreview.prototype.toggleVectorscope = function() {
 		this.vCan.style.display = 'none';
 		this.refresh();
 	}
-}
+};
 LUTPreview.prototype.toggleParade = function() {
 	if (this.rgbCheck.checked) {
 		this.parade = true;
@@ -922,13 +1043,13 @@ LUTPreview.prototype.toggleParade = function() {
 		this.rgbCan.style.display = 'none';
 		this.refresh();
 	}
-}
+};
 LUTPreview.prototype.rgbVals = function(x,y) {
 	var rect = this.pCan.getBoundingClientRect();
-	var x = Math.round(960*(x - rect.left)/rect.width);
-	var y = 960*Math.round(540*(y - rect.top)/rect.height);
+	x = Math.round(960*(x - rect.left)/rect.width);
+	y = 960*Math.round(540*(y - rect.top)/rect.height);
 	var i = (x + y)*3;
 	this.rgbR.innerHTML = Math.min(1023,Math.round(876*this.pRaw[ i ])+64).toString();
 	this.rgbG.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+1])+64).toString();
 	this.rgbB.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+2])+64).toString();
-}
+};

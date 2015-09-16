@@ -116,7 +116,7 @@ TWKASCCDL.prototype.io = function() {
 		this.pAllReset[j].className = 'smallbutton';
 		this.pAllReset[j].setAttribute('value','All Reset');
 	}
-}
+};
 TWKASCCDL.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
 	this.holder = document.createElement('div');
@@ -169,7 +169,7 @@ TWKASCCDL.prototype.ui = function() {
 	}
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
-}
+};
 TWKASCCDL.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked) {
@@ -189,14 +189,14 @@ TWKASCCDL.prototype.toggleTweaks = function() {
 		this.tweakCheck.checked = false;
 	}
 	this.toggleTweak();
-}
+};
 TWKASCCDL.prototype.toggleTweak = function() {
 	if (this.tweakCheck.checked) {
 		this.box.className = 'tweak';
 	} else {
 		this.box.className = 'tweak-hide';
 	}
-}
+};
 TWKASCCDL.prototype.getTFParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -215,7 +215,7 @@ TWKASCCDL.prototype.getTFParams = function(params) {
 		out.doASCCDL = false;
 	}
 	params.twkASCCDL = out;
-}
+};
 TWKASCCDL.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
@@ -234,13 +234,61 @@ TWKASCCDL.prototype.getCSParams = function(params) {
 		out.doASCCDL = false;
 	}
 	params.twkASCCDL = out;
-}
+};
 TWKASCCDL.prototype.setParams = function(params) {
 	if (typeof params.twkASCCDL !== 'undefined') {
 		var p = params.twkASCCDL;
 		this.toggleTweaks();
 	}
-}
+};
+TWKASCCDL.prototype.getSettings = function(data) {
+	var cdl = [];
+	for (var j=0; j<3; j++) {
+		cdl[ j ] = parseFloat(this.sInput[j+1].value);
+		cdl[j+3] = parseFloat(this.oInput[j+1].value);
+		cdl[j+6] = parseFloat(this.pInput[j+1].value);
+	}
+	cdl[9] = parseFloat(this.satInput.value);
+	data.ascCDL = {
+		doASCCDL: this.tweakCheck.checked,
+		cdl: cdl.toString(),
+		channel: this.channelSelect.options[this.channelSelect.selectedIndex].lastChild.nodeValue
+	};
+};
+TWKASCCDL.prototype.setSettings = function(settings) {
+	if (typeof settings.ascCDL !== 'undefined') {
+		var data = settings.ascCDL;
+		if (typeof data.doASCCDL === 'boolean') {
+			this.tweakCheck.checked = data.doASCCDL;
+			this.toggleTweak();
+		}
+		if (typeof data.cdl !== 'undefined') {
+			var cdl = data.cdl.split(',').map(Number);
+			for (var j=0; j<3; j++) {
+				this.sInput[j+1].value = cdl[ j ].toString();
+				this.oInput[j+1].value = cdl[j+3].toString();
+				this.pInput[j+1].value = cdl[j+6].toString();
+			}
+			this.satInput.value = cdl[9].toString();
+			this.testSat(false);
+			for (var j=1; j<4; j++) {
+				this.testS(j,false);
+				this.testO(j,false);
+				this.testP(j,false);
+			}
+		}
+		if (typeof data.channel !== 'undefined') {
+			var m = this.channelSelect.length;
+			for (var j=0; j<m; j++) {
+				if (this.channelSelect.options[j].lastChild.nodeValue === data.channel) {
+					this.channelSelect.options[j].selected = true;
+					break;
+				}
+			}
+			this.changeChannel();
+		}
+	}
+};
 TWKASCCDL.prototype.getInfo = function(info) {
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -249,7 +297,7 @@ TWKASCCDL.prototype.getInfo = function(info) {
 	} else {
 		info.doASCCDL = false;
 	}
-}
+};
 TWKASCCDL.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
@@ -336,7 +384,7 @@ TWKASCCDL.prototype.events = function() {
 			here.messages.gtSetParams();
 		};}(this);
 	}
-}
+};
 // Tweak-Specific Code
 TWKASCCDL.prototype.channelList = function() {
 	var channels = [
@@ -355,7 +403,7 @@ TWKASCCDL.prototype.channelList = function() {
 		}
 		this.channelSelect.appendChild(option);
 	}
-}
+};
 TWKASCCDL.prototype.changeChannel = function() {
 	var chan = this.channelSelect.selectedIndex;
 	for (var j=0; j<4; j++) {
@@ -365,7 +413,7 @@ TWKASCCDL.prototype.changeChannel = function() {
 			this.sop[j].className = 'twk-tab-hide';
 		}
 	}
-}
+};
 TWKASCCDL.prototype.testSat = function(slider) {
 	var s;
 	if (slider) {
@@ -381,15 +429,15 @@ TWKASCCDL.prototype.testSat = function(slider) {
 	}
 	this.satInput.value = s;
 	this.satSlider.value = s;
-}
+};
 TWKASCCDL.prototype.resetSat = function() {
 	this.satSlider.value = '1';
 	this.satInput.value = '1';
-}
+};
 TWKASCCDL.prototype.testS = function(chan,slider) {
 	var val = this.sInput[chan];
 	var sli = this.sSlider[chan];
-	var c1 = 2.197297305
+	var c1 = 2.197297305;
 	var c2 = -0.397418168;
 	var c3 = 0.185969287;
 	var c4 = -0.124947425;
@@ -438,21 +486,21 @@ TWKASCCDL.prototype.testS = function(chan,slider) {
 	for (var j=1; j<4; j++) {
 		a += parseFloat(this.sInput[j].value);
 	}
-	var a = a/3;
+	a = a/3;
 	this.sInput[0].value = a.toString();
 	this.sSlider[0].value = ((Math.log((a-c4)/c3)-c2)/c1).toString();
-}
+};
 TWKASCCDL.prototype.resetS = function(colour) {
 	this.sSlider[colour].value = '1';
 	this.sInput[colour].value = '1';
 	this.testS(colour,false);
-}
+};
 TWKASCCDL.prototype.resetAllS = function() {
 	for (var j=0; j<4; j++) {
 		this.sSlider[j].value = '1';
 		this.sInput[j].value = '1';
 	}
-}
+};
 TWKASCCDL.prototype.testO = function(chan,slider) {
 	var val = this.oInput[chan];
 	var sli = this.oSlider[chan];
@@ -495,25 +543,25 @@ TWKASCCDL.prototype.testO = function(chan,slider) {
 	for (var j=1; j<4; j++) {
 		a += parseFloat(this.oInput[j].value);
 	}
-	var a = a/3;
+	a = a/3;
 	this.oInput[0].value = a.toString();
 	this.oSlider[0].value = a.toString();
-}
+};
 TWKASCCDL.prototype.resetO = function(colour) {
 	this.oSlider[colour].value = '0';
 	this.oInput[colour].value = '0';
 	this.testO(colour,false);
-}
+};
 TWKASCCDL.prototype.resetAllO = function() {
 	for (var j=0; j<4; j++) {
 		this.oSlider[j].value = '0';
 		this.oInput[j].value = '0';
 	}
-}
+};
 TWKASCCDL.prototype.testP = function(chan,slider) {
 	var val = this.pInput[chan];
 	var sli = this.pSlider[chan];
-	var c1 = 2.197297305
+	var c1 = 2.197297305;
 	var c2 = -0.397418168;
 	var c3 = 0.185969287;
 	var c4 = -0.124947425;
@@ -562,18 +610,18 @@ TWKASCCDL.prototype.testP = function(chan,slider) {
 	for (var j=1; j<4; j++) {
 		a += parseFloat(this.pInput[j].value);
 	}
-	var a = a/3;
+	a = a/3;
 	this.pInput[0].value = a.toString();
 	this.pSlider[0].value = ((Math.log((a-c4)/c3)-c2)/c1).toString();
-}
+};
 TWKASCCDL.prototype.resetP = function(colour) {
 	this.pSlider[colour].value = '1';
 	this.pInput[colour].value = '1';
 	this.testP(colour,false);
-}
+};
 TWKASCCDL.prototype.resetAllP = function() {
 	for (var j=0; j<4; j++) {
 		this.pSlider[j].value = '1';
 		this.pInput[j].value = '1';
 	}
-}
+};
