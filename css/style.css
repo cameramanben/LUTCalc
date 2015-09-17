@@ -149,6 +149,12 @@ a:hover {
 #about p {
 	margin:0.5em 0 0.5em 0;
 }
+/* How-To */
+#howto div {
+	width:510px;
+	margin:0px auto;
+	margin-bottom:1em;
+}
 /* FAQ */
 .qs {
 	font-weight:bold;
