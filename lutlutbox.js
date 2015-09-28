@@ -380,7 +380,7 @@ LUTLutBox.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.legalOut === 'boolean') {
 			this.lutOutLegal.checked = data.legalOut;
-			this.lutOutData.checked = !data.legalIn;
+			this.lutOutData.checked = !data.legalOut;
 		}
 		if (typeof data.hardClip === 'boolean') {
 			this.lutClipCheck.checked = data.hardClip;
