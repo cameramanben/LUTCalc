@@ -344,7 +344,18 @@ LUTLutBox.prototype.getSettings = function(data) {
 		meshSize: meshSize,
 		legalIn: this.lutInLegal.checked,
 		legalOut: this.lutOutLegal.checked,
-		hardClip: this.lutClipCheck.checked
+		hardClip: this.lutClipCheck.checked,
+		grading: this.gradeOpt.checked,
+		gradeOption: this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
+		mlutOption: this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
+		scaleMin: parseFloat(this.scaleMin.value),
+		scaleMax: parseFloat(this.scaleMax.value),
+		inBits: parseFloat(this.inBitsSelect.options[this.inBitsSelect.selectedIndex].value),
+		outBits: parseFloat(this.outBitsSelect.options[this.outBitsSelect.selectedIndex].value),
+		nikonBank: parseInt(this.nikonBank.options[this.nikonBank.selectedIndex].value),
+		nikonSharp: parseInt(this.nikonShr.value),
+		nikonSat: parseInt(this.nikonSat.value),
+		nikonHue: parseInt(this.nikonHue.value)
 	};
 };
 LUTLutBox.prototype.setSettings = function(settings) {
@@ -369,10 +380,49 @@ LUTLutBox.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.legalOut === 'boolean') {
 			this.lutOutLegal.checked = data.legalOut;
-			this.lutOutData.checked = !data.legalIn;
+			this.lutOutData.checked = !data.legalOut;
 		}
 		if (typeof data.hardClip === 'boolean') {
 			this.lutClipCheck.checked = data.hardClip;
+		}
+		if (typeof data.scaleMin === 'number') {
+			this.scaleMin.value = data.scaleMin;
+		}
+		if (typeof data.scaleMax === 'number') {
+			this.scaleMax.value = data.scaleMax;
+		}
+		if (typeof data.inBits === 'number') {
+			var m = this.inBitsSelect.length;
+			for (var j=0; j<m; j++) {
+				if (parseInt(this.inBitsSelect.options[j].value) === data.inBits) {
+					this.inBitsSelect.options[j].selected = true;
+				}
+			}
+		}
+		if (typeof data.outBits === 'number') {
+			var m = this.outBitsSelect.length;
+			for (var j=0; j<m; j++) {
+				if (parseInt(this.outBitsSelect.options[j].value) === data.outBits) {
+					this.outBitsSelect.options[j].selected = true;
+				}
+			}
+		}
+		if (typeof data.nikonBank === 'number') {
+			var m = this.nikonBank.length;
+			for (var j=0; j<m; j++) {
+				if (parseInt(this.nikonBank.options[j].value) === data.nikonBank) {
+					this.nikonBank.options[j].selected = true;
+				}
+			}
+		}
+		if (typeof data.nikonSharp === 'number') {
+			this.nikonShr.value = data.nikonSharp;
+		}
+		if (typeof data.nikonSat === 'number') {
+			this.nikonSat.value = data.nikonSat;
+		}
+		if (typeof data.nikonSharp === 'number') {
+			this.nikonHue.value = data.nikonHue;
 		}
 	}
 };

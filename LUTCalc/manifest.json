@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "2.0.0.1",
+	"version": "2.1",
 	"manifest_version": 2,
 	"minimum_chrome_version": "23",
 	"app": {
@@ -32,6 +32,7 @@
 				"twk-white.js",
 				"twk-asccdl.js",
 				"twk-psstcdl.js",
+				"twk-knee.js",
 				"twk-hg.js",
 				"twk-blkhi.js",
 				"twk-fc.js",
@@ -55,9 +56,9 @@
 		"38": "/img/chrome38.png",
 		"48": "/img/chrome48.png",
 		"64": "/img/chrome64.png",
-		"128": "/img/logo128.png",
-		"256": "/img/logo256.png",
-		"512": "/img/logo512.png"
+		"128": "/img/chrome128.png",
+		"256": "/img/chrome256.png",
+		"512": "/img/chrome512.png"
 	},
 	"offline_enabled": true,
 	"permissions": [

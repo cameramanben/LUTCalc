@@ -71,6 +71,8 @@ LUTInfoBox.prototype.events = function() {
 	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insCustHG.onclick = function(here){ return function(){ here.showCustHGInfo(); };}(this);
 	this.custHGBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustKnee.onclick = function(here){ return function(){ here.showCustKneeInfo(); };}(this);
+	this.custKneeBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
@@ -133,6 +135,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custASC);
 	this.createCustHG();
 	this.instructionsBox.appendChild(this.custHG);
+	this.createCustKnee();
+	this.instructionsBox.appendChild(this.custKnee);
 	this.createCustBhi();
 	this.instructionsBox.appendChild(this.custBhi);
 	this.createCustFC();
@@ -192,6 +196,10 @@ LUTInfoBox.prototype.showCustHGInfo = function() {
 	this.hideAll();
 	this.custHG.style.display = 'block';
 };
+LUTInfoBox.prototype.showCustKneeInfo = function() {
+	this.hideAll();
+	this.custKnee.style.display = 'block';
+};
 LUTInfoBox.prototype.showCustBhiInfo = function() {
 	this.hideAll();
 	this.custBhi.style.display = 'block';
@@ -218,6 +226,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custPsst.style.display = 'none';
 	this.custASC.style.display = 'none';
 	this.custHG.style.display = 'none';
+	this.custKnee.style.display = 'none';
 	this.custBhi.style.display = 'none';
 	this.custFC.style.display = 'none';
 	this.custLA.style.display = 'none';
@@ -383,6 +392,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustHG.setAttribute('class','ins-cust');	
 	this.insCustHG.setAttribute('id','ins-cust-hg');	
 	this.custbox.appendChild(this.insCustHG);
+	this.insCustKnee = document.createElement('div');
+	this.insCustKnee.setAttribute('class','ins-cust');	
+	this.insCustKnee.setAttribute('id','ins-cust-knee');	
+	this.custbox.appendChild(this.insCustKnee);
 	this.insCustBhi = document.createElement('div');
 	this.insCustBhi.setAttribute('class','ins-cust');	
 	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
@@ -670,6 +683,31 @@ LUTInfoBox.prototype.createCustHG = function() {
 	this.addInfo(this.custHGInfo,false,null,'With this effects such as muted or black and white highlights with saturated midtones can be achieved in a LUT.');
 	this.custHG.style.display = 'none';
 	this.custHG.appendChild(this.custHGInfo);
+};
+LUTInfoBox.prototype.createCustKnee = function() {
+	this.custKnee = document.createElement('div');
+	this.custKnee.setAttribute('class','instructions');
+	this.custKnee.setAttribute('id','cust-knee');
+	this.custKneeBack = document.createElement('input');
+	this.custKneeBack.setAttribute('type','button');
+	this.custKneeBack.value = 'Back';
+	this.custKnee.appendChild(this.custKneeBack);
+	this.custKneeInfo = document.createElement('div');
+	this.custKneeInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-knee-1');
+	this.custKneeInfo.appendChild(fig1);
+	this.addInfo(this.custKneeInfo,false,null,"The 'Knee' tool provides a means to capture a wide dynamic range whilst maintaining contrast in the midtones.");
+	this.addInfo(this.custKneeInfo,false,'Legal Range / Extended Range','Sets the output IRE level at the defined white clip level. Legal range clips at 99% IRE (to allow for differences between colour channels). Extended range clips to 1% below 10-bit 1019.');
+	this.addInfo(this.custKneeInfo,false,'Knee Start Level','The exposure level - in stops above 18% gray - at which the knee takes over from the base gamma.');
+	this.addInfo(this.custKneeInfo,false,'Clip Level',"The exposure level - in stops above 18% gray - at which the knee reaches the clip level set with 'Legal Range / Extended Range'. For very wide dynamic ranges (Sony and Arri cameras can handle six or seven stops of headroom) keeping the knee start level low will help ensure a smooth rolloff.");
+	this.addInfo(this.custKneeInfo,false,null,'Setting Knee Start Level too high with a high value of Clip Level can lead to ugly overshoots. These can be seen in and remedied with the charts normally visible where these instructions are.');
+	this.addInfo(this.custKneeInfo,false,'Slope At Clip','The knee angle at the clip level. It is in % IRE per stop. A value of zero tends to lead to extremely compressed highlights and means that any values above white clip (such as in a grading LUT with exposure adjustment) will be indistinguishable, so a slight slope is generally advisable.');
+	this.addInfo(this.custKneeInfo,false,'Smoothness','By default the LUTCalc creates a smooth, cubic knee rolloff. This is the prevailing approach in modern cameras. Adjusting the smoothness down will tend towards a hard, linear transition more akin to conventional video cameras such as Beta-SP and Digibeta.');
+	this.addInfo(this.custKneeInfo,false,'With the current algorithm the cubic transition can overshoot where an extremely wide dynamic range is compressed into a very narrow range (high Knee Start Level). If that is required then setting smoothness to zero will avoid the overshoot.');
+	this.custKnee.style.display = 'none';
+	this.custKnee.appendChild(this.custKneeInfo);
 };
 LUTInfoBox.prototype.createCustBhi = function() {
 	this.custBhi = document.createElement('div');

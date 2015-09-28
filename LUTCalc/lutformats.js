@@ -17,13 +17,13 @@ function LUTFormats(inputs, messages, file) {
 	this.file = file;
 	this.curIdx = 0;
 	this.curType = 0;
+	this.lastGamma = -1;
 	this.formats = [];
 	this.types = [];
 	this.exts = [];
 	this.txt = [];
 	this.mluts = [];
 	this.grades = [];
-	this.lastGamma = -1;
 	this.formatsList();
 	this.mlutsList();
 	this.gradesList();
@@ -590,6 +590,35 @@ LUTFormats.prototype.updateOptions = function() {
 	// Line up current and changed indeces
 	this.curIdx = idx;
 };
+LUTFormats.prototype.updateGammaOut = function() {
+	var cur,idx;
+	if (this.inputs.lutUsage[0].checked) {
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
+		cur = this.grades[idx];
+	} else {
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
+		cur = this.mluts[idx];
+	}
+	// Output range
+	if (cur.defLegOut) {
+		this.inputs.outRange[0].checked = true;
+	} else {
+		this.inputs.outRange[1].checked = true;
+	}
+	// Check if input and output range can match for log or null output
+	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
+	if (curOut === 9999) {
+		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
+	}
+	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
+		if (this.inputs.inRange[1].checked && cur.datOut) {
+			this.inputs.outRange[1].checked = true;
+		} else if (cur.legOut) {
+			this.inputs.outRange[0].checked = true;
+		}
+	}
+	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
+};
 LUTFormats.prototype.resetOptions = function() {
 	// 1D or 3D
 	this.inputs.d[0].disabled = false;
@@ -670,8 +699,8 @@ LUTFormats.prototype.getSettings = function(data) {
 	};
 };
 LUTFormats.prototype.setSettings = function(settings) {
-	if (typeof settings.lutBox !== 'undefined') {
-		var data = settings.lutBox;
+	if (typeof settings.formats !== 'undefined') {
+		var data = settings.formats;
 		if (typeof data.gradeOption === 'string') {
 			var m = this.inputs.gradeSelect.options.length;
 			for (var j=0; j<m; j++) {

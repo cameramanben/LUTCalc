@@ -509,7 +509,8 @@ LUTPreview.prototype.preppedPreview = function(buff) {
 	this.defSelect.options[5].removeChild(this.defSelect.options[5].firstChild);
 	this.defSelect.options[5].appendChild(document.createTextNode(this.inputs.preFileData.title));
 	this.defSelect.options[5].selected = true;
-	this.refresh();
+//	this.refresh();
+	this.toggleDefault();
 };
 // Scope drawing
 LUTPreview.prototype.clearWaveform = function() {

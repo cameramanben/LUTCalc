@@ -145,6 +145,10 @@ a:hover {
 	text-align:right;
 	font-size:75%;
 }
+/* News */
+#news p {
+	margin:0.5em 0 0.5em 0;
+}
 /* About */
 #about p {
 	margin:0.5em 0 0.5em 0;

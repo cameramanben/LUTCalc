@@ -176,6 +176,7 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 	} else {
 		this.outLin.style.display = 'none';
 	}
+	this.messages.checkFormat();
 };
 LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {

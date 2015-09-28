@@ -15,7 +15,7 @@
     	<div id="header-wrap">
     		<header id="header-content">
     			<a id="forkme-banner" href="https://github.com/cameramanben/LUTCalc" target="_blank">View on GitHub</a>
-    			<img id="header-logo" alt="LUTCalc Logo" src="images/logo256.png">
+    			<img id="header-logo" src="images/logo256.png" alt="LUTCalc Logo">
     			<div id="header-words">
 	    			<h1 id="header-title">LUTCalc</h1>
 	    			<h2 id="header-tagline">Camera Tools From A Cameraman</h2>
@@ -27,6 +27,7 @@
     		<nav id="toc">
     			<ul>
     				<li><a id="toc-about" href="#about">About LUTCalc</a></li>
+    				<li><a id="toc-news" href="#news">News</a></li>
     				<li><a id="toc-install" href="#install">Run LUTCalc</a></li>
     				<li><a id="toc-howto" href="#install">How-To Guides</a></li>
     				<li><a id="toc-features" href="#features">Features</a></li>
@@ -40,7 +41,7 @@
     	</div>
     	<div id="main-wrap">
     		<section id="main">
-    			<!-- About LUTCalc -->
+    			<!-- ABOUT LUTCalc -->
     			<div id="about" class="main-section">
     				<h1 class="section-title">About LUTCalc</h1>
     				<p>LUTCalc is a desktop app for generating, analysing and previewing 1D and 3D Lookup Tables (LUTs) for video cameras that shoot log gammas.</p>
@@ -51,7 +52,18 @@
     				<p>More details about LUTCalc can be found in the '<a id="about-1" href="#features">Features</a>' section</p>
 					<a class="to-top" href="#header-wrap">Back To Top</a>
     			</div>
-    			<!-- INSTALLATION -->
+     			<!-- LUTCalc NEWS -->
+    			<div id="news" class="main-section">
+    				<h1 class="section-title">News</h1>
+    				<p><strong>LUTCalc v2.1 Update</strong> - 28th September 2015 - I've uploaded my first v2 update to LUTCalc.</p>
+    				<p>Included is a new adjustable knee tool, plus bug fixes to settings loading and the Resolve 'ilut' and 'olut' formats and an important fix which meant that the output range was not necessarily being set correctly for the chosen format preset. In those cases the output setting would have to be set manually.</p>
+    				<p>The knee tool can quickly and easily produces smooth and accurate results with any output gamma, and the preset bug fix is important, so updating is a good idea.</p>
+    				<p>The <strong><a href="LUTCalc/index.html" target="_blank">Online</a></strong> and <strong><a href="https://chrome.google.com/webstore/detail/lutcalc/klmbnjilonndlfjiopbjemeokkodmagm" target="_blank">Chrome App</a></strong> versions are now available, with the <strong><a href="macappstore://itunes.apple.com/app/lutcalc/id1000409621?mt=12">Mac OSX</a></strong> version pending approval by the Mac App Store.</p>
+    				<p>Thanks to those who have helped me pick up on bugs so far. If find something which seems awry with the new version, let me know at <a href="mailto:contact@lutcalc.net">contact@lutcalc.net</a> and I'll see what I can do!</p>
+    				<p>Ben</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+	   			<!-- INSTALLATION -->
     			<div id="install" class="main-section">
     				<h1 class="section-title">Run LUTCalc</h1>
     				<p>LUTCalc is currently available in three versions: as an online Web App, as a Mac OSX App and as a Google Chrome Desktop App.</p>
@@ -144,6 +156,7 @@
     			<!-- TECHNICAL LINKS -->
     			<div id="tech-links" class="main-section">
     				<h1 class="section-title">Colour Space Links</h1>
+    				<p><strong>ACES Documentation</strong> - <a href="http://www.oscars.org/science-technology/aces/aces-documentation" target="_blank">Page of links to ACES technical documentation PDFs on the Academy website</a></p> 
 	    			<p><strong>Sony S-Log3</strong> - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/2/TechnicalSummary_for_S-Gamut3Cine_S-Gamut3_S-Log3_V1_00.pdf">Technical Summary for S-Gamut3.Cine/S-Log3 and S-Gamut3/S-Log3</a></p>
 					<p><strong>Sony S-Gamut3 / S-Gamut3.cine</strong> - <a href="http://community.sony.com/sony/attachments/sony/large-sensor-camera-F5-F55/12359/3/S-Gamut3_S-Gamut3Cine_Matrix.xlsx">Sony Excel spreadsheet of various gamut matrices</a></p>
 	    			<p><strong>Sony S-Log2</strong> - <a href="https://pro.sony.com/bbsccms/assets/files/micro/dmpc/training/S-Log2_Technical_PaperV1_0.pdf">Sony Technical Paper On S-Log2</a></p>
