@@ -53,6 +53,7 @@ LUTTweaksBox.prototype.ui = function() {
 	this.tweaksList.push(new TWKPSSTCDL(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKASCCDL(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKHG(this.holder, this.inputs, this.messages));
+	this.tweaksList.push(new TWKKnee(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKFC(this.holder, this.inputs, this.messages));
 	this.LA = this.tweaksList.length;

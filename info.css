@@ -55,11 +55,11 @@
 }
 #ins-main-twk {
 	background-image: url('pngs/main-twk.png');
-	background-size:12em 7.2em;
+	background-size:12em 7.95em;
 	width:12em;
-	height:7.2em;
+	height:7.95em;
 }
-#ins-main-spacer {margin:0;padding:0;background-size:12em 2.85em;width:12em;height:2.85em;}
+#ins-main-spacer {margin:0;padding:0;background-size:12em 2.85em;width:12em;height:2.35em;}
 #ins-main-right {width:12.6em;margin:0;padding:0;float:right;}
 #ins-main-lut {
 	background-image: url('pngs/main-lut.png');
@@ -215,6 +215,12 @@
 	width:21em;
 	height:1.27em;
 }
+#ins-cust-knee {
+	background-image: url('pngs/cust-knee.png');
+	background-size:21em 1.32em;
+	width:21em;
+	height:1.32em;
+}
 #ins-cust-bhi {
 	background-image: url('pngs/cust-bhi.png');
 	background-size:21em 1.32em;
@@ -276,6 +282,12 @@
 	background-size:21em 7.27em;
 	width:21em;
 	height:7.27em;
+}
+#ins-cust-knee-1 {
+	background-image: url('pngs/cust-knee-1.png');
+	background-size:21em 13.08em;
+	width:21em;
+	height:13.08em;
 }
 #ins-cust-fc-1 {
 	background-image: url('pngs/cust-fc-1.png');

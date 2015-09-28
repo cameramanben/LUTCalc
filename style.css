@@ -313,8 +313,10 @@ background:transparent;
 
 .fixed-width-no {width:3em; display:inline-block; text-align: center; margin:0}
 .slider-holder { display: inline-block; }
+.wide-slider { width: 90%; }
 .isoinput {width:5em;line-height:0.8;}
 .shiftinput {width:5em;line-height:0.8;}
+.basicinput {width:4em;line-height:0.8;}
 .ireinput {width:4em;line-height:0.8;}
 .stopinput {width:4em;line-height:0.8;}
 .smallinput {width:3em;line-height:0.8;}

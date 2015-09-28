@@ -528,3 +528,6 @@ LUTMessage.prototype.setSettings = function() {
 	this.gtSetParams();
 	this.gaSetParams();
 };
+LUTMessage.prototype.checkFormat = function() {
+	this.ui[11].updateGammaOut();
+};

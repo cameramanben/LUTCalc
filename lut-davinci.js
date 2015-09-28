@@ -18,9 +18,9 @@ davinciiLUT.prototype.build = function(buff, fileName, ext) {
 	var max = lut.length;
 	var d = '';
 	for (var j=0; j<max; j += 3) {
-		d +=	Math.round(lut[ j ]*16383).toString() + ' ' +
-				Math.round(lut[j+1]*16383).toString() + ' ' +
-				Math.round(lut[j+2]*16383).toString() + ' ' +
+		d +=	Math.round(lut[ j ]*16383).toString() + ',' +
+				Math.round(lut[j+1]*16383).toString() + ',' +
+				Math.round(lut[j+2]*16383).toString() + ',' +
 				"0\n";
 	}
 	return {
@@ -87,11 +87,11 @@ davincioLUT.prototype.build = function(buff, fileName, ext) {
 	var max = lut.length;
 	var d = '';
 	for (var j=0; j<max; j += 3) {
-		d +=	Math.round(lut[ j ]*16383).toString() + ' ' +
-				Math.round(lut[j+1]*16383).toString() + ' ' +
-				Math.round(lut[j+2]*16383).toString() + ' ' +
-				Math.round(lut[ j ]*16383).toString() + ' ' +
-				Math.round(lut[j+1]*16383).toString() + ' ' +
+		d +=	Math.round(lut[ j ]*16383).toString() + ',' +
+				Math.round(lut[j+1]*16383).toString() + ',' +
+				Math.round(lut[j+2]*16383).toString() + ',' +
+				Math.round(lut[ j ]*16383).toString() + ',' +
+				Math.round(lut[j+1]*16383).toString() + ',' +
 				Math.round(lut[j+2]*16383).toString() + "\n";
 	}
 	return {

@@ -1,5 +1,14 @@
 LUTCalc Changelog
 =================
+v2.1
+----
+* New Feature - Knee adjustment. Add or adjust a knee with any output gamma. clip levels, range and smoothness (from hard conventional video knee to smoothly curved 'cinegamma') are all adjustable.
+* Bugfix - changing the output gamma was not correctly setting the output range for the chosen format preset.
+* Bugfix - file format and details settings were not correctly stored or loaded with 'Save Settings' and 'Load Settings'.
+* Bugfix - Values in Resolve 'ilut' and 'olut' format LUTs were separated with spaces rather than commas.
+* Feature Change - Simplified the LUT output calculation process for easier maintainance and development.
+* Feature Change - Colour charts on preview defaults now circles, allowing variation in the YPbPr values which will eventually allow larger dots on the Vectorscope.
+
 v2.0
 ----
 * Updated instructions to reflect added features and changes to the interface.
