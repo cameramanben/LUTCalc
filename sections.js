@@ -1,4 +1,5 @@
 window.onload = function() {
+	var urlHref = window.location.hash.slice(1);
 	var tocAbout = document.getElementById('toc-about');
 	var tocNews = document.getElementById('toc-news');
 	var tocInstall = document.getElementById('toc-install');
@@ -98,5 +99,18 @@ window.onload = function() {
 	document.getElementById('about-1').removeAttribute('href');
 	document.getElementById('about-1').onclick = function(){ showFeatures(); };
 
-	showAbout();
+	if (typeof urlHref !== 'undefined') {
+		switch(urlHref) {
+			case 'about': showAbout(); break;
+			case 'news': showNews(); break;
+			case 'install': showInstall(); break;
+			case 'howto': showHowTo(); break;
+			case 'features': showFeatures(); break;
+			case 'faq': showFAQ(); break;
+			case 'tech-links': showTechLinks(); break;
+			default: showAbout();
+		}
+	} else {
+		showAbout();
+	}
 }
