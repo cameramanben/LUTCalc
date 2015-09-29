@@ -99,7 +99,7 @@ window.onload = function() {
 	document.getElementById('about-1').removeAttribute('href');
 	document.getElementById('about-1').onclick = function(){ showFeatures(); };
 
-	if (typeof urlHref !== 'undefined') {
+	if (typeof urlHref === 'string') {
 		switch(urlHref) {
 			case 'about': showAbout(); break;
 			case 'news': showNews(); break;
