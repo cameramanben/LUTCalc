@@ -479,6 +479,7 @@ TWKCS.prototype.changeCS = function() {
 		this.cstWP.checked = true;
 	}
 	this.illOrWP();
+	this.changeOutput();
 };
 TWKCS.prototype.setXY = function(i) {
 	this.xWP.value = this.gamuts[i].wx.toString();
