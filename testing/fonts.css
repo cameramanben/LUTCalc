@@ -1,0 +1,22 @@
+/* Element font choices */
+body {
+	font-family: "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+}
+pre, code, kbd, samp {
+	font-family: monospace, sans-serif;
+}
+h1 { font-size: 1.4em; }
+h2 { font-size: 1.3em; }
+h3 { font-size: 1.2em; }
+h4 { font-size: 1em; font-weight: bold;}
+h5 { font-size: 1.1em; }
+h6 { font-size: 0.6em; font-weight: bold; }
+i { font-weight: bold; }
+th {font-weight: bold;}
+small {font-size: 0.7em;}
+strong { font-weight: bold; font-size: 1.1em; }
+select, input, textarea {font: 99% sans-serif;}
+sup { vertical-align: top; font-size: 0.7em; }
+table { font-size: 0.8em; }
+.smaller {font-size: 0.8em;}
+.bold {font-weight:bold;}
