@@ -20,6 +20,7 @@ function LUTColourSpace() {
 		 0.0030, 0.0136, 0.9834
 	]);
 	this.invCat02 = this.mInverse(this.cat02);
+	this.matList = [];
 	this.xyzMatrices();
 	this.system = this.g[this.sysIdx];
 	this.system.inv = this.mInverse(this.system.toXYZ);
@@ -260,6 +261,19 @@ LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
 	]);
 	var cat02 = this.mMult(this.invCat02,this.mMult(CAT,this.cat02));
 	return this.mMult(cat02,m);
+};
+LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
+	var cat = this.CATs.getModel(model);
+	var inv = this.mInverse(cat);
+	var s = this.mMult(cat, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
+	var d = this.mMult(cat, new Float64Array([wd[0]/wd[1],1,wd[2]/wd[1]]));
+	var CAT = new Float64Array([
+		d[0]/s[0], 0, 0,
+		0, d[1]/s[1], 0,
+		0, 0, d[2]/s[2]
+	]);
+	var n = this.mMult(inv,this.mMult(CAT,cat));
+	return this.mMult(n,m);
 };
 LUTColourSpace.prototype.toSys = function(name) {
 	var max = this.g.length;
@@ -576,6 +590,9 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 LUTColourSpace.prototype.systemMatrices = function() {
 	var max = this.g.length;
 	for (var j=0; j<max; j++) {
+		if (this.g[j].name !== 'Custom In' && this.g[j].name !== 'Custom Out' && this.g[j].name !== 'Passthrough') {
+			this.matList.push({name: this.g[j].name,idx: j});
+		}
 		if (j === this.sysIdx) {
 			this.g[j].toSys = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
 		} else if (this.g[j].name === 'XYZ') {
@@ -740,43 +757,81 @@ LUTColourSpace.prototype.setSaturated = function() {
 };
 // Parameter setting functions
 LUTColourSpace.prototype.setCS = function(params) {
-	var out = {}
+	var out = {};
 	if (typeof params.twkCS !== 'undefined') {
 		var p = params.twkCS;
-		var customIn = {};
-		var customOut = {};
-		customIn.xy = new Float64Array([
-			p.input.rx, p.input.ry,
-			p.input.gx, p.input.gy,
-			p.input.bx, p.input.by
-		]);
-		customIn.white = new Float64Array([
-			p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
-		]);
-		customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
-		if (customIn.white[0] !== this.system.white[0] && customIn.white[1] !== this.system.white[1] && customIn.white[2] !== this.system.white[2]) {
-			customIn.toSys = this.mMult(this.system.inv, this.ciecat02(customIn.toXYZ,customIn.white,this.system.white));
+		out.editIdx = p.editIdx;
+		if (p.matrix) {
+			var model = 0;
+			if (typeof p.input.cat === 'number') {
+				model = p.input.cat;
+			}
+			var inWCS = this.g[p.input.wcs];
+			var inToSys = this.mMult(this.system.inv, this.calcCAT(model,inWCS.toXYZ,inWCS.white,this.system.white));
+			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inToSys,p.input.matrix), inWCS.white.buffer.slice(0));
+			var model = 0;
+			if (typeof p.output.cat === 'number') {
+				model = p.output.cat;
+			}
+			var outWCS = this.g[p.input.wcs];
+			var outFromSys = this.mInverse(this.mMult(this.system.inv, this.calcCAT(model,outWCS.toXYZ,outWCS.white,this.system.white)));
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outFromSys), outWCS.white.buffer.slice(0));
 		} else {
-			customIn.toSys = this.mMult(this.system.inv, customIn.toXYZ);
+			var customIn = {};
+			var customOut = {};
+			var model = 0;
+			if (p.lock) {
+				var edit = {};
+				if (typeof p.edit.cat === 'number') {
+					model = p.edit.cat;
+				}
+				edit.xy = new Float64Array([
+					p.edit.rx, p.edit.ry,
+					p.edit.gx, p.edit.gy,
+					p.edit.bx, p.edit.by
+				]);
+				edit.white = new Float64Array([
+					p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
+				]);
+				edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
+				out.editMatrix = this.mMult(this.system.inv, this.calcCAT(model,edit.toXYZ,edit.white,this.system.white));
+				out.wcs = p.edit.wcs;
+			}
+			if (typeof p.input.cat === 'number') {
+				model = p.input.cat;
+			} else {
+				model = 0;
+			}
+			customIn.xy = new Float64Array([
+				p.input.rx, p.input.ry,
+				p.input.gx, p.input.gy,
+				p.input.bx, p.input.by
+			]);
+			customIn.white = new Float64Array([
+				p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
+			]);
+			customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
+			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(model,customIn.toXYZ,customIn.white,this.system.white));
+			this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
+			if (typeof p.output.cat === 'number') {
+				model = p.output.cat;
+			} else {
+				model = 0;
+			}
+			customOut.xy = new Float64Array([
+				p.output.rx, p.output.ry,
+				p.output.gx, p.output.gy,
+				p.output.bx, p.output.by
+			]);
+			customOut.white = new Float64Array([
+				p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
+			]);
+			customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
+			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(model,customOut.toXYZ,customOut.white,this.system.white));
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
+			this.csM[this.custOut] = this.csOut[this.custOut];
+			out.doCS = true;
 		}
-		this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
-		customOut.xy = new Float64Array([
-			p.output.rx, p.output.ry,
-			p.output.gx, p.output.gy,
-			p.output.bx, p.output.by
-		]);
-		customOut.white = new Float64Array([
-			p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
-		]);
-		customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
-		if (customOut.white[0] !== this.system.white[0] && customOut.white[1] !== this.system.white[1] && customOut.white[2] !== this.system.white[2]) {
-			customOut.toSys = this.mMult(this.system.inv, this.ciecat02(customOut.toXYZ,customOut.white,this.system.white));
-		} else {
-			customOut.toSys = this.mMult(this.system.inv, customOut.toXYZ);
-		}
-		this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
-		this.csM[this.custOut] = this.csOut[this.custOut];
-		out.doCS = true;
 	} else {
 		out.doCS = false;
 	}
@@ -2192,6 +2247,8 @@ LUTColourSpace.prototype.getLists = function(p,t) {
 		inList: this.inList,
 		outList: this.outList,
 		laList: this.laList,
+		matList: this.matList,
+		CATList: this.CATs.getModels(),
 		pass: this.pass,
 		LA: this.LA
 	};

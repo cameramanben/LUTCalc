@@ -463,6 +463,8 @@ LUTMessage.prototype.gotGamutLists = function(d) {
 	this.inputs.addInput('gamutInList',d.inList);
 	this.inputs.addInput('gamutOutList',d.outList);
 	this.inputs.addInput('gamutLAList',d.laList);
+	this.inputs.addInput('gamutMatrixList',d.matList);
+	this.inputs.addInput('gamutCATList',d.CATList);
 	this.ui[2].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Gamma Box
 	this.ui[3].gotGamutLists(); // Tweaks Box
 	this.gtSetParams();

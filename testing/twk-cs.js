@@ -28,11 +28,16 @@ TWKCS.prototype.io = function() {
 	this.count = 1;
 	this.gamuts = [];
 	this.gamuts.push({
+		cat: 0,
+		matrix: false, lock: false,
 		std: 'D65',
 		wx: 0.31270,wy: 0.32900,
 		rx: 0.64,	ry: 0.33,
 		gx: 0.30,	gy: 0.60,
-		bx: 0.15,	by: 0.06
+		bx: 0.15,	by: 0.06,
+		wcs: 'XYZ',
+		inMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1]),
+		outMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1])
 	});
 	// List of custom gamuts
 	this.gamList = document.createElement('select');
@@ -46,6 +51,9 @@ TWKCS.prototype.io = function() {
 	this.removeButton = document.createElement('input');
 	this.removeButton.setAttribute('type','button');
 	this.removeButton.value = 'Remove';
+	// Matrix / Colour Space
+	this.clspOpt = this.createRadioElement('mcOpt', true);
+	this.matxOpt = this.createRadioElement('mcOpt', false);	
 	// Title
 	this.title = document.createElement('input');
 	this.title.setAttribute('type','text');
@@ -91,6 +99,53 @@ TWKCS.prototype.io = function() {
 	this.yB.setAttribute('type','text');
 	this.yB.className = 'basicinput';
 	this.yB.value = this.gamuts[0].by.toString();
+	// Matrix inputs
+	this.matIn = [];
+	this.matOut = [];
+	for (var j=0; j<9; j++) {
+		var inInput = document.createElement('input');
+		inInput.setAttribute('type','text');
+		inInput.className = 'wideinput';
+		inInput.disabled = false;
+		this.matIn.push(inInput);
+		var outInput = document.createElement('input');
+		outInput.setAttribute('type','text');
+		outInput.className = 'wideinput';
+		outInput.disabled = true;
+		this.matOut.push(outInput);
+		if (j === 0 || j === 4 || j === 8) {
+			inInput.value = '1';
+			outInput.value = '1';
+		} else {
+			inInput.value = '0';
+			outInput.value = '0';
+		}
+	}
+	this.matInOpt = this.createRadioElement('matInOutOpt', true);
+	this.matOutOpt = this.createRadioElement('matInOutOpt', false);	
+	this.wrkspcSelect = document.createElement('select');
+	var m = this.inputs.gamutMatrixList.length;
+	for (var j=0; j<m; j++) {
+		var matrixOpt = document.createElement('option');
+		matrixOpt.appendChild(document.createTextNode(this.inputs.gamutMatrixList[j].name));
+		if (this.inputs.gamutMatrixList[j].name === 'XYZ') {
+			matrixOpt.selected = true;
+		}
+		matrixOpt.value = this.inputs.gamutMatrixList[j].idx;
+		this.wrkspcSelect.appendChild(matrixOpt);
+	}
+	// CAT Selection
+	this.CATSelect = document.createElement('select');
+	m = this.inputs.gamutCATList.length;
+	for (var j=0; j<m; j++) {
+		var CATOption = document.createElement('option');
+		if (j === 0) {
+			CATOption.selected = true;
+		}
+		CATOption.value = j;
+		CATOption.appendChild(document.createTextNode(this.inputs.gamutCATList[j]));
+		this.CATSelect.appendChild(CATOption);
+	}
 	// Input and output choices
 	this.inSelect = document.createElement('select');
 	var inOption = document.createElement('option');
@@ -115,36 +170,70 @@ TWKCS.prototype.ui = function() {
 	this.box.appendChild(this.gamList);
 	this.box.appendChild(this.newButton);
 	this.box.appendChild(this.removeButton);
+	this.box.appendChild(document.createElement('br'));
+	this.box.appendChild(this.clspOpt);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('White Point & Primaries')));
+	this.box.appendChild(this.matxOpt);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Matrix')));
+	this.box.appendChild(document.createElement('br'));
 	var editBox = document.createElement('div');
 	editBox.className = 'twk-sub-box';
 	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Title')));
 	editBox.appendChild(this.title);
-	editBox.appendChild(document.createElement('br'));
-	editBox.appendChild(this.stdWP);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Standard Illuminant')));
-	editBox.appendChild(this.stdIll);
-	editBox.appendChild(this.cstWP);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('White Point')));
-	editBox.appendChild(document.createElement('br'));
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('x')));
-	editBox.appendChild(this.xWP);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
-	editBox.appendChild(this.yWP);
-	editBox.appendChild(document.createElement('br'));
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Red Primary:   x')));
-	editBox.appendChild(this.xR);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
-	editBox.appendChild(this.yR);
-	editBox.appendChild(document.createElement('br'));
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Green Primary: x')));
-	editBox.appendChild(this.xG);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
-	editBox.appendChild(this.yG);
-	editBox.appendChild(document.createElement('br'));
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Blue Primary:  x')));
-	editBox.appendChild(this.xB);
-	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
-	editBox.appendChild(this.yB);
+	this.wppBox = document.createElement('div');
+	this.wppBox.className = 'twk-tab';
+	this.wppBox.appendChild(this.stdWP);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Standard Illuminant')));
+	this.wppBox.appendChild(this.stdIll);
+	this.wppBox.appendChild(this.cstWP);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('White Point')));
+	this.wppBox.appendChild(document.createElement('br'));
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('x')));
+	this.wppBox.appendChild(this.xWP);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
+	this.wppBox.appendChild(this.yWP);
+	this.wppBox.appendChild(document.createElement('br'));
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Red Primary:   x')));
+	this.wppBox.appendChild(this.xR);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
+	this.wppBox.appendChild(this.yR);
+	this.wppBox.appendChild(document.createElement('br'));
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Green Primary: x')));
+	this.wppBox.appendChild(this.xG);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
+	this.wppBox.appendChild(this.yG);
+	this.wppBox.appendChild(document.createElement('br'));
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Blue Primary:  x')));
+	this.wppBox.appendChild(this.xB);
+	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
+	this.wppBox.appendChild(this.yB);
+	editBox.appendChild(this.wppBox);
+	this.matxBox = document.createElement('div');
+	this.matxBox.className = 'twk-tab-hide';
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Working Colourspace')));
+	this.matxBox.appendChild(this.wrkspcSelect);
+	this.matxBox.appendChild(document.createElement('br'));
+	this.matxBox.appendChild(this.matInOpt);
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('To Working Colourspace')));
+	this.matxBox.appendChild(document.createElement('br'));
+	for (var j=0; j<9; j++) {
+		this.matxBox.appendChild(this.matIn[j]);
+		if ((j+1)%3 === 0) {
+			this.matxBox.appendChild(document.createElement('br'));
+		}
+	}
+	this.matxBox.appendChild(this.matOutOpt);
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('From Working Colourspace')));
+	this.matxBox.appendChild(document.createElement('br'));
+	for (var j=0; j<9; j++) {
+		this.matxBox.appendChild(this.matOut[j]);
+		if ((j+1)%3 === 0) {
+			this.matxBox.appendChild(document.createElement('br'));
+		}
+	}
+	editBox.appendChild(this.matxBox);
+	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('CAT Model')));
+	editBox.appendChild(this.CATSelect);
 	this.box.appendChild(editBox);
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Choice')));
 	this.box.appendChild(this.inSelect);
@@ -175,25 +264,56 @@ TWKCS.prototype.getTFParams = function(params) {
 TWKCS.prototype.getCSParams = function(params) {
 	var out = {};
 	out.doCS = true;
-	var i = this.inSelect.selectedIndex;
+	var i = this.gamList.selectedIndex;
+	out.editIdx = i;
+	out.matrix = this.gamuts[i].matrix;
+	out.lock = this.gamuts[i].lock;
+	out.edit = {
+		wx: this.gamuts[i].wx, wy: this.gamuts[i].wy,
+		rx: this.gamuts[i].rx, ry: this.gamuts[i].ry,
+		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
+		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
+		wcs: this.getWCS(this.gamuts[i].wcs),
+		matrix: new Float64Array(this.gamuts[i].inMatrix.buffer.slice(0)),
+		cat: this.gamuts[i].cat
+	};
+	i = this.inSelect.selectedIndex;
 	out.input = {
 		wx: this.gamuts[i].wx, wy: this.gamuts[i].wy,
 		rx: this.gamuts[i].rx, ry: this.gamuts[i].ry,
 		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
-		bx: this.gamuts[i].bx, by: this.gamuts[i].by
+		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
+		wcs: this.getWCS(this.gamuts[i].wcs),
+		matrix: new Float64Array(this.gamuts[i].inMatrix.buffer.slice(0)),
+		cat: this.gamuts[i].cat
 	};
 	i = this.outSelect.selectedIndex;
 	out.output = {
 		wx: this.gamuts[i].wx, wy: this.gamuts[i].wy,
 		rx: this.gamuts[i].rx, ry: this.gamuts[i].ry,
 		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
-		bx: this.gamuts[i].bx, by: this.gamuts[i].by
+		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
+		wcs: this.getWCS(this.gamuts[i].wcs),
+		matrix: new Float64Array(this.gamuts[i].outMatrix.buffer.slice(0)),
+		cat: this.gamuts[i].cat
 	};
 	params.twkCS = out;
 };
 TWKCS.prototype.setParams = function(params) {
 	if (typeof params.twkCS !== 'undefined') {
 		var p = params.twkCS;
+		if (typeof p.editMatrix !== 'undefined') {
+			this.gamuts[p.editIdx].inMatrix = new Float64Array(p.editMatrix.buffer.slice(0));
+			this.gamuts[p.editIdx].outMatrix = this.mInverse(p.editMatrix);
+			this.gamuts[p.editIdx].wcs = p.wcs;
+			if (this.gamList.selectedIndex === p.editIdx) {
+				this.wrkspcSelect.options[this.getWCS(p.wcs)].selected = true;
+				for (var j=0; j<9; j++) {
+					this.matIn[j].value = this.gamuts[p.editIdx].inMatrix[j].toString();
+					this.matOut[j].value = this.gamuts[p.editIdx].outMatrix[j].toString();
+				}
+			}
+		}
 	}
 //	this.toggleTweak();
 };
@@ -203,11 +323,17 @@ TWKCS.prototype.getSettings = function(data) {
 	for (var j=0; j<m; j++) {
 		list.push({
 			title: this.gamList.options[j].lastChild.nodeValue,
+			matrix: this.gamuts[j].matrix,
+			lock: this.gamuts[j].lock,
 			std: this.gamuts[j].std,
 			wx: this.gamuts[j].wx, wy: this.gamuts[j].wy,
 			rx: this.gamuts[j].rx, ry: this.gamuts[j].ry,
 			gx: this.gamuts[j].gx, gy: this.gamuts[j].gy,
-			bx: this.gamuts[j].bx, by: this.gamuts[j].by
+			bx: this.gamuts[j].bx, by: this.gamuts[j].by,
+			wcs: this.gamuts[j].wcs,
+			inMatrix: this.taToString(this.gamuts[j].inMatrix),
+			outMatrix: this.taToString(this.gamuts[j].outMatrix),
+			cat: this.CATSelect.options[this.gamuts[j].cat].lastChild.nodeValue
 		});
 	}
 	data.customCS = {
@@ -226,17 +352,24 @@ TWKCS.prototype.setSettings = function(settings) {
 			this.inSelect.length = 0;
 			this.outSelect.length = 0;
 			var m = data.list.length;
+			this.title.value = data.edit;
 			for (var j=0; j<m; j++) {
 				this.gamuts.push({
+					matrix: data.list[j].matrix,
+					lock: data.list[j].lock,
 					std: data.list[j].std,
 					wx: data.list[j].wx, wy: data.list[j].wy,
 					rx: data.list[j].rx, ry: data.list[j].ry,
 					gx: data.list[j].gx, gy: data.list[j].gy,
-					bx: data.list[j].bx, by: data.list[j].by
+					bx: data.list[j].bx, by: data.list[j].by,
+					wcs: data.list[j].wcs,
+					inMatrix: new Float64Array(data.list[j].inMatrix.split(',').map(Number)),
+					outMatrix: new Float64Array(data.list[j].outMatrix.split(',').map(Number)),
+					cat: this.getCAT(data.list[j].cat)
 				});
-				this.title.value = data.edit;
 				var option1 = document.createElement('option');
 				option1.appendChild(document.createTextNode(data.list[j].title));
+				this.gamList.appendChild(option1);
 				if (data.list[j].title === data.edit) {
 					this.xWP.value = data.list[j].wx.toString();
 					this.yWP.value = data.list[j].wy.toString();
@@ -268,7 +401,6 @@ TWKCS.prototype.setSettings = function(settings) {
 						this.yWP.disabled = false;
 					}
 				}
-				this.gamList.appendChild(option1);
 				var option2 = document.createElement('option');
 				option2.appendChild(document.createTextNode(data.list[j].title));
 				if (data.list[j].title === data.input) {
@@ -303,6 +435,18 @@ TWKCS.prototype.events = function() {
 		here.removeCS();
 		here.messages.gtSetParams();
 	};}(this);
+	this.clspOpt.onclick = function(here){ return function(){
+		here.clspMatx();
+		here.messages.gtSetParams();
+	};}(this);
+	this.matxOpt.onclick = function(here){ return function(){
+		here.clspMatx();
+		here.messages.gtSetParams();
+	};}(this);
+	this.wrkspcSelect.onchange = function(here){ return function(){
+		here.changeWCS();
+		here.messages.gtSetParams();
+	};}(this);
 	this.title.oninput = function(here){ return function(){
 		here.changeTitle();
 	};}(this);
@@ -320,27 +464,35 @@ TWKCS.prototype.events = function() {
 	};}(this);
 	this.xWP.onchange = function(here){ return function(){
 		here.testWx();
+		here.messages.gtSetParams();
 	};}(this);
 	this.yWP.onchange = function(here){ return function(){
 		here.testWy();
+		here.messages.gtSetParams();
 	};}(this);
 	this.xR.onchange = function(here){ return function(){
 		here.testRx();
+		here.messages.gtSetParams();
 	};}(this);
 	this.yR.onchange = function(here){ return function(){
 		here.testRy();
+		here.messages.gtSetParams();
 	};}(this);
 	this.xG.onchange = function(here){ return function(){
 		here.testGx();
+		here.messages.gtSetParams();
 	};}(this);
 	this.yG.onchange = function(here){ return function(){
 		here.testGy();
+		here.messages.gtSetParams();
 	};}(this);
 	this.xB.onchange = function(here){ return function(){
 		here.testBx();
+		here.messages.gtSetParams();
 	};}(this);
 	this.yB.onchange = function(here){ return function(){
 		here.testBy();
+		here.messages.gtSetParams();
 	};}(this);
 	this.inSelect.onchange = function(here){ return function(){
 		here.changeInput();
@@ -348,6 +500,28 @@ TWKCS.prototype.events = function() {
 	};}(this);
 	this.outSelect.onchange = function(here){ return function(){
 		here.changeOutput();
+		here.messages.gtSetParams();
+	};}(this);
+	this.matInOpt.onclick = function(here){ return function(){
+		here.toggleMatIO();
+		here.messages.gtSetParams();
+	};}(this);
+	this.matOutOpt.onclick = function(here){ return function(){
+		here.toggleMatIO();
+		here.messages.gtSetParams();
+	};}(this);
+	for (var j=0; j<9; j++) {
+		this.matIn[j].onchange = function(here){ return function(){
+			here.updateInMatrix();
+			here.messages.gtSetParams();
+		};}(this);
+		this.matOut[j].onchange = function(here){ return function(){
+			here.updateOutMatrix();
+			here.messages.gtSetParams();
+		};}(this);
+	}
+	this.CATSelect.onchange = function(here){ return function(){
+		here.changeCAT();
 		here.messages.gtSetParams();
 	};}(this);
 };
@@ -396,6 +570,7 @@ TWKCS.prototype.changeIll = function() {
 	this.gamuts[this.gamList.selectedIndex].std = this.illuminants[i].name.toUpperCase();
 	this.gamuts[this.gamList.selectedIndex].wx = this.illuminants[i].x;
 	this.gamuts[this.gamList.selectedIndex].wy = this.illuminants[i].y;
+	this.gamuts[this.gamList.selectedIndex].lock = true;
 };
 TWKCS.prototype.illOrWP = function() {
 	if (this.stdWP.checked) {
@@ -410,22 +585,35 @@ TWKCS.prototype.illOrWP = function() {
 		this.yWP.disabled = false;
 		this.gamuts[this.gamList.selectedIndex].std = false;
 	}
+	this.gamuts[this.gamList.selectedIndex].lock = true;
 };
 TWKCS.prototype.newCS = function() {
 	this.title.value = 'Gamut ' + this.count.toString();
 	this.count++;
 	var i = this.gamuts.length;
 	this.gamuts.push({
+		cat: this.CATSelect.selectedIndex,
+		matrix: false, lock: false,
 		std: 'D65',
 		wx: 0.31270,wy: 0.32900,
 		rx: 0.64,	ry: 0.33,
 		gx: 0.30,	gy: 0.60,
-		bx: 0.15,	by: 0.06
+		bx: 0.15,	by: 0.06,
+		wcs: 'XYZ',
+		inMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1]),
+		outMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1])
 	});
 	var m = this.stdIll.options.length;
 	for (var j=0; j<m; j++) {
 		if (this.stdIll.options[j].lastChild.nodeValue === 'D65') {
 			this.stdIll.options[j].selected = true;
+			break;
+		}
+	}
+	m = this.wrkspcSelect.options.length;
+	for (var j=0; j<m; j++) {
+		if (this.wrkspcSelect.options[j].lastChild.nodeValue === 'XYZ') {
+			this.wrkspcSelect.options[j].selected = true;
 			break;
 		}
 	}
@@ -449,6 +637,28 @@ TWKCS.prototype.newCS = function() {
 	this.changeInput();
 	this.changeOutput();
 };
+TWKCS.prototype.changeCAT = function() {
+	this.gamuts[this.gamList.selectedIndex].cat = this.CATSelect.selectedIndex;
+};
+TWKCS.prototype.getWCS = function(wcs) {
+	var m = this.wrkspcSelect.options.length;
+	for (var j=0; j<m; j++) {
+		if (this.wrkspcSelect.options[j].lastChild.nodeValue === wcs) {
+			return j;
+		}
+	}
+};
+TWKCS.prototype.changeWCS = function(wcs) {
+	this.gamuts[this.gamList.selectedIndex].wcs = this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue;
+};
+TWKCS.prototype.getCAT = function(cat) {
+	var m = this.CATSelect.options.length;
+	for (var j=0; j<m; j++) {
+		if (this.CATSelect.options[j].lastChild.nodeValue === cat) {
+			return j;
+		}
+	}
+};
 TWKCS.prototype.removeCS = function() {
 	var i = this.gamList.selectedIndex;
 	var m = this.gamList.options.length;
@@ -456,8 +666,122 @@ TWKCS.prototype.removeCS = function() {
 		this.gamList.remove(i);
 		this.inSelect.remove(i);
 		this.outSelect.remove(i);
+		this.gamuts.splice(i,1);
 	}
 	this.changeCS();
+};
+TWKCS.prototype.clspMatx = function() {
+	if (this.clspOpt.checked) {
+		this.wppBox.className = 'twk-tab';
+		this.matxBox.className = 'twk-tab-hide';
+		this.gamuts[this.gamList.selectedIndex].matrix = false;
+	} else {
+		this.wppBox.className = 'twk-tab-hide';
+		this.matxBox.className = 'twk-tab-box';
+		this.gamuts[this.gamList.selectedIndex].matrix = true;
+	}
+};
+TWKCS.prototype.toggleMatIO = function() {
+	if (this.matInOpt.checked) {
+		for (var j=0; j<9; j++) {
+			this.matIn[j].disabled = false;
+			this.matOut[j].disabled = true;
+		}
+	} else {
+		for (var j=0; j<9; j++) {
+			this.matIn[j].disabled = true;
+			this.matOut[j].disabled = false;
+		}
+	}
+};
+TWKCS.prototype.updateInMatrix = function() {
+	var mat = new Float64Array(9);
+	var i;
+	for (var j=0; j<9; j++) {
+		i = parseFloat(this.matIn[j].value);
+		if (isNaN(i)) {
+			i = this.gamuts[this.gamList.selectedIndex].inMatrix[j];
+			this.matIn[j].value = i.toString();
+			mat[j] = i;
+		} else {
+			this.gamuts[this.gamList.selectedIndex].inMatrix[j] = i;
+			mat[j] = i;
+		}
+	}
+	var inv = this.mInverse(mat);
+	var matStore = this.gamuts[this.gamList.selectedIndex].outMatrix;
+	if (inv) {
+		for (var j=0; j<9; j++) {
+			this.matOut[j].value = inv[j].toString();
+			matStore[j] = inv[j];
+		}
+	} else {
+		for (var j=0; j<9; j++) {
+			if (j === 0 || j === 4 || j === 8) {
+				this.matOut[j].value = '1';
+				matStore[j] = 1;
+			} else {
+				this.matOut[j].value = '0';
+				matStore[j] = 0;
+			}
+		}
+	}
+};
+TWKCS.prototype.updateOutMatrix = function() {
+	var mat = new Float64Array(9);
+	var i;
+	for (var j=0; j<9; j++) {
+		i = parseFloat(this.matOut[j].value);
+		if (isNaN(i)) {
+			i = this.gamuts[this.gamList.selectedIndex].outMatrix[j];
+			this.matOut[j].value = i.toString();
+			mat[j] = i;
+		} else {
+			this.gamuts[this.gamList.selectedIndex].outMatrix[j] = i;
+			mat[j] = i;
+		}
+	}
+	var inv = this.mInverse(mat);
+	var matStore = this.gamuts[this.gamList.selectedIndex].inMatrix;
+	if (inv) {
+		for (var j=0; j<9; j++) {
+			this.matIn[j].value = inv[j].toString();
+			matStore[j] = inv[j];
+		}
+	} else {
+		for (var j=0; j<9; j++) {
+			if (j === 0 || j === 4 || j === 8) {
+				this.matIn[j].value = '1';
+				matStore[j] = 1;
+			} else {
+				this.matIn[j].value = '0';
+				matStore[j] = 0;
+			}
+		}
+	}
+};
+TWKCS.prototype.mInverse = function(m) {
+	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
+				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
+				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+	if (det === 0) {
+		return false;
+	}
+	var mt = new Float64Array([
+		m[0], m[3], m[6],
+		m[1], m[4], m[7],
+		m[2], m[5], m[8]
+	]);
+	var mc = new Float64Array([
+		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
+		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
+		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
+	]);
+	return new Float64Array([
+		mc[0]/det, mc[1]/det, mc[2]/det,
+		mc[3]/det, mc[4]/det, mc[5]/det,
+		mc[6]/det, mc[7]/det, mc[8]/det
+	]);
 };
 TWKCS.prototype.changeCS = function() {
 	var i = this.gamList.selectedIndex;
@@ -479,6 +803,28 @@ TWKCS.prototype.changeCS = function() {
 		this.cstWP.checked = true;
 	}
 	this.illOrWP();
+	for (var j=0; j<9; j++) {
+		this.matIn[j].value = this.gamuts[i].inMatrix[j].toString();
+		this.matOut[j].value = this.gamuts[i].outMatrix[j].toString();
+	}
+	if (typeof this.gamuts[i].wcs !== 'undefined') {
+		var m = this.wrkspcSelect.options.length;
+		for (var j=0; j<m; j++) {
+			if (this.wrkspcSelect.options[j].lastChild.nodeValue === this.gamuts[i].wcs) {
+				this.wrkspcSelect.options[j].selected = true;
+				break;
+			}
+		}
+	}
+	if (typeof this.gamuts[i].matrix === 'boolean' && this.gamuts[i].matrix) {
+		this.matxOpt.checked = true;
+		this.clspOpt.checked = false;
+	} else {
+		this.matxOpt.checked = false;
+		this.clspOpt.checked = true;
+	}
+	this.CATSelect.options[this.gamuts[i].cat].selected = true;
+	this.clspMatx();
 	this.changeOutput();
 };
 TWKCS.prototype.setXY = function(i) {
@@ -499,6 +845,7 @@ TWKCS.prototype.testWx = function() {
 	} else {
 		this.gamuts[i].wx = x;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testWy = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -508,6 +855,7 @@ TWKCS.prototype.testWy = function() {
 	} else {
 		this.gamuts[i].wy = y;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testRx = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -517,6 +865,7 @@ TWKCS.prototype.testRx = function() {
 	} else {
 		this.gamuts[i].rx = x;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testRy = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -526,6 +875,7 @@ TWKCS.prototype.testRy = function() {
 	} else {
 		this.gamuts[i].ry = y;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testGx = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -535,6 +885,7 @@ TWKCS.prototype.testGx = function() {
 	} else {
 		this.gamuts[i].gx = x;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testGy = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -544,6 +895,7 @@ TWKCS.prototype.testGy = function() {
 	} else {
 		this.gamuts[i].gy = y;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testBx = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -553,6 +905,7 @@ TWKCS.prototype.testBx = function() {
 	} else {
 		this.gamuts[i].bx = x;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.testBy = function() {
 	var i = this.gamList.options.selectedIndex;
@@ -562,6 +915,7 @@ TWKCS.prototype.testBy = function() {
 	} else {
 		this.gamuts[i].by = y;
 	}
+	this.gamuts[i].lock = true;
 };
 TWKCS.prototype.changeInput = function() {
 	var i = this.inSelect.options[this.inSelect.selectedIndex].lastChild.nodeValue;
@@ -586,6 +940,14 @@ TWKCS.prototype.changeTitle = function() {
 		this.outSelect.options[i].appendChild(document.createTextNode(this.title.value));
 		this.changeOutput();
 	}
+};
+TWKCS.prototype.taToString = function(data) {
+	var out = [];
+	var m = data.length;
+	for (var j=0; j<m; j++) {
+		out[j] = data[j];
+	}
+	return out.toString();
 };
 TWKCS.prototype.createRadioElement = function(name, checked) {
     var radioInput;
