@@ -305,9 +305,9 @@ TWKCS.prototype.setParams = function(params) {
 		if (typeof p.editMatrix !== 'undefined') {
 			this.gamuts[p.editIdx].inMatrix = new Float64Array(p.editMatrix.buffer.slice(0));
 			this.gamuts[p.editIdx].outMatrix = this.mInverse(p.editMatrix);
-			this.gamuts[p.editIdx].wcs = p.wcs;
+			this.gamuts[p.editIdx].wcs = this.wrkspcSelect.options[p.wcs].lastChild.nodeValue;
 			if (this.gamList.selectedIndex === p.editIdx) {
-				this.wrkspcSelect.options[this.getWCS(p.wcs)].selected = true;
+				this.wrkspcSelect.options[p.wcs].selected = true;
 				for (var j=0; j<9; j++) {
 					this.matIn[j].value = this.gamuts[p.editIdx].inMatrix[j].toString();
 					this.matOut[j].value = this.gamuts[p.editIdx].outMatrix[j].toString();
