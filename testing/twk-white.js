@@ -242,7 +242,7 @@ TWKWHITE.prototype.toggleTweak = function() {
 	}
 };
 TWKWHITE.prototype.getTFParams = function(params) {
-	// N parameters are relevent
+	// No parameters are relevent
 };
 TWKWHITE.prototype.getCSParams = function(params) {
 	var out = {};

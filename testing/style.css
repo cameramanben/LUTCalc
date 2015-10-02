@@ -138,8 +138,60 @@
 	margin:0px;
 	padding:0;
 }
+#twk-sat-coloursbox {
+	display:block;
+	width:26.5em;
+	height:12em;
+	margin:0px auto;
+	background:transparent;
+}
+.twk-sat-colour-bars-s {
+	display:inline-block;
+	width:0.93em;
+	height:2em;
+	margin:0px;
+	padding:0;
+}
+.twk-sat-colour-bars-l {
+	display:inline-block;
+	width:0.93em;
+	height:8em;
+	margin:0px;
+	margin-top:-0.26em;
+	margin-bottom:-0.26em;
+	padding:0;
+}
+.twk-sat-colour-bars-s-h {
+	display:inline-block;
+	width:3em;
+	height:0.93em;
+	margin:0px;
+	margin-top: 0.3em;
+	padding:0;
+}
+.twk-sat-colour-bars-l-h {
+	display:inline-block;
+	width:10em;
+	height:0.93em;
+	margin:0px;
+	padding:0;
+}
 /* Range Slider Array */
 .psst-rslider {
+	display: block;
+	margin: 0px auto;
+	width:12em;
+	height:26.5em;
+	margin-top:-19.2em;
+	margin-bottom:-7.4em;
+	background:transparent;
+	-webkit-transform: rotate(270deg);
+	-moz-transform: rotate(270deg);
+	-ms-transform: rotate(270deg);
+	-o-transform: rotate(270deg);
+	transform: rotate(270deg);
+}
+.sat-sliders {
 	display: block;
 	margin: 0px auto;
 	width:12em;

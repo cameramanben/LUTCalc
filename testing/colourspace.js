@@ -762,20 +762,20 @@ LUTColourSpace.prototype.setCS = function(params) {
 		var p = params.twkCS;
 		out.editIdx = p.editIdx;
 		if (p.matrix) {
-			var model = 0;
+			var modelIn = 0;
+			var modelOut = 0;
 			if (typeof p.input.cat === 'number') {
-				model = p.input.cat;
+				modelIn = p.input.cat;
 			}
-			var inWCS = this.g[p.input.wcs];
-			var inToSys = this.mMult(this.system.inv, this.calcCAT(model,inWCS.toXYZ,inWCS.white,this.system.white));
-			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inToSys,p.input.matrix), inWCS.white.buffer.slice(0));
-			var model = 0;
 			if (typeof p.output.cat === 'number') {
-				model = p.output.cat;
+				modelOut = p.output.cat;
 			}
-			var outWCS = this.g[p.input.wcs];
-			var outFromSys = this.mInverse(this.mMult(this.system.inv, this.calcCAT(model,outWCS.toXYZ,outWCS.white,this.system.white)));
-			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outFromSys), outWCS.white.buffer.slice(0));
+			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
+			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
+			var outWCSFromSys = this.mInverse(outWCSToSys);
+			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inWCSToSys,p.input.matrix), this.g[p.input.wcs].white.buffer.slice(0));
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
+			this.csM[this.custOut] = this.csOut[this.custOut];
 		} else {
 			var customIn = {};
 			var customOut = {};
@@ -794,7 +794,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 					p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
 				]);
 				edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
-				out.editMatrix = this.mMult(this.system.inv, this.calcCAT(model,edit.toXYZ,edit.white,this.system.white));
+				out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(model,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
 				out.wcs = p.edit.wcs;
 			}
 			if (typeof p.input.cat === 'number') {
