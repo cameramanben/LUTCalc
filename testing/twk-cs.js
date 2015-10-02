@@ -274,6 +274,7 @@ TWKCS.prototype.getCSParams = function(params) {
 		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
 		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
 		wcs: this.getWCS(this.gamuts[i].wcs),
+		isMatrix: this.gamuts[i].matrix,
 		matrix: new Float64Array(this.gamuts[i].inMatrix.buffer.slice(0)),
 		cat: this.gamuts[i].cat
 	};
@@ -284,6 +285,7 @@ TWKCS.prototype.getCSParams = function(params) {
 		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
 		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
 		wcs: this.getWCS(this.gamuts[i].wcs),
+		isMatrix: this.gamuts[i].matrix,
 		matrix: new Float64Array(this.gamuts[i].inMatrix.buffer.slice(0)),
 		cat: this.gamuts[i].cat
 	};
@@ -294,6 +296,7 @@ TWKCS.prototype.getCSParams = function(params) {
 		gx: this.gamuts[i].gx, gy: this.gamuts[i].gy,
 		bx: this.gamuts[i].bx, by: this.gamuts[i].by,
 		wcs: this.getWCS(this.gamuts[i].wcs),
+		isMatrix: this.gamuts[i].matrix,
 		matrix: new Float64Array(this.gamuts[i].outMatrix.buffer.slice(0)),
 		cat: this.gamuts[i].cat
 	};

@@ -761,47 +761,37 @@ LUTColourSpace.prototype.setCS = function(params) {
 	if (typeof params.twkCS !== 'undefined') {
 		var p = params.twkCS;
 		out.editIdx = p.editIdx;
-		if (p.matrix) {
-			var modelIn = 0;
-			var modelOut = 0;
-			if (typeof p.input.cat === 'number') {
-				modelIn = p.input.cat;
-			}
-			if (typeof p.output.cat === 'number') {
-				modelOut = p.output.cat;
-			}
+		var modelEdit = 0;
+		if (typeof p.edit.cat === 'number') {
+			modelEdit = p.edit.cat;
+		}
+		var modelIn = 0;
+		if (typeof p.input.cat === 'number') {
+			modelIn = p.input.cat;
+		}
+		var modelOut = 0;
+		if (typeof p.output.cat === 'number') {
+			modelOut = p.output.cat;
+		}
+		if (!p.edit.isMatrix && p.lock) {
+			var edit = {};
+			edit.xy = new Float64Array([
+				p.edit.rx, p.edit.ry,
+				p.edit.gx, p.edit.gy,
+				p.edit.bx, p.edit.by
+			]);
+			edit.white = new Float64Array([
+				p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
+			]);
+			edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
+			out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(modelEdit,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
+			out.wcs = p.edit.wcs;
+		}
+		if (p.input.isMatrix) {
 			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
-			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
-			var outWCSFromSys = this.mInverse(outWCSToSys);
 			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inWCSToSys,p.input.matrix), this.g[p.input.wcs].white.buffer.slice(0));
-			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
-			this.csM[this.custOut] = this.csOut[this.custOut];
 		} else {
 			var customIn = {};
-			var customOut = {};
-			var model = 0;
-			if (p.lock) {
-				var edit = {};
-				if (typeof p.edit.cat === 'number') {
-					model = p.edit.cat;
-				}
-				edit.xy = new Float64Array([
-					p.edit.rx, p.edit.ry,
-					p.edit.gx, p.edit.gy,
-					p.edit.bx, p.edit.by
-				]);
-				edit.white = new Float64Array([
-					p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
-				]);
-				edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
-				out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(model,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
-				out.wcs = p.edit.wcs;
-			}
-			if (typeof p.input.cat === 'number') {
-				model = p.input.cat;
-			} else {
-				model = 0;
-			}
 			customIn.xy = new Float64Array([
 				p.input.rx, p.input.ry,
 				p.input.gx, p.input.gy,
@@ -811,13 +801,16 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
 			]);
 			customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
-			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(model,customIn.toXYZ,customIn.white,this.system.white));
+			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(modelIn,customIn.toXYZ,customIn.white,this.system.white));
 			this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
-			if (typeof p.output.cat === 'number') {
-				model = p.output.cat;
-			} else {
-				model = 0;
-			}
+		}
+		if (p.output.isMatrix) {
+			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
+			var outWCSFromSys = this.mInverse(outWCSToSys);
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
+			this.csM[this.custOut] = this.csOut[this.custOut];
+		} else {
+			var customOut = {};
 			customOut.xy = new Float64Array([
 				p.output.rx, p.output.ry,
 				p.output.gx, p.output.gy,
@@ -827,11 +820,11 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
 			]);
 			customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
-			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(model,customOut.toXYZ,customOut.white,this.system.white));
+			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(modelOut,customOut.toXYZ,customOut.white,this.system.white));
 			this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
 			this.csM[this.custOut] = this.csOut[this.custOut];
-			out.doCS = true;
 		}
+		out.doCS = true;
 	} else {
 		out.doCS = false;
 	}
