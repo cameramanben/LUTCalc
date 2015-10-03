@@ -54,8 +54,9 @@ LUTTweaksBox.prototype.ui = function() {
 	this.PSST = this.tweaksList.length;
 	this.tweaksList.push(new TWKPSSTCDL(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKASCCDL(this.holder, this.inputs, this.messages));
+	this.multi = this.tweaksList.length;
+	this.tweaksList.push(new TWKMulti(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKHG(this.holder, this.inputs, this.messages));
-//	this.tweaksList.push(new TWKMulti(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKKnee(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKFC(this.holder, this.inputs, this.messages));
@@ -131,6 +132,9 @@ LUTTweaksBox.prototype.setParams = function(params) {
 };
 LUTTweaksBox.prototype.psstColours = function(params) {
 	this.tweaksList[this.PSST].psstColours(params);
+};
+LUTTweaksBox.prototype.multiColours = function(params) {
+	this.tweaksList[this.multi].multiColours(params);
 };
 LUTTweaksBox.prototype.getInfo = function(info) {
 	if (this.tweaks.checked) {

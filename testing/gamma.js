@@ -2693,6 +2693,28 @@ LUTGamma.prototype.psstColours = function(p,t,i) {
 	out.to = ['b','a'];
 	return out;
 };
+LUTGamma.prototype.multiColours = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver };
+	var input = new Float64Array(i.o);
+	var m = input.length;
+	var o = new Uint8Array(m);
+	if (!this.nul) {
+		if (this.doKnee) {
+			this.kneeOut(i.o);
+		} else {
+			this.gammas[this.curOut].linToL(i.o);
+		}
+		if (this.doBlkHi) {
+			this.blkHiOut(i.o);
+		}
+	}
+	for (var j=0; j<m; j++) {
+		o[j] = Math.max(0,(Math.min(255,input[j]*255/1.09475)));
+	}
+	out.o = o.buffer;
+	out.to = ['o'];
+	return out;	
+};
 LUTGamma.prototype.chartRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, colIn: i.colIn, rIn: i.rIn, gIn: i.gIn, bIn: i.bIn, rOut: i.rOut, gOut: i.gOut, bOut: i.bOut, to: ['rIn','gIn','bIn','rOut','gOut','bOut']};
 	this.gammas[this.curIn].linToD(i.rIn);
@@ -2767,6 +2789,8 @@ addEventListener('message', function(e) {
 			case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
 					break;
 			case 16:sendMessage(gammas.psstColours(d.p,d.t,d.d));
+					break;
+			case 17:sendMessage(gammas.multiColours(d.p,d.t,d.d));
 					break;
 			case 18:sendMessage(gammas.chartRGB(d.p,d.t,d.d));
 					break;

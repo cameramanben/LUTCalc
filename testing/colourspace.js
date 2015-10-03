@@ -82,6 +82,8 @@ function LUTColourSpace() {
 	this.doFC = false;
 
 	this.loadColourSpaces();
+	this.buildColourSquare();
+	this.buildMultiColours();
 }
 // Prepare colour spaces
 LUTColourSpace.prototype.loadColourSpaces = function() {
@@ -755,6 +757,43 @@ LUTColourSpace.prototype.setSaturated = function() {
 		b[0],b[1],b[2]
 	]).buffer;
 };
+LUTColourSpace.prototype.buildColourSquare = function() {
+	var d = 64;
+	var colSqr = new Float64Array(d*d*3);
+	this.colSqr = colSqr.buffer;
+	var j=0;
+	var r,g,b,Y;
+	for (var y=0; y<d; y++) {
+		for (var x=0; x<d; x++) {
+			r = x/(d-1);
+			g = y/(d-1);
+			b = 1 - ((x+y)/(d-1));
+			Y = (0.2126*r) + (0.7152*g) + (0.0722*b);
+			colSqr[ j ] = r/Y;
+			colSqr[j+1] = g/Y;
+			colSqr[j+2] = b/Y;
+			j += 3;
+		}
+	}
+	this.csIn[this.rec709In].lc(this.colSqr);
+};
+LUTColourSpace.prototype.buildMultiColours = function() {
+	var mclrs = new Float64Array(17*3*3);
+	this.mclrs = mclrs.buffer;
+	var l;
+	for (var j=0; j<17; j++) {
+		l = Math.pow(2,j-8)*0.2;
+		mclrs[ j*3 ] = l/0.2126;
+		mclrs[((j+17)*3)+1] = l/0.7152;
+		mclrs[((j+34)*3)+2] = l/0.0722;
+	}
+	this.csIn[this.rec709In].lc(this.mclrs);
+	this.multiSat = new Float64Array([
+		1,1,1,1,1,1,1,1,
+		1,
+		1,1,1,1,1,1,1,1
+	]);
+};
 // Parameter setting functions
 LUTColourSpace.prototype.setCS = function(params) {
 	var out = {};
@@ -952,6 +991,21 @@ LUTColourSpace.prototype.setHG = function(params) {
 	out.doHG = this.doHG;
 	return out;
 };
+LUTColourSpace.prototype.setMulti = function(params) {
+	var out = {};
+	this.doMulti = false;
+	if (this.tweaks && typeof params.twkMulti !== 'undefined') {
+		var p = params.twkMulti;
+		if (typeof p.doMulti === 'boolean' && p.doMulti) {
+			this.doMulti = true;
+		}
+		if (typeof p.sat !== 'undefined') {
+			this.multiSat = new Float64Array(p.sat);
+		}
+	}
+	out.doMulti = this.doMulti;
+	return out;
+};
 LUTColourSpace.prototype.setFC = function(params) {
 	var out = {};
 	this.doFC = false;
@@ -1044,6 +1098,32 @@ LUTColourSpace.prototype.setFC = function(params) {
 	out.red = Math.log(this.fcVals[9]/0.2)/Math.log(2);
 	out.doFC = this.doFC;
 	return out;
+};
+// Adjustment functions
+LUTColourSpace.prototype.multiOut = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var Y, stp, sat, r, b;
+	for (var j=0; j<m; j +=3) {
+		Y = (this.y[0]*c[j])+(this.y[1]*c[j+1])+(this.y[2]*c[j+2]);
+		if (Y <= 0) {
+			sat = this.multiSat[0];
+		} else {
+			stp = (Math.log(Y/0.2)/Math.LN2) + 8;
+			if (stp <= 0) {
+				sat = this.multiSat[0];
+			} else if (stp >= 16) {
+				sat = this.multiSat[16];
+			} else {
+				b = Math.floor(stp);
+				r = stp - b;
+				sat = ((1-r)*this.multiSat[b]) + (r*this.multiSat[b+1]);
+			}
+		}
+		c[ j ] = Y + (sat*(c[ j ]-Y));
+		c[j+1] = Y + (sat*(c[j+1]-Y));
+		c[j+2] = Y + (sat*(c[j+2]-Y));
+	}
 };
 // Colour space data objects
 function CCTxy(LUT) {
@@ -2036,6 +2116,7 @@ LUTColourSpace.prototype.setParams = function(params) {
 	out.twkASCCDL = this.setASCCDL(params);
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
+	out.twkMulti = this.setMulti(params);
 	out.twkFC = this.setFC(params);
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -2187,6 +2268,10 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
 				o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
 			}
+		}
+// MultiTone
+		if (this.doMulti) {
+			this.multiOut(o.buffer);
 		}		
 // Highlight Gamut
 		if (this.doHG) {
@@ -2253,6 +2338,17 @@ LUTColourSpace.prototype.setLA = function(p,t,i) {
 LUTColourSpace.prototype.setLATitle = function(p,t,i) {
 	this.csOut[this.LA].setTitle(i);
 	return { p: p, t:t+20, v: this.ver, i: i };
+};
+LUTColourSpace.prototype.getColSqr = function(p,t) {
+	var c = this.colSqr.slice(0);
+	this.csOut[this.curOut].lc(c);
+	return {p: p, t: t+20, v: this.ver, o: c, to: ['o']};
+};
+LUTColourSpace.prototype.multiColours = function(p,t) {
+	var c = this.mclrs.slice(0);
+	this.multiOut(c);
+	this.csOut[this.curOut].lc(c);
+	return {p: p, t: t+20, v: this.ver, o: c, to: ['o']};
 };
 LUTColourSpace.prototype.ioNames = function(p,t) {
 	var out = {};
@@ -2751,6 +2847,10 @@ this.addEventListener('message', function(e) {
 			case 6: sendMessage(cs.setLA(d.p,d.t,d.d)); 
 					break;
 			case 7: sendMessage(cs.setLATitle(d.p,d.t,d.d)); 
+					break;
+			case 8: sendMessage(cs.getColSqr(d.p,d.t)); 
+					break;
+			case 9: sendMessage(cs.multiColours(d.p,d.t)); 
 					break;
 			case 10:sendMessage(cs.ioNames(d.p,d.t));
 					break;

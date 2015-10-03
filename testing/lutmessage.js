@@ -228,6 +228,9 @@ LUTMessage.prototype.gaRx = function(d) {
 			case 36: // Get PSST-CDL colours
 					this.ui[3].psstColours(d);
 					break;
+			case 37: // Get Multi Colours
+					this.ui[3].multiColours(d);
+					break;
 			case 38: // Get LUT in to LUT out values for primaries
 					this.ui[6].updateRGBChart(d);
 					break;
@@ -412,6 +415,9 @@ LUTMessage.prototype.gtRx = function(d) {
 					}
 					break;
 			case 27: // Set LA Title
+					break;
+			case 29: // Get Multi Colours
+					this.gaTx(d.p,17,{ o: d.o, to:['o']});
 					break;
 			case 30: //
 					this.gotIOGamutNames(d);
