@@ -68,7 +68,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLog(
 		'C-Log', [ 0.3734467748,-0.0467265867, 0.45310179472141, 10.1596, 10, 0.1251224801564, 1, 0.00391002619746, -0.0452664 ]));
 	this.gammas.push(new LUTGammaLog(
-		'Canon Log 2 (Approx)', [ 0,0,0.242431278,4.958584184,10,0.392766751,0.05813449,0,0 ]));
+		'Canon C-Log2', [ 0,0,0.241360772,87.09937546,10,0.092864125,1,0,0 ]));
 	this.gammas.push(new LUTGammaLog(
 		'Panasonic V-Log', [ 0.198412698,-0.024801587, 0.241514, 0.9, 10, 0.598206, 0.00873, 0.181, 0.009 ]));
 	this.gammas.push(new LUTGammaLog(
@@ -2712,7 +2712,8 @@ LUTGamma.prototype.multiColours = function(p,t,i) {
 		o[j] = Math.max(0,(Math.min(255,input[j]*255/1.09475)));
 	}
 	out.o = o.buffer;
-	out.to = ['o'];
+	out.hs = i.hs;
+	out.to = ['o','hs'];
 	return out;	
 };
 LUTGamma.prototype.chartRGB = function(p,t,i) {

@@ -133,6 +133,11 @@ LUTTweaksBox.prototype.setParams = function(params) {
 LUTTweaksBox.prototype.psstColours = function(params) {
 	this.tweaksList[this.PSST].psstColours(params);
 };
+/*
+LUTTweaksBox.prototype.gotColSqr = function(params) {
+	this.tweaksList[this.multi].gotColSqr(params);
+};
+*/
 LUTTweaksBox.prototype.multiColours = function(params) {
 	this.tweaksList[this.multi].multiColours(params);
 };

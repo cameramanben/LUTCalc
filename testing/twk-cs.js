@@ -13,6 +13,8 @@ function TWKCS(tweaksBox, inputs, messages) {
 	this.tweaksBox = tweaksBox;
 	this.inputs = inputs;
 	this.messages = messages;
+	this.p = 13;
+	this.messages.addUI(this.p,this);
 	this.io();
 	this.ui();
 	this.events();
@@ -134,6 +136,10 @@ TWKCS.prototype.io = function() {
 		matrixOpt.value = this.inputs.gamutMatrixList[j].idx;
 		this.wrkspcSelect.appendChild(matrixOpt);
 	}
+	this.matCalcCheck = document.createElement('input');
+	this.matCalcCheck.setAttribute('type','checkbox');
+	this.matCalcCheck.className = 'twk-checkbox';
+	this.matCalcCheck.checked = true;
 	// CAT Selection
 	this.CATSelect = document.createElement('select');
 	m = this.inputs.gamutCATList.length;
@@ -212,6 +218,9 @@ TWKCS.prototype.ui = function() {
 	this.matxBox.className = 'twk-tab-hide';
 	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Working Colourspace')));
 	this.matxBox.appendChild(this.wrkspcSelect);
+	this.matxBox.appendChild(document.createElement('br'));
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Update With Colourspace')));
+	this.matxBox.appendChild(this.matCalcCheck);
 	this.matxBox.appendChild(document.createElement('br'));
 	this.matxBox.appendChild(this.matInOpt);
 	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('To Working Colourspace')));
@@ -312,8 +321,8 @@ TWKCS.prototype.setParams = function(params) {
 			if (this.gamList.selectedIndex === p.editIdx) {
 				this.wrkspcSelect.options[p.wcs].selected = true;
 				for (var j=0; j<9; j++) {
-					this.matIn[j].value = this.gamuts[p.editIdx].inMatrix[j].toString();
-					this.matOut[j].value = this.gamuts[p.editIdx].outMatrix[j].toString();
+					this.matIn[j].value = parseFloat(this.gamuts[p.editIdx].inMatrix[j].toFixed(8)).toString();
+					this.matOut[j].value = parseFloat(this.gamuts[p.editIdx].outMatrix[j].toFixed(8)).toString();
 				}
 			}
 		}
@@ -448,7 +457,9 @@ TWKCS.prototype.events = function() {
 	};}(this);
 	this.wrkspcSelect.onchange = function(here){ return function(){
 		here.changeWCS();
-		here.messages.gtSetParams();
+		if (!here.matCalcCheck.checked) {
+			here.messages.gtSetParams();
+		}
 	};}(this);
 	this.title.oninput = function(here){ return function(){
 		here.changeTitle();
@@ -652,7 +663,48 @@ TWKCS.prototype.getWCS = function(wcs) {
 	}
 };
 TWKCS.prototype.changeWCS = function(wcs) {
-	this.gamuts[this.gamList.selectedIndex].wcs = this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue;
+	var i = this.gamList.selectedIndex;
+	if (this.matCalcCheck.checked) {
+		this.messages.gtTx(this.p,3,{
+			idx: i,
+			oldWCS: this.getWCS(this.gamuts[i].wcs),
+			newWCS: this.getWCS(this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue),
+			matrix: this.gamuts[i].inMatrix.buffer.slice(0),
+			cat: this.gamuts[i].cat
+		});
+	}
+	this.gamuts[i].wcs = this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue;
+};
+TWKCS.prototype.recalcMatrix = function(idx,wcs,buff) {
+	this.wrkspcSelect.selectedIndex = wcs;
+	this.gamuts[idx].wcs = this.wrkspcSelect.options[wcs].lastChild.nodeValue;
+	var matrix = new Float64Array(buff);
+	var inv = this.mInverse(matrix);
+	var matStore = this.gamuts[idx].outMatrix;
+	if (inv) {
+		for (var j=0; j<9; j++) {
+			inv[j] = parseFloat(inv[j].toFixed(8));
+			matStore[j] = inv[j];
+		}
+	} else {
+		for (var j=0; j<9; j++) {
+			if (j === 0 || j === 4 || j === 8) {
+				matStore[j] = 1;
+			} else {
+				matStore[j] = 0;
+			}
+		}
+	}
+	for (var j=0; j<9; j++) {
+		this.gamuts[idx].inMatrix[j] = parseFloat(matrix[j].toFixed(8));
+	}
+	if (idx === this.gamList.selectedIndex) {
+		for (var j=0; j<9; j++) {
+			this.matIn[j].value = this.gamuts[idx].inMatrix[j].toString();
+			this.matOut[j].value = this.gamuts[idx].outMatrix[j].toString();
+		}
+	}
+	this.messages.gtSetParams();
 };
 TWKCS.prototype.getCAT = function(cat) {
 	var m = this.CATSelect.options.length;
@@ -715,6 +767,7 @@ TWKCS.prototype.updateInMatrix = function() {
 	var matStore = this.gamuts[this.gamList.selectedIndex].outMatrix;
 	if (inv) {
 		for (var j=0; j<9; j++) {
+			inv[j] = parseFloat(inv[j].toFixed(8));
 			this.matOut[j].value = inv[j].toString();
 			matStore[j] = inv[j];
 		}
@@ -748,6 +801,7 @@ TWKCS.prototype.updateOutMatrix = function() {
 	var matStore = this.gamuts[this.gamList.selectedIndex].inMatrix;
 	if (inv) {
 		for (var j=0; j<9; j++) {
+			inv[j] = parseFloat(inv[j].toFixed(8));
 			this.matIn[j].value = inv[j].toString();
 			matStore[j] = inv[j];
 		}

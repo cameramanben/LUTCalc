@@ -216,6 +216,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.loadDefault(this.defNext);
 };
 LUTPreview.prototype.uiPopup = function() {
+	modalBox.className = 'modalbox-hide';
 	this.preCSBoxHolder.style.display = 'none';
 	this.preCSBoxHolder.setAttribute('class','popupholder');
 	this.preCSBox = document.createElement('div');
@@ -236,7 +237,8 @@ LUTPreview.prototype.uiPopup = function() {
 	this.preCSBox.appendChild(this.preOKButton);
 	this.preCSBox.appendChild(this.preCancelButton);
 	this.preCSBoxHolder.appendChild(this.preCSBox);
-	document.getElementById('body').appendChild(this.preCSBoxHolder);
+//	document.getElementById('body').appendChild(this.preCSBoxHolder);
+	modalBox.appendChild(this.preCSBoxHolder);
 };
 LUTPreview.prototype.uiExternal = function(genBox) {
 	this.generateButton = genBox.button;
@@ -259,10 +261,12 @@ LUTPreview.prototype.events = function() {
 	}
 	this.preOKButton.onclick = function(here){ return function(){
 		here.preCSBoxHolder.style.display = 'none';
+		modalBox.className = 'modalbox-hide';
 		here.prepPreview();
 	};}(this);
 	this.preCancelButton.onclick = function(here){ return function(){
 		here.preCSBoxHolder.style.display = 'none';
+		modalBox.className = 'modalbox-hide';
 	};}(this);
 	this.preButton.onclick = function(here){ return function(){
 		here.toggle();
@@ -445,6 +449,7 @@ LUTPreview.prototype.updatePopup = function() {
 		}
 	}
 	this.preCSBoxHolder.style.display = 'block';
+	modalBox.className = 'modalbox';
 };
 LUTPreview.prototype.preGetImg = function() {
     var validExts;

@@ -758,20 +758,48 @@ LUTColourSpace.prototype.setSaturated = function() {
 	]).buffer;
 };
 LUTColourSpace.prototype.buildColourSquare = function() {
-	var d = 64;
+	var d = 256;
 	var colSqr = new Float64Array(d*d*3);
 	this.colSqr = colSqr.buffer;
 	var j=0;
-	var r,g,b,Y;
+	var r,g,b;
+	var Hd,S,L,C,X,m;
 	for (var y=0; y<d; y++) {
 		for (var x=0; x<d; x++) {
-			r = x/(d-1);
-			g = y/(d-1);
-			b = 1 - ((x+y)/(d-1));
-			Y = (0.2126*r) + (0.7152*g) + (0.0722*b);
-			colSqr[ j ] = r/Y;
-			colSqr[j+1] = g/Y;
-			colSqr[j+2] = b/Y;
+			Hd = 6*x/(d-1);
+			S = 1-(y/(d-1));
+			L = 0.5;
+			C = (1-Math.abs((2*L)-1))*S;
+			X = C*(1 - Math.abs((Hd%2) - 1));
+			if (Hd < 1) {
+				r = C;
+				g = X;
+				b = 0;
+			} else if (Hd < 2) {
+				r = X;
+				g = C;
+				b = 0;
+			} else if (Hd < 3) {
+				r = 0;
+				g = C;
+				b = X;
+			} else if (Hd < 4) {
+				r = 0;
+				g = X;
+				b = C;
+			} else if (Hd < 5) {
+				r = X;
+				g = 0;
+				b = C;
+			} else {
+				r = C;
+				g = 0;
+				b = X;
+			}
+			m = L - (0.5*C);
+			colSqr[ j ] = r + m;
+			colSqr[j+1] = g + m;
+			colSqr[j+2] = b + m;
 			j += 3;
 		}
 	}
@@ -1002,6 +1030,28 @@ LUTColourSpace.prototype.setMulti = function(params) {
 		if (typeof p.sat !== 'undefined') {
 			this.multiSat = new Float64Array(p.sat);
 		}
+		if (typeof p.sat !== 'undefined') {
+			this.multiSat = new Float64Array(p.sat);
+		}
+		if (typeof p.pHue !== 'undefined' && typeof p.pSat !== 'undefined' && typeof p.pStop !== 'undefined') {
+			this.multiStop = new Float64Array(p.pStop);
+			var h = new Uint8Array(p.pHue);
+			var s = new Uint8Array(p.pSat);
+			var m = this.multiStop.length;
+			this.multiRGB = new Float64Array(m*3);
+			var f = new Float64Array(this.colSqr);
+			var k;
+			for (var j=0; j<m; j++) {
+				k = (h[j]+(256*(255-s[j])))*3;
+				this.multiRGB[ (j*3) ] = f[ k ];
+				this.multiRGB[(j*3)+1] = f[k+1];
+				this.multiRGB[(j*3)+2] = f[k+2];
+			}
+			this.csOut[this.curOut].lc(this.multiRGB.buffer);
+		} else {
+			this.multiStop = new Float64Array([0]);
+			this.multiRGB = new Float64Array([1,1,1]);
+		}
 	}
 	out.doMulti = this.doMulti;
 	return out;
@@ -1104,10 +1154,16 @@ LUTColourSpace.prototype.multiOut = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var Y, stp, sat, r, b;
+	var mt = this.multiStop.length;
+	var mono = new Float64Array(3);
+	var Y2, mul, mL, mH;
 	for (var j=0; j<m; j +=3) {
 		Y = (this.y[0]*c[j])+(this.y[1]*c[j+1])+(this.y[2]*c[j+2]);
 		if (Y <= 0) {
 			sat = this.multiSat[0];
+			mono[0] = Y;
+			mono[1] = Y;
+			mono[2] = Y;
 		} else {
 			stp = (Math.log(Y/0.2)/Math.LN2) + 8;
 			if (stp <= 0) {
@@ -1119,10 +1175,63 @@ LUTColourSpace.prototype.multiOut = function(buff) {
 				r = stp - b;
 				sat = ((1-r)*this.multiSat[b]) + (r*this.multiSat[b+1]);
 			}
+			if (sat >= 1) {
+				mono[0] = Y;
+				mono[1] = Y;
+				mono[2] = Y;
+			} else {
+				if (mt === 1) {
+					mono[0] = this.multiRGB[0];
+					mono[1] = this.multiRGB[1];
+					mono[2] = this.multiRGB[2];
+				} else if (mt > 1) {
+					stp -= 8;
+					mL = mt-1;
+					mH = mt;
+					for (var k=0; k<mt; k++) {
+						if (this.multiStop[k] > stp) {
+							mL = k-1;
+							mH = k;
+							break;
+						}
+					}
+					if (mL < 0) {
+						mono[0] = this.multiRGB[0];
+						mono[1] = this.multiRGB[1];
+					mono[2] = this.multiRGB[2];
+					} else if (mH >= mt) {
+						mono[0] = this.multiRGB[ ((mt-1)*3) ];
+						mono[1] = this.multiRGB[((mt-1)*3)+1];
+						mono[2] = this.multiRGB[((mt-1)*3)+2];
+					} else {
+						r = (stp-this.multiStop[mL])/(this.multiStop[mH]-this.multiStop[mL]);
+						mono[0] = ((1-r)*this.multiRGB[ ((mL)*3) ])+(r*this.multiRGB[ ((mH)*3) ]);
+						mono[1] = ((1-r)*this.multiRGB[((mL)*3)+1])+(r*this.multiRGB[((mH)*3)+1]);
+						mono[2] = ((1-r)*this.multiRGB[((mL)*3)+2])+(r*this.multiRGB[((mH)*3)+2]);
+					} 
+				} else {
+					mono[0] = Y;
+					mono[1] = Y;
+					mono[2] = Y;
+				}
+				if (mt > 0) {
+					Y2 = (this.y[0]*mono[0])+(this.y[1]*mono[1])+(this.y[2]*mono[2]);
+					if (Y2 > 0) {
+						mul = Y/Y2;
+						mono[0] *= mul;
+						mono[1] *= mul;
+						mono[2] *= mul;
+					} else {
+						mono[0] = Y;
+						mono[1] = Y;
+						mono[2] = Y;
+					}
+				}
+			}
 		}
-		c[ j ] = Y + (sat*(c[ j ]-Y));
-		c[j+1] = Y + (sat*(c[j+1]-Y));
-		c[j+2] = Y + (sat*(c[j+2]-Y));
+		c[ j ] = mono[0] + (sat*(c[ j ]-mono[0]));
+		c[j+1] = mono[1] + (sat*(c[j+1]-mono[1]));
+		c[j+2] = mono[2] + (sat*(c[j+2]-mono[2]));
 	}
 };
 // Colour space data objects
@@ -2317,6 +2426,17 @@ LUTColourSpace.prototype.laCalc = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
+LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver, idx: i.idx, wcs: i.newWCS};
+	var oMat = new Float64Array(i.matrix);
+	var oToXYZ = this.g[i.oldWCS].toXYZ;
+	var nFromXYZ = this.mInverse(this.g[i.newWCS].toXYZ);
+	var oToN = this.mMult(nFromXYZ, this.calcCAT(i.cat,oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white));
+	var matrix = this.mMult(oToN,oMat);
+	out.matrix = matrix.buffer;
+	out.to = ['matrix'];
+	return out;
+};
 LUTColourSpace.prototype.getLists = function(p,t) {
 	return {
 		p: p,
@@ -2339,16 +2459,52 @@ LUTColourSpace.prototype.setLATitle = function(p,t,i) {
 	this.csOut[this.LA].setTitle(i);
 	return { p: p, t:t+20, v: this.ver, i: i };
 };
-LUTColourSpace.prototype.getColSqr = function(p,t) {
+LUTColourSpace.prototype.getColSqr = function(p,t,i) {
 	var c = this.colSqr.slice(0);
+	var f = new Float64Array(c);
 	this.csOut[this.curOut].lc(c);
-	return {p: p, t: t+20, v: this.ver, o: c, to: ['o']};
+	var m = 256*256;
+	var o = new Uint8Array(Math.round(4*m));
+	var M;
+	for (var j=0; j<m; j++) {
+		M = 255 / Math.max.apply(Math, [f[ (j*3) ],f[(j*3)+1],f[(j*3)+2]]);
+		if (M>255) {
+			M = 255;
+		}
+		o[ (j*4) ] = Math.min(255,Math.max(0,f[ (j*3) ]*M));
+		o[(j*4)+1] = Math.min(255,Math.max(0,f[(j*3)+1]*M));
+		o[(j*4)+2] = Math.min(255,Math.max(0,f[(j*3)+2]*M));
+		o[(j*4)+3] = 255;
+	}
+	return {p: p, t: t+20, v: this.ver, tIdx: i.tIdx, o: o.buffer, to: ['o']};
 };
-LUTColourSpace.prototype.multiColours = function(p,t) {
+LUTColourSpace.prototype.multiColours = function(p,t,i) {
 	var c = this.mclrs.slice(0);
 	this.multiOut(c);
 	this.csOut[this.curOut].lc(c);
-	return {p: p, t: t+20, v: this.ver, o: c, to: ['o']};
+	var m = i.hues.length;
+	var hf = new Float64Array(m*3);
+	var f = new Float64Array(this.colSqr);
+	var k;
+	for (var j=0; j<m; j++) {
+		k = (i.hues[j]+(256*(255-i.sats[j])))*3;
+		hf[ (j*3) ] = f[ k ];
+		hf[(j*3)+1] = f[k+1];
+		hf[(j*3)+2] = f[k+2];
+	}
+	this.csOut[this.curOut].lc(hf.buffer);
+	var hs = new Uint8Array(m*3);
+	var M;
+	for (var j=0; j<m; j++) {
+		M = 255 / Math.max.apply(Math, [hf[ (j*3) ],hf[(j*3)+1],hf[(j*3)+2]]);
+		if (M>255) {
+			M = 255;
+		}
+		hs[ (j*3) ] = Math.min(255,Math.max(0,hf[ (j*3) ]*M));
+		hs[(j*3)+1] = Math.min(255,Math.max(0,hf[(j*3)+1]*M));
+		hs[(j*3)+2] = Math.min(255,Math.max(0,hf[(j*3)+2]*M));
+	}
+	return {p: p, t: t+20, v: this.ver, o: c, hs: hs.buffer, to: ['o','hs']};
 };
 LUTColourSpace.prototype.ioNames = function(p,t) {
 	var out = {};
@@ -2842,15 +2998,17 @@ this.addEventListener('message', function(e) {
 					break;
 			case 2: sendMessage(cs.laCalc(d.p,d.t,d.d)); 
 					break;
+			case 3: sendMessage(cs.recalcMatrix(d.p,d.t,d.d)); 
+					break;
 			case 5: sendMessage(cs.getLists(d.p,d.t)); 
 					break;
 			case 6: sendMessage(cs.setLA(d.p,d.t,d.d)); 
 					break;
 			case 7: sendMessage(cs.setLATitle(d.p,d.t,d.d)); 
 					break;
-			case 8: sendMessage(cs.getColSqr(d.p,d.t)); 
+			case 8: sendMessage(cs.getColSqr(d.p,d.t,d.d)); 
 					break;
-			case 9: sendMessage(cs.multiColours(d.p,d.t)); 
+			case 9: sendMessage(cs.multiColours(d.p,d.t,d.d)); 
 					break;
 			case 10:sendMessage(cs.ioNames(d.p,d.t));
 					break;

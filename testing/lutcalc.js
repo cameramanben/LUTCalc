@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
 	lutPreview.uiExternal(lutGenerate.getBox());
 	lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
+	document.getElementById('body').appendChild(modalBox);
 	// Set Up Data
 	lutMessage.gaTx(0,5,{});
 	lutMessage.gtTx(0,5,{});

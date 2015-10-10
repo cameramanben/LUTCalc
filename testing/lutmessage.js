@@ -25,6 +25,8 @@ function LUTMessage(inputs) {
 	// 10 - twkLA
 	// 11 - formats
 	// 12 - twkWHITE
+	// 13 - twkCS
+	// 14 - twkMulti
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -404,6 +406,9 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 22: // RGB S-Gamut3.cine to LA input gamut
 					this.gaTx(d.p,9,d);
 					break;
+			case 23: // Recalculated custom matrix for changed colourspace
+					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
+					break;
 			case 25: // Get lists of gamuts
 					this.gotGamutLists(d);
 					break;
@@ -416,8 +421,11 @@ LUTMessage.prototype.gtRx = function(d) {
 					break;
 			case 27: // Set LA Title
 					break;
+			case 28: // Get Colour Square
+					this.ui[d.p].gotColSqr(d.o,d.tIdx);
+					break;
 			case 29: // Get Multi Colours
-					this.gaTx(d.p,17,{ o: d.o, to:['o']});
+					this.gaTx(d.p,17,{ o: d.o, hs: d.hs, to:['o','hs']});
 					break;
 			case 30: //
 					this.gotIOGamutNames(d);

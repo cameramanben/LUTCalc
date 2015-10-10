@@ -1,5 +1,11 @@
 LUTCalc Changelog
 =================
+
+v2.2
+----
+* New Feature - Multitone. This combines two adjustments. You can set colour saturation on a stop-by-stop basis (eg for lower saturation in the highlights), and then set one or more colour 'washes' - a tint to zero saturation - at arbitrary stop levels. With Multitone you can create washes, duotones, tritones etc, or create alternatives to LC709A.
+* New Feature - Custom Colour Spaces. Select 'Custom' in the recorded or output gamut boxes and a new panel appears where you can define one or more custom colour spaces, either using xy white point and primaries, or by entering matrix values and selecting the intended internal or working colour space.
+
 v2.1
 ----
 * New Feature - Knee adjustment. Add or adjust a knee with any output gamma. clip levels, range and smoothness (from hard conventional video knee to smoothly curved 'cinegamma') are all adjustable.
