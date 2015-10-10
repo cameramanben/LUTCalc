@@ -37,7 +37,7 @@ TWKCS.prototype.io = function() {
 		rx: 0.64,	ry: 0.33,
 		gx: 0.30,	gy: 0.60,
 		bx: 0.15,	by: 0.06,
-		wcs: 'XYZ',
+		wcs: 'Rec709',
 		inMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1]),
 		outMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1])
 	});
@@ -130,7 +130,7 @@ TWKCS.prototype.io = function() {
 	for (var j=0; j<m; j++) {
 		var matrixOpt = document.createElement('option');
 		matrixOpt.appendChild(document.createTextNode(this.inputs.gamutMatrixList[j].name));
-		if (this.inputs.gamutMatrixList[j].name === 'XYZ') {
+		if (this.inputs.gamutMatrixList[j].name === 'Rec709') {
 			matrixOpt.selected = true;
 		}
 		matrixOpt.value = this.inputs.gamutMatrixList[j].idx;
@@ -613,7 +613,7 @@ TWKCS.prototype.newCS = function() {
 		rx: 0.64,	ry: 0.33,
 		gx: 0.30,	gy: 0.60,
 		bx: 0.15,	by: 0.06,
-		wcs: 'XYZ',
+		wcs: 'Rec709',
 		inMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1]),
 		outMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1])
 	});
@@ -626,7 +626,7 @@ TWKCS.prototype.newCS = function() {
 	}
 	m = this.wrkspcSelect.options.length;
 	for (var j=0; j<m; j++) {
-		if (this.wrkspcSelect.options[j].lastChild.nodeValue === 'XYZ') {
+		if (this.wrkspcSelect.options[j].lastChild.nodeValue === 'Rec709') {
 			this.wrkspcSelect.options[j].selected = true;
 			break;
 		}
