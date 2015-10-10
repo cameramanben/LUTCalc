@@ -195,11 +195,20 @@ TWKMulti.prototype.setParams = function(params) {
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
 };
 TWKMulti.prototype.getSettings = function(data) {
+	var hs = this.getHueSats();
+	var m = this.tones.length;
+	var stops = new Float64Array(m);
+	for (var j=0; j<m; j++) {
+		stops[j] = parseFloat(this.tones[j].stop.value);
+	}
 	data.multiTone = {
 		doMulti: this.tweakCheck.checked,
 		minStop: -8,
 		maxStop: 8,
-		saturation: this.taToString(this.sat)
+		saturation: this.taToString(this.sat),
+		monoHue: this.taToString(hs.hues),
+		monoSat: this.taToString(hs.sats),
+		monoStop: this.taToString(stops)		
 	};
 };
 TWKMulti.prototype.setSettings = function(settings) {
@@ -210,7 +219,28 @@ TWKMulti.prototype.setSettings = function(settings) {
 			this.toggleTweak();
 		}
 		if (typeof data.saturation !== 'undefined') {
-			this.sat = new Float64Array(data.saturation.split(',').map(Number))
+			this.sat = new Float64Array(data.saturation.split(',').map(Number));
+		}
+		if (typeof data.monoHue !== 'undefined' && typeof data.monoSat !== 'undefined' && typeof data.monoStop !== 'undefined') {
+			var monoHue = new Uint8Array(data.monoHue.split(',').map(Number));
+			var monoSat = new Uint8Array(data.monoSat.split(',').map(Number));
+			var monoStop = new Float64Array(data.monoHue.split(',').map(Number));
+			var m = this.tones.length;
+			if (m > 1) {
+				for (var j=1; j<m; j++) {
+					this.tones[1].box.parentNode.removeChild(this.tones[1].box);
+					this.tones.splice(1,1);
+				}
+			}
+			m = monoStop.length;
+			for (var j=0; j<m; j++) {
+				if (j>0) {
+					this.addTone(j);
+				} else {
+					this.pHue = monoHue[j];
+				}
+				this.setTone(j,monoHue[j],monoSat[j],monoStop[j]);
+			}
 		}
 	}
 };
@@ -310,7 +340,7 @@ TWKMulti.prototype.addTone = function(idx) {
 				var m2 = parseFloat(this.tones[idx-2].stop.value);
 				this.tones[idx-1].stop.value = parseFloat(((m2+8)/2).toFixed(3))
 			}
-			this.tones[idx-1].stopValue.removeChild(tone.stopValue.firstChild);
+			this.tones[idx-1].stopValue.removeChild(this.tones[idx-1].stopValue.firstChild);
 			this.tones[idx-1].stopValue.appendChild(document.createTextNode('0'));
 			stopSlider.setAttribute('value',8);
 		} else {
@@ -418,17 +448,27 @@ TWKMulti.prototype.addTone = function(idx) {
 	//
 	this.tIdx++;
 };
+TWKMulti.prototype.setTone = function(idx,hue,sat,stop) {
+	var tone = this.tones[idx];
+	tone.hue.value = parseInt(hue);
+	tone.hueValue.removeChild(tone.hueValue.firstChild);
+	tone.hueValue.appendChild(document.createTextNode(parseInt(hue).toString()));
+	tone.sat.value = parseFloat((parseFloat(sat)/255).toFixed(3));
+	tone.satValue.removeChild(tone.satValue.firstChild);
+	tone.satValue.appendChild(document.createTextNode(parseFloat((parseFloat(sat)/255).toFixed(3)).toString()));
+	tone.stop.value = parseFloat(stop);
+	tone.stopValue.removeChild(tone.stopValue.firstChild);
+	tone.stopValue.appendChild(document.createTextNode(parseFloat(stop).toString()));
+};
 TWKMulti.prototype.testToneHue = function(idx) {
 	var tone = this.tones[idx];
 	this.pHue = Math.round(tone.hue.value);
-//	var d = this.pCtx.getImageData(this.pHue,Math.round((1-this.pSat)*255),1,1);
 	tone.hueValue.removeChild(tone.hueValue.firstChild);
 	tone.hueValue.appendChild(document.createTextNode(this.pHue.toString()));
 };
 TWKMulti.prototype.testToneSat = function(idx) {
 	var tone = this.tones[idx];
 	this.pSat = parseFloat(tone.sat.value);
-//	var d = this.pCtx.getImageData(this.pHue,Math.round((1-this.pSat)*255),1,1);
 	tone.satValue.removeChild(tone.satValue.firstChild);
 	tone.satValue.appendChild(document.createTextNode(this.pSat.toString()));
 };
