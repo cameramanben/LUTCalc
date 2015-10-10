@@ -372,7 +372,7 @@ TWKMulti.prototype.addTone = function(idx) {
 	};
 	if (idx === 0) {
 		this.tones[0] = object;
-	} else if (idx === this.tones.length) {
+	} else if (idx >= this.tones.length-1) {
 		this.tones.push(object);
 	} else {
 		this.tones.splice(idx,0,object);
@@ -437,6 +437,38 @@ TWKMulti.prototype.testToneStop = function(idx) {
 	this.pStop = parseFloat(tone.stop.value);
 	tone.stopValue.removeChild(tone.stopValue.firstChild);
 	tone.stopValue.appendChild(document.createTextNode(this.pStop.toString()));
+	if (idx > 0) {
+		this.shuffleDown(idx-1, this.pStop);
+	}
+	if (idx < this.tones.length-1) {
+		this.shuffleUp(idx+1, this.pStop);
+	}
+};
+TWKMulti.prototype.shuffleDown = function(idx, val) {
+	var tone = this.tones[idx];
+	var old = parseFloat(tone.stop.value);
+	if (old >= val) {
+		val = parseFloat((val - 0.001).toFixed(3));
+		tone.stop.value = val;
+		tone.stopValue.removeChild(tone.stopValue.firstChild);
+		tone.stopValue.appendChild(document.createTextNode(val.toString()));
+		if (idx > 0) {
+			this.shuffleDown(idx-1, val);
+		}
+	}
+};
+TWKMulti.prototype.shuffleUp = function(idx, val) {
+	var tone = this.tones[idx];
+	var old = parseFloat(tone.stop.value);
+	if (old <= val) {
+		val = parseFloat((val + 0.001).toFixed(3));
+		tone.stop.value = val;
+		tone.stopValue.removeChild(tone.stopValue.firstChild);
+		tone.stopValue.appendChild(document.createTextNode((val).toString()));
+		if (idx < this.tones.length-1) {
+			this.shuffleUp(idx+1, val);
+		}
+	}
 };
 TWKMulti.prototype.updateTone = function() {
 	var tone = this.tones[this.pIdx];

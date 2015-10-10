@@ -5,6 +5,7 @@ v2.2
 ----
 * New Feature - Multitone. This combines two adjustments. You can set colour saturation on a stop-by-stop basis (eg for lower saturation in the highlights), and then set one or more colour 'washes' - a tint to zero saturation - at arbitrary stop levels. With Multitone you can create washes, duotones, tritones etc, or create alternatives to LC709A.
 * New Feature - Custom Colour Spaces. Select 'Custom' in the recorded or output gamut boxes and a new panel appears where you can define one or more custom colour spaces, either using xy white point and primaries, or by entering matrix values and selecting the intended internal or working colour space.
+* Bugfix - Modal popup dialogs. Ensures that none of the other controls can be changed when a modal dialog box is up (eg 'Load Preview' details).
 
 v2.1
 ----
