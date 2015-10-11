@@ -43,10 +43,14 @@ TWKMulti.prototype.io = function() {
 		slider.className = 'twk-multi-range-array';
 		this.satSliders.push(slider);
 	}
+	this.monochrome = document.createElement('input');
+	this.monochrome.setAttribute('type','button');
+	this.monochrome.className = 'smallbutton';
+	this.monochrome.setAttribute('value','Monochrome');
 	this.satReset = document.createElement('input');
 	this.satReset.setAttribute('type','button');
 	this.satReset.className = 'smallbutton';
-	this.satReset.setAttribute('value','Reset');
+	this.satReset.setAttribute('value','Reset Saturation');
 	// Colour Picker
 	this.pRLabel = document.createElement('label');
 	this.pRLabel.appendChild(document.createTextNode('128'));
@@ -80,6 +84,18 @@ TWKMulti.prototype.ui = function() {
 	this.box = document.createElement('div');
 	this.box.className = 'tweak-hide';
 	// Tweak - Specific UI Elements
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop:')));
+	this.stopInput = document.createElement('input');
+	this.stopInput.setAttribute('type','text');
+	this.stopInput.className = 'smallinput';
+	this.stopInput.value = '0';
+	this.box.appendChild(this.stopInput);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation:')));
+	this.satInput = document.createElement('input');
+	this.satInput.setAttribute('type','text');
+	this.satInput.className = 'smallinput';
+	this.satInput.value = '1';
+	this.box.appendChild(this.satInput);
 	// Box for stop-by-stop slider background
 	this.coloursBox = document.createElement('div');
 	this.coloursBox.id = 'twk-multi-coloursbox';
@@ -116,19 +132,7 @@ TWKMulti.prototype.ui = function() {
 		this.box.appendChild(stopLabel);
 	}
 	this.box.appendChild(document.createElement('br'));
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop:')));
-	this.stopInput = document.createElement('input');
-	this.stopInput.setAttribute('type','text');
-	this.stopInput.className = 'smallinput';
-	this.stopInput.value = '0';
-	this.box.appendChild(this.stopInput);
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation:')));
-	this.satInput = document.createElement('input');
-	this.satInput.setAttribute('type','text');
-	this.satInput.className = 'smallinput';
-	this.satInput.value = '1';
-	this.box.appendChild(this.satInput);
-	this.box.appendChild(document.createElement('br'));
+	this.box.appendChild(this.monochrome);
 	this.box.appendChild(this.satReset);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
@@ -274,6 +278,10 @@ TWKMulti.prototype.events = function() {
 		here.testSatInput();
 		here.messages.gtSetParams();
 	};}(this);
+	this.monochrome.onclick = function(here){ return function(){
+		here.toMono();
+		here.messages.gtSetParams();
+	};}(this);
 	this.satReset.onclick = function(here){ return function(){
 		here.resetSat();
 		here.messages.gtSetParams();
@@ -384,7 +392,7 @@ TWKMulti.prototype.addTone = function(idx) {
 	toneRight.appendChild(stopValue);
 	toneRight.appendChild(document.createElement('br'));
 	toneBox.appendChild(toneRight);
-	if (this.tones.length === 0 || idx >= this.tones.length-1) {
+	if (this.tones.length === 0 || idx >= this.tones.length) {
 		this.box.appendChild(toneBox);
 	} else {
 		this.tones[idx].box.parentNode.insertBefore(toneBox,this.tones[idx].box);
@@ -402,7 +410,7 @@ TWKMulti.prototype.addTone = function(idx) {
 	};
 	if (idx === 0) {
 		this.tones[0] = object;
-	} else if (idx >= this.tones.length-1) {
+	} else if (idx >= this.tones.length) {
 		this.tones.push(object);
 	} else {
 		this.tones.splice(idx,0,object);
@@ -618,6 +626,14 @@ TWKMulti.prototype.testSat = function(i) {
 	}
 	this.stopInput.value = (i-8).toString();
 	this.satInput.value = this.sat[i].toString();		
+};
+TWKMulti.prototype.toMono = function() {
+	for (var j=0; j<17; j++) {
+		this.satSliders[j].value = 0;
+		this.sat[j] = 0;
+	}
+	this.stopInput.value = '0';
+	this.satInput.value = '0';
 };
 TWKMulti.prototype.resetSat = function() {
 	for (var j=0; j<17; j++) {
