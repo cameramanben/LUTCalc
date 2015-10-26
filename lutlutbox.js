@@ -392,7 +392,7 @@ LUTLutBox.prototype.setSettings = function(settings) {
 			this.scaleMax.value = data.scaleMax;
 		}
 		if (typeof data.inBits === 'number') {
-			var m = this.inBitsSelect.length;
+			var m = this.inBitsSelect.options.length;
 			for (var j=0; j<m; j++) {
 				if (parseInt(this.inBitsSelect.options[j].value) === data.inBits) {
 					this.inBitsSelect.options[j].selected = true;
@@ -400,7 +400,7 @@ LUTLutBox.prototype.setSettings = function(settings) {
 			}
 		}
 		if (typeof data.outBits === 'number') {
-			var m = this.outBitsSelect.length;
+			var m = this.outBitsSelect.options.length;
 			for (var j=0; j<m; j++) {
 				if (parseInt(this.outBitsSelect.options[j].value) === data.outBits) {
 					this.outBitsSelect.options[j].selected = true;
@@ -408,7 +408,7 @@ LUTLutBox.prototype.setSettings = function(settings) {
 			}
 		}
 		if (typeof data.nikonBank === 'number') {
-			var m = this.nikonBank.length;
+			var m = this.nikonBank.options.length;
 			for (var j=0; j<m; j++) {
 				if (parseInt(this.nikonBank.options[j].value) === data.nikonBank) {
 					this.nikonBank.options[j].selected = true;

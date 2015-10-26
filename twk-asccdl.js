@@ -278,7 +278,7 @@ TWKASCCDL.prototype.setSettings = function(settings) {
 			}
 		}
 		if (typeof data.channel !== 'undefined') {
-			var m = this.channelSelect.length;
+			var m = this.channelSelect.options.length;
 			for (var j=0; j<m; j++) {
 				if (this.channelSelect.options[j].lastChild.nodeValue === data.channel) {
 					this.channelSelect.options[j].selected = true;

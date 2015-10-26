@@ -46,12 +46,16 @@ LUTTweaksBox.prototype.ui = function() {
 	this.box.appendChild(this.holder);
 	maxHeights();
 
+	this.cs = this.tweaksList.length;
+	this.tweaksList.push(new TWKCS(this.holder, this.inputs, this.messages));
 	this.wb = this.tweaksList.length;
 	this.tweaksList.push(new TWKWHITE(this.holder, this.inputs, this.messages));
 	this.messages.gtTx(3,17,{});
 	this.PSST = this.tweaksList.length;
 	this.tweaksList.push(new TWKPSSTCDL(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKASCCDL(this.holder, this.inputs, this.messages));
+	this.multi = this.tweaksList.length;
+	this.tweaksList.push(new TWKMulti(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKHG(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKKnee(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
@@ -92,6 +96,9 @@ LUTTweaksBox.prototype.gotGamutLists = function() {
 		this.built = true;
 	}
 };
+LUTTweaksBox.prototype.changeGamut = function() {
+	this.tweaksList[this.cs].toggleTweak();
+};
 LUTTweaksBox.prototype.gotCATs = function(CATs) {
 	this.tweaksList[this.wb].gotCATs(CATs);
 };
@@ -125,6 +132,14 @@ LUTTweaksBox.prototype.setParams = function(params) {
 };
 LUTTweaksBox.prototype.psstColours = function(params) {
 	this.tweaksList[this.PSST].psstColours(params);
+};
+/*
+LUTTweaksBox.prototype.gotColSqr = function(params) {
+	this.tweaksList[this.multi].gotColSqr(params);
+};
+*/
+LUTTweaksBox.prototype.multiColours = function(params) {
+	this.tweaksList[this.multi].multiColours(params);
 };
 LUTTweaksBox.prototype.getInfo = function(info) {
 	if (this.tweaks.checked) {

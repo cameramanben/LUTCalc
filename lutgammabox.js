@@ -130,6 +130,10 @@ LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
 		option.value = inList[i].idx;
+		if (inList[i].name === 'Custom In') {
+			this.inputs.addInput('custGamInIdx',i);
+			inList[i].name = 'Custom';
+		}
 		option.appendChild(document.createTextNode(inList[i].name));
 		this.inGamutSelect.appendChild(option);
 	}
@@ -137,6 +141,10 @@ LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
 		option.value = outList[i].idx;
+		if (outList[i].name === 'Custom Out') {
+			this.inputs.addInput('custGamOutIdx',i);
+			outList[i].name = 'Custom';
+		}
 		option.appendChild(document.createTextNode(outList[i].name));
 		this.outGamutSelect.appendChild(option);
 	}
@@ -144,7 +152,7 @@ LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	this.gamutLA = LA;
 };
 LUTGammaBox.prototype.defaultGam = function() {
-	var max = this.inGammaSelect.length;
+	var max = this.inGammaSelect.options.length;
 	var defGamma = this.inputs.defGammaIn;
 	for (var i = 0; i < max; i++) {
 		if (defGamma === this.inGammaSelect.options[i].lastChild.nodeValue) {
@@ -153,7 +161,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 		}
 	}
 	this.changeGammaIn();
-	max = this.inGamutSelect.length;
+	max = this.inGamutSelect.options.length;
 	var defGamut = this.inputs.defGamutIn;
 	for (var i = 0; i < max; i++) {
 		if (defGamut === this.inGamutSelect.options[i].lastChild.nodeValue) {
@@ -190,12 +198,13 @@ LUTGammaBox.prototype.changeInGamut = function() {
 	} else if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.outGamutSelect.options[0].selected = true;
 	}
+	this.messages.changeGamut();
 };
 LUTGammaBox.prototype.changeOutGamut = function() {
 	if (parseInt(this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].value) === this.gamutPass) {
 		this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected = true;
 	} else if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
-		var max = this.inGamutSelect.length;
+		var max = this.inGamutSelect.options.length;
 		var defGamut = this.inputs.defGamutIn;
 		for (var i = 0; i < max; i++) {
 			if (defGamut === this.inGamutSelect.options[i].lastChild.nodeValue) {
@@ -204,6 +213,7 @@ LUTGammaBox.prototype.changeOutGamut = function() {
 			}
 		}
 	}
+	this.messages.changeGamut();
 };
 LUTGammaBox.prototype.oneOrThree = function() {
 	if (this.inputs.d[0].checked) {
@@ -267,7 +277,10 @@ LUTGammaBox.prototype.setSettings = function(settings) {
 		if (typeof data.recGamut !== 'undefined') {
 			var m = this.inGamutSelect.options.length;
 			for (var j=0; j<m; j++) {
-				if (this.inGamutSelect.options[j].lastChild.nodeValue === data.recGamut) {
+				if (
+					this.inGamutSelect.options[j].lastChild.nodeValue === data.recGamut ||
+					(this.inGamutSelect.options[j].lastChild.nodeValue.substring(0,6) === 'Custom' && data.recGamut.substring(0,6) === 'Custom')
+				) {
 					this.inGamutSelect.options[j].selected = true;
 					break;
 				}
@@ -295,7 +308,10 @@ LUTGammaBox.prototype.setSettings = function(settings) {
 		if (typeof data.outGamut !== 'undefined') {
 			var m = this.outGamutSelect.options.length;
 			for (var j=0; j<m; j++) {
-				if (this.outGamutSelect.options[j].lastChild.nodeValue === data.outGamut) {
+				if (
+					this.outGamutSelect.options[j].lastChild.nodeValue === data.outGamut ||
+					(this.outGamutSelect.options[j].lastChild.nodeValue.substring(0,6) === 'Custom' && data.outGamut.substring(0,6) === 'Custom')
+				) {
 					this.outGamutSelect.options[j].selected = true;
 					break;
 				}

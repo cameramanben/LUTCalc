@@ -20,6 +20,7 @@ function LUTColourSpace() {
 		 0.0030, 0.0136, 0.9834
 	]);
 	this.invCat02 = this.mInverse(this.cat02);
+	this.matList = [];
 	this.xyzMatrices();
 	this.system = this.g[this.sysIdx];
 	this.system.inv = this.mInverse(this.system.toXYZ);
@@ -81,6 +82,8 @@ function LUTColourSpace() {
 	this.doFC = false;
 
 	this.loadColourSpaces();
+	this.buildColourSquare();
+	this.buildMultiColours();
 }
 // Prepare colour spaces
 LUTColourSpace.prototype.loadColourSpaces = function() {
@@ -93,6 +96,12 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
+//	this.csIn.push(this.toSys('DRAGONColor'));
+//	this.csIn.push(this.toSys('DRAGONColor2'));
+//	this.csIn.push(this.toSys('REDColor'));
+//	this.csIn.push(this.toSys('REDColor2'));
+//	this.csIn.push(this.toSys('REDColor3'));
+//	this.csIn.push(this.toSys('REDColor4'));
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
 	this.csIn.push(this.toSys('Rec2020'));
@@ -105,6 +114,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Canon DCI-P3+'));
 	this.csIn.push(this.toSys('Adobe RGB'));
 	this.csIn.push(this.toSys('Adobe Wide Gamut RGB'));
+	this.custIn = this.csIn.length;
+	this.csIn.push(this.toSys('Custom In'));
 	this.csIn.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 
 	this.csOut.push(this.fromSys('Sony S-Gamut3.cine'));
@@ -113,6 +124,12 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Alexa Wide Gamut'));
 	this.csOut.push(this.fromSys('Canon Cinema Gamut'));
 	this.csOut.push(this.fromSys('Panasonic V-Gamut'));
+//	this.csOut.push(this.fromSys('DRAGONColor'));
+//	this.csOut.push(this.fromSys('DRAGONColor2'));
+//	this.csOut.push(this.fromSys('REDColor'));
+//	this.csOut.push(this.fromSys('REDColor2'));
+//	this.csOut.push(this.fromSys('REDColor3'));
+//	this.csOut.push(this.fromSys('REDColor4'));
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOut.push(
@@ -199,6 +216,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Adobe Wide Gamut RGB'));
 	this.LA = this.csOut.length;
 	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
+	this.custOut = this.csOut.length;
+	this.csOut.push(this.toSys('Custom Out'));
 	this.pass = this.csOut.length;
 	this.csOut.push(this.fromSysMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 
@@ -256,6 +275,19 @@ LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
 	]);
 	var cat02 = this.mMult(this.invCat02,this.mMult(CAT,this.cat02));
 	return this.mMult(cat02,m);
+};
+LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
+	var cat = this.CATs.getModel(model);
+	var inv = this.mInverse(cat);
+	var s = this.mMult(cat, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
+	var d = this.mMult(cat, new Float64Array([wd[0]/wd[1],1,wd[2]/wd[1]]));
+	var CAT = new Float64Array([
+		d[0]/s[0], 0, 0,
+		0, d[1]/s[1], 0,
+		0, 0, d[2]/s[2]
+	]);
+	var n = this.mMult(inv,this.mMult(CAT,cat));
+	return this.mMult(n,m);
 };
 LUTColourSpace.prototype.toSys = function(name) {
 	var max = this.g.length;
@@ -476,6 +508,48 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
 	this.g.push(vgamut);
+// DRAGONColor
+	var redDragonColor = {};
+	redDragonColor.name = 'DRAGONColor';
+	redDragonColor.xy = new Float64Array([0.753044222785,0.327830576682, 0.299570228481,0.700699321956, 0.079642066735,-0.0549379510888]);
+	redDragonColor.white = this.illuminant('d60');
+	redDragonColor.toXYZ = this.RGBtoXYZ(redDragonColor.xy,redDragonColor.white);
+	this.g.push(redDragonColor);
+// DRAGONColor2
+	var redDragonColor2 = {};
+	redDragonColor2.name = 'DRAGONColor2';
+	redDragonColor2.xy = new Float64Array([0.753044491143,0.327831029513, 0.299570490451,0.700699415614, 0.145011584278,0.0510971250879]);
+	redDragonColor2.white = this.illuminant('d60');
+	redDragonColor2.toXYZ = this.RGBtoXYZ(redDragonColor2.xy,redDragonColor2.white);
+	this.g.push(redDragonColor2);
+// REDColor
+	var redColor = {};
+	redColor.name = 'REDColor';
+	redColor.xy = new Float64Array([0.699747001291,0.329046930313, 0.304264039024,0.623641145129, 0.134913961296,0.0347174412813]);
+	redColor.white = this.illuminant('d60');
+	redColor.toXYZ = this.RGBtoXYZ(redColor.xy,redColor.white);
+	this.g.push(redColor);
+// REDColor2
+	var redColor2 = {};
+	redColor2.name = 'REDColor2';
+	redColor2.xy = new Float64Array([0.878682510476,0.32496400741, 0.300888714367,0.679054755791, 0.0953986946056,-0.0293793268343]);
+	redColor2.white = this.illuminant('d60');
+	redColor2.toXYZ = this.RGBtoXYZ(redColor2.xy,redColor2.white);
+	this.g.push(redColor2);
+// REDColor3
+	var redColor3 = {};
+	redColor3.name = 'REDColor3';
+	redColor3.xy = new Float64Array([0.701181035906,0.329014155583, 0.300600304652,0.683788834269, 0.108154455624,-0.00868817578666]);
+	redColor3.white = this.illuminant('d60');
+	redColor3.toXYZ = this.RGBtoXYZ(redColor3.xy,redColor3.white);
+	this.g.push(redColor3);
+// REDColor4
+	var redColor4 = {};
+	redColor4.name = 'REDColor4';
+	redColor4.xy = new Float64Array([0.701180591892,0.329013699116, 0.300600395529,0.683788824257, 0.145331946229,0.0516168036226]);
+	redColor4.white = this.illuminant('d60');
+	redColor4.toXYZ = this.RGBtoXYZ(redColor4.xy,redColor4.white);
+	this.g.push(redColor4);
 // Rec709
 	var rec709 = {};
 	rec709.name = 'Rec709';
@@ -554,10 +628,27 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	adobewg.white = this.illuminant('d50');
 	adobewg.toXYZ = this.RGBtoXYZ(adobewg.xy,adobewg.white);
 	this.g.push(adobewg);
+// Custom In (initially Rec709)
+	var customIn = {};
+	customIn.name = 'Custom In';
+	customIn.xy = new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]);
+	customIn.white = this.illuminant('d65');
+	customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
+	this.g.push(customIn);
+// Custom Out (initially Rec709)
+	var customOut = {};
+	customOut.name = 'Custom Out';
+	customOut.xy = new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]);
+	customOut.white = this.illuminant('d65');
+	customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
+	this.g.push(customOut);
 };
 LUTColourSpace.prototype.systemMatrices = function() {
 	var max = this.g.length;
 	for (var j=0; j<max; j++) {
+		if (this.g[j].name !== 'Custom In' && this.g[j].name !== 'Custom Out' && this.g[j].name !== 'Passthrough') {
+			this.matList.push({name: this.g[j].name,idx: j});
+		}
 		if (j === this.sysIdx) {
 			this.g[j].toSys = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
 		} else if (this.g[j].name === 'XYZ') {
@@ -720,7 +811,146 @@ LUTColourSpace.prototype.setSaturated = function() {
 		b[0],b[1],b[2]
 	]).buffer;
 };
+LUTColourSpace.prototype.buildColourSquare = function() {
+	var d = 256;
+	var colSqr = new Float64Array(d*d*3);
+	this.colSqr = colSqr.buffer;
+	var j=0;
+	var r,g,b;
+	var Hd,S,L,C,X,m;
+	for (var y=0; y<d; y++) {
+		for (var x=0; x<d; x++) {
+			Hd = 6*x/(d-1);
+			S = 1-(y/(d-1));
+			L = 0.5;
+			C = (1-Math.abs((2*L)-1))*S;
+			X = C*(1 - Math.abs((Hd%2) - 1));
+			if (Hd < 1) {
+				r = C;
+				g = X;
+				b = 0;
+			} else if (Hd < 2) {
+				r = X;
+				g = C;
+				b = 0;
+			} else if (Hd < 3) {
+				r = 0;
+				g = C;
+				b = X;
+			} else if (Hd < 4) {
+				r = 0;
+				g = X;
+				b = C;
+			} else if (Hd < 5) {
+				r = X;
+				g = 0;
+				b = C;
+			} else {
+				r = C;
+				g = 0;
+				b = X;
+			}
+			m = L - (0.5*C);
+			colSqr[ j ] = r + m;
+			colSqr[j+1] = g + m;
+			colSqr[j+2] = b + m;
+			j += 3;
+		}
+	}
+	this.csIn[this.rec709In].lc(this.colSqr);
+};
+LUTColourSpace.prototype.buildMultiColours = function() {
+	var mclrs = new Float64Array(17*3*3);
+	this.mclrs = mclrs.buffer;
+	var l;
+	for (var j=0; j<17; j++) {
+		l = Math.pow(2,j-8)*0.2;
+		mclrs[ j*3 ] = l/0.2126;
+		mclrs[((j+17)*3)+1] = l/0.7152;
+		mclrs[((j+34)*3)+2] = l/0.0722;
+	}
+	this.csIn[this.rec709In].lc(this.mclrs);
+	this.multiSat = new Float64Array([
+		1,1,1,1,1,1,1,1,
+		1,
+		1,1,1,1,1,1,1,1
+	]);
+};
 // Parameter setting functions
+LUTColourSpace.prototype.setCS = function(params) {
+	var out = {};
+	if (typeof params.twkCS !== 'undefined') {
+		var p = params.twkCS;
+		out.editIdx = p.editIdx;
+		var modelEdit = 0;
+		if (typeof p.edit.cat === 'number') {
+			modelEdit = p.edit.cat;
+		}
+		var modelIn = 0;
+		if (typeof p.input.cat === 'number') {
+			modelIn = p.input.cat;
+		}
+		var modelOut = 0;
+		if (typeof p.output.cat === 'number') {
+			modelOut = p.output.cat;
+		}
+		if (!p.edit.isMatrix && p.lock) {
+			var edit = {};
+			edit.xy = new Float64Array([
+				p.edit.rx, p.edit.ry,
+				p.edit.gx, p.edit.gy,
+				p.edit.bx, p.edit.by
+			]);
+			edit.white = new Float64Array([
+				p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
+			]);
+			edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
+			out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(modelEdit,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
+			out.wcs = p.edit.wcs;
+		}
+		if (p.input.isMatrix) {
+			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
+			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inWCSToSys,p.input.matrix), this.g[p.input.wcs].white.buffer.slice(0));
+		} else {
+			var customIn = {};
+			customIn.xy = new Float64Array([
+				p.input.rx, p.input.ry,
+				p.input.gx, p.input.gy,
+				p.input.bx, p.input.by
+			]);
+			customIn.white = new Float64Array([
+				p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
+			]);
+			customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
+			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(modelIn,customIn.toXYZ,customIn.white,this.system.white));
+			this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
+		}
+		if (p.output.isMatrix) {
+			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
+			var outWCSFromSys = this.mInverse(outWCSToSys);
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
+			this.csM[this.custOut] = this.csOut[this.custOut];
+		} else {
+			var customOut = {};
+			customOut.xy = new Float64Array([
+				p.output.rx, p.output.ry,
+				p.output.gx, p.output.gy,
+				p.output.bx, p.output.by
+			]);
+			customOut.white = new Float64Array([
+				p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
+			]);
+			customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
+			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(modelOut,customOut.toXYZ,customOut.white,this.system.white));
+			this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
+			this.csM[this.custOut] = this.csOut[this.custOut];
+		}
+		out.doCS = true;
+	} else {
+		out.doCS = false;
+	}
+	return out;
+};
 LUTColourSpace.prototype.setWB = function(params) {
 	var out = {};
 	this.doWB = false;
@@ -843,6 +1073,43 @@ LUTColourSpace.prototype.setHG = function(params) {
 	out.doHG = this.doHG;
 	return out;
 };
+LUTColourSpace.prototype.setMulti = function(params) {
+	var out = {};
+	this.doMulti = false;
+	if (this.tweaks && typeof params.twkMulti !== 'undefined') {
+		var p = params.twkMulti;
+		if (typeof p.doMulti === 'boolean' && p.doMulti) {
+			this.doMulti = true;
+		}
+		if (typeof p.sat !== 'undefined') {
+			this.multiSat = new Float64Array(p.sat);
+		}
+		if (typeof p.sat !== 'undefined') {
+			this.multiSat = new Float64Array(p.sat);
+		}
+		if (typeof p.pHue !== 'undefined' && typeof p.pSat !== 'undefined' && typeof p.pStop !== 'undefined') {
+			this.multiStop = new Float64Array(p.pStop);
+			var h = new Uint8Array(p.pHue);
+			var s = new Uint8Array(p.pSat);
+			var m = this.multiStop.length;
+			this.multiRGB = new Float64Array(m*3);
+			var f = new Float64Array(this.colSqr);
+			var k;
+			for (var j=0; j<m; j++) {
+				k = (h[j]+(256*(255-s[j])))*3;
+				this.multiRGB[ (j*3) ] = f[ k ];
+				this.multiRGB[(j*3)+1] = f[k+1];
+				this.multiRGB[(j*3)+2] = f[k+2];
+			}
+			this.csOut[this.curOut].lc(this.multiRGB.buffer);
+		} else {
+			this.multiStop = new Float64Array([0]);
+			this.multiRGB = new Float64Array([1,1,1]);
+		}
+	}
+	out.doMulti = this.doMulti;
+	return out;
+};
 LUTColourSpace.prototype.setFC = function(params) {
 	var out = {};
 	this.doFC = false;
@@ -935,6 +1202,91 @@ LUTColourSpace.prototype.setFC = function(params) {
 	out.red = Math.log(this.fcVals[9]/0.2)/Math.log(2);
 	out.doFC = this.doFC;
 	return out;
+};
+// Adjustment functions
+LUTColourSpace.prototype.multiOut = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var Y, stp, sat, r, b;
+	var mt = this.multiStop.length;
+	var mono = new Float64Array(3);
+	var Y2, mul, mL, mH;
+	for (var j=0; j<m; j +=3) {
+		Y = (this.y[0]*c[j])+(this.y[1]*c[j+1])+(this.y[2]*c[j+2]);
+		if (Y <= 0) {
+			sat = this.multiSat[0];
+			mono[0] = Y;
+			mono[1] = Y;
+			mono[2] = Y;
+		} else {
+			stp = (Math.log(Y/0.2)/Math.LN2) + 8;
+			if (stp <= 0) {
+				sat = this.multiSat[0];
+			} else if (stp >= 16) {
+				sat = this.multiSat[16];
+			} else {
+				b = Math.floor(stp);
+				r = stp - b;
+				sat = ((1-r)*this.multiSat[b]) + (r*this.multiSat[b+1]);
+			}
+			if (sat >= 1) {
+				mono[0] = Y;
+				mono[1] = Y;
+				mono[2] = Y;
+			} else {
+				if (mt === 1) {
+					mono[0] = this.multiRGB[0];
+					mono[1] = this.multiRGB[1];
+					mono[2] = this.multiRGB[2];
+				} else if (mt > 1) {
+					stp -= 8;
+					mL = mt-1;
+					mH = mt;
+					for (var k=0; k<mt; k++) {
+						if (this.multiStop[k] > stp) {
+							mL = k-1;
+							mH = k;
+							break;
+						}
+					}
+					if (mL < 0) {
+						mono[0] = this.multiRGB[0];
+						mono[1] = this.multiRGB[1];
+					mono[2] = this.multiRGB[2];
+					} else if (mH >= mt) {
+						mono[0] = this.multiRGB[ ((mt-1)*3) ];
+						mono[1] = this.multiRGB[((mt-1)*3)+1];
+						mono[2] = this.multiRGB[((mt-1)*3)+2];
+					} else {
+						r = (stp-this.multiStop[mL])/(this.multiStop[mH]-this.multiStop[mL]);
+						mono[0] = ((1-r)*this.multiRGB[ ((mL)*3) ])+(r*this.multiRGB[ ((mH)*3) ]);
+						mono[1] = ((1-r)*this.multiRGB[((mL)*3)+1])+(r*this.multiRGB[((mH)*3)+1]);
+						mono[2] = ((1-r)*this.multiRGB[((mL)*3)+2])+(r*this.multiRGB[((mH)*3)+2]);
+					} 
+				} else {
+					mono[0] = Y;
+					mono[1] = Y;
+					mono[2] = Y;
+				}
+				if (mt > 0) {
+					Y2 = (this.y[0]*mono[0])+(this.y[1]*mono[1])+(this.y[2]*mono[2]);
+					if (Y2 > 0) {
+						mul = Y/Y2;
+						mono[0] *= mul;
+						mono[1] *= mul;
+						mono[2] *= mul;
+					} else {
+						mono[0] = Y;
+						mono[1] = Y;
+						mono[2] = Y;
+					}
+				}
+			}
+		}
+		c[ j ] = mono[0] + (sat*(c[ j ]-mono[0]));
+		c[j+1] = mono[1] + (sat*(c[j+1]-mono[1]));
+		c[j+2] = mono[2] + (sat*(c[j+2]-mono[2]));
+	}
 };
 // Colour space data objects
 function CCTxy(LUT) {
@@ -1922,10 +2274,12 @@ LUTColourSpace.prototype.setParams = function(params) {
 	} else {
 		this.tweaks = false;
 	}
+	out.twkCS = this.setCS(params);
 	out.twkWB = this.setWB(params);
 	out.twkASCCDL = this.setASCCDL(params);
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
+	out.twkMulti = this.setMulti(params);
 	out.twkFC = this.setFC(params);
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -2077,6 +2431,10 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
 				o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
 			}
+		}
+// MultiTone
+		if (this.doMulti) {
+			this.multiOut(o.buffer);
 		}		
 // Highlight Gamut
 		if (this.doHG) {
@@ -2122,6 +2480,17 @@ LUTColourSpace.prototype.laCalc = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
+LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver, idx: i.idx, wcs: i.newWCS};
+	var oMat = new Float64Array(i.matrix);
+	var oToXYZ = this.g[i.oldWCS].toXYZ;
+	var nFromXYZ = this.mInverse(this.g[i.newWCS].toXYZ);
+	var oToN = this.mMult(nFromXYZ, this.calcCAT(i.cat,oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white));
+	var matrix = this.mMult(oToN,oMat);
+	out.matrix = matrix.buffer;
+	out.to = ['matrix'];
+	return out;
+};
 LUTColourSpace.prototype.getLists = function(p,t) {
 	return {
 		p: p,
@@ -2130,6 +2499,8 @@ LUTColourSpace.prototype.getLists = function(p,t) {
 		inList: this.inList,
 		outList: this.outList,
 		laList: this.laList,
+		matList: this.matList,
+		CATList: this.CATs.getModels(),
 		pass: this.pass,
 		LA: this.LA
 	};
@@ -2141,6 +2512,53 @@ LUTColourSpace.prototype.setLA = function(p,t,i) {
 LUTColourSpace.prototype.setLATitle = function(p,t,i) {
 	this.csOut[this.LA].setTitle(i);
 	return { p: p, t:t+20, v: this.ver, i: i };
+};
+LUTColourSpace.prototype.getColSqr = function(p,t,i) {
+	var c = this.colSqr.slice(0);
+	var f = new Float64Array(c);
+	this.csOut[this.curOut].lc(c);
+	var m = 256*256;
+	var o = new Uint8Array(Math.round(4*m));
+	var M;
+	for (var j=0; j<m; j++) {
+		M = 255 / Math.max.apply(Math, [f[ (j*3) ],f[(j*3)+1],f[(j*3)+2]]);
+		if (M>255) {
+			M = 255;
+		}
+		o[ (j*4) ] = Math.min(255,Math.max(0,f[ (j*3) ]*M));
+		o[(j*4)+1] = Math.min(255,Math.max(0,f[(j*3)+1]*M));
+		o[(j*4)+2] = Math.min(255,Math.max(0,f[(j*3)+2]*M));
+		o[(j*4)+3] = 255;
+	}
+	return {p: p, t: t+20, v: this.ver, tIdx: i.tIdx, o: o.buffer, to: ['o']};
+};
+LUTColourSpace.prototype.multiColours = function(p,t,i) {
+	var c = this.mclrs.slice(0);
+	this.multiOut(c);
+	this.csOut[this.curOut].lc(c);
+	var m = i.hues.length;
+	var hf = new Float64Array(m*3);
+	var f = new Float64Array(this.colSqr);
+	var k;
+	for (var j=0; j<m; j++) {
+		k = (i.hues[j]+(256*(255-i.sats[j])))*3;
+		hf[ (j*3) ] = f[ k ];
+		hf[(j*3)+1] = f[k+1];
+		hf[(j*3)+2] = f[k+2];
+	}
+	this.csOut[this.curOut].lc(hf.buffer);
+	var hs = new Uint8Array(m*3);
+	var M;
+	for (var j=0; j<m; j++) {
+		M = 255 / Math.max.apply(Math, [hf[ (j*3) ],hf[(j*3)+1],hf[(j*3)+2]]);
+		if (M>255) {
+			M = 255;
+		}
+		hs[ (j*3) ] = Math.min(255,Math.max(0,hf[ (j*3) ]*M));
+		hs[(j*3)+1] = Math.min(255,Math.max(0,hf[(j*3)+1]*M));
+		hs[(j*3)+2] = Math.min(255,Math.max(0,hf[(j*3)+2]*M));
+	}
+	return {p: p, t: t+20, v: this.ver, o: c, hs: hs.buffer, to: ['o','hs']};
 };
 LUTColourSpace.prototype.ioNames = function(p,t) {
 	var out = {};
@@ -2598,6 +3016,14 @@ LUTColourSpace.prototype.calcPrimaries = function(p,t) {
 		xy[ l+step ] = (XYZ[0]/den);
 		xy[l+step+1] = (XYZ[1]/den);
 	}
+/*
+console.log(
+	'Output - WP: ' + parseFloat(xy[step].toFixed(8)) + ', ' + parseFloat(xy[step+1].toFixed(8)) +
+	' Rxy: ' + parseFloat(xy[step+2].toFixed(8)) + ', ' + parseFloat(xy[step+3].toFixed(8)) +
+	' Gxy: ' + parseFloat(xy[step+4].toFixed(8)) + ', ' + parseFloat(xy[step+5].toFixed(8)) +
+	' Bxy: ' + parseFloat(xy[step+6].toFixed(8)) + ', ' + parseFloat(xy[step+7].toFixed(8))
+);
+*/
 	return {
 		p: p,
 		t: t+20,
@@ -2634,11 +3060,17 @@ this.addEventListener('message', function(e) {
 					break;
 			case 2: sendMessage(cs.laCalc(d.p,d.t,d.d)); 
 					break;
+			case 3: sendMessage(cs.recalcMatrix(d.p,d.t,d.d)); 
+					break;
 			case 5: sendMessage(cs.getLists(d.p,d.t)); 
 					break;
 			case 6: sendMessage(cs.setLA(d.p,d.t,d.d)); 
 					break;
 			case 7: sendMessage(cs.setLATitle(d.p,d.t,d.d)); 
+					break;
+			case 8: sendMessage(cs.getColSqr(d.p,d.t,d.d)); 
+					break;
+			case 9: sendMessage(cs.multiColours(d.p,d.t,d.d)); 
 					break;
 			case 10:sendMessage(cs.ioNames(d.p,d.t));
 					break;

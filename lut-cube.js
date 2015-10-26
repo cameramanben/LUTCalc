@@ -38,7 +38,7 @@ cubeLUT.prototype.header = function() {
 	} else {
 		out += 'LUT_3D_SIZE ' + info.dimension.toString() + "\n";
 	}
-	if (this.flavour !== 1 && this.scaleMin !== 0 && this.scaleMax !== 1) {
+	if (this.flavour !== 1 && info.scaleMin !== 0 && info.scaleMax !== 1) {
 		if (this.flavour === 2) {
 			if (info.dimension === 1) {
 				out += 'LUT_3D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";

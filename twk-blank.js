@@ -105,6 +105,32 @@ TWKBLANK.prototype.setParams = function(params) {
 	}
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
 };
+TWKBLANK.prototype.getSettings = function(data) {
+	// Triggered by 'Save Settings' Button
+	data.blank = {
+		doBLANK: this.tweakCheck.checked,
+	};
+};
+TWKBLANK.prototype.setSettings = function(settings) {
+	// Settings provided by 'Load Settings'
+	if (typeof settings.BLANK !== 'undefined') {
+		var data = settings.BLANK;
+		if (typeof data.doBLANK === 'boolean') {
+			this.tweakCheck.checked = data.doBLANK;
+			this.toggleTweak();
+		}
+	}
+};
+TWKBLANK.prototype.getInfo = function(info) {
+	// Provides metadata to LUT formats
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		info.doBLANK = true;
+	} else {
+		info.doBLANK = false;
+	}
+};
 TWKBLANK.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

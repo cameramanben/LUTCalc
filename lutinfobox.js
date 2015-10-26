@@ -70,19 +70,21 @@ LUTInfoBox.prototype.events = function() {
 	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
 	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insCustHG.onclick = function(here){ return function(){ here.showCustHGInfo(); };}(this);
+	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
+	this.custColourBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustColour.onclick = function(here){ return function(){ here.showCustColourInfo(); };}(this);
+	this.custWhtBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.custHGBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustKnee.onclick = function(here){ return function(){ here.showCustKneeInfo(); };}(this);
 	this.custKneeBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
-	this.custWhtBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-//	this.insCustFlc.onclick = function(here){ return function(){ here.showCustFlcInfo(); };}(this);
-//	this.custFlcBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
 	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustASC.onclick = function(here){ return function(){ here.showCustASCInfo(); };}(this);
 	this.custASCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustMulti.onclick = function(here){ return function(){ here.showCustMultiInfo(); };}(this);
+	this.custMultiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustFC.onclick = function(here){ return function(){ here.showCustFCInfo(); };}(this);
 	this.custFCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustLA.onclick = function(here){ return function(){ here.showCustLAInfo(); };}(this);
@@ -127,12 +129,16 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.insSet);
 	this.createInfInfo();
 	this.instructionsBox.appendChild(this.insInf);
+	this.createCustColour();
+	this.instructionsBox.appendChild(this.custColour);
 	this.createCustWht();
 	this.instructionsBox.appendChild(this.custWht);
 	this.createCustPsst();
 	this.instructionsBox.appendChild(this.custPsst);
 	this.createCustASC();
 	this.instructionsBox.appendChild(this.custASC);
+	this.createCustMulti();
+	this.instructionsBox.appendChild(this.custMulti);
 	this.createCustHG();
 	this.instructionsBox.appendChild(this.custHG);
 	this.createCustKnee();
@@ -180,6 +186,10 @@ LUTInfoBox.prototype.showInfInfo = function() {
 	this.hideAll();
 	this.insInf.style.display = 'block';
 };
+LUTInfoBox.prototype.showCustColourInfo = function() {
+	this.hideAll();
+	this.custColour.style.display = 'block';
+};
 LUTInfoBox.prototype.showCustWhtInfo = function() {
 	this.hideAll();
 	this.custWht.style.display = 'block';
@@ -191,6 +201,10 @@ LUTInfoBox.prototype.showCustPsstInfo = function() {
 LUTInfoBox.prototype.showCustASCInfo = function() {
 	this.hideAll();
 	this.custASC.style.display = 'block';
+};
+LUTInfoBox.prototype.showCustMultiInfo = function() {
+	this.hideAll();
+	this.custMulti.style.display = 'block';
 };
 LUTInfoBox.prototype.showCustHGInfo = function() {
 	this.hideAll();
@@ -222,9 +236,11 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.insGen.style.display = 'none';
 	this.insSet.style.display = 'none';
 	this.insInf.style.display = 'none';
+	this.custColour.style.display = 'none';
 	this.custWht.style.display = 'none';
 	this.custPsst.style.display = 'none';
 	this.custASC.style.display = 'none';
+	this.custMulti.style.display = 'none';
 	this.custHG.style.display = 'none';
 	this.custKnee.style.display = 'none';
 	this.custBhi.style.display = 'none';
@@ -376,6 +392,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	header.setAttribute('class','imagemapimg');	
 	header.setAttribute('id','ins-cust-header');	
 	this.custbox.appendChild(header);
+	this.insCustColour = document.createElement('div');
+	this.insCustColour.setAttribute('class','ins-cust');	
+	this.insCustColour.setAttribute('id','ins-cust-colour');	
+	this.custbox.appendChild(this.insCustColour);
 	this.insCustWht = document.createElement('div');
 	this.insCustWht.setAttribute('class','ins-cust');	
 	this.insCustWht.setAttribute('id','ins-cust-wht');	
@@ -388,6 +408,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustASC.setAttribute('class','ins-cust');	
 	this.insCustASC.setAttribute('id','ins-cust-asc');	
 	this.custbox.appendChild(this.insCustASC);
+	this.insCustMulti = document.createElement('div');
+	this.insCustMulti.setAttribute('class','ins-cust');	
+	this.insCustMulti.setAttribute('id','ins-cust-multi');	
+	this.custbox.appendChild(this.insCustMulti);
 	this.insCustHG = document.createElement('div');
 	this.insCustHG.setAttribute('class','ins-cust');	
 	this.insCustHG.setAttribute('id','ins-cust-hg');	
@@ -565,6 +589,40 @@ LUTInfoBox.prototype.createInfInfo = function() {
 	this.insInf.style.display = 'none';
 	this.insInf.appendChild(this.insInfInfo);
 };
+LUTInfoBox.prototype.createCustColour = function() {
+	this.custColour = document.createElement('div');
+	this.custColour.setAttribute('class','instructions');
+	this.custColour.setAttribute('id','cust-colour');
+	this.custColourBack = document.createElement('input');
+	this.custColourBack.setAttribute('type','button');
+	this.custColourBack.value = 'Back';
+	this.custColour.appendChild(this.custColourBack);
+	this.custColourInfo = document.createElement('div');
+	this.custColourInfo.setAttribute('class','infotext');
+	this.addInfo(this.custColourInfo,false,'Custom Colour Space',"This panel appears for 3D LUTs when 'Custom' is selected as either the recorded or output gamut.");
+	this.addInfo(this.custColourInfo,false,null,'It is a technical option for creating additional colour space / gamut options from either xy white point and primaries or via matrix values to one of the built-in options.');
+	this.addInfo(this.custColourInfo,false,null,'As such it is a tool intended for a specific, specialist use.');
+	this.addInfo(this.custColourInfo,false,null,'Put another way, as a cameraman it is not something I expect to find myself using!');
+	var colour1 = document.createElement('div');
+	colour1.setAttribute('class','ins-cust-fig');
+	colour1.setAttribute('id','ins-cust-colour-1');
+	this.custColourInfo.appendChild(colour1);
+	this.addInfo(this.custColourInfo,false,'White Point & Primaries',"With this you define a colourspace by defining the white point either with xy values or from a drop-down list of standard illuminants. The primaries are then set by entering further xy values.");
+	this.addInfo(this.custColourInfo,false,null,"LUTCalc's processing colourspace uses D65 as its white point, so if the custom colourspace uses a different white point, a chromatic adaptation transform, or CAT, is used. By default LUTCalc uses CIECAT02, though other options such as Bradford can be selected from the CAT model list.");
+	var colour2 = document.createElement('div');
+	colour2.setAttribute('class','ins-cust-fig');
+	colour2.setAttribute('id','ins-cust-colour-2');
+	this.custColourInfo.appendChild(colour2);
+	this.addInfo(this.custColourInfo,false,'Matrix','with this panel you can enter matrix values directly. You can toggle between input and output matrix and LUTCalc will automatically generate the inverse. By default the working colourspace is set to Rec709, but this can be changed to whatever is appropriate for the matrix values.');
+	this.addInfo(this.custColourInfo,false,'Update With Colourspace','This option recalculates the matrix values whenever the colourspace is changed.');
+	this.addInfo(this.custColourInfo,false,null,"As with the 'White Point & Primaries' panel, the CAT can be changed. With the 'Matrix' panel it is used to go between the selected working colourspace and LUTCalc's internal processing space.");
+	this.addInfo(this.custColourInfo,false,null,'The matrices are applied to linear image data.');
+	this.addInfo(this.custColourInfo,false,null,"Initially the 'Matrix' panel is completely independent of the 'White Point & Primaries' panel. If you change anything under 'White Point & Primaries', the matrix panel will lock to it and calculate from the white point and primary options.");
+	this.addInfo(this.custColourInfo,false,'New / Remove',"You can create multiple custom colour spaces and save them with the main 'Save Settings' button.");
+	this.addInfo(this.custColourInfo,false,'Input Choice / Output Choice',"Use these options to set which colourspaces will be used when the recorded and output gamuts are set to 'Custom'.");
+	this.custColour.style.display = 'none';
+	this.custColour.appendChild(this.custColourInfo);
+};
 LUTInfoBox.prototype.createCustWht = function() {
 	this.custWht = document.createElement('div');
 	this.custWht.setAttribute('class','instructions');
@@ -664,6 +722,41 @@ LUTInfoBox.prototype.createCustASC = function() {
 	this.custASC.style.display = 'none';
 	this.custASC.appendChild(this.custASCInfo);
 };
+LUTInfoBox.prototype.createCustMulti = function() {
+	this.custMulti = document.createElement('div');
+	this.custMulti.setAttribute('class','instructions');
+	this.custMulti.setAttribute('id','cust-multi');
+	this.custMultiBack = document.createElement('input');
+	this.custMultiBack.setAttribute('type','button');
+	this.custMultiBack.value = 'Back';
+	this.custMulti.appendChild(this.custMultiBack);
+	this.custMultiInfo = document.createElement('div');
+	this.custMultiInfo.setAttribute('class','infotext');
+	var multi1 = document.createElement('div');
+	multi1.setAttribute('class','ins-cust-fig');
+	multi1.setAttribute('id','ins-cust-multi-1');
+	this.custMultiInfo.appendChild(multi1);
+	this.addInfo(this.custMultiInfo,false,null,'Multitone combines two adjustments to quickly produce sophisticated colour effects tuned from stop to stop - saturation control and duotone.');
+	this.addInfo(this.custMultiInfo,false,'Saturation Control','Within the limited data range of conventional digital recordings (8 or 10-bit integers) there is also a limit to the range of colours that can be represented for a given colourspace at a given luminence. This is the gamut.');
+	this.addInfo(this.custMultiInfo,false,null,'Outside of this range colours will tend to clip. For pure primaries the result is solid blocks of colour, but for mixtures of the colour channels it can result in colours shifting away from expectation.');
+	this.addInfo(this.custMultiInfo,false,null,"For example, Rec709 blue has a much lower luminence than green or red; as luminance increases past blue's limit, the other colour channels can take over.");
+	this.addInfo(this.custMultiInfo,false,null,'The the row of saturation sliders in Multitone can be used to adjust saturation on a stop-by-stop basis, for example reducing the saturation as the level approaches 90% white (around 2 1/3 stops above 18% gray).');
+	this.addInfo(this.custMultiInfo,false,null,"'Reset Saturation' will bring the colours back to their original intensity.");
+	this.addInfo(this.custMultiInfo,false,'Duotone','A popular effect in traditional black and white printing is Duotone. This overlays a colour tint in the midtones and highlights with another in the shadows (generally black). The second control in Multitone extends this effect.');
+	this.addInfo(this.custMultiInfo,false,null,"Clicking the 'Monochrome' button under the saturation sliders sets every stop to zero saturation. By default this means black and white.");
+	this.addInfo(this.custMultiInfo,false,null,"At the most basic level this can be changed to a colour wash either by adjusting the 'Hue' and 'Saturation' sliders in the lower box, or by clicking on the gray square to bring up a colour picker.");
+	var multi2 = document.createElement('div');
+	multi2.setAttribute('class','ins-fig');
+	multi2.setAttribute('id','ins-cust-multi-2');
+	this.custMultiInfo.appendChild(multi2);
+	this.addInfo(this.custMultiInfo,false,null,'The picker shows the hue and saturation options of the Rec709 gamut mapped into the current colourspace. Most of the gamut options are wide enough to avoid clipping using any of these colours, though care should be taken when the output gamut is Rec709 that highly saturated choices - particularly blues - can lead to colour clipping in the highlights.');
+	this.addInfo(this.custMultiInfo,false,null,"From the basic colour wash a duotone effect can be created by clicking the '+' button and selecting a second colour. The 'Stop' slider sets the luminance level where the colour choice is defined. Multitone interpolates between multiple colours.");
+	this.addInfo(this.custMultiInfo,false,null,'Further colours can be added for tritone, quadtone, quintone etc.');
+	this.addInfo(this.custMultiInfo,false,'Multitone','Combining the two effects can produce interesting results quickly. For example, saturation could be feathered downwards from 18% gray to 90% white, but towards a slightly warm wash, which then shifts towards pure grayscale in high highlights.');
+	this.addInfo(this.custMultiInfo,false,null,"Coupled with the 'Knee' tool it is possible to produce very useful looks from the basic Rec709 gamma and gamut options which could hold up more robustly to further adjustment than LUT-derived colourspaces (such as LC709A).");
+	this.custMulti.style.display = 'none';
+	this.custMulti.appendChild(this.custMultiInfo);
+};
 LUTInfoBox.prototype.createCustHG = function() {
 	this.custHG = document.createElement('div');
 	this.custHG.setAttribute('class','instructions');
@@ -705,7 +798,7 @@ LUTInfoBox.prototype.createCustKnee = function() {
 	this.addInfo(this.custKneeInfo,false,null,'Setting Knee Start Level too high with a high value of Clip Level can lead to ugly overshoots. These can be seen in and remedied with the charts normally visible where these instructions are.');
 	this.addInfo(this.custKneeInfo,false,'Slope At Clip','The knee angle at the clip level. It is in % IRE per stop. A value of zero tends to lead to extremely compressed highlights and means that any values above white clip (such as in a grading LUT with exposure adjustment) will be indistinguishable, so a slight slope is generally advisable.');
 	this.addInfo(this.custKneeInfo,false,'Smoothness','By default the LUTCalc creates a smooth, cubic knee rolloff. This is the prevailing approach in modern cameras. Adjusting the smoothness down will tend towards a hard, linear transition more akin to conventional video cameras such as Beta-SP and Digibeta.');
-	this.addInfo(this.custKneeInfo,false,'With the current algorithm the cubic transition can overshoot where an extremely wide dynamic range is compressed into a very narrow range (high Knee Start Level). If that is required then setting smoothness to zero will avoid the overshoot.');
+	this.addInfo(this.custKneeInfo,false,null,'With the current algorithm the cubic transition can overshoot where an extremely wide dynamic range is compressed into a very narrow range (high Knee Start Level). If that is required then setting smoothness to zero will avoid the overshoot.');
 	this.custKnee.style.display = 'none';
 	this.custKnee.appendChild(this.custKneeInfo);
 };

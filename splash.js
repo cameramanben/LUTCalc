@@ -9,12 +9,17 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-lutInputs.addInput('version','v2.1');
-lutInputs.addInput('date','September 2015');
+lutInputs.addInput('version','v2.2');
+lutInputs.addInput('date','October 2015');
 var splash = document.getElementById('javascriptwarning');
 splash.removeChild(splash.firstChild);
 splash.className = 'splash';
 splashTxt();
+var modalBox = document.createElement('div');
+modalBox.className = 'modalbox-hide';
+modalBox.onclick = function(here){ return function(){
+	// Do nothing - stop anything else from happening (modal dialogs).
+};}(this);
 
 function splashTxt() {
 	var splashText = document.createElement('div');
