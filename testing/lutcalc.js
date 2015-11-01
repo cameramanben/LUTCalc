@@ -46,7 +46,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutPreview = new LUTPreview(fieldSet(right,true), lutInputs, lutMessage, lutFile);
 	lutPreview.uiExternal(lutGenerate.getBox());
 	lutInfoBox = new LUTInfoBox(fieldSet(right,true),lutInputs, lutMessage);
-	document.getElementById('body').appendChild(modalBox);
+	document.getElementById('main').appendChild(modalBox);
+	modalBox.className = 'modalbox';
 	// Set Up Data
 	lutMessage.gaTx(0,5,{});
 	lutMessage.gtTx(0,5,{});
@@ -82,6 +83,7 @@ function lutcalcReady(p) {
 		lutPreview.events();
 		lutInfoBox.events();
 		splash.style.display = 'none';
+		modalBox.className = 'modalbox-hide';
 	}
 }
 function fieldSet(parentElement,shadow,id) {

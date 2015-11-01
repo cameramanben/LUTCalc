@@ -256,6 +256,7 @@ TWKCS.prototype.ui = function() {
 };
 TWKCS.prototype.toggleTweaks = function() {
 	// Visibility dictated by 3D LUT and Gamut choice, not checkbox
+	this.toggleTweak();
 };
 TWKCS.prototype.toggleTweak = function() {
 	if ( this.inputs.d[1].checked && (

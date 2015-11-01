@@ -88,7 +88,9 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 			for (var i=T-1; i<max; i++) {
 				this.gas[i].terminate();
 			}
-			this.gas.slice(0,T);
+			this.gas = this.gas.slice(0,T);
+			this.gaN = 0;
+			this.gaU = 0;
 		}
 	}
 };
@@ -329,7 +331,9 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 			for (var i=T-1; i<max; i++) {
 				this.gts[i].terminate();
 			}
-			this.gts.slice(0,T);
+			this.gts = this.gts.slice(0,T);
+			this.gtN = 0;
+			this.gtU = 0;
 		}
 	}
 };

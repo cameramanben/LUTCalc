@@ -247,8 +247,12 @@ LUTPreview.prototype.uiExternal = function(genBox) {
 };
 LUTPreview.prototype.events = function() {
 	this.fileButton.onclick = function(here){ return function(){
-		var e = new MouseEvent('click');
-		here.fileInput.dispatchEvent(e);
+		if (here.inputs.isApp) {
+			here.preGetImg();
+		} else {
+			var e = new MouseEvent('click');
+			here.fileInput.dispatchEvent(e);
+		}
 	};}(this);
 	if (this.inputs.isApp) {
 		this.fileInput.onclick = function(here){ return function(){

@@ -96,6 +96,12 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
 	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
+//	this.csIn.push(this.toSys('DRAGONColor'));
+//	this.csIn.push(this.toSys('DRAGONColor2'));
+//	this.csIn.push(this.toSys('REDColor'));
+//	this.csIn.push(this.toSys('REDColor2'));
+//	this.csIn.push(this.toSys('REDColor3'));
+//	this.csIn.push(this.toSys('REDColor4'));
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
 	this.csIn.push(this.toSys('Rec2020'));
@@ -118,6 +124,12 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Alexa Wide Gamut'));
 	this.csOut.push(this.fromSys('Canon Cinema Gamut'));
 	this.csOut.push(this.fromSys('Panasonic V-Gamut'));
+//	this.csOut.push(this.fromSys('DRAGONColor'));
+//	this.csOut.push(this.fromSys('DRAGONColor2'));
+//	this.csOut.push(this.fromSys('REDColor'));
+//	this.csOut.push(this.fromSys('REDColor2'));
+//	this.csOut.push(this.fromSys('REDColor3'));
+//	this.csOut.push(this.fromSys('REDColor4'));
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOut.push(
@@ -496,6 +508,48 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
 	this.g.push(vgamut);
+// DRAGONColor
+	var redDragonColor = {};
+	redDragonColor.name = 'DRAGONColor';
+	redDragonColor.xy = new Float64Array([0.753044222785,0.327830576682, 0.299570228481,0.700699321956, 0.079642066735,-0.0549379510888]);
+	redDragonColor.white = this.illuminant('d60');
+	redDragonColor.toXYZ = this.RGBtoXYZ(redDragonColor.xy,redDragonColor.white);
+	this.g.push(redDragonColor);
+// DRAGONColor2
+	var redDragonColor2 = {};
+	redDragonColor2.name = 'DRAGONColor2';
+	redDragonColor2.xy = new Float64Array([0.753044491143,0.327831029513, 0.299570490451,0.700699415614, 0.145011584278,0.0510971250879]);
+	redDragonColor2.white = this.illuminant('d60');
+	redDragonColor2.toXYZ = this.RGBtoXYZ(redDragonColor2.xy,redDragonColor2.white);
+	this.g.push(redDragonColor2);
+// REDColor
+	var redColor = {};
+	redColor.name = 'REDColor';
+	redColor.xy = new Float64Array([0.699747001291,0.329046930313, 0.304264039024,0.623641145129, 0.134913961296,0.0347174412813]);
+	redColor.white = this.illuminant('d60');
+	redColor.toXYZ = this.RGBtoXYZ(redColor.xy,redColor.white);
+	this.g.push(redColor);
+// REDColor2
+	var redColor2 = {};
+	redColor2.name = 'REDColor2';
+	redColor2.xy = new Float64Array([0.878682510476,0.32496400741, 0.300888714367,0.679054755791, 0.0953986946056,-0.0293793268343]);
+	redColor2.white = this.illuminant('d60');
+	redColor2.toXYZ = this.RGBtoXYZ(redColor2.xy,redColor2.white);
+	this.g.push(redColor2);
+// REDColor3
+	var redColor3 = {};
+	redColor3.name = 'REDColor3';
+	redColor3.xy = new Float64Array([0.701181035906,0.329014155583, 0.300600304652,0.683788834269, 0.108154455624,-0.00868817578666]);
+	redColor3.white = this.illuminant('d60');
+	redColor3.toXYZ = this.RGBtoXYZ(redColor3.xy,redColor3.white);
+	this.g.push(redColor3);
+// REDColor4
+	var redColor4 = {};
+	redColor4.name = 'REDColor4';
+	redColor4.xy = new Float64Array([0.701180591892,0.329013699116, 0.300600395529,0.683788824257, 0.145331946229,0.0516168036226]);
+	redColor4.white = this.illuminant('d60');
+	redColor4.toXYZ = this.RGBtoXYZ(redColor4.xy,redColor4.white);
+	this.g.push(redColor4);
 // Rec709
 	var rec709 = {};
 	rec709.name = 'Rec709';
@@ -2962,6 +3016,14 @@ LUTColourSpace.prototype.calcPrimaries = function(p,t) {
 		xy[ l+step ] = (XYZ[0]/den);
 		xy[l+step+1] = (XYZ[1]/den);
 	}
+/*
+console.log(
+	'Output - WP: ' + parseFloat(xy[step].toFixed(8)) + ', ' + parseFloat(xy[step+1].toFixed(8)) +
+	' Rxy: ' + parseFloat(xy[step+2].toFixed(8)) + ', ' + parseFloat(xy[step+3].toFixed(8)) +
+	' Gxy: ' + parseFloat(xy[step+4].toFixed(8)) + ', ' + parseFloat(xy[step+5].toFixed(8)) +
+	' Bxy: ' + parseFloat(xy[step+6].toFixed(8)) + ', ' + parseFloat(xy[step+7].toFixed(8))
+);
+*/
 	return {
 		p: p,
 		t: t+20,

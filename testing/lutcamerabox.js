@@ -96,6 +96,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"PMW-F3",iso:800,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Arri",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut",bclip:-6.6,wclip:7.4});
+//	this.cameras.push({make:"RED",model:"Epic DRAGON",iso:800,type:0,defgamma:"REDLogFilm",defgamut:"DRAGONColor2",bclip:-9,wclip:7});
 	this.cameras.push({make:"Canon",model:"C500",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon Cinema Gamut",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon C-Log2",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});

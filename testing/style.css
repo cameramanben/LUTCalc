@@ -53,10 +53,10 @@
 	position:fixed;
 	width:100%;
     height:100%;
-    background-color:transparent;
+    background-color:rgba(234,234,234,0.5);
     top:0px;
     left:0px;
-    z-index:1000;
+    z-index:999;
 }
 .modalbox-hide {display:none;}
 /* LUT options */
@@ -498,6 +498,10 @@ background:transparent;
 .colourpicker { position:fixed; top: 10em; left: 50%; display:block;
 }
 .colourpicker-hide { position:fixed; top: 10em; left: 50%; display:none;
+}
+.settings-popup { position:fixed; top: 10em; left: 50%; display:block;
+}
+.settings-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
 }
 .picker-can {display:inline-block;cursor: crosshair; z-index: 1;}
 .picker-info {display:inline-block;padding-top:2em;vertical-align:top;width: 10em;}

@@ -244,12 +244,25 @@ LUTGammaBox.prototype.getInfo = function(info) {
 	info.outGamutName = this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue;
 };
 LUTGammaBox.prototype.getSettings = function(data) {
+	var inLin, outLin;
+	var inLinHyphen = this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-');
+	if (inLinHyphen > 0) {
+		inLin = this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, inLinHyphen - 1);
+	} else {
+		inLin = this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue;
+	}
+	var outLinHyphen = this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-');
+	if (outLinHyphen > 0) {
+		outLin = this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, outLinHyphen - 1);
+	} else {
+		outLin = this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue;
+	}
 	data.gammaBox = {
 		recGamma: this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].lastChild.nodeValue,
-		recLinGamma: this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1),
+		recLinGamma: inLin,
 		recGamut: this.inGamutSelect.options[this.inGamutSelect.options.selectedIndex].lastChild.nodeValue,
 		outGamma: this.outGammaSelect.options[this.outGammaSelect.options.selectedIndex].lastChild.nodeValue,
-		outLinGamma: this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.substring(0, this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1),
+		outLinGamma: outLin,
 		outGamut: this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].lastChild.nodeValue
 	};
 };
@@ -267,8 +280,9 @@ LUTGammaBox.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.recLinGamma !== 'undefined') {
 			var m = this.inLinSelect.options.length;
+			var inLinLen = data.recLinGamma.length;
 			for (var j=0; j<m; j++) {
-				if (this.inLinSelect.options[j].lastChild.nodeValue.substring(0, this.inLinSelect.options[this.inLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1) === data.recLinGamma) {
+				if (this.inLinSelect.options[j].lastChild.nodeValue.substring(0, inLinLen) === data.recLinGamma) {
 					this.inLinSelect.options[j].selected = true;
 					break;
 				}
@@ -298,8 +312,9 @@ LUTGammaBox.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.outLinGamma !== 'undefined') {
 			var m = this.outLinSelect.options.length;
+			var outLinLen = data.outLinGamma.length;
 			for (var j=0; j<m; j++) {
-				if (this.outLinSelect.options[j].lastChild.nodeValue.substring(0, this.outLinSelect.options[this.outLinSelect.options.selectedIndex].lastChild.nodeValue.indexOf('-')-1) === data.outLinGamma) {
+				if (this.outLinSelect.options[j].lastChild.nodeValue.substring(0, outLinLen) === data.outLinGamma) {
 					this.outLinSelect.options[j].selected = true;
 					break;
 				}
