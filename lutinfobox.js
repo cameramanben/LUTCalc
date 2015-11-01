@@ -1396,11 +1396,11 @@ LUTInfoBox.prototype.changeChart = function() {
 };
 LUTInfoBox.prototype.gotIOGammaNames = function(d) {
 	this.gammaInName = d.inName;
-	if (typeof d.inG !== 'undefined') {
+	if (typeof d.inG !== 'undefined' && d.inG !== '') {
 		this.gammaInName += ' - ' + d.inG;
 	}
 	this.gammaOutName = d.outName;
-	if (typeof d.outG !== 'undefined') {
+	if (typeof d.outG !== 'undefined' && d.outG !== '') {
 		this.gammaOutName += ' - ' + d.outG;
 	}
 	if (d.outName === 'LA' ) {

@@ -157,15 +157,33 @@ LUTGamma.prototype.gammaList = function() {
 		'ACESproxy12', 12));
 	this.rec709 = this.gammas.length;
 	this.gammas.push(new LUTGammaGam(
-		'Rec709', [ 1/0.45, 4.50000000, 0.09900000, 0.01800000, 0.08100000 ]));
+		'Rec709', [ 1/0.45, 4.50000000, 0.09900000, 0.01800000, 0.08100000, 1.9 ]));
 	this.gammas.push(new LUTGammaGam(
-		'Rec2020 12-bit', [ 1/0.45, 4.50000000, 0.09930000, 0.01810000, 0.08145000 ]));
+		'Rec2020 12-bit', [ 1/0.45, 4.50000000, 0.09930000, 0.01810000, 0.08145000, 1.9 ]));
 	this.gammas.push(new LUTGammaGam(
-		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966 ]));
+		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966, 2.2 ]));
 	this.gammas.push(new LUTGammaLin(
 		'Scene Linear IRE', 0.2));
 	this.gammas.push(new LUTGammaLin(
 		'Scene Reflectance', 0.18));
+	this.gammas.push(new LUTGammaGam(
+		'γ1.8', [ 1.8,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ1.9', [ 1.9,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.0', [ 2.0,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.1', [ 2.1,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.2', [ 2.2,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.3', [ 2.3,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.4', [ 2.4,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.5', [ 2.5,1, 0, 0.0000001, 0.0000001, false ]));
+	this.gammas.push(new LUTGammaGam(
+		'γ2.6', [ 2.6,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammas.push(new LUTGammaLUT(
 		'Rec709 (800%)',
 		{
@@ -600,7 +618,11 @@ LUTGamma.prototype.gammaList = function() {
 		switch(this.gammas[i].cat) {
 			case 0: logList.push({name: this.gammas[i].name, idx: i});
 					break;
-			case 1: this.linList.push({name: this.gammas[i].name + ' - ' + this.gammas[i].gamma, idx: i});
+			case 1: if (this.gammas[i].gamma !== '') {
+						this.linList.push({name: this.gammas[i].name + ' - ' + this.gammas[i].gamma, idx: i});
+					} else {
+						this.linList.push({name: this.gammas[i].name, idx: i});
+					}
 					break;
 			case 2: genList.push({name: this.gammas[i].name, idx: i});
 					break;
@@ -1328,7 +1350,13 @@ LUTGammaArri.prototype.linFromLegal = function(input) {
 function LUTGammaGam(name,params) {
 	this.name = name;
 	this.params = params;
-	this.gamma = params[0].toFixed(2).toString();
+	if (!params[5] && params[0] !== 1) {
+		this.gamma = '';
+	} else if (params[5] !== params[0]) {
+		this.gamma = 'γ' + params[5].toFixed(2).toString() + ' (exp' + params[0].toFixed(2).toString() + ')';
+	} else {
+		this.gamma = 'γ' + params[0].toFixed(2).toString();
+	}
 	this.iso = 800;
 	this.cat = 1;
 }
@@ -1398,7 +1426,7 @@ function LUTGammaLin(name, zero) {
 	this.name = name;
 	this.iso = 800;
 	this.zero = zero / 0.2;
-	this.gamma = 1;
+	this.gamma = 'γ1.0';
 	this.cat = 1;
 }
 LUTGammaLin.prototype.changeISO = function(iso) {
@@ -2115,7 +2143,7 @@ LUTGammaLA.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
-		c[j] = (input * 0.85630498533724) + 0.06256109481916;
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 	this.linFromD(buff);
 };
