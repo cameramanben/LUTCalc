@@ -11,6 +11,7 @@ select { margin-left:0.5em; margin-right:0.5em; }
 /* Header
 -------------------------------------------------------------------------------*/
 #titlebar {
+	position: relative;
 	width:100%;
 	text-align: center;
 	clear:both;
@@ -18,6 +19,7 @@ select { margin-left:0.5em; margin-right:0.5em; }
 	padding-bottom: 0.2em;
 	color: #ffff00;
 	background-color: #202090;
+    z-index:1000;
 }
 /* Main Section
 -------------------------------------------------------------------------------*/
@@ -78,6 +80,7 @@ text-shadow:
 /* Footer
 -------------------------------------------------------------------------------*/
 #footer {
+	position:relative;
 	width:100%;
 	text-align: center;
 	clear:both;
@@ -86,4 +89,5 @@ text-shadow:
 	padding-bottom: 0.2em;
 	color: #ffff00;
 	background-color: #202090;
+    z-index:1000;
 }

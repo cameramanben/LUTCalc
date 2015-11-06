@@ -32,35 +32,55 @@ LUTGenerateBox.prototype.io = function() {
 	this.genButton = document.createElement('input');
 	this.genButton.setAttribute('type','button');
 	this.genButton.value = 'Generate LUT';
+	this.settingsButton = document.createElement('input');
+	this.settingsButton.setAttribute('type','button');
+	this.settingsButton.value = 'Settings';
 	this.saveButton = document.createElement('input');
 	this.saveButton.setAttribute('type','button');
 	this.saveButton.value = 'Save Settings';
 	this.loadButton = document.createElement('input');
 	this.loadButton.setAttribute('type','button');
 	this.loadButton.value = 'Load Settings';
+	this.defButton = document.createElement('input');
+	this.defButton.setAttribute('type','button');
+	this.defButton.value = 'Set Default Options';
+	this.defResetButton = document.createElement('input');
+	this.defResetButton.setAttribute('type','button');
+	this.defResetButton.value = 'Reset Defaults';
+	this.doneButton = document.createElement('input');
+	this.doneButton.setAttribute('type','button');
+	this.doneButton.value = 'Done';
+	this.inputs.addInput('settingsData',{});
 	this.fileInput = document.createElement('input');
 	this.fileInput.setAttribute('type','file');
-	this.inputs.addInput('settingsData',{});
 };
 LUTGenerateBox.prototype.ui = function() {
 	this.box.appendChild(this.genButton);
-	this.box.appendChild(this.saveButton);
-	this.box.appendChild(this.loadButton);
 	this.fileInput.style.display = 'none';
+	this.box.appendChild(this.settingsButton);
 	this.box.appendChild(this.fileInput);
 	this.fieldset.id = 'genbutton';
 	this.fieldset.appendChild(this.box);
+	this.buildSettingsPopup();
 };
 LUTGenerateBox.prototype.events = function() {
 	this.genButton.onclick = function(here){ return function(){
 		here.generate();
 	};}(this);
+	this.settingsButton.onclick = function(here){ return function(){
+		modalBox.className = 'modalbox';
+		here.settingsHolder.className = 'settings-popup';
+	};}(this);
 	this.saveButton.onclick = function(here){ return function(){
 		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc');
 	};}(this);
 	this.loadButton.onclick = function(here){ return function(){
-		var e = new MouseEvent('click');
-		here.fileInput.dispatchEvent(e);
+		if (here.inputs.isApp) {
+			here.loadSettings();
+		} else {
+			var e = new MouseEvent('click');
+			here.fileInput.dispatchEvent(e);
+		}
 	};}(this);
 	if (this.inputs.isApp) {
 		this.fileInput.onclick = function(here){ return function(){
@@ -71,6 +91,10 @@ LUTGenerateBox.prototype.events = function() {
 			here.loadSettings();
 		};}(this);
 	}
+	this.doneButton.onclick = function(here){ return function(e){
+		modalBox.className = 'modalbox-hide';
+		here.settingsHolder.className = 'settings-popup-hide';
+	};}(this);
 };
 LUTGenerateBox.prototype.getBox = function() {
 	return { box: this.box, button: this.genButton };
@@ -153,4 +177,16 @@ LUTGenerateBox.prototype.followUp = function(d) {
         case 0: this.messages.setSettings();
 			break;
 	}
+};
+LUTGenerateBox.prototype.buildSettingsPopup = function() {
+	this.settingsHolder = document.createElement('div');
+	this.settingsHolder.className = 'settings-popup-hide';
+	this.settingsBox = document.createElement('div');
+	this.settingsBox.className = 'popup';
+	this.settingsBox.appendChild(this.saveButton);
+	this.settingsBox.appendChild(this.loadButton);
+	this.settingsBox.appendChild(document.createElement('br'));
+	this.settingsBox.appendChild(this.doneButton);
+	this.settingsHolder.appendChild(this.settingsBox);
+	modalBox.appendChild(this.settingsHolder);
 };

@@ -25,6 +25,8 @@ function LUTMessage(inputs) {
 	// 10 - twkLA
 	// 11 - formats
 	// 12 - twkWHITE
+	// 13 - twkCS
+	// 14 - twkMulti
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -86,7 +88,9 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 			for (var i=T-1; i<max; i++) {
 				this.gas[i].terminate();
 			}
-			this.gas.slice(0,T);
+			this.gas = this.gas.slice(0,T);
+			this.gaN = 0;
+			this.gaU = 0;
 		}
 	}
 };
@@ -228,6 +232,9 @@ LUTMessage.prototype.gaRx = function(d) {
 			case 36: // Get PSST-CDL colours
 					this.ui[3].psstColours(d);
 					break;
+			case 37: // Get Multi Colours
+					this.ui[3].multiColours(d);
+					break;
 			case 38: // Get LUT in to LUT out values for primaries
 					this.ui[6].updateRGBChart(d);
 					break;
@@ -324,7 +331,9 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 			for (var i=T-1; i<max; i++) {
 				this.gts[i].terminate();
 			}
-			this.gts.slice(0,T);
+			this.gts = this.gts.slice(0,T);
+			this.gtN = 0;
+			this.gtU = 0;
 		}
 	}
 };
@@ -401,6 +410,9 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 22: // RGB S-Gamut3.cine to LA input gamut
 					this.gaTx(d.p,9,d);
 					break;
+			case 23: // Recalculated custom matrix for changed colourspace
+					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
+					break;
 			case 25: // Get lists of gamuts
 					this.gotGamutLists(d);
 					break;
@@ -412,6 +424,12 @@ LUTMessage.prototype.gtRx = function(d) {
 					}
 					break;
 			case 27: // Set LA Title
+					break;
+			case 28: // Get Colour Square
+					this.ui[d.p].gotColSqr(d.o,d.tIdx);
+					break;
+			case 29: // Get Multi Colours
+					this.gaTx(d.p,17,{ o: d.o, hs: d.hs, to:['o','hs']});
 					break;
 			case 30: //
 					this.gotIOGamutNames(d);
@@ -463,6 +481,8 @@ LUTMessage.prototype.gotGamutLists = function(d) {
 	this.inputs.addInput('gamutInList',d.inList);
 	this.inputs.addInput('gamutOutList',d.outList);
 	this.inputs.addInput('gamutLAList',d.laList);
+	this.inputs.addInput('gamutMatrixList',d.matList);
+	this.inputs.addInput('gamutCATList',d.CATList);
 	this.ui[2].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Gamma Box
 	this.ui[3].gotGamutLists(); // Tweaks Box
 	this.gtSetParams();
@@ -488,6 +508,9 @@ LUTMessage.prototype.changeCamera = function() {
 LUTMessage.prototype.changeGamma = function() {
 	this.ui[4].changeGamma();
 	this.gaSetParams();
+};
+LUTMessage.prototype.changeGamut = function() {
+	this.ui[3].changeGamut();
 };
 LUTMessage.prototype.changeFormat = function() {
 	this.ui[2].oneOrThree();

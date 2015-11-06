@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v2.2.2
+------
+* New Feature - Additional pure gamma curves, plus Rec709 and sRGB now show their effective pure gamma value with the actual exponent in brackets.
+* Bugfix - LUTAnalyst has an undocumented feature of reversing analysed gammas to provide a 'Recorded Gamma' option. This was disabled and is now functioning again.
+
 v2.2
 ----
 * New Feature - Multitone. This combines two adjustments. You can set colour saturation on a stop-by-stop basis (eg for lower saturation in the highlights), and then set one or more colour 'washes' - a tint to zero saturation - at arbitrary stop levels. With Multitone you can create washes, duotones, tritones etc, or create alternatives to LC709A.
