@@ -327,8 +327,8 @@ LUTLutBox.prototype.createRadioElement = function(name, checked) {
 LUTLutBox.prototype.changeGamma = function() {
 	this.formats.updateOptions();
 };
-LUTLutBox.prototype.gotGammaLists = function(catList) {
-	this.catList = catList;
+LUTLutBox.prototype.gotGammaLists = function() {
+	this.catList = this.inputs.gammaCatList;
 };
 LUTLutBox.prototype.getSettings = function(data) {
 	var m = this.inputs.dimension.length;

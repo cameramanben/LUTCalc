@@ -274,10 +274,32 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);
 	this.inputs.addInput('gammaCatList',d.catList);
-
-	this.ui[2].gotGammaLists(d.inList,d.outList,d.linList); // Gamma Box
+	this.inputs.addInput('gammaSubNames',d.subNames);
+	var subLists = [];
+	var m = d.subNames.length;
+	var allIdx = m-1;
+	for (var j=0; j<m; j++) {
+		subLists[j] = [];
+		if (d.subNames[j] === 'All') {
+			allIdx = j;
+		}
+	}
+	m = d.subList.length;
+	var m2;
+	for (var j=0; j<m; j++) {
+		m2 = d.subList[j].length;
+		for (var k=0; k<m2; k++) {
+			subLists[d.subList[j][k]].push(j);
+		}
+	}
+	subLists[allIdx].length = 0;
+	for (var j=0; j<m; j++) {
+		subLists[allIdx].push(j);
+	}
+	this.inputs.addInput('gammaSubLists',subLists);
+	this.ui[2].gotGammaLists(); // Gamma Box
 	this.ui[3].gotGammaLists(); // Tweaks Box
-	this.ui[4].gotGammaLists(d.catList); // LUT Box
+	this.ui[4].gotGammaLists(); // LUT Box
 	this.gaSetParams();
 };
 LUTMessage.prototype.gotBaseIRE = function(d) {
@@ -483,7 +505,60 @@ LUTMessage.prototype.gotGamutLists = function(d) {
 	this.inputs.addInput('gamutLAList',d.laList);
 	this.inputs.addInput('gamutMatrixList',d.matList);
 	this.inputs.addInput('gamutCATList',d.CATList);
-	this.ui[2].gotGamutLists(d.inList,d.outList,d.pass,d.LA); // Gamma Box
+	this.inputs.addInput('gamutSubNames',d.subNames);
+	var inSubs = [];
+	var outSubs = [];
+	var laSubs = [];
+	var m = d.subNames.length;
+	var allIdx = m-1;
+	for (var j=0; j<m; j++) {
+		inSubs[j] = [];
+		outSubs[j] = [];
+		laSubs[j] = [];
+		if (d.subNames[j] === 'All') {
+			allIdx = j;
+		}
+	}
+	m = d.inSub.length;
+	var m2;
+	for (var j=0; j<m; j++) {
+		m2 = d.inSub[j].length;
+		for (var k=0; k<m2; k++) {
+			inSubs[d.inSub[j][k]].push(j);
+		}
+	}
+	inSubs[allIdx].length = 0;
+	for (var j=0; j<m; j++) {
+		inSubs[allIdx].push(j);
+	}
+	m = d.outSub.length;
+	var m2;
+	for (var j=0; j<m; j++) {
+		m2 = d.outSub[j].length;
+		for (var k=0; k<m2; k++) {
+			outSubs[d.outSub[j][k]].push(j);
+		}
+	}
+	outSubs[allIdx].length = 0;
+	for (var j=0; j<m; j++) {
+		outSubs[allIdx].push(j);
+	}
+	m = d.laSub.length;
+	var m2;
+	for (var j=0; j<m; j++) {
+		m2 = d.laSub[j].length;
+		for (var k=0; k<m2; k++) {
+			laSubs[d.laSub[j][k]].push(j);
+		}
+	}
+	laSubs[allIdx].length = 0;
+	for (var j=0; j<m; j++) {
+		laSubs[allIdx].push(j);
+	}
+	this.inputs.addInput('gamutInSubLists',inSubs);
+	this.inputs.addInput('gamutOutSubLists',outSubs);
+	this.inputs.addInput('gamutLASubLists',laSubs);
+	this.ui[2].gotGamutLists(d.pass,d.LA); // Gamma Box
 	this.ui[3].gotGamutLists(); // Tweaks Box
 	this.gtSetParams();
 };
@@ -504,6 +579,10 @@ LUTMessage.prototype.changeCamera = function() {
 	this.ui[2].defaultGam();
 	this.gaSetParams();
 	this.ui[4].changeGamma();
+	this.gtSetParams();
+};
+LUTMessage.prototype.updateGammaInList = function() {
+	this.ui[2].updateGammaInList(false);
 };
 LUTMessage.prototype.changeGamma = function() {
 	this.ui[4].changeGamma();
@@ -511,11 +590,14 @@ LUTMessage.prototype.changeGamma = function() {
 };
 LUTMessage.prototype.changeGamut = function() {
 	this.ui[3].changeGamut();
+	this.ui[8].testXY();
 };
 LUTMessage.prototype.changeFormat = function() {
 	this.ui[2].oneOrThree();
 	this.ui[3].toggleTweaks();
+//	this.ui[8].testXY();
 	this.gaSetParams();
+	this.gtSetParams();
 };
 LUTMessage.prototype.oneOrThree = function() {
 		this.ui[11].oneOrThree();

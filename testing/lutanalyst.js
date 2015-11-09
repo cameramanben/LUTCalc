@@ -65,6 +65,7 @@ LUTAnalyst.prototype.getTF = function() {
 	if (dim < 65) {
 		dim = 65;
 	}
+	dim = 65;
 	this.messages.gaTx(this.p,8,{
 		dim: dim,
 		legIn: this.legIn,

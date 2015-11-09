@@ -268,7 +268,8 @@ LUTFormats.prototype.mlutsList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33],
 		defDim: 33,
-		someGammas: false,
+		someGammas: ['S-Log3','S-Log2','S-Log'],
+		someGammasSub: 'Sony',
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
@@ -283,11 +284,24 @@ LUTFormats.prototype.mlutsList = function() {
 		defDim: 17,
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'Gratical 1D MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [1024], threeDim: [],
+		defDim: 1024,
+		someGammas: false,
+		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
-		bClip: 0, wClip: 1019, hard: true
+		bClip: 64, wClip: 1019, hard: true
 	});
 	this.mluts.push({
 		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
@@ -295,6 +309,7 @@ LUTFormats.prototype.mlutsList = function() {
 		oneDim: [256], threeDim: [],
 		defDim: 256,
 		someGammas: ['Nikon Standard','Nikon Neutral','Nikon Vivid','Nikon Monochrome','Nikon Portrait','Nikon Landscape'],
+		someGammasSub: 'Nikon',
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
@@ -398,11 +413,30 @@ LUTFormats.prototype.updateOptions = function() {
 	}	
 	// Check if all input gamma options are allowed and enable / disable as appropriate
 	if (cur.someGammas) {
-		var max = this.inputs.inGamma.options.length;
+		var max = this.inputs.inGammaSubs.length;
+		for (var j=0; j<max; j++) {
+			if (this.inputs.inGammaSubs[j].lastChild.nodeValue === cur.someGammasSub) {
+				this.inputs.inGammaSubs[j].disabled = false;
+				this.inputs.inGammaSubs[j].style.display = 'block';
+				this.inputs.inGammaSubs[j].selected = true;
+			} else {
+				this.inputs.inGammaSubs[j].disabled = true;
+				this.inputs.inGammaSubs[j].style.display = 'none';
+			}
+		}
+		this.messages.updateGammaInList();
+
+		max = this.inputs.inGamma.options.length;
 		var max2 = cur.someGammas.length;
 		var changeIdx = true;
+		var curShow;
 		var defIdx = 0;
 		for (var j=0; j<max; j++) {
+			if (this.inputs.inGamma.options[j].style.display === 'none') {
+				curShow = false;
+			} else {
+				curShow = true;
+			}
 			this.inputs.inGamma.options[j].disabled = true;
 			this.inputs.inGamma.options[j].style.display = 'none';
 			for (var k=0; k<max2; k++) {
@@ -410,8 +444,10 @@ LUTFormats.prototype.updateOptions = function() {
 					if (k === 0) {
 						defIdx = j;
 					}
-					this.inputs.inGamma.options[j].disabled = false;
-					this.inputs.inGamma.options[j].style.display = 'block';
+					if (curShow) {
+						this.inputs.inGamma.options[j].disabled = false;
+						this.inputs.inGamma.options[j].style.display = 'block';
+					}
 					if (this.inputs.inGamma.options[j].selected) {
 						changeIdx = false;
 					}
@@ -426,11 +462,19 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.inGamma.options[oldIdx].style.display = 'none';
 		}
 	} else {
+		var max = this.inputs.inGammaSubs.length;
+		for (var j=0; j<max; j++) {
+			this.inputs.inGammaSubs[j].disabled = false;
+			this.inputs.inGammaSubs[j].style.display = 'block';
+		}
+		this.messages.updateGammaInList();
+/*
 		var max = this.inputs.inGamma.options.length;
 		for (var j=0; j<max; j++) {
 			this.inputs.inGamma.options[j].disabled = false;
 			this.inputs.inGamma.options[j].style.display = 'block';
 		}
+*/
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;

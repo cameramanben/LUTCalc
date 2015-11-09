@@ -1,6 +1,15 @@
 LUTCalc Changelog
 =================
 
+v2.3
+----
+* New Feature - Gammas and Gamuts available sorted by manufacturer, type (log, display, HDR Display, etc) or as the previous flat list.
+* New Feature - GoPro Protune Gamma and Gamut (from ACES devel matrix and Cineform blog).
+* New Feature - DRAGONColor, DRAGONColor2, REDColor, REDColor2, REDColor3, REDColor4 gamuts (from ACES devel matrices).
+* New Feature - REDGamma3 and REDGamma4 (from LUTs on manufacturer's website).
+* New Feature - Good Broyden's used to estimate gamut primary triangles for LUTAnalyst-read LUTs.
+* Bugfix - Re-analysed the Panasonic V-709 LUTs for both gamma and gamut. Lack of availability of a Varicam 35 lead to uncertainty over the correct ranges to choose.
+
 v2.2.2
 ------
 * New Feature - Additional pure gamma curves, plus Rec709 and sRGB now show their effective pure gamma value with the actual exponent in brackets.
