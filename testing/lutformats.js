@@ -278,12 +278,38 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 64, wClip: 1019, hard: false
 	});
 	this.mluts.push({
-		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
-		oneD: false, threeD: true, defThree: true,
-		oneDim: [], threeDim: [17],
-		defDim: 17,
+		title: 'Zacuto Gratical 1D MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [1024], threeDim: [],
+		defDim: 1024,
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
+		legOut: false, datOut: true, defLegOut: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'AJA LUT-box SMPTE (.cube)', type: 'cube3',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [1024,4096], threeDim: [16,17],
+		defDim: 17,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: true,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'Scopebox Clipped MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [256,1024], threeDim: [17,33],
+		defDim: 33,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
@@ -291,13 +317,26 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 64, wClip: 1019, hard: true
 	});
 	this.mluts.push({
-		title: 'Gratical 1D MLUT (.cube)', type: 'cube1',
-		oneD: true, threeD: false, defThree: false,
-		oneDim: [1024], threeDim: [],
-		defDim: 1024,
+		title: 'Scopebox Unclipped MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [256,1024], threeDim: [17,33],
+		defDim: 33,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: false
+	});
+	this.mluts.push({
+		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17],
+		defDim: 17,
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
-		legOut: false, datOut: true, defLegOut: false,
+		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,

@@ -170,7 +170,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutUsage.appendChild(this.gradeOpt);
 	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Grading LUT')));
 	this.lutUsage.appendChild(this.mlutOpt);
-	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera LUT (MLUT)')));
+	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera / Monitor LUT (MLUT)')));
 	this.lutUsage.appendChild(document.createElement('br'));
 	this.box.appendChild(this.lutUsage);
 	// LUT type selections
