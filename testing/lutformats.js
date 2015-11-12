@@ -135,6 +135,25 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
+		title: 'Display gamma correction (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: false,
+		oneDim: [1024,4096], threeDim: [17,33,65],
+		defDim: 4096,
+		someGammas: [
+			'Linear / Rec709',
+			'PQ (90% Ref=300nits)','PQ (90% Ref=500nits)','PQ (90% Ref=800nits)','PQ (90% Ref=1000nits)','PQ (90% Ref=2000nits)','PQ (90% Ref=4000nits)',
+			'ITU Proposal (400%)','ITU Proposal (800%)',
+			'BBC WHP283 (400%)','BBC WHP283 (800%)'
+		],
+		someGammasSub: 'All',
+		legIn: true, datIn: true, defLegIn: true,
+		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
 		title: 'DaVinci Resolve 1D (.ilut)', type: 'ilut',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [16384], threeDim: [],

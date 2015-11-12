@@ -288,7 +288,6 @@ LUTGammaBox.prototype.updateGammaInList = function(setParams) {
 		if (first) {
 			this.inGammaSelect.options[firstVal].disabled = false;
 			this.inGammaSelect.options[firstVal].selected = true;
-			this.changeGammaIn();
 			if (setParams) {
 				this.messages.gaSetParams();
 			}
@@ -296,6 +295,7 @@ LUTGammaBox.prototype.updateGammaInList = function(setParams) {
 			console.log('Missing options');
 		}
 	}
+	this.changeGammaIn();
 };
 LUTGammaBox.prototype.updateGammaOutList = function() {
 	var sub = this.outGammaSubs.selectedIndex;
@@ -452,6 +452,9 @@ LUTGammaBox.prototype.oneOrThree = function() {
 	} else {
 		this.inGamutBox.style.display = 'block';
 		this.outGamutBox.style.display = 'block';
+	}
+	if (typeof this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex] !== 'undefined') {
+		this.changeGammaIn();
 	}
 };
 LUTGammaBox.prototype.getInfo = function(info) {

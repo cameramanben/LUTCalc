@@ -132,28 +132,6 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaLog(
 		'Protune', [ 0,0, 876/1023, 53.39427221, 113, 64/1023, 1, 0, 0 ]));
 	this.gammaSub.push([this.subIdx('GoPro'),this.subIdx('Log')]);
-/*
-// Old guess - runs very close to vanilla Rec709, but extended and with black seemingly a fraction below 0% IRE.
-	this.gammas.push(new LUTGammaLUT(
-		'Varicam V709',
-		{
-			format: 'cube',
-			size: 65,
-			min: [0,0,0],
-			max: [1,1,1],
-			lut: new Float64Array(
-				[ 0.03093963,0.03517715,0.03975096,0.04459771,0.0498902,0.05557408,0.06190443,0.06897675,
-				  0.07677725,0.08537468,0.09473446,0.10541067,0.11868528,0.13311738,0.1487007,0.16548566,
-				  0.1835071,0.20262917,0.22283545,0.24403145,0.26617877,0.28925105,0.31327642,0.33809209,
-				  0.3635757,0.3896826,0.41631627,0.44341889,0.47081168,0.49848151,0.52623353,0.55406649,
-				  0.58169329,0.60913806,0.63624608,0.66303621,0.68930935,0.71517113,0.73981736,0.76273104,
-				  0.78514678,0.80792983,0.82988348,0.85024823,0.86926131,0.88683223,0.90300653,0.91783703,
-				  0.93129966,0.94331701,0.95391642,0.96327691,0.97138937,0.97818037,0.98361305,0.98799011,
-				  0.99133483,0.9937684,0.9951962,0.99614917,0.99691692,0.9975211,0.99811777,0.99867865,
-				  0.9992434 ]
-			)
-		}));
-*/
 	this.gammas.push(new LUTGammaLUT(
 		'LC709A',
 		{
@@ -195,7 +173,7 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gammas.push(new LUTGammaLUT(
-		'Varicam V709',
+		'Varicam V709 New',
 		{
 			format: 'cube',
 			size: 65,
@@ -211,6 +189,27 @@ LUTGamma.prototype.gammaList = function() {
 				0.86003764,0.87032816,0.87940448,0.88741991,0.89436666,0.90018182,0.90483385,0.90858195,
 				0.91144605,0.91352993,0.91475256,0.91556859,0.91622602,0.91674339,0.91725432,0.9177346,
 				0.9182182 ]
+			)
+		}));
+	this.gammaSub.push([this.subIdx('Panasonic'),this.subIdx('Display')]);
+// Old guess - runs very close to vanilla Rec709, but extended and with black seemingly a fraction below 0% IRE.
+	this.gammas.push(new LUTGammaLUT(
+		'Varicam V709',
+		{
+			format: 'cube',
+			size: 65,
+			min: [0,0,0],
+			max: [1,1,1],
+			lut: new Float64Array(
+				[ 0.03093963,0.03517715,0.03975096,0.04459771,0.0498902,0.05557408,0.06190443,0.06897675,
+				  0.07677725,0.08537468,0.09473446,0.10541067,0.11868528,0.13311738,0.1487007,0.16548566,
+				  0.1835071,0.20262917,0.22283545,0.24403145,0.26617877,0.28925105,0.31327642,0.33809209,
+				  0.3635757,0.3896826,0.41631627,0.44341889,0.47081168,0.49848151,0.52623353,0.55406649,
+				  0.58169329,0.60913806,0.63624608,0.66303621,0.68930935,0.71517113,0.73981736,0.76273104,
+				  0.78514678,0.80792983,0.82988348,0.85024823,0.86926131,0.88683223,0.90300653,0.91783703,
+				  0.93129966,0.94331701,0.95391642,0.96327691,0.97138937,0.97818037,0.98361305,0.98799011,
+				  0.99133483,0.9937684,0.9951962,0.99614917,0.99691692,0.9975211,0.99811777,0.99867865,
+				  0.9992434 ]
 			)
 		}));
 	this.gammaSub.push([this.subIdx('Panasonic'),this.subIdx('Display')]);
@@ -582,7 +581,22 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gammas.push(new LUTGammaPQ(
-		'Dolby PQ (4300%)', {Lmax: 43}));
+		'PQ (90% Ref=300nits)', {Lmax: 300}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (90%Ref=500nits)', {Lmax: 500}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (90% Ref=800nits)', {Lmax: 800}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (90% Ref=1000nits)', {Lmax: 1000}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (90% Ref=2000nits)', {Lmax: 2000}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (90% Ref=4000nits)', {Lmax: 4000}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammas.push(new LUTGammaITUProp(
 		'ITU Proposal (400%)', {m: 0.12314858 }));
@@ -1593,7 +1607,7 @@ function LUTGammaPQ(name,params) {
 	this.name = name;
 	this.params = params.nits;
 	this.cat = 5;
-	this.Lmax = params.Lmax;
+	this.Lmax = 1 / (0.0001 * params.Lmax);
 	this.n = (2610/4096)*(1/4);
 	this.m = (2523/4096)*128;
 	this.c1 = (3424/4096);
@@ -3021,52 +3035,54 @@ function sendMessage(d) {
 		postMessage(d);
 	}
 }
-importScripts('lut.js');
-var gammas = new LUTGamma();
-var trans = false;
-addEventListener('message', function(e) {
-	var d = e.data;
-	if (typeof d.t === 'undefined') {
-	} else if (d.t !== 0 && d.t < 20 && d.v !== gammas.ver) {
-		postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
-	} else {
-		switch (d.t) {
-			case 0:	sendMessage(gammas.setParams(d.d));
-					break;
-			case 1: sendMessage(gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
-					break;
-			case 2: sendMessage(gammas.laCalcRGB(d.p,d.t,d.d));
-					break;
-			case 3: sendMessage(gammas.inCalcRGB(d.p,d.t,d.d)); 
-					break;
-			case 4: sendMessage(gammas.outCalcRGB(d.p,d.t,d.d)); 
-					break;
-			case 5: sendMessage(gammas.getLists(d.p,d.t)); 
-					break;
-			case 6: sendMessage(gammas.setLA(d.p,d.t,d.d)); 
-					break;
-			case 7: sendMessage(gammas.setLATitle(d.p,d.t,d.d)); 
-					break;
-			case 8: sendMessage(gammas.SL3Val(d.p,d.t,d.d)); 
-					break;
-			case 9: sendMessage(gammas.laCalcInput(d.p,d.t,d.d)); 
-					break;
-			case 10:sendMessage(gammas.ioNames(d.p,d.t));
-					break;
-			case 11:sendMessage(gammas.chartVals(d.p,d.t));
-					break;
-			case 12:sendMessage(gammas.preview(d.p,d.t,d.d));
-					break;
-			case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
-					break;
-			case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
-					break;
-			case 16:sendMessage(gammas.psstColours(d.p,d.t,d.d));
-					break;
-			case 17:sendMessage(gammas.multiColours(d.p,d.t,d.d));
-					break;
-			case 18:sendMessage(gammas.chartRGB(d.p,d.t,d.d));
-					break;
+if (typeof importScripts === 'function') {
+	importScripts('lut.js');
+	var gammas = new LUTGamma();
+	var trans = false;
+	addEventListener('message', function(e) {
+		var d = e.data;
+		if (typeof d.t === 'undefined') {
+		} else if (d.t !== 0 && d.t < 20 && d.v !== gammas.ver) {
+			postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
+		} else {
+			switch (d.t) {
+				case 0:	sendMessage(gammas.setParams(d.d));
+						break;
+				case 1: sendMessage(gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
+						break;
+				case 2: sendMessage(gammas.laCalcRGB(d.p,d.t,d.d));
+						break;
+				case 3: sendMessage(gammas.inCalcRGB(d.p,d.t,d.d)); 
+						break;
+				case 4: sendMessage(gammas.outCalcRGB(d.p,d.t,d.d)); 
+						break;
+				case 5: sendMessage(gammas.getLists(d.p,d.t)); 
+						break;
+				case 6: sendMessage(gammas.setLA(d.p,d.t,d.d)); 
+						break;
+				case 7: sendMessage(gammas.setLATitle(d.p,d.t,d.d)); 
+						break;
+				case 8: sendMessage(gammas.SL3Val(d.p,d.t,d.d)); 
+						break;
+				case 9: sendMessage(gammas.laCalcInput(d.p,d.t,d.d)); 
+						break;
+				case 10:sendMessage(gammas.ioNames(d.p,d.t));
+						break;
+				case 11:sendMessage(gammas.chartVals(d.p,d.t));
+						break;
+				case 12:sendMessage(gammas.preview(d.p,d.t,d.d));
+						break;
+				case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
+						break;
+				case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
+						break;
+				case 16:sendMessage(gammas.psstColours(d.p,d.t,d.d));
+						break;
+				case 17:sendMessage(gammas.multiColours(d.p,d.t,d.d));
+						break;
+				case 18:sendMessage(gammas.chartRGB(d.p,d.t,d.d));
+						break;
+			}
 		}
-	}
-}, false);
+	}, false);
+}
