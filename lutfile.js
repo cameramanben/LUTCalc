@@ -56,7 +56,7 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 LUTFile.prototype.saveBinary = function(data, fileName, extension) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension);
-    } else if (this.isChromeApp) { // Use Chrome App fileSystem API to select destination
+    } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
 			{
 				type: 'saveFile', 
@@ -72,7 +72,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 						writer.onwriteend = function(e) {
 							notifyUser('LUTCalc',writableFileEntry.name + ' saved');
 						};
-						writer.write(new Blob([data],{type: 'text/plain;charset=UTF-8'})); 
+						writer.write(new Blob([data],{type: 'application/octet-stream'})); 
 					},
 					function() {
 						notifyUser('LUTCalc','File could not be saved');
@@ -81,7 +81,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 			}
 		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
-		saveAs(new Blob([data], {type: 'application/octet-binary'}), this.filename(fileName) + '.' + extension);
+		saveAs(new Blob([data], {type: 'application/octet-stream'}), this.filename(fileName) + '.' + extension);
 		return true;
 	} else { 
 		console.log('Browser does not support file saving.');

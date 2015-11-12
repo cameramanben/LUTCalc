@@ -91,16 +91,18 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"a7s mkII",iso:1600,type:2,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"a7s",iso:3200,type:2,defgamma:"S-Log2",defgamut:"Sony S-Gamut",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"F65",iso:800,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F3",iso:800,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Arri",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut",bclip:-6.6,wclip:7.4});
-//	this.cameras.push({make:"RED",model:"Epic DRAGON",iso:800,type:0,defgamma:"REDLogFilm",defgamut:"DRAGONColor2",bclip:-9,wclip:7});
+	this.cameras.push({make:"RED",model:"Epic DRAGON",iso:800,type:0,defgamma:"REDLogFilm",defgamut:"DRAGONColor2",bclip:-10,wclip:6.3});
 	this.cameras.push({make:"Canon",model:"C500",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon Cinema Gamut",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon C-Log2",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
+	this.cameras.push({make:"GoPro",model:"Hero4",iso:400,type:2,defgamma:"Protune",defgamut:"Protune Native",bclip:-9,wclip:3.3});
 	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
 };
 LUTCameraBox.prototype.cameraOptions = function() {
@@ -117,6 +119,36 @@ LUTCameraBox.prototype.changeCamera = function() {
 	this.current = this.cameraSelect.options.selectedIndex;
 	this.inputs.defGammaIn = this.cameras[this.current].defgamma;
 	this.inputs.defGamutIn = this.cameras[this.current].defgamut;
+	var m = this.inputs.inGammaSubs.options.length;
+	var found = false;
+	var allIdx = m-1;
+	for (var j=0; j<m; j++) {
+		if (this.inputs.inGammaSubs.options[j].lastChild.nodeValue === this.cameras[this.current].make) {
+			this.inputs.inGammaSubs.options[j].selected = true;
+			found = true;
+			break;
+		} else if (this.inputs.inGammaSubs.options[j].lastChild.nodeValue === 'All') {
+			allIdx = j;
+		}
+	}
+	if (!found) {
+		this.inputs.inGammaSubs.options[allIdx].selected = true;
+	}
+	found = false;
+	allIdx = m-1;
+	m = this.inputs.inGamutSubs.options.length;
+	for (var j=0; j<m; j++) {
+		if (this.inputs.inGamutSubs.options[j].lastChild.nodeValue === this.cameras[this.current].make) {
+			this.inputs.inGamutSubs.options[j].selected = true;
+			found = true;
+			break;
+		} else if (this.inputs.inGamutSubs.options[j].lastChild.nodeValue === 'All') {
+			allIdx = j;
+		}
+	}
+	if (!found) {
+		this.inputs.inGamutSubs.options[allIdx].selected = true;
+	}
 	this.inputs.bclip = this.cameras[this.current].bclip;
 	this.inputs.wclip = this.cameras[this.current].wclip;
 	this.nativeLabel.innerHTML = this.cameras[this.current].iso.toString();

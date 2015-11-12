@@ -94,9 +94,10 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff) {
 			out[j] = Math.round(out64[j]*1073741824);
 		}
 	}
+	var byteOut = new Uint8Array(out.buffer);
   	if (!this.isLE) { // files are little endian, swap if system is big endian
 		console.log('Big Endian System');
-  		var lutArr = new Uint8Array(out.buffer);
+  		var lutArr = byteOut;
   		var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
   		var i,b0,b1,b2,b3;
   		for (var j=0; j<max; j++) {
@@ -111,7 +112,8 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff) {
   			lutArr[i+3] = b0;
   		}
   	}
-  	return out.buffer;
+  	return byteOut;
+//  	return out.buffer;
 };
 labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
 	if (!this.isLE) { // files are little endian, swap if system is big endian

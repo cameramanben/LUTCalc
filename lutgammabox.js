@@ -26,21 +26,30 @@ LUTGammaBox.prototype.build = function() {
 	this.ui();
 };
 LUTGammaBox.prototype.io = function() {
+	this.inGammaSubs = document.createElement('select');
+	this.inputs.addInput('inGammaSubs',this.inGammaSubs);
 	this.inGammaSelect = document.createElement('select');
 	this.inputs.addInput('inGamma',this.inGammaSelect);
 	this.inLinSelect = document.createElement('select');
 	this.inputs.addInput('inLinGamma',this.inLinSelect);
+	this.inGamutSubs = document.createElement('select');
+	this.inputs.addInput('inGamutSubs',this.inGamutSubs);
 	this.inGamutSelect = document.createElement('select');
 	this.inputs.addInput('inGamut',this.inGamutSelect);
+	this.outGammaSubs = document.createElement('select');
+	this.inputs.addInput('outGammaSubs',this.outGammaSubs);
 	this.outGammaSelect = document.createElement('select');
 	this.inputs.addInput('outGamma',this.outGammaSelect);
 	this.outLinSelect = document.createElement('select');
 	this.inputs.addInput('outLinGamma',this.outLinSelect);
+	this.outGamutSubs = document.createElement('select');
+	this.inputs.addInput('outGamutSubs',this.outGamutSubs);
 	this.outGamutSelect = document.createElement('select');
 	this.inputs.addInput('outGamut',this.outGamutSelect);
 };
 LUTGammaBox.prototype.ui = function() {
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Recorded Gamma')));
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Rec Gamma')));
+	this.box.appendChild(this.inGammaSubs);
 	this.box.appendChild(this.inGammaSelect);
 	this.box.appendChild(document.createElement('br'));
 	this.inLin = document.createElement('div');
@@ -48,10 +57,12 @@ LUTGammaBox.prototype.ui = function() {
 	this.inLin.appendChild(this.inLinSelect);
 	this.box.appendChild(this.inLin);
 	this.inGamutBox = document.createElement('div');
-	this.inGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Recorded Gamut')));
+	this.inGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Rec Gamut')));
+	this.inGamutBox.appendChild(this.inGamutSubs);
 	this.inGamutBox.appendChild(this.inGamutSelect);
 	this.box.appendChild(this.inGamutBox);
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Gamma')));
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Out Gamma')));
+	this.box.appendChild(this.outGammaSubs);
 	this.box.appendChild(this.outGammaSelect);
 	this.box.appendChild(document.createElement('br'));
 	this.outLin = document.createElement('div');
@@ -59,7 +70,8 @@ LUTGammaBox.prototype.ui = function() {
 	this.outLin.appendChild(this.outLinSelect);
 	this.box.appendChild(this.outLin);
 	this.outGamutBox = document.createElement('div');
-	this.outGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Gamut')));
+	this.outGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Out Gamut')));
+	this.outGamutBox.appendChild(this.outGamutSubs);
 	this.outGamutBox.appendChild(this.outGamutSelect);
 	this.box.appendChild(this.outGamutBox);
 	this.inLin.style.display = 'none';
@@ -68,6 +80,12 @@ LUTGammaBox.prototype.ui = function() {
 	this.outGamutBox.style.display = 'none';
 };
 LUTGammaBox.prototype.events = function() {
+	this.inGammaSubs.onchange = function(here){ return function(){
+		here.updateGammaInList(true);
+	};}(this);
+	this.inGamutSubs.onchange = function(here){ return function(){
+		here.updateGamutInList(true);
+	};}(this);
 	this.inGammaSelect.onchange = function(here){ return function(){
 		here.changeGammaIn();
 		here.messages.gaSetParams();
@@ -75,6 +93,12 @@ LUTGammaBox.prototype.events = function() {
 	this.inLinSelect.onchange = function(here){ return function(){
 		here.changeGammaIn();
 		here.messages.gaSetParams();
+	};}(this);
+	this.outGammaSubs.onchange = function(here){ return function(){
+		here.updateGammaOutList();
+	};}(this);
+	this.outGamutSubs.onchange = function(here){ return function(){
+		here.updateGamutOutList();
 	};}(this);
 	this.outGammaSelect.onchange = function(here){ return function(){
 		here.changeGammaOut();
@@ -94,8 +118,14 @@ LUTGammaBox.prototype.events = function() {
 	};}(this);
 };
 // Set Up Data
-LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {
+LUTGammaBox.prototype.gotGammaLists = function() {
+	var inList = this.inputs.gammaInList;
+	var outList = this.inputs.gammaOutList;
+	var linList = this.inputs.gammaLinList;
+	var subNames = this.inputs.gammaSubNames;
+	this.inGammaSubs.length = 0;
 	this.inGammaSelect.length = 0;
+	this.outGammaSubs.length = 0;
 	this.outGammaSelect.length = 0;
 	this.inLinSelect.length = 0;
 	this.outLinSelect.length = 0;
@@ -124,8 +154,29 @@ LUTGammaBox.prototype.gotGammaLists = function(inList,outList,linList) {
 		this.inLinSelect.appendChild(option);
 		this.outLinSelect.appendChild(option2);
 	}
+	max = subNames.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		var option2 = document.createElement('option');
+		option.value = i;
+		option2.value = i;
+		option.appendChild(document.createTextNode(subNames[i]));
+		option2.appendChild(document.createTextNode(subNames[i]));
+		if (subNames[i] === 'All') {
+			option2.selected = true;
+		}
+		this.inGammaSubs.appendChild(option);
+		this.outGammaSubs.appendChild(option2);
+	}
+	this.updateGammaInList();
+	this.updateGammaOutList();
 };
-LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
+LUTGammaBox.prototype.gotGamutLists = function(pass,LA) {
+	var inList = this.inputs.gamutInList;
+	var outList = this.inputs.gamutOutList;
+	var subNames = this.inputs.gamutSubNames
+	var inSubs = this.inputs.gamutInSubLists;
+	var outSubs = this.inputs.gamutOutSubLists;
 	max = inList.length;
 	for (var i=0; i < max; i++) {
 		var option = document.createElement('option');
@@ -150,6 +201,22 @@ LUTGammaBox.prototype.gotGamutLists = function(inList,outList,pass,LA) {
 	}
 	this.gamutPass = pass;
 	this.gamutLA = LA;
+	max = subNames.length;
+	for (var i=0; i < max; i++) {
+		var option = document.createElement('option');
+		var option2 = document.createElement('option');
+		option.value = i;
+		option2.value = i;
+		option.appendChild(document.createTextNode(subNames[i]));
+		option2.appendChild(document.createTextNode(subNames[i]));
+		if (subNames[i] === 'All') {
+			option2.selected = true;
+		}
+		this.inGamutSubs.appendChild(option);
+		this.outGamutSubs.appendChild(option2);
+	}
+	this.updateGamutInList();
+	this.updateGamutOutList();
 };
 LUTGammaBox.prototype.defaultGam = function() {
 	var max = this.inGammaSelect.options.length;
@@ -169,6 +236,8 @@ LUTGammaBox.prototype.defaultGam = function() {
 			break;
 		}
 	}
+	this.updateGammaInList(false);
+	this.updateGamutInList(false);
 };
 // Event Responses
 LUTGammaBox.prototype.changeGammaIn = function() {
@@ -185,6 +254,167 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 		this.outLin.style.display = 'none';
 	}
 	this.messages.checkFormat();
+};
+LUTGammaBox.prototype.updateGammaInList = function(setParams) {
+	var sub = this.inGammaSubs.selectedIndex;
+	var showList = this.inputs.gammaSubLists[sub];
+	var m = this.inGammaSelect.options.length;
+	var m2 = showList.length;
+	var val;
+	var cur = parseInt(this.inGammaSelect.options[this.inGammaSelect.selectedIndex].value);
+	var curOK = false;
+	var first = false;
+	var firstVal;
+	for (var j=0; j<m; j++) {
+		this.inGammaSelect.options[j].disabled = true;
+		this.inGammaSelect.options[j].style.display = 'none';
+		for (var k=0; k<m2; k++) {
+			val = parseInt(this.inGammaSelect.options[j].value);
+			if (val === 9999 || val === showList[k]) {
+				if (!first) {
+					first = true;
+					firstVal = j;
+				}
+				this.inGammaSelect.options[j].disabled = false;
+				this.inGammaSelect.options[j].style.display = 'block';
+				break;
+			}
+			if (showList[k] === cur) {
+				curOK = true;
+			}
+		}
+	}
+	if (!curOK) {
+		if (first) {
+			this.inGammaSelect.options[firstVal].disabled = false;
+			this.inGammaSelect.options[firstVal].selected = true;
+			if (setParams) {
+				this.messages.gaSetParams();
+			}
+		} else {
+			console.log('Missing options');
+		}
+	}
+	this.changeGammaIn();
+};
+LUTGammaBox.prototype.updateGammaOutList = function() {
+	var sub = this.outGammaSubs.selectedIndex;
+	var showList = this.inputs.gammaSubLists[sub];
+	var m = this.outGammaSelect.options.length;
+	var m2 = showList.length;
+	var val;
+	var cur = parseInt(this.outGammaSelect.options[this.outGammaSelect.selectedIndex].value);
+	var curOK = false;
+	var first = false;
+	var firstVal;
+	for (var j=0; j<m; j++) {
+		this.outGammaSelect.options[j].disabled = true;
+		this.outGammaSelect.options[j].style.display = 'none';
+		for (var k=0; k<m2; k++) {
+			val = parseInt(this.outGammaSelect.options[j].value);
+			if (showList[k] === cur) {
+				curOK = true;
+			}
+			if (val === 9999 || val === showList[k]) {
+				if (!first) {
+					first = true;
+					firstVal = j;
+				}
+				this.outGammaSelect.options[j].disabled = false;
+				this.outGammaSelect.options[j].style.display = 'block';
+				break;
+			}
+		}
+	}
+	if (!curOK) {
+		if (first) {
+			this.outGammaSelect.options[firstVal].selected = true;
+			this.changeGammaOut();
+			this.messages.gaSetParams();
+		} else {
+			console.log('Missing options');
+		}
+	}
+};
+LUTGammaBox.prototype.updateGamutInList = function(setParams) {
+	var sub = this.inGamutSubs.selectedIndex;
+	var showList = this.inputs.gamutInSubLists[sub];
+	var m = this.inGamutSelect.options.length;
+	var m2 = showList.length;
+	var val;
+	var cur = parseInt(this.inGamutSelect.options[this.inGamutSelect.selectedIndex].value);
+	var curOK = false;
+	var first = false;
+	var firstVal;
+	for (var j=0; j<m; j++) {
+		this.inGamutSelect.options[j].disabled = true;
+		this.inGamutSelect.options[j].style.display = 'none';
+		for (var k=0; k<m2; k++) {
+			val = parseInt(this.inGamutSelect.options[j].value);
+			if (val === 9999 || val === showList[k]) {
+				if (!first) {
+					first = true;
+					firstVal = j;
+				}
+				this.inGamutSelect.options[j].disabled = false;
+				this.inGamutSelect.options[j].style.display = 'block';
+				break;
+			}
+			if (showList[k] === cur) {
+				curOK = true;
+			}
+		}
+	}
+	if (!curOK) {
+		if (first) {
+			this.inGamutSelect.options[firstVal].selected = true;
+			this.changeInGamut();
+			if (setParams) {
+				this.messages.gtSetParams();
+			}
+		} else {
+			console.log('Missing options');
+		}
+	}
+};
+LUTGammaBox.prototype.updateGamutOutList = function() {
+	var sub = this.outGamutSubs.selectedIndex;
+	var showList = this.inputs.gamutOutSubLists[sub];
+	var m = this.outGamutSelect.options.length;
+	var m2 = showList.length;
+	var val;
+	var cur = parseInt(this.outGamutSelect.options[this.outGamutSelect.selectedIndex].value);
+	var curOK = false;
+	var first = false;
+	var firstVal;
+	for (var j=0; j<m; j++) {
+		this.outGamutSelect.options[j].disabled = true;
+		this.outGamutSelect.options[j].style.display = 'none';
+		for (var k=0; k<m2; k++) {
+			val = parseInt(this.outGamutSelect.options[j].value);
+			if (val === 9999 || val === showList[k]) {
+				if (!first) {
+					first = true;
+					firstVal = j;
+				}
+				this.outGamutSelect.options[j].disabled = false;
+				this.outGamutSelect.options[j].style.display = 'block';
+				break;
+			}
+			if (showList[k] === cur) {
+				curOK = true;
+			}
+		}
+	}
+	if (!curOK) {
+		if (first) {
+			this.outGamutSelect.options[firstVal].selected = true;
+			this.changeOutGamut();
+			this.messages.gtSetParams();
+		} else {
+			console.log('Missing options');
+		}
+	}
 };
 LUTGammaBox.prototype.changeInGamut = function() {
 	if (this.inGamutSelect.options[this.inGamutSelect.options.length - 1].selected) {
@@ -222,6 +452,9 @@ LUTGammaBox.prototype.oneOrThree = function() {
 	} else {
 		this.inGamutBox.style.display = 'block';
 		this.outGamutBox.style.display = 'block';
+	}
+	if (typeof this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex] !== 'undefined') {
+		this.changeGammaIn();
 	}
 };
 LUTGammaBox.prototype.getInfo = function(info) {
