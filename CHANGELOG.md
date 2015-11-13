@@ -1,6 +1,12 @@
 LUTCalc Changelog
 =================
 
+v2.3.1
+------
+* New Feature - Generic camera option where the user selects the recorded gamma and gamut.
+* Bugfix - Gamma and gamut options properly hidden or revealed in OSX App.
+* Bugfix - LUTAnalyst gamuts could become hidden when the format changed.
+
 v2.3
 ----
 * New Feature - Gammas and Gamuts available sorted by manufacturer, type (log, display, HDR Display, etc) or as the previous flat list.

@@ -444,6 +444,12 @@ LUTFormats.prototype.oneOrThree = function() {
 		}
 	}
 };
+LUTFormats.prototype.clearSelect = function(sel) {
+	var m = sel.options.length;
+	for (var j=0; j<m; j++) {
+		sel.remove(0);
+	}
+};
 LUTFormats.prototype.updateOptions = function() {
 	var curIdx = this.curIdx;
 	var changedType = false;
@@ -471,68 +477,43 @@ LUTFormats.prototype.updateOptions = function() {
 	}	
 	// Check if all input gamma options are allowed and enable / disable as appropriate
 	if (cur.someGammas) {
-		var max = this.inputs.inGammaSubs.length;
+		var max = this.inputs.inGammaSubOpts.length;
 		for (var j=0; j<max; j++) {
-			if (this.inputs.inGammaSubs[j].lastChild.nodeValue === cur.someGammasSub) {
-				this.inputs.inGammaSubs[j].disabled = false;
-				this.inputs.inGammaSubs[j].style.display = 'block';
-				this.inputs.inGammaSubs[j].selected = true;
-			} else {
-				this.inputs.inGammaSubs[j].disabled = true;
-				this.inputs.inGammaSubs[j].style.display = 'none';
+			if (this.inputs.inGammaSubOpts[j].lastChild.nodeValue === cur.someGammasSub) {
+				this.clearSelect(this.inputs.inGammaSubs);
+				this.inputs.inGammaSubs.appendChild(this.inputs.inGammaSubOpts[j]);
+				break;
 			}
 		}
 		this.messages.updateGammaInList();
-
-		max = this.inputs.inGamma.options.length;
+		max = this.inputs.inGamma.options.length-1;
 		var max2 = cur.someGammas.length;
-		var changeIdx = true;
-		var curShow;
-		var defIdx = 0;
-		for (var j=0; j<max; j++) {
-			if (this.inputs.inGamma.options[j].style.display === 'none') {
-				curShow = false;
-			} else {
-				curShow = true;
-			}
-			this.inputs.inGamma.options[j].disabled = true;
-			this.inputs.inGamma.options[j].style.display = 'none';
+		var drop;
+		for (var j=max; j>=0; j--) {
+			drop = true;
 			for (var k=0; k<max2; k++) {
 				if (this.inputs.inGamma.options[j].lastChild.nodeValue === cur.someGammas[k]) {
-					if (k === 0) {
-						defIdx = j;
-					}
-					if (curShow) {
-						this.inputs.inGamma.options[j].disabled = false;
-						this.inputs.inGamma.options[j].style.display = 'block';
-					}
-					if (this.inputs.inGamma.options[j].selected) {
-						changeIdx = false;
-					}
+					drop = false;
 					break;
 				}
 			}
-		}
-		if (changeIdx) {
-			var oldIdx = this.inputs.inGamma.options.selectedIndex;
-			this.inputs.inGamma.options[defIdx].selected = true;
-			this.inputs.inGamma.options[oldIdx].disabled = true;
-			this.inputs.inGamma.options[oldIdx].style.display = 'none';
+			if (drop) {
+				this.inputs.inGamma.remove(j);
+			}
 		}
 	} else {
-		var max = this.inputs.inGammaSubs.length;
+		var max = this.inputs.inGammaSubOpts.length;
+		var curInSub = this.inputs.inGammaSubs.options[this.inputs.inGammaSubs.selectedIndex].lastChild.nodeValue;
+		var curInSubIdx = 0;
+		this.clearSelect(this.inputs.inGammaSubs);
 		for (var j=0; j<max; j++) {
-			this.inputs.inGammaSubs[j].disabled = false;
-			this.inputs.inGammaSubs[j].style.display = 'block';
+			this.inputs.inGammaSubs.appendChild(this.inputs.inGammaSubOpts[j]);
+			if (this.inputs.inGammaSubOpts[j].lastChild.nodeValue === curInSub) {
+				curInSubIdx = j;
+			}
 		}
+		this.inputs.inGammaSubOpts[curInSubIdx].selected = true;
 		this.messages.updateGammaInList();
-/*
-		var max = this.inputs.inGamma.options.length;
-		for (var j=0; j<max; j++) {
-			this.inputs.inGamma.options[j].disabled = false;
-			this.inputs.inGamma.options[j].style.display = 'block';
-		}
-*/
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;

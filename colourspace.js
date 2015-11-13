@@ -311,14 +311,14 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Adobe')]);
 	this.csOut.push(this.fromSys('Adobe Wide Gamut RGB'));
 	this.csOutSub.push([this.subIdx('Adobe'),this.subIdx('Wide Gamut')]);
-	this.LA = this.csOut.length;
-	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
 	this.custOut = this.csOut.length;
 	this.csOut.push(this.toSys('Custom Out'));
 	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
 	this.pass = this.csOut.length;
 	this.csOut.push(this.fromSysMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.LA = this.csOut.length;
+	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
 	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
 
 	var max = this.csIn.length;

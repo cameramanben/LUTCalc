@@ -88,6 +88,7 @@ LUTCameraBox.prototype.events = function() {
 // Set Up Data
 LUTCameraBox.prototype.cameraList = function() {
 // Type: 0 == CineEI, 1 == Variable Parameters (Arri), 2 == Baked In Gain (Canon)
+	this.cameras.push({make:"",model:"Generic",iso:800,type:2,defgamma:"Cineon",defgamut:"Rec709",bclip:-10,wclip:10});
 	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
@@ -111,6 +112,9 @@ LUTCameraBox.prototype.cameraOptions = function() {
 		var option = document.createElement('option');
 		option.value = i;
 		option.appendChild(document.createTextNode(this.cameras[i].make + ' ' + this.cameras[i].model));
+		if (this.cameras[i].model === 'PMW-F55') {
+			this.current = i;
+		}
 		this.cameraSelect.appendChild(option);
 	}
 };
@@ -151,7 +155,11 @@ LUTCameraBox.prototype.changeCamera = function() {
 	}
 	this.inputs.bclip = this.cameras[this.current].bclip;
 	this.inputs.wclip = this.cameras[this.current].wclip;
-	this.nativeLabel.innerHTML = this.cameras[this.current].iso.toString();
+	if (this.cameras[this.current].model === 'Generic') {
+		this.nativeLabel.innerHTML = 'N/A';
+	} else {
+		this.nativeLabel.innerHTML = this.cameras[this.current].iso.toString();
+	}
 	this.cineeiInput.value = this.cameras[this.current].iso.toString();
 	this.shiftInput.value = '0';
 	this.cameraType.value = this.cameras[this.current].type.toString();
