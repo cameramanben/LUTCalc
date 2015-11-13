@@ -426,29 +426,29 @@ LUTPreview.prototype.loadedDefault = function() {
 LUTPreview.prototype.updatePopup = function() {
 	this.preGammaSelect.length = 0;
 	this.preGamutSelect.length = 0;
-	var max1 = this.inputs.inGamma.options.length;
-	var max2 = this.inputs.inLinGamma.options.length;
+	var max1 = this.inputs.inGammaOpts.length;
+	var max2 = this.inputs.inLinGammaOpts.length;
 	for (var j=0; j<max1; j++) {
-		if (this.inputs.inGamma.options[j].value === '9999') {
+		if (this.inputs.inGammaOpts[j].value === '9999') {
 			for (var k=0; k<max2; k++) {
 				var option = document.createElement('option');
-				option.value = this.inputs.inLinGamma.options[k].value;
-				option.appendChild(this.inputs.inLinGamma.options[k].lastChild.cloneNode(false));
+				option.value = this.inputs.inLinGammaOpts[k].value;
+				option.appendChild(this.inputs.inLinGammaOpts[k].lastChild.cloneNode(false));
 				this.preGammaSelect.appendChild(option);
 			}
 		} else {
 			var option = document.createElement('option');
-			option.value = this.inputs.inGamma.options[j].value;
-			option.appendChild(this.inputs.inGamma.options[j].lastChild.cloneNode(false));
+			option.value = this.inputs.inGammaOpts[j].value;
+			option.appendChild(this.inputs.inGammaOpts[j].lastChild.cloneNode(false));
 			this.preGammaSelect.appendChild(option);
 		}
 	}
 	var max1 = this.inputs.inGamut.options.length;
 	for (var j=0; j<max1; j++) {
-		if (this.inputs.inGamut.options[j].lastChild.data !== 'Passthrough') {
+		if (this.inputs.inGamutOpts[j].lastChild.nodeValue !== 'Passthrough') {
 			var option = document.createElement('option');
-			option.value = this.inputs.inGamut.options[j].value;
-			option.appendChild(this.inputs.inGamut.options[j].lastChild.cloneNode(false));
+			option.value = this.inputs.inGamutOpts[j].value;
+			option.appendChild(this.inputs.inGamutOpts[j].lastChild.cloneNode(false));
 			this.preGamutSelect.appendChild(option);
 		}
 	}

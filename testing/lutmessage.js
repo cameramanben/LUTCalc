@@ -13,6 +13,7 @@ function LUTMessage(inputs) {
 	this.inputs = inputs;
 	this.ui = []; // Links to UI objects for function returns
 	this.ui[0] = this;
+	this.go = false;
 	// 1 - camerabox
 	// 2 - gammabox
 	// 3 - tweaksbox
@@ -53,6 +54,9 @@ LUTMessage.prototype.getGamutThreads = function() {
 };
 LUTMessage.prototype.getWorker = function() {
 	return this.gas[0];
+};
+LUTMessage.prototype.setReady = function() {
+	this.go = true;
 };
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
@@ -95,43 +99,45 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 	}
 };
 LUTMessage.prototype.gaSetParams = function() {
-	this.gaV++;
-	var d = {
-		v: this.gaV,
-		inGamma: parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value),
-		inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
-		outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
-		outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
-		defGamma: this.inputs.defGammaIn,
-		newISO: parseFloat(this.inputs.cineEI.value),
-		natISO: parseFloat(this.inputs.nativeISO.innerHTML),
-		camType: parseInt(this.inputs.cameraType.value),
-		stopShift: parseFloat(this.inputs.stopShift.value),
-		clip: this.inputs.clipCheck.checked,
-		isTrans: this.inputs.isTrans
-	};
-	if (this.inputs.inRange[0].checked) {
-		d.inL = true;
-	} else {
-		d.inL = false;
-	}
-	if (this.inputs.outRange[0].checked) {
-		d.outL = true;
-	} else {
-		d.outL = false;
-	}
-	if (typeof this.inputs.bClip !== 'undefined') {
-		d.bClip = this.inputs.bClip;
-		d.wClip = this.inputs.wClip;
-	}
-	if (typeof this.inputs.scaleMin.value !== 'undefined') {
-		d.scaleMin = parseFloat(this.inputs.scaleMin.value);
-		d.scaleMax = parseFloat(this.inputs.scaleMax.value);
-	}
-	this.ui[3].getTFParams(d);
-	var max = this.gas.length;
-	for (var i=0; i<max; i++) {
-		this.gas[i].postMessage({t: 0, d: d});
+	if (this.go) {
+		this.gaV++;
+		var d = {
+			v: this.gaV,
+			inGamma: parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value),
+			inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
+			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
+			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
+			defGamma: this.inputs.defGammaIn,
+			newISO: parseFloat(this.inputs.cineEI.value),
+			natISO: parseFloat(this.inputs.nativeISO.innerHTML),
+			camType: parseInt(this.inputs.cameraType.value),
+			stopShift: parseFloat(this.inputs.stopShift.value),
+			clip: this.inputs.clipCheck.checked,
+			isTrans: this.inputs.isTrans
+		};
+		if (this.inputs.inRange[0].checked) {
+			d.inL = true;
+		} else {
+			d.inL = false;
+		}
+		if (this.inputs.outRange[0].checked) {
+			d.outL = true;
+		} else {
+			d.outL = false;
+		}
+		if (typeof this.inputs.bClip !== 'undefined') {
+			d.bClip = this.inputs.bClip;
+			d.wClip = this.inputs.wClip;
+		}
+		if (typeof this.inputs.scaleMin.value !== 'undefined') {
+			d.scaleMin = parseFloat(this.inputs.scaleMin.value);
+			d.scaleMax = parseFloat(this.inputs.scaleMax.value);
+		}
+		this.ui[3].getTFParams(d);
+		var max = this.gas.length;
+		for (var i=0; i<max; i++) {
+			this.gas[i].postMessage({t: 0, d: d});
+		}
 	}
 };
 LUTMessage.prototype.gaTx = function(p,t,d) { // parent (sender), type, data
@@ -360,17 +366,19 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 	}
 };
 LUTMessage.prototype.gtSetParams = function() {
-	this.gtV++;
-	var d = {
-		v: this.gtV,
-		inGamut: parseInt(this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].value),
-		outGamut: parseInt(this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].value),
-		isTrans: this.inputs.isTrans
-	};
-	this.ui[3].getCSParams(d);
-	var max = this.gts.length;
-	for (var i=0; i<max; i++) {
-		this.gts[i].postMessage({t: 0, d: d});
+	if (this.go) {
+		this.gtV++;
+		var d = {
+			v: this.gtV,
+			inGamut: parseInt(this.inputs.inGamut.options[this.inputs.inGamut.selectedIndex].value),
+			outGamut: parseInt(this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].value),
+			isTrans: this.inputs.isTrans
+		};
+		this.ui[3].getCSParams(d);
+		var max = this.gts.length;
+		for (var i=0; i<max; i++) {
+			this.gts[i].postMessage({t: 0, d: d});
+		}
 	}
 };
 LUTMessage.prototype.gtTx = function(p,t,d) { // parent (sender), type, data
@@ -585,12 +593,16 @@ LUTMessage.prototype.updateGammaInList = function() {
 	this.ui[2].updateGammaInList(false);
 };
 LUTMessage.prototype.changeGamma = function() {
-	this.ui[4].changeGamma();
-	this.gaSetParams();
+	if (this.go) {
+		this.ui[4].changeGamma();
+		this.gaSetParams();
+	}
 };
 LUTMessage.prototype.changeGamut = function() {
-	this.ui[3].changeGamut();
-	this.ui[8].testXY();
+	if (this.go) {
+		this.ui[3].changeGamut();
+		this.ui[8].testXY();
+	}
 };
 LUTMessage.prototype.changeFormat = function() {
 	this.ui[2].oneOrThree();
