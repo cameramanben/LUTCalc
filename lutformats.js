@@ -135,6 +135,19 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
+		title: 'FCPX - Color Finale / LUT Utility (.cube)', type: 'cube3',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [16,32,64],
+		defDim: 32,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: true,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
 		title: 'Display gamma correction (.cube)', type: 'cube1',
 		oneD: true, threeD: true, defThree: false,
 		oneDim: [1024,4096], threeDim: [17,33,65],
@@ -151,7 +164,7 @@ LUTFormats.prototype.gradesList = function() {
 		scaling: false,
 		setBits: false,
 		resSDI: false,
-		bClip: 0, wClip: 67025937, hard: false
+		bClip: 64, wClip: 67025937, hard: false
 	});
 	this.grades.push({
 		title: 'DaVinci Resolve 1D (.ilut)', type: 'ilut',

@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v2.3.2
+------
+* New Feature - FCP X Color Finale / Color Grading Central LUT Utility Preset.
+
 v2.3.1
 ------
 * New Feature - Generic camera option where the user selects the recorded gamma and gamut.
