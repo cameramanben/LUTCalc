@@ -135,6 +135,38 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
+		title: 'FCPX - Color Finale / LUT Utility (.cube)', type: 'cube3',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [16,32,64],
+		defDim: 32,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: true,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: 'Display gamma correction (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: false,
+		oneDim: [1024,4096], threeDim: [17,33,65],
+		defDim: 4096,
+		someGammas: [
+			'Linear / Rec709',
+			'PQ (90% Ref=300nits)','PQ (90% Ref=500nits)','PQ (90% Ref=800nits)','PQ (90% Ref=1000nits)','PQ (90% Ref=2000nits)','PQ (90% Ref=4000nits)',
+			'ITU Proposal (400%)','ITU Proposal (800%)',
+			'BBC WHP283 (400%)','BBC WHP283 (800%)'
+		],
+		someGammasSub: 'All',
+		legIn: true, datIn: true, defLegIn: true,
+		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 67025937, hard: false
+	});
+	this.grades.push({
 		title: 'DaVinci Resolve 1D (.ilut)', type: 'ilut',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [16384], threeDim: [],
@@ -268,7 +300,8 @@ LUTFormats.prototype.mlutsList = function() {
 		oneD: false, threeD: true, defThree: true,
 		oneDim: [], threeDim: [17,33],
 		defDim: 33,
-		someGammas: false,
+		someGammas: ['S-Log3','S-Log2','S-Log'],
+		someGammasSub: 'Sony',
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
@@ -277,17 +310,69 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 64, wClip: 1019, hard: false
 	});
 	this.mluts.push({
-		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
-		oneD: false, threeD: true, defThree: true,
-		oneDim: [], threeDim: [17],
-		defDim: 17,
+		title: 'Zacuto Gratical 1D MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [1024], threeDim: [],
+		defDim: 1024,
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
-		bClip: 0, wClip: 1019, hard: true
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'AJA LUT-box SMPTE (.cube)', type: 'cube3',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [1024,4096], threeDim: [16,17],
+		defDim: 17,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: true,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'Scopebox Clipped MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [256,1024], threeDim: [17,33],
+		defDim: 33,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
+		title: 'Scopebox Unclipped MLUT (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [256,1024], threeDim: [17,33],
+		defDim: 33,
+		someGammas: false,
+		legIn: true, datIn: false, defLegIn: true,
+		legOut: true, datOut: false, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: false
+	});
+	this.mluts.push({
+		title: 'Varicam 3D MLUT (.vlt)', type: 'vlt',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17],
+		defDim: 17,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
 	});
 	this.mluts.push({
 		title: 'Nikon Custom Picture (.ncp)', type: 'ncp',
@@ -295,6 +380,7 @@ LUTFormats.prototype.mlutsList = function() {
 		oneDim: [256], threeDim: [],
 		defDim: 256,
 		someGammas: ['Nikon Standard','Nikon Neutral','Nikon Vivid','Nikon Monochrome','Nikon Portrait','Nikon Landscape'],
+		someGammasSub: 'Nikon',
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
 		scaling: false,
@@ -371,6 +457,12 @@ LUTFormats.prototype.oneOrThree = function() {
 		}
 	}
 };
+LUTFormats.prototype.clearSelect = function(sel) {
+	var m = sel.options.length;
+	for (var j=0; j<m; j++) {
+		sel.remove(0);
+	}
+};
 LUTFormats.prototype.updateOptions = function() {
 	var curIdx = this.curIdx;
 	var changedType = false;
@@ -398,39 +490,43 @@ LUTFormats.prototype.updateOptions = function() {
 	}	
 	// Check if all input gamma options are allowed and enable / disable as appropriate
 	if (cur.someGammas) {
-		var max = this.inputs.inGamma.options.length;
-		var max2 = cur.someGammas.length;
-		var changeIdx = true;
-		var defIdx = 0;
+		var max = this.inputs.inGammaSubOpts.length;
 		for (var j=0; j<max; j++) {
-			this.inputs.inGamma.options[j].disabled = true;
-			this.inputs.inGamma.options[j].style.display = 'none';
+			if (this.inputs.inGammaSubOpts[j].lastChild.nodeValue === cur.someGammasSub) {
+				this.clearSelect(this.inputs.inGammaSubs);
+				this.inputs.inGammaSubs.appendChild(this.inputs.inGammaSubOpts[j]);
+				break;
+			}
+		}
+		this.messages.updateGammaInList();
+		max = this.inputs.inGamma.options.length-1;
+		var max2 = cur.someGammas.length;
+		var drop;
+		for (var j=max; j>=0; j--) {
+			drop = true;
 			for (var k=0; k<max2; k++) {
 				if (this.inputs.inGamma.options[j].lastChild.nodeValue === cur.someGammas[k]) {
-					if (k === 0) {
-						defIdx = j;
-					}
-					this.inputs.inGamma.options[j].disabled = false;
-					this.inputs.inGamma.options[j].style.display = 'block';
-					if (this.inputs.inGamma.options[j].selected) {
-						changeIdx = false;
-					}
+					drop = false;
 					break;
 				}
 			}
-		}
-		if (changeIdx) {
-			var oldIdx = this.inputs.inGamma.options.selectedIndex;
-			this.inputs.inGamma.options[defIdx].selected = true;
-			this.inputs.inGamma.options[oldIdx].disabled = true;
-			this.inputs.inGamma.options[oldIdx].style.display = 'none';
+			if (drop) {
+				this.inputs.inGamma.remove(j);
+			}
 		}
 	} else {
-		var max = this.inputs.inGamma.options.length;
+		var max = this.inputs.inGammaSubOpts.length;
+		var curInSub = this.inputs.inGammaSubs.options[this.inputs.inGammaSubs.selectedIndex].lastChild.nodeValue;
+		var curInSubIdx = 0;
+		this.clearSelect(this.inputs.inGammaSubs);
 		for (var j=0; j<max; j++) {
-			this.inputs.inGamma.options[j].disabled = false;
-			this.inputs.inGamma.options[j].style.display = 'block';
+			this.inputs.inGammaSubs.appendChild(this.inputs.inGammaSubOpts[j]);
+			if (this.inputs.inGammaSubOpts[j].lastChild.nodeValue === curInSub) {
+				curInSubIdx = j;
+			}
 		}
+		this.inputs.inGammaSubOpts[curInSubIdx].selected = true;
+		this.messages.updateGammaInList();
 	}
 	// 1D or 3D
 	this.inputs.d[0].disabled = !cur.oneD;

@@ -84,6 +84,9 @@ function lutcalcReady(p) {
 		lutInfoBox.events();
 		splash.style.display = 'none';
 		modalBox.className = 'modalbox-hide';
+		lutMessage.setReady();
+		lutMessage.gtSetParams();
+		lutMessage.gaSetParams();
 	}
 }
 function fieldSet(parentElement,shadow,id) {

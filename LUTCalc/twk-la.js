@@ -403,9 +403,7 @@ TWKLA.prototype.doneStuff = function() {
 	this.tweakCheck.className = 'twk-checkbox';
 	this.doButton.value = 'Re-Analyse';
 	this.storeButton.className = 'twk-button';
-    if (!this.inputs.isApp) {
-        this.storeBinButton.className = 'twk-button';
-    }
+	this.storeBinButton.className = 'twk-button';
 	this.toggleTweak();
 };
 TWKLA.prototype.reset = function() {

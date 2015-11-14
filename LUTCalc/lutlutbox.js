@@ -170,7 +170,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutUsage.appendChild(this.gradeOpt);
 	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Grading LUT')));
 	this.lutUsage.appendChild(this.mlutOpt);
-	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera LUT (MLUT)')));
+	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Camera / Monitor LUT (MLUT)')));
 	this.lutUsage.appendChild(document.createElement('br'));
 	this.box.appendChild(this.lutUsage);
 	// LUT type selections
@@ -327,8 +327,8 @@ LUTLutBox.prototype.createRadioElement = function(name, checked) {
 LUTLutBox.prototype.changeGamma = function() {
 	this.formats.updateOptions();
 };
-LUTLutBox.prototype.gotGammaLists = function(catList) {
-	this.catList = catList;
+LUTLutBox.prototype.gotGammaLists = function() {
+	this.catList = this.inputs.gammaCatList;
 };
 LUTLutBox.prototype.getSettings = function(data) {
 	var m = this.inputs.dimension.length;
