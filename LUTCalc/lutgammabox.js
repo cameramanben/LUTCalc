@@ -66,6 +66,28 @@ LUTGammaBox.prototype.io = function() {
 	this.inputs.addInput('outGamutSubs',this.outGamutSubs);
 	this.outGamutSelect = document.createElement('select');
 	this.inputs.addInput('outGamut',this.outGamutSelect);
+	this.inPQLMax = document.createElement('select');
+	this.inPQStops = document.createElement('input');
+	this.inPQStops.setAttribute('type','number');
+	this.inPQStops.setAttribute('step',0.1);
+	this.inPQStops.setAttribute('class','smallinput');
+	this.inPQStops.value = '0';
+	this.inPQNits = document.createElement('input');
+	this.inPQNits.setAttribute('type','number');
+	this.inPQNits.setAttribute('step','any');
+	this.inPQNits.setAttribute('class','basicinput');
+	this.inPQNits.value = '0';
+	this.outPQLMax = document.createElement('select');
+	this.outPQStops = document.createElement('input');
+	this.outPQStops.setAttribute('type','number');
+	this.outPQStops.setAttribute('step',0.1);
+	this.outPQStops.setAttribute('class','smallinput');
+	this.outPQStops.value = '0';
+	this.outPQNits = document.createElement('input');
+	this.outPQNits.setAttribute('type','number');
+	this.outPQNits.setAttribute('step','any');
+	this.outPQNits.setAttribute('class','basicinput');
+	this.outPQNits.value = '0';
 };
 LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Rec Gamma')));
@@ -73,9 +95,28 @@ LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(this.inGammaSelect);
 	this.box.appendChild(document.createElement('br'));
 	this.inLin = document.createElement('div');
+	this.inLin.className = 'smallerbox';
 	this.inLin.appendChild(document.createElement('label').appendChild(document.createTextNode('γ Correction')));
 	this.inLin.appendChild(this.inLinSelect);
 	this.box.appendChild(this.inLin);
+/*
+	this.inPQ = document.createElement('div');
+	this.inPQ.className = 'smallerbox';
+	this.inPQ.appendChild(document.createElement('label').appendChild(document.createTextNode('Max nits')));
+	this.inPQ.appendChild(this.inPQLMax);
+	this.inPQStopBox = document.createElement('div');
+	this.inPQStopBox.className = 'linebox';
+	this.inPQStopBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Is Stop')));
+	this.inPQStopBox.appendChild(this.inPQStops);
+	this.inPQ.appendChild(this.inPQStopBox);
+	this.inPQNitsBox = document.createElement('div');
+	this.inPQNitsBox.className = 'linebox';
+	this.inPQNitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Ref White')));
+	this.inPQNitsBox.appendChild(this.inPQNits);
+	this.inPQNitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('nits')));
+	this.inPQ.appendChild(this.inPQNitsBox);
+	this.box.appendChild(this.inPQ);
+*/
 	this.inGamutBox = document.createElement('div');
 	this.inGamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Rec Gamut')));
 	this.inGamutBox.appendChild(this.inGamutSubs);
@@ -86,6 +127,7 @@ LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(this.outGammaSelect);
 	this.box.appendChild(document.createElement('br'));
 	this.outLin = document.createElement('div');
+	this.outLin.className = 'smallerbox';
 	this.outLin.appendChild(document.createElement('label').appendChild(document.createTextNode('γ Correction')));
 	this.outLin.appendChild(this.outLinSelect);
 	this.box.appendChild(this.outLin);

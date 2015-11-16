@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v2.3.3
+------
+* Reversion - New information confirms the original interpretation of V709. Removed the alternative and restored the .vlt preset.
+
 v2.3.2
 ------
 * New Feature - FCP X Color Finale / Color Grading Central LUT Utility Preset.
