@@ -463,6 +463,8 @@ background:transparent;
   background: rgba(0, 0, 0, 0);
 }
 
+.smallerbox {font-size:90%;}
+.linebox {display: inline-block;}
 .fixed-width-no {width:3em; display:inline-block; text-align: center; margin:0}
 .slider-holder { display: inline-block; }
 .wide-slider { width: 90%; }
