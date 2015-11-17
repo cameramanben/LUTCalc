@@ -34,6 +34,7 @@ function LUTMessage(inputs) {
 	this.gaV = 0; // Counter keeping tabs on 'freshness' of returned data
 	this.gaU = 0; // Counter keeping tabs on how many of the threads are up-to-date
 	this.gaL = 0;
+	this.gaPQ = 0;
 	this.startGaThreads();
 	this.gts = []; // Array of gamma web workers
 	this.gtT = 2; // Gamut threads
@@ -105,6 +106,7 @@ LUTMessage.prototype.gaSetParams = function() {
 			v: this.gaV,
 			inGamma: parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value),
 			inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
+			pqNits: this.inputs.inPQNits,
 			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
 			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
 			defGamma: this.inputs.defGammaIn,
@@ -244,6 +246,13 @@ LUTMessage.prototype.gaRx = function(d) {
 			case 38: // Get LUT in to LUT out values for primaries
 					this.ui[6].updateRGBChart(d);
 					break;
+			case 39: // Update PQ LMax level
+					this.gaPQ++;
+					if (this.gaPQ === this.gaT) {
+						this.gaPQ = 0;
+						this.gaSetParams();
+					}
+					break;
 		}
 	}
 };
@@ -276,6 +285,7 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 };
 LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaLA',d.LA);
+	this.inputs.addInput('gammaPQ',d.PQ);
 	this.inputs.addInput('gammaInList',d.inList);
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);

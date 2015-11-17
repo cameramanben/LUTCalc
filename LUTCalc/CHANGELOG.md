@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v2.3.4
+------
+* Feature Change - More flexible PQ selection.
+* Bugfix - Fixed settings loading bug.
+
 v2.3.3
 ------
 * Reversion - New information confirms the original interpretation of V709. Removed the alternative and restored the .vlt preset.

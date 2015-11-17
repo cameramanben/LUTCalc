@@ -559,6 +559,11 @@ LUTGamma.prototype.gammaList = function() {
 			}
 		}));
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
+	this.PQ = this.gammas.length;
+	this.gammas.push(new LUTGammaPQ(
+		'Dolby PQ', {Lmax: 300}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+/*
 	this.gammas.push(new LUTGammaPQ(
 		'PQ (90% Ref=300nits)', {Lmax: 300}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
@@ -577,6 +582,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammas.push(new LUTGammaPQ(
 		'PQ (90% Ref=4000nits)', {Lmax: 4000}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
+*/
 	this.gammas.push(new LUTGammaITUProp(
 		'ITU Proposal (400%)', {m: 0.12314858 }));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
@@ -742,16 +748,6 @@ LUTGamma.prototype.gammaList = function() {
 			default: break;
 		}
 	}
-//	this.inList = logList.slice();
-//	this.inList.push({name: 'Linear / Rec709', idx: 9999});
-//	this.inList = this.inList.concat(hdrList);
-//	this.inList = this.inList.concat(ioList);
-//	this.outList = logList.slice();
-//	this.outList.push({name: 'Linear / Rec709', idx: 9999});
-//	this.outList = this.outList.concat(genList);
-//	this.outList = this.outList.concat(hdrList);
-//	this.outList = this.outList.concat(ioList);
-//	this.outList.push({name: this.gammas[max-1].name, idx: (max-1)});
 };
 // Parameter setting functions
 LUTGamma.prototype.setASCCDL = function(params) {
@@ -1586,7 +1582,7 @@ function LUTGammaPQ(name,params) {
 	this.name = name;
 	this.params = params.nits;
 	this.cat = 5;
-	this.Lmax = 1 / (0.0001 * params.Lmax);
+	this.Lmax = 10000 / params.Lmax;
 	this.n = (2610/4096)*(1/4);
 	this.m = (2523/4096)*128;
 	this.c1 = (3424/4096);
@@ -1594,6 +1590,10 @@ function LUTGammaPQ(name,params) {
 	this.c3 = (2392/4096)*32;
 	this.changeISO(800);
 }
+LUTGammaPQ.prototype.changeLMax = function(Lmax) {
+	this.Lmax = 10000 / Lmax;
+	this.e = this.linToLegal(0);
+};
 LUTGammaPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
 	this.L = this.Lmax;
@@ -2407,6 +2407,9 @@ LUTGamma.prototype.setParams = function(params) {
 			this.sIn = false;
 		}
 	}
+	if (typeof params.pqNits === 'number') {
+		this.gammas[this.PQ].changeLMax(params.pqNits);
+	}
 	if (typeof params.clip === 'boolean') {
 		this.clip = params.clip;
 		out.clip = this.clip;
@@ -2655,6 +2658,7 @@ LUTGamma.prototype.getLists = function(p,t) {
 		subNames: this.subNames,
 		subList: this.gammaSub,
 		rec709: this.rec709,
+		PQ: this.PQ,
 		LA: this.LA
 	};
 };
@@ -3001,6 +3005,12 @@ LUTGamma.prototype.chartRGB = function(p,t,i) {
 	}
 	return out;
 };
+LUTGamma.prototype.changePQ = function(p,t,i) {
+	var out = {p: p, t: t+20, v: this.ver};
+	this.gammas[this.PQ].changeLMax(i);
+	out.ok = true;
+	return out;
+};
 // Web worker messaging functions
 function sendMessage(d) {
 	if (gammas.isTrans && typeof d.to !== 'undefined') {
@@ -3060,6 +3070,8 @@ if (typeof importScripts === 'function') {
 				case 17:sendMessage(gammas.multiColours(d.p,d.t,d.d));
 						break;
 				case 18:sendMessage(gammas.chartRGB(d.p,d.t,d.d));
+						break;
+				case 19:sendMessage(gammas.changePQ(d.p,d.t,d.d));
 						break;
 			}
 		}
