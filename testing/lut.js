@@ -1435,14 +1435,43 @@ LUTs.prototype.tL = function(C, max, RGB) {
 	return	(((((Pooo*(1-r))+(Proo*r))*(1-g))+(((Pogo*(1-r))+(Prgo*r))*g))*(1-bl))+
 			(((((Poob*(1-r))+(Prob*r))*(1-g))+(((Pogb*(1-r))+(Prgb*r))*g))*bl);
 };
-function LUTSpline(buff) {
+function LUTSpline(buff,fH,fL,rH,rL) {
 	this.fs = new Float64Array(buff);
-	var max = this.fs.length;
-	this.s = max;
-	this.rs = new Float64Array(max);
+	var m = this.fs.length;
+	if (typeof fH === 'number') {
+		this.fH = fH;
+		if (typeof fL === 'number') {
+			this.fL = fL;
+		} else {
+			this.fL = 0;
+		}
+	} else {
+		this.fH = 1;
+		this.fL = 0;
+	}
+	if (typeof rH === 'number') {
+		this.rH = rH;
+		if (typeof rL === 'number') {
+			this.rL = rL;
+		} else {
+			this.rL = this.fL;
+		}
+	} else {
+		this.rH = this.fH;
+		this.rL = this.fL;
+	}
+	this.s = m;
+	this.rs = new Float64Array(m);
 	var brent = new Brent(this);
-	for (var j=0; j<max; j++) {
-		this.rs[j] = brent.findRoot(parseFloat(j/(max-1)),parseFloat(j/(max-1)));
+	var x;
+	for (var j=0; j<m; j++) {
+		x = ((j/(m-1))*(this.rH - this.rL)) + this.rL;
+		if (j === 0 || x <= 0) {
+			this.rs[j] = brent.findRoot(x,x);
+		} else {
+			this.rs[j] = brent.findRoot(this.rs[j-1],parseFloat(x));
+		}
+		this.rs[j] = (this.rs[j]*(this.fH - this.fL)) + this.fL;
 	}
 }
 LUTSpline.prototype.f = function(L) {
