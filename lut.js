@@ -1435,25 +1435,163 @@ LUTs.prototype.tL = function(C, max, RGB) {
 	return	(((((Pooo*(1-r))+(Proo*r))*(1-g))+(((Pogo*(1-r))+(Prgo*r))*g))*(1-bl))+
 			(((((Poob*(1-r))+(Prob*r))*(1-g))+(((Pogb*(1-r))+(Prgb*r))*g))*bl);
 };
-function LUTSpline(buff) {
+function LUTSpline(buff,fH,fL,rH,rL) {
 	this.fs = new Float64Array(buff);
-	var max = this.fs.length;
-	this.s = max;
-	this.rs = new Float64Array(max);
-	var brent = new Brent(this);
-	for (var j=0; j<max; j++) {
-		this.rs[j] = brent.findRoot(parseFloat(j/(max-1)),parseFloat(j/(max-1)));
+	var m = this.fs.length;
+	if (typeof fH === 'number') {
+		this.fH = fH;
+		if (typeof fL === 'number') {
+			this.fL = fL;
+		} else {
+			this.fL = 0;
+		}
+	} else {
+		this.fH = 1;
+		this.fL = 0;
 	}
+	if (typeof rH === 'number') {
+		this.rH = rH;
+		if (typeof rL === 'number') {
+			this.rL = rL;
+		} else {
+			this.rL = this.fL;
+		}
+	} else {
+		this.rH = this.fs[this.fs.length - 1];
+		this.rL = this.fs[0];
+	}
+	this.s = m;
+	this.sr = m;
+	if (this.sr < 1024) {
+		this.sr = 1024;
+	}
+	this.setFdy();
+	this.rs = new Float64Array(this.sr);
+	var brent = new Brent(this);
+	var x;
+	for (var j=0; j<this.sr; j++) {
+		x = ((j/(this.sr-1))*(this.rH - this.rL)) + this.rL;
+		if (j === 0 || x <= 0 || this.rs[j-1] < -65534 || this.rs[j-1] > 65534) {
+			this.rs[j] = brent.findRoot(x,x);
+		} else {
+			this.rs[j] = brent.findRoot(this.rs[j-1],parseFloat(x));
+		}
+		if (this.rs[j] < -65534) {
+			this.rs[j] = -65534;
+		} else if (this.rs[j] > 65534) {
+			this.rs[j] = 65534;
+		}
+	}
+	if (isNaN(this.rs[0])) {
+		for (var j=0; j<this.sr; j++) {
+			if (!isNaN(this.rs[j])) {
+				this.rs[0] = this.rs[j];
+				break;
+			}
+		}
+	}
+	for (var j=1; j<this.sr; j++) {
+		if (isNaN(this.rs[j])) {
+			this.rs[j] = this.rs[j-1];
+		}
+	}
+	this.setRdy();
 }
-LUTSpline.prototype.f = function(L) {
+LUTSpline.prototype.setFdy = function() {
+	var max = this.s - 1;
+	var sign = this.fs[max] - this.fs[0];
+	if (sign === 0) {
+		this.fdyMin = 0.000000001;
+		this.fdyMax = 0.000000001;
+	} else if (sign > 0.000000001){
+		this.fdyMin = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
+		if (this.fdyMin < 0.000000001) {
+			this.fdyMin = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
+			if (this.fdyMin < 0.000000001) {
+				this.fdyMin = 0.000000001;
+			}
+		}
+		this.fdyMax = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
+		if (this.fdyMax < 0.000000001) {
+			this.fdyMax = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
+			if (this.fdyMax < 0.000000001) {
+				this.fdyMax = 0.000000001;
+			}
+		}
+	} else {
+		this.fdyMin = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
+		if (this.fdyMin > -0.000000001) {
+			this.fdyMin = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
+			if (this.fdyMin > -0.000000001) {
+				this.fdyMin > -0.000000001;
+			}
+		}
+		this.fdyMax = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
+		if (this.fdyMax > -0.000000001) {
+			this.fdyMax = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
+			if (this.fdyMax > -0.000000001) {
+				this.fdyMax = -0.000000001;
+			}
+		}
+	}
+};
+LUTSpline.prototype.setRdy = function() {
+	var max = this.sr - 1;
+	var sign = this.rs[max] - this.rs[0];
+	if (sign === 0) {
+		this.rdyMin = 0.000000001;
+		this.rdyMax = 0.000000001;
+	} else if (sign > 0.000000001){
+		this.rdyMin = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
+		if (this.rdyMin < 0.000000001) {
+			this.rdyMin = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
+			if (this.rdyMin < 0.000000001) {
+				this.rdyMin = 0.000000001;
+			}
+		}
+		this.rdyMax = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
+		if (this.rdyMax < 0.000000001) {
+			this.rdyMax = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
+			if (this.rdyMax < 0.000000001) {
+				this.rdyMax = 0.000000001;
+			}
+		}
+	} else {
+		this.rdyMin = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
+		if (this.rdyMin > -0.000000001) {
+			this.rdyMin = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
+			if (this.rdyMin > -0.000000001) {
+				this.rdyMin > -0.000000001;
+			}
+		}
+		this.rdyMax = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
+		if (this.rdyMax > -0.000000001) {
+			this.rdyMax = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
+			if (this.rdyMax > -0.000000001) {
+				this.rdyMax = -0.000000001;
+			}
+		}
+	}
+};
+LUTSpline.prototype.f = function(L1) {
+	var L = (L1 - this.fL)/(this.fH-this.fL);
 	var max = this.s - 1;
 	L = L * max;
 	if (L < 0) {
-		var dy = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
-		return this.fs[0] + (L * dy);
+//		var dy = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
+//		if (dy<0) {
+//			dy = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
+//		}
+		return this.fs[0] + (L * this.fdyMin);
 	} else if (L >= max) {
-		var dy = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
-		return this.fs[max] + ((L - max) * dy);
+//		var dy = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
+//		if (dy<0) {
+//			dy = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
+//			if (dy<0) {
+//				dy = 0;
+//			}
+//		}
+		return this.fs[max] + ((L - max) * this.fdyMax);
 	} else {
 		var f = Math.floor(L);
 		var p0 = this.fs[f];
@@ -1477,15 +1615,25 @@ LUTSpline.prototype.f = function(L) {
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 };
-LUTSpline.prototype.r = function(L) {
-	var max = this.s - 1;
+LUTSpline.prototype.r = function(L1) {
+	var L = (L1 - this.rL)/(this.rH-this.rL);
+	var max = this.sr - 1;
 	L = L * max;
 	if (L < 0) {
-		var dy = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-		return this.rs[0] + (L * dy);
+//		var dy = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
+//		if (dy<0) {
+//			dy = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
+//		}
+		return this.rs[0] + (L * this.rdyMin);
 	} else if (L >= max) {
-		var dy = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
-		return this.rs[max] + ((L - max) * dy);
+//		var dy = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
+//		if (dy<0) {
+//			dy = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
+//			if (dy<0) {
+//				dy = 0;
+//			}
+//		}
+		return this.rs[max] + ((L - max) * this.rdyMax);
 	} else {
 		var f = Math.floor(L);
 		var p0 = this.rs[f];
@@ -1511,4 +1659,22 @@ LUTSpline.prototype.r = function(L) {
 };
 LUTSpline.prototype.getReverse = function() {
 	return this.rs.buffer.slice(0);
+};
+LUTSpline.prototype.getMinMax = function() {
+	var a=0;
+	var b=1;
+	for (var j=0; j<this.sr; j++) {
+		if (this.rs[j] > b) {
+			b = this.rs[j];
+		} else if (this.rs[j] < a) {
+			a = this.rs[j];
+		}
+	}
+	return {a: a, b: b};
+};
+LUTSpline.prototype.getHighLow = function() {
+	return {forH:this.fH,forL:this.fL,revH:this.rH,revL:this.rL}
+};
+LUTSpline.prototype.getSR = function() {
+	return this.sr;
 };

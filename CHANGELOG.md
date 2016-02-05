@@ -1,6 +1,20 @@
 LUTCalc Changelog
 =================
 
+v2.3.6
+------
+* Feature Change - Improved / more robust gamma reversal code for LUTAnalyst.
+* New Feature - Provisional SmallHD preset based on SmallHD feedback - pending confirmation.
+
+v2.3.5
+------
+* New Feature - Hybrid-log gamma.
+* New Feature - All Sony Hypergammas (1-8) plus Cinegammas 1 and 2 are now included (HG4 is also the same as Cinegamma 1, HG2 the same as Cinegamma 2).
+* New Feature - Rec709(800%) with black at 3% (the built-in LUT in Sony CineEI mode) is now included as an input gamma option. Not an ideal situation, but can be used to reverse an accidentally burnt-in LUT in CineEI mode.
+* Feature Change - Hypergammas 7 & 8 plus Rec709 (800%) have been recalculated along withe the other Hypergammas for precision.
+* Bugfix - fixed slight offset to x-axis in LUT in / LUT out chart.
+* Bugfix - Fixed initial black clip / white clip bounds on the stop chart not displaying.
+
 v2.3.4
 ------
 * Feature Change - More flexible PQ selection.

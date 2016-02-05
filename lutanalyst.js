@@ -74,8 +74,11 @@ LUTAnalyst.prototype.getTF = function() {
 LUTAnalyst.prototype.updateLATF = function() {
 	this.gaT = this.messages.getGammaThreads();
 	var dets = this.tf.getDetails();
-	var rev = new LUTSpline(dets.C[0].slice(0));
-	dets.R = [rev.getReverse()];
+	var HL = this.tfSpline.getHighLow();
+	dets.R = [this.tfSpline.getReverse()];
+	dets.sr = this.tfSpline.getSR();
+	dets.minR = [HL.revL,HL.revL,HL.revL];
+	dets.maxR = [HL.revH,HL.revH,HL.revH];
 	this.messages.gaTxAll(this.p,6,dets);
 };
 LUTAnalyst.prototype.getL = function() {
@@ -115,6 +118,7 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 			max: [1,1,1],
 			C: [buff]
 		});
+		this.tfSpline = new LUTSpline(buff,1,0);
 		this.pass = 1;
 		this.getCS();
 	} else { // Colour Space Pass
@@ -128,16 +132,16 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		for (var j=0; j<max; j++) {
 			k = j*3;
 			if (this.legOut) {
-				R[j] = this.revTF((j%dim) / (dim-1)				, ((rgb[ k ]*876)+64)/1023);
-				G[j] = this.revTF(((j/dim)%dim) / (max-1)		, ((rgb[k+1]*876)+64)/1023);
-				B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, ((rgb[k+2]*876)+64)/1023);
+				R[j] = this.tfSpline.r(((rgb[ k ]*876)+64)/1023);
+				G[j] = this.tfSpline.r(((rgb[k+1]*876)+64)/1023);
+				B[j] = this.tfSpline.r(((rgb[k+2]*876)+64)/1023);
 			} else {
-				R[j] = this.revTF((j%dim) / (dim-1)				, rgb[ k ]);
-				G[j] = this.revTF(((j/dim)%dim) / (max-1)		, rgb[k+1]);
-				B[j] = this.revTF(((j/(dim*dim))%dim) / (max-1)	, rgb[k+2]);
+				R[j] = this.tfSpline.r(rgb[ k ]);
+				G[j] = this.tfSpline.r(rgb[k+1]);
+				B[j] = this.tfSpline.r(rgb[k+2]);
 			}
 		}
-		var minMax = this.brent.getMinMax();
+		var minMax = this.tfSpline.getMinMax();
 		var a = minMax.a;
 		var b = minMax.b;
 		for (var j=0; j<max; j++) {
@@ -169,9 +173,6 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		this.updateLATF();
 		this.updateLACS();
 	}
-};
-LUTAnalyst.prototype.revTF = function(guess,goal) { // Brent Method
-	return this.brent.findRoot(guess,goal);
 };
 LUTAnalyst.prototype.updateLACS = function() {
 	this.gtT = this.messages.getGamutThreads();

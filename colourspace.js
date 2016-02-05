@@ -213,6 +213,42 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOutSub.push([this.subIdx('Rec709')]);
+/*
+	this.csOut.push(
+		this.fromSysTC('Alexa709',
+			{
+				isOut: true,
+				linMatrix: this.matrixVals('Alexa Wide Gamut',false),
+				logBase: new CSLogC(),
+				tc: new LUTSpline(new Float64Array([
+						-0.00051489, -0.00038814, -0.00026140, -0.00013466, -0.00000792, -0.00006239, -0.00002264, 0.00010974, 0.00025370, 0.00046762,
+						0.00076174, 0.00110419, 0.00145685, 0.00180232, 0.00214778, 0.00250942, 0.00289950, 0.00332828, 0.00379445, 0.00429388,
+						0.00482874, 0.00540526, 0.00603764, 0.00673933, 0.00751159, 0.00836354, 0.00929749, 0.01032280, 0.01145079, 0.01268713,
+						0.01402951, 0.01550166, 0.01714143, 0.01898387, 0.02102112, 0.02329294, 0.02585024, 0.02872922, 0.03201248, 0.03570865,
+						0.03980278, 0.04433840, 0.04934631, 0.05478781, 0.06068921, 0.06703094, 0.07388431, 0.08126558, 0.08912680, 0.09741587,
+						0.10618154, 0.11547095, 0.12523133, 0.13546651, 0.14620941, 0.15747007, 0.16922838, 0.18147946, 0.19427745, 0.20759842,
+						0.22143825, 0.23581837, 0.25070614, 0.26611460, 0.28206476, 0.29853742, 0.31555302, 0.33314495, 0.35123126, 0.36981622,
+						0.38888133, 0.40845774, 0.42853879, 0.44909437, 0.47015271, 0.49168925, 0.51369179, 0.53597308, 0.55856378, 0.58160244,
+						0.60468552, 0.62729571, 0.64902453, 0.67011003, 0.69052929, 0.71030795, 0.72941601, 0.74768440, 0.76519846, 0.78195982,
+						0.79797971, 0.81318052, 0.82760776, 0.84132461, 0.85420904, 0.86616051, 0.87730003, 0.88777420, 0.89767720, 0.90685889,
+						0.91533517, 0.92317273, 0.93041149, 0.93694298, 0.94282941, 0.94816520, 0.95302909, 0.95731724, 0.96109204, 0.96443900,
+						0.96745260, 0.97001130, 0.97217800, 0.97407929, 0.97583090, 0.97732482, 0.97859360, 0.97977156, 0.98098126, 0.98216540,
+						0.98330714, 0.98446208, 0.98568202, 0.98693173, 0.98821240, 0.98958246, 0.99107669, 0.99250110, 0.99391565, 0.99532129,
+						0.99671815
+					]).buffer,1,0),
+				tcMatrix: new Float64Array([
+						 1.485007,-0.401216,-0.083791,
+						-0.033732, 1.282887,-0.249155,
+						 0.010776,-0.122018, 1.111242
+					]),
+				wp: this.illuminant('d65')
+			},
+			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
+			this.illuminant('d65')			
+		)
+	);
+	this.csOutSub.push([this.subIdx('Arri'),this.subIdx('Rec709')]);
+*/
 	this.csOut.push(
 		this.fromSysLUT('LC709',
 			{
@@ -411,6 +447,19 @@ LUTColourSpace.prototype.fromSys = function(name) {
 	}
 	return false;
 };
+LUTColourSpace.prototype.matrixVals = function(name,to) {
+	var m = this.g.length;
+	for (var j=0; j<m; j++) {
+		if (name === this.g[j].name) {
+			if (to) {
+				return this.g[j].toSys;
+			} else {
+				return this.mInverse(this.g[j].toSys);
+			}
+		}
+	}
+	return false;
+};
 LUTColourSpace.prototype.fromSysMatrix = function(name,matrix,white) {
 	var out = new CSMatrix(name, matrix, white);
 	this.csM.push(out);
@@ -424,6 +473,15 @@ LUTColourSpace.prototype.fromSysLUT = function(name,params,xy,white) {
 		white
 	));
 	return new CSLUT(name, params);
+};
+LUTColourSpace.prototype.fromSysTC = function(name,params,xy,white) {
+	var toXYZ = this.RGBtoXYZ(xy,white);
+	this.csM.push(new CSMatrix(
+		name,
+		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
+		white
+	));
+	return new CSToneCurve(name, params);
 };
 LUTColourSpace.prototype.fromSysLA = function(name,white) {
 	var csLA = new CSLA(name, white);
@@ -2078,6 +2136,59 @@ CSWB.prototype.lc = function(buff) {
 		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
 	}
 };
+// Log Gamma calculation objects
+function CSSL3() {
+}
+CSSL3.prototype.f = function(i) {
+	i *= 0.9;
+	if (i >= 0.01125) {
+		return (420.0 + (Math.log((i + 0.01) / 0.19)*261.5/Math.log(10))) / 1023.0;
+	} else {
+		return ((i * 76.2102946929 / 0.01125) + 95.0) / 1023.0;
+	}
+};
+CSSL3.prototype.r = function(i) {
+	if (i >= 171.2102946929 / 1023.0) {
+		return (((Math.pow(10,((i*1023)-420)/261.5)*(0.18 +0.01))-0.01))/0.9;
+	} else {
+		return (((((i*1023)-95.0)*0.01125)/(171.2102946929 - 95.0)))/0.9;
+	}
+};
+function CSLogC() {
+}
+CSLogC.prototype.f = function(i) {
+	// params for ISO 800
+	i *= 0.9;
+	if (i > 0.010591) {
+		return (0.247190*Math.log((5.555556*i)+0.052272)/Math.log(10)) + 0.385537;
+	} else {
+		return (5.367655*i)+0.092809;
+	}
+};
+CSLogC.prototype.r = function(i) {
+	if (i > 0.149658) {
+		return (Math.pow(10, (i - 0.385537) / 0.247190) - 0.052272) / (5.555556*0.9);
+	} else {
+		return (i - 0.092809) / (5.367655*0.9);
+	}
+};
+function CSVLog() {
+}
+CSVLog.prototype.f = function(i) {
+	i *= 0.9;
+	if (i < 0.01) {
+		return (5.6*i)+0.125;
+	} else {
+		return (0.241514*Math.log(i+0.00873)/Math.log(10))+0.598206
+	}
+};
+CSVLog.prototype.r = function(i) {
+	if (i < 0.181) {
+		return ((i-0.125)/5.6)/0.9;
+	} else {
+		return (Math.pow(10,((i-0.598206)/0.241514))-0.00873)/0.9;
+	}
+};
 // Colour space calculation objects
 function CSMatrix(name,params,wp) {
 	this.name = name;
@@ -2114,6 +2225,121 @@ CSMatrix.prototype.lf = function(buff) {
 		c[ j ] = (this.m[0]*r)+(this.m[1]*g)+(this.m[2]*b);
 		c[j+1] = (this.m[3]*r)+(this.m[4]*g)+(this.m[5]*b);
 		c[j+2] = (this.m[6]*r)+(this.m[7]*g)+(this.m[8]*b);
+	}
+};
+function CSToneCurve(name,params) {
+	this.name = name;
+	this.o = params.isOut;
+	if (params.isOut) {
+		this.m1 = params.linMatrix;
+		this.m2 = params.tcMatrix;
+	} else {
+		this.m1 = this.mInverse(params.linMatrix);
+		this.m2 = this.mInverse(params.tcMatrix);
+	}
+	this.l = params.logBase;
+	this.tc = params.tc;
+	this.wp = params.wp;
+}
+CSToneCurve.prototype.mInverse = function(m) {
+	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
+				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
+				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+	if (det === 0) {
+		return false;
+	}
+	var mt = new Float64Array([
+		m[0], m[3], m[6],
+		m[1], m[4], m[7],
+		m[2], m[5], m[8]
+	]);
+	var mc = new Float64Array([
+		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
+		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
+		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
+	]);
+	return new Float64Array([
+		mc[0]/det, mc[1]/det, mc[2]/det,
+		mc[3]/det, mc[4]/det, mc[5]/det,
+		mc[6]/det, mc[7]/det, mc[8]/det
+	]);
+};
+CSToneCurve.prototype.getWP = function() {
+	return new Float64Array(this.wp.slice(0));
+};
+CSToneCurve.prototype.isMatrix = function() {
+	return false;
+};
+CSToneCurve.prototype.lc = function(buff) {
+	var c = new Float64Array(buff);
+	var max = c.length;
+	var r,g,b;
+	if (this.o) {
+		for (var j=0; j<max; j+= 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = this.tc.f(this.l.f((this.m1[0]*r)+(this.m1[1]*g)+(this.m1[2]*b)));
+			c[j+1] = this.tc.f(this.l.f((this.m1[3]*r)+(this.m1[4]*g)+(this.m1[5]*b)));
+			c[j+2] = this.tc.f(this.l.f((this.m1[6]*r)+(this.m1[7]*g)+(this.m1[8]*b)));
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = this.l.r(this.tc.r((this.m2[0]*r)+(this.m2[1]*g)+(this.m2[2]*b)));
+			c[j+1] = this.l.r(this.tc.r((this.m2[3]*r)+(this.m2[4]*g)+(this.m2[5]*b)));
+			c[j+2] = this.l.r(this.tc.r((this.m2[6]*r)+(this.m2[7]*g)+(this.m2[8]*b)));
+		}
+	} else {
+		for (var j=0; j<max; j+= 3) {
+			r = this.tc.f(this.l.f(c[ j ]));
+			g = this.tc.f(this.l.f(c[j+1]));
+			b = this.tc.f(this.l.f(c[j+2]));
+			c[ j ] = (this.m2[0]*r)+(this.m2[1]*g)+(this.m2[2]*b);
+			c[j+1] = (this.m2[3]*r)+(this.m2[4]*g)+(this.m2[5]*b);
+			c[j+2] = (this.m2[6]*r)+(this.m2[7]*g)+(this.m2[8]*b);
+			r = this.l.r(this.tc.r(c[ j ]));
+			g = this.l.r(this.tc.r(c[j+1]));
+			b = this.l.r(this.tc.r(c[j+2]));
+			c[ j ] = (this.m1[0]*r)+(this.m1[1]*g)+(this.m1[2]*b);
+			c[j+1] = (this.m1[3]*r)+(this.m1[4]*g)+(this.m1[5]*b);
+			c[j+2] = (this.m1[6]*r)+(this.m1[7]*g)+(this.m1[8]*b);
+		}
+	}
+};
+CSToneCurve.prototype.lf = function(buff) {
+	var c = new Float64Array(buff);
+	var max = c.length;
+	var r,g,b;
+	if (this.o) {
+		for (var j=0; j<max; j+= 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = this.tc.f(this.l.f((this.m1[0]*r)+(this.m1[1]*g)+(this.m1[2]*b)));
+			c[j+1] = this.tc.f(this.l.f((this.m1[3]*r)+(this.m1[4]*g)+(this.m1[5]*b)));
+			c[j+2] = this.tc.f(this.l.f((this.m1[6]*r)+(this.m1[7]*g)+(this.m1[8]*b)));
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = this.l.r(this.tc.r((this.m2[0]*r)+(this.m2[1]*g)+(this.m2[2]*b)));
+			c[j+1] = this.l.r(this.tc.r((this.m2[3]*r)+(this.m2[4]*g)+(this.m2[5]*b)));
+			c[j+2] = this.l.r(this.tc.r((this.m2[6]*r)+(this.m2[7]*g)+(this.m2[8]*b)));
+		}
+	} else {
+		for (var j=0; j<max; j+= 3) {
+			r = this.tc.f(this.l.f(c[ j ]));
+			g = this.tc.f(this.l.f(c[j+1]));
+			b = this.tc.f(this.l.f(c[j+2]));
+			c[ j ] = (this.m2[0]*r)+(this.m2[1]*g)+(this.m2[2]*b);
+			c[j+1] = (this.m2[3]*r)+(this.m2[4]*g)+(this.m2[5]*b);
+			c[j+2] = (this.m2[6]*r)+(this.m2[7]*g)+(this.m2[8]*b);
+			r = this.l.r(this.tc.r(c[ j ]));
+			g = this.l.r(this.tc.r(c[j+1]));
+			b = this.l.r(this.tc.r(c[j+2]));
+			c[ j ] = (this.m1[0]*r)+(this.m1[1]*g)+(this.m1[2]*b);
+			c[j+1] = (this.m1[3]*r)+(this.m1[4]*g)+(this.m1[5]*b);
+			c[j+2] = (this.m1[6]*r)+(this.m1[7]*g)+(this.m1[8]*b);
+		}
 	}
 };
 function CSLUT(name,params) {

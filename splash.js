@@ -9,8 +9,8 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-lutInputs.addInput('version','v2.3.4');
-lutInputs.addInput('date','November 2015');
+lutInputs.addInput('version','v2.3.6');
+lutInputs.addInput('date','February 2016');
 var splash = document.getElementById('javascriptwarning');
 splash.removeChild(splash.firstChild);
 splash.className = 'splash';
