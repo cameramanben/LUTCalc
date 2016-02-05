@@ -2433,9 +2433,9 @@ LUTGammaLA.prototype.setLUT = function(lut) {
 		title: lut.title,
 		format: lut.format,
 		dims: lut.dims,
-		s: lut.s,
-		min: [lut.min[0],lut.min[1],lut.min[2]],
-		max: [lut.max[0],lut.max[1],lut.max[2]],
+		s: lut.sr,
+		min: [lut.minR[0],lut.minR[1],lut.minR[2]],
+		max: [lut.maxR[0],lut.maxR[1],lut.maxR[2]],
 		rgbl: lut.rgbl,
 		C: lut.R
 	});

@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v2.3.6
+------
+* Feature Change - Improved / more robust gamma reversal code for LUTAnalyst.
+* New Feature - Provisional SmallHD preset based on SmallHD feedback - pending confirmation.
+
 v2.3.5
 ------
 * New Feature - Hybrid-log gamma.
