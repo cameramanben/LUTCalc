@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v2.3.7
+------
+* Bugfix - typo meant that SPI3D files were generated without the mesh sizes.
+
 v2.3.6
 ------
 * Feature Change - Improved / more robust gamma reversal code for LUTAnalyst.
