@@ -38,10 +38,9 @@ spi3dLUT.prototype.build = function(buff, fileName, ext) {
 	};
 };
 spi3dLUT.prototype.header = function(info) {
-	this.messages.getInfo(info);
 	var out = 'SPILUT 1.0' + "\n";
 	out += '3 3' + "\n";
-	var lutSize = info.dimension.toString() + ' ' + info.dimension.toString() + ' ' + info.dimension.toString() + "\n";
+	out += info.dimension.toString() + ' ' + info.dimension.toString() + ' ' + info.dimension.toString() + "\n";
 	return out;
 };
 spi3dLUT.prototype.parse = function(title, text, lut) {
