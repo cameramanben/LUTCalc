@@ -1206,7 +1206,8 @@ LUTInfoBox.prototype.buildChart = function() {
 	canvas3.width = cwidth;
 	canvas3.height = cheight;
 	dX = (w - x0)*876/1023;
-	var xMin = x0 + (64*876/1023);
+//	var xMin = x0 + (64*876/1023);
+	var xMin = x0 + (dX*64/876);
 	ctx3.fillStyle = 'black';
 	ctx3.font = point + 'pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	ctx3.textBaseline = 'middle';
@@ -1499,6 +1500,7 @@ LUTInfoBox.prototype.updateStopChart = function() { // Stop Against IRE
 };
 LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	var xMin = this.lutChart.x0 + (64*876/1023);
+	var dX = this.lutChart.dX*1023/876;
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
 	this.lutChart.out.font = '28pt "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 	this.lutChart.out.textBaseline = 'middle';
@@ -1511,7 +1513,8 @@ LUTInfoBox.prototype.updateLutChart = function() { // Gamma In Against Gamma Out
 	this.lutChart.out.moveTo(this.lutChart.x0,this.lutChart.y0 - (this.lutOut[0] * this.lutChart.dY));
 	var max = this.lutIn.length;
 	for (var i=1; i<max; i++) {
-		this.lutChart.out.lineTo( this.lutChart.x0 + ((this.lutIn[i]*this.lutChart.dX)*1023/876),this.lutChart.y0 - (this.lutOut[i] * this.lutChart.dY));
+//		this.lutChart.out.lineTo( xMin + (((this.lutIn[i]*1023)-64)/876)*this.lutChart.dX,this.lutChart.y0 - (this.lutOut[i] * this.lutChart.dY));
+		this.lutChart.out.lineTo( this.lutChart.x0 + (this.lutIn[i]*dX),this.lutChart.y0 - (this.lutOut[i] * this.lutChart.dY));
 	}
 	this.lutChart.out.stroke();
 	this.lutChart.out.clearRect(0, 0, this.lutChart.width, this.lutChart.yMax);

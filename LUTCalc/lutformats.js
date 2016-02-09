@@ -310,6 +310,19 @@ LUTFormats.prototype.mlutsList = function() {
 		bClip: 64, wClip: 1019, hard: false
 	});
 	this.mluts.push({
+		title: 'SmallHD 3D MLUT (.cube)', type: 'cube1',
+		oneD: false, threeD: true, defThree: true,
+		oneDim: [], threeDim: [17],
+		defDim: 17,
+		someGammas: false,
+		legIn: false, datIn: true, defLegIn: false,
+		legOut: false, datOut: true, defLegOut: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 64, wClip: 1019, hard: true
+	});
+	this.mluts.push({
 		title: 'Zacuto Gratical 1D MLUT (.cube)', type: 'cube1',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [1024], threeDim: [],

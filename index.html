@@ -55,6 +55,16 @@
      			<!-- LUTCalc NEWS -->
     			<div id="news" class="main-section">
     				<h1 class="section-title">News</h1>
+    				<p><strong>LUTCalc v2.3.7 Update</strong> - 9th February 2016 - Hypergammas, Hybrid-log, reverse Rec709(800%) and bugfixes.</p>
+    				<p>For this one I've worked my way through all of Sony's Hypergamma curves, revisiting 7 and 8 and adding 1 through 6. As I have been told that CineGamma1 is another name for HG4, and CineGamma2 is HG2, I've added those as well!</p>
+    				<p>Hybrid Log-Gamma is a High Dynamic Range display gamma developed by the BBC and NHK. It is an alternative to the Dolby PQ proposal. I believe that it is a development of the suggestions in the BBC white paper I used for earlier HDR display gammas</p>
+    				<p>Rec709(800%) is now available as a 'Recorded Gamma' option. This is the default CineEI 1D LUT, so whilst it is not a particularly desirable workflow, if someone has a log workflow but at some point accidentally bakes-in Rec709(800%), this should make it possible to return to a decent approximation of log in order to drop in with the normal rushes.</p>
+    				<p>There are small bugfixes to the look of the chart plotting and I've fixed a tiny but critical bug in the code for building SPI3D format files.</p>
+    				<p>Lastly, I have added a provisional monitor LUT preset for SmallHD, based on information from the manufacturer. I haven't been able to directly confirm it yet, so please do feed back if you give it a go.</p>
+    				<p>The <strong><a href="LUTCalc/index.html" target="_blank">Online</a></strong> and <strong><a href="https://chrome.google.com/webstore/detail/lutcalc/klmbnjilonndlfjiopbjemeokkodmagm" target="_blank">Chrome App</a></strong>  and <strong><a href="macappstore://itunes.apple.com/app/lutcalc/id1000409621?mt=12">Mac OSX</a></strong> versions are all available now.</p>
+    				<p>As ever, if you find something up with the new version, get in touch at <a href="mailto:contact@lutcalc.net">contact@lutcalc.net</a> and set me straight. ;-)</p>
+    				<p>Ben</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
     				<p><strong>LUTCalc v2.3.4 Update</strong> - 24th November 2015 - More gammas, gamuts, presets and bugfixes.</p>
     				<p>I've been looking into the range and clip settings which will work correctly on various bits of hardware and software, including FCPX LUT Utility, Scopebox and the AJA LUT-box. I've also added a 'generic' camera, for cameras which are not currently listed, plus a number of new gamma and gamut options.</p>
     				<p>On that note, the lists of options were getting rather long and unreadable, so I have now organised them into subcategories, plus an 'All' option which shows, well, all of them!</p>

@@ -27,10 +27,10 @@ LUTCameraBox.prototype.io = function() {
 	this.cameras = [];
 	this.cameraList();
 	this.current = 0;
-	this.inputs.addInput('bclip',this.cameras[this.current].bclip);
-	this.inputs.addInput('wclip',this.cameras[this.current].wclip);
 	this.cameraSelect = document.createElement('select');
 	this.cameraOptions();
+	this.inputs.addInput('bclip',this.cameras[this.current].bclip);
+	this.inputs.addInput('wclip',this.cameras[this.current].wclip);
 	this.cameraSelect.options[this.current].selected = true;
 	this.inputs.addInput('camera',this.cameraSelect);
 	this.cameraType = document.createElement('input');
