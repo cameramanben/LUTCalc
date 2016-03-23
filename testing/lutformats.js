@@ -98,7 +98,7 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'General cube LUT (.cube)', type: 'cube1',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [17,33,65],
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 33,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
@@ -111,7 +111,7 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'DaVinci Resolve (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [17,33,65],
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
@@ -124,7 +124,7 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'Lumetri / Speedgrade (.cube)', type: 'cube3',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [16,32,64],
+		oneDim: [1024,4096,16384], threeDim: [16,32,64],
 		defDim: 65,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
@@ -153,7 +153,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 4096,
 		someGammas: [
-			'Linear / Rec709',
+			'Linear / Basic Gamma',
 			'PQ (90% Ref=300nits)','PQ (90% Ref=500nits)','PQ (90% Ref=800nits)','PQ (90% Ref=1000nits)','PQ (90% Ref=2000nits)','PQ (90% Ref=4000nits)',
 			'ITU Proposal (400%)','ITU Proposal (800%)',
 			'BBC WHP283 (400%)','BBC WHP283 (800%)'
@@ -449,7 +449,12 @@ LUTFormats.prototype.oneOrThree = function() {
 				}
 			}
 		} else {
-			this.inputs.dimension[cur.oneDim.length-1].checked = true;
+			var oneM = cur.oneDim.length;
+			if (oneM > 2) {
+				this.inputs.dimension[1].checked = true;
+			} else {
+				this.inputs.dimension[cur.oneDim.length-1].checked = true;
+			}
 		}
 	} else {
 		this.inputs.oneDBox.className = 'graybox-hide';
@@ -458,14 +463,14 @@ LUTFormats.prototype.oneOrThree = function() {
 			var max = cur.threeDim.length;
 			for (var j=0; j<max; j++) {
 				if (cur.threeDim[j] === cur.defDim) {
-					this.inputs.dimension[j+2].checked = true;
+					this.inputs.dimension[j+3].checked = true;
 				}
 			}
 		} else {
 			if (cur.threeDim.length > 1) {
-					this.inputs.dimension[3].checked = true;
+					this.inputs.dimension[4].checked = true;
 			} else {
-					this.inputs.dimension[2].checked = true;
+					this.inputs.dimension[3].checked = true;
 			}
 		}
 	}
@@ -495,7 +500,7 @@ LUTFormats.prototype.updateOptions = function() {
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
-	// Special settings fo particular formats
+	// Special settings for particular formats
 	if (cur.type === 'ncp') {
 		this.inputs.nikonBox.className = 'emptybox';
 	} else {
@@ -562,6 +567,8 @@ LUTFormats.prototype.updateOptions = function() {
 		this.inputs.dimensionLabel[0].className = 'lut-opt-hide';
 		this.inputs.dimension[1].className = 'lut-opt-hide';	
 		this.inputs.dimensionLabel[1].className = 'lut-opt-hide';
+		this.inputs.dimension[2].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
 		if (cur.oneDim.length > 0) {
 			dim = cur.oneDim[0].toString();
 			this.inputs.dimension[0].value = dim;
@@ -573,7 +580,7 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[0].className = 'lut-opt';
 			this.inputs.dimensionLabel[0].className = 'lut-opt';
 		}
-		if (cur.oneDim.length === 2) {
+		if (cur.oneDim.length > 1) {
 			dim = cur.oneDim[1].toString();
 			this.inputs.dimension[1].value = dim;
 			if (cur.defDim === cur.oneDim[1]) {
@@ -584,31 +591,31 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[1].className = 'lut-opt';
 			this.inputs.dimensionLabel[1].className = 'lut-opt';
 		}
+		if (cur.oneDim.length === 3) {
+			dim = cur.oneDim[2].toString();
+			this.inputs.dimension[2].value = dim;
+			if (cur.defDim === cur.oneDim[2]) {
+				this.inputs.dimension[2].checked = true;
+			}
+			this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
+			this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim));
+			this.inputs.dimension[2].className = 'lut-opt';
+			this.inputs.dimensionLabel[2].className = 'lut-opt';
+		}
 	}
 	// 3D size options
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		var dim;
-		this.inputs.dimension[2].className = 'lut-opt-hide';
-		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
-		this.inputs.dimension[3].className = 'lut-opt-hide';	
-		this.inputs.dimensionLabel[3].className = 'lut-opt-hide';	
+		this.inputs.dimension[3].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[3].className = 'lut-opt-hide';
 		this.inputs.dimension[4].className = 'lut-opt-hide';	
-		this.inputs.dimensionLabel[4].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[4].className = 'lut-opt-hide';	
+		this.inputs.dimension[5].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[5].className = 'lut-opt-hide';
 		if (cur.threeDim.length > 0) {
 			dim = cur.threeDim[0].toString();
-			this.inputs.dimension[2].value = dim;
-			if (cur.defDim === cur.threeDim[0]) {
-				this.inputs.dimension[2].checked = true;
-			}
-			this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
-			this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
-			this.inputs.dimension[2].className = 'lut-opt';
-			this.inputs.dimensionLabel[2].className = 'lut-opt';
-		}
-		if (cur.threeDim.length > 1) {
-			dim = cur.threeDim[1].toString();
 			this.inputs.dimension[3].value = dim;
-			if (cur.defDim === cur.threeDim[1]) {
+			if (cur.defDim === cur.threeDim[0]) {
 				this.inputs.dimension[3].checked = true;
 			}
 			this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
@@ -616,16 +623,27 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[3].className = 'lut-opt';
 			this.inputs.dimensionLabel[3].className = 'lut-opt';
 		}
-		if (cur.threeDim.length === 3) {
-			dim = cur.threeDim[2].toString();
+		if (cur.threeDim.length > 1) {
+			dim = cur.threeDim[1].toString();
 			this.inputs.dimension[4].value = dim;
-			if (cur.defDim === cur.threeDim[2]) {
+			if (cur.defDim === cur.threeDim[1]) {
 				this.inputs.dimension[4].checked = true;
 			}
 			this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
 			this.inputs.dimensionLabel[4].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
 			this.inputs.dimension[4].className = 'lut-opt';
 			this.inputs.dimensionLabel[4].className = 'lut-opt';
+		}
+		if (cur.threeDim.length === 3) {
+			dim = cur.threeDim[2].toString();
+			this.inputs.dimension[5].value = dim;
+			if (cur.defDim === cur.threeDim[2]) {
+				this.inputs.dimension[5].checked = true;
+			}
+			this.inputs.dimensionLabel[5].removeChild(this.inputs.dimensionLabel[5].firstChild);
+			this.inputs.dimensionLabel[5].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
+			this.inputs.dimension[5].className = 'lut-opt';
+			this.inputs.dimensionLabel[5].className = 'lut-opt';
 		}
 	}
 	// Input range
@@ -653,7 +671,7 @@ LUTFormats.prototype.updateOptions = function() {
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
+	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
 		if (this.inputs.inRange[1].checked && cur.datOut) {
 			this.inputs.outRange[1].checked = true;
 		} else if (cur.legOut) {
@@ -719,7 +737,7 @@ LUTFormats.prototype.updateGammaOut = function() {
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
+	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
 		if (this.inputs.inRange[1].checked && cur.datOut) {
 			this.inputs.outRange[1].checked = true;
 		} else if (cur.legOut) {
@@ -744,23 +762,28 @@ LUTFormats.prototype.resetOptions = function() {
 	this.inputs.dimensionLabel[1].removeChild(this.inputs.dimensionLabel[1].firstChild);
 	this.inputs.dimensionLabel[1].appendChild(document.createTextNode('4096'));
 	this.inputs.dimensionLabel[1].className = 'lut-opt';
-	// 3D size options
-	this.inputs.dimension[2].value = '17';
+	this.inputs.dimension[2].value = '16384';
 	this.inputs.dimension[2].className = 'lut-opt';
 	this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
-	this.inputs.dimensionLabel[2].appendChild(document.createTextNode('17x17x17'));
+	this.inputs.dimensionLabel[2].appendChild(document.createTextNode('16384'));
 	this.inputs.dimensionLabel[2].className = 'lut-opt';
-	this.inputs.dimension[3].value = '33';
-	this.inputs.dimension[3].checked = true;
+	// 3D size options
+	this.inputs.dimension[3].value = '17';
 	this.inputs.dimension[3].className = 'lut-opt';
 	this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
-	this.inputs.dimensionLabel[3].appendChild(document.createTextNode('33x33x33'));
+	this.inputs.dimensionLabel[3].appendChild(document.createTextNode('17x17x17'));
 	this.inputs.dimensionLabel[3].className = 'lut-opt';
-	this.inputs.dimension[4].value = '65';
+	this.inputs.dimension[4].value = '33';
+	this.inputs.dimension[4].checked = true;
 	this.inputs.dimension[4].className = 'lut-opt';
 	this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
-	this.inputs.dimensionLabel[4].appendChild(document.createTextNode('65x65x65'));
+	this.inputs.dimensionLabel[4].appendChild(document.createTextNode('33x33x33'));
 	this.inputs.dimensionLabel[4].className = 'lut-opt';
+	this.inputs.dimension[5].value = '65';
+	this.inputs.dimension[5].className = 'lut-opt';
+	this.inputs.dimensionLabel[5].removeChild(this.inputs.dimensionLabel[5].firstChild);
+	this.inputs.dimensionLabel[5].appendChild(document.createTextNode('65x65x65'));
+	this.inputs.dimensionLabel[5].className = 'lut-opt';
 	// Input Range
 	this.inputs.inRange[0].disabled = false;
 	this.inputs.inRange[1].disabled = false;
@@ -772,7 +795,7 @@ LUTFormats.prototype.resetOptions = function() {
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
+	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
 		this.inputs.outRange[1].checked = true;
 	} else {
 		this.inputs.outRange[0].checked = true;

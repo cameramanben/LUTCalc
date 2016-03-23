@@ -658,3 +658,9 @@ LUTMessage.prototype.setSettings = function() {
 LUTMessage.prototype.checkFormat = function() {
 	this.ui[11].updateGammaOut();
 };
+LUTMessage.prototype.isCustomGamma = function() {
+	return this.ui[3].isCustomGamma();
+};
+LUTMessage.prototype.isCustomGamut = function() {
+	return this.ui[3].isCustomGamut();
+};

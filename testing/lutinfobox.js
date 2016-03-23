@@ -33,6 +33,14 @@ LUTInfoBox.prototype.io = function() {
 	this.gammaChartBut = document.createElement('input');
 	this.gammaChartBut.setAttribute('type','button');
 	this.gammaChartBut.value = 'Charts';
+	this.gammaPrintBut = document.createElement('input');
+	this.gammaPrintBut.setAttribute('type','button');
+	this.gammaPrintBut.value = 'Print Chart';
+	this.printBox = document.getElementById('printable');
+	this.printTitle = document.createElement('h1');
+	this.printBox.appendChild(this.printTitle);
+	this.printDetails = document.createElement('p');
+	this.printBox.appendChild(this.printDetails);
 };
 LUTInfoBox.prototype.ui = function() {
 	this.instructionsBox = document.createElement('div');
@@ -47,9 +55,12 @@ LUTInfoBox.prototype.ui = function() {
 	this.box.appendChild(this.instructionsBut);
 	this.box.appendChild(this.gammaInfoBut);
 	this.box.appendChild(this.gammaChartBut);
+	this.box.appendChild(this.gammaPrintBut);
 	this.box.appendChild(this.instructionsBox);
 	this.box.appendChild(this.gammaInfoBox);
 	this.box.appendChild(this.gammaChartBox);
+	this.printChartBox = document.createElement('div');
+	this.printBox.appendChild(this.printChartBox);
 };
 LUTInfoBox.prototype.events = function() {
 	this.insMainCam.onclick = function(here){ return function(){ here.showCamInfo(); };}(this);
@@ -106,6 +117,9 @@ LUTInfoBox.prototype.events = function() {
 	};}(this);
 	this.gammaChartBut.onclick = function(here){ return function(){
 		here.gammaChartOpt();
+	};}(this);
+	this.gammaPrintBut.onclick = function(here){ return function(){
+		here.gammaPrint();
 	};}(this);
 };
 // Construct the UI Box
@@ -1010,6 +1024,7 @@ LUTInfoBox.prototype.gammaChart = function() {
 	this.gammaChartBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT In/LUT Out')));
 	this.gammaChartBox.appendChild(document.createElement('br'));
 	this.buildChart();
+	// Tables for chart display
 	this.gammaChartBox.appendChild(document.createTextNode('Output gamma including any customisations:'));
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
@@ -1024,6 +1039,55 @@ LUTInfoBox.prototype.gammaChart = function() {
 	curiresBody.appendChild(curvarsRow);
 	curires.appendChild(curiresBody);
 	this.gammaChartBox.appendChild(curires);
+};
+LUTInfoBox.prototype.printTables = function() {
+	var printLabel = document.createElement('p');
+	printLabel.innerHTML = 'Output gamma including any customisations:';
+	this.printBox.appendChild(printLabel);
+	var printires = document.createElement('table');
+	var printiresHead = document.createElement('thead');
+	printiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1350'], 'th'));
+	printires.appendChild(printiresHead);
+	var printiresBody = document.createElement('tbody');
+	var printvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
+	this.printOutVals = printvarsRow.getElementsByTagName('td');
+	var printiresRow = this.addRow(['%IRE','-','-','-','-','-','-','-'],'td');
+	this.printOutIREs = printiresRow.getElementsByTagName('td');
+	printiresBody.appendChild(printiresRow);
+	printiresBody.appendChild(printvarsRow);
+	printires.appendChild(printiresBody);
+	this.printBox.appendChild(printires);
+	this.printBox.appendChild(document.createElement('br'));
+	var printstopsNeg = document.createElement('table');
+	var printstopsNegHead = document.createElement('thead');
+	printstopsNegHead.appendChild(this.addRow(['Stop','-8','-7','-6','-5','-4','-3','-2','-1','0'], 'th'));
+	printstopsNeg.appendChild(printstopsNegHead);
+	var printstopsNegBody = document.createElement('tbody');
+	var printvarsNegRow = this.addRow(['10-bit','-','-','-','-','-','-','-','-','-'],'td');
+	this.printstopsNegVals = printvarsNegRow.getElementsByTagName('td');
+	var printiresNegRow = this.addRow(['%IRE','-','-','-','-','-','-','-','-','-'],'td');
+	this.printstopsNegIREs = printiresNegRow.getElementsByTagName('td');
+	printstopsNegBody.appendChild(printiresNegRow);
+	printstopsNegBody.appendChild(printvarsNegRow);
+	printstopsNeg.appendChild(printstopsNegBody);
+	this.printBox.appendChild(printstopsNeg);
+	var printstopsPos = document.createElement('table');
+	var printstopsPosHead = document.createElement('thead');
+	printstopsPosHead.appendChild(this.addRow(['Stop','0','1','2','3','4','5','6','7','8'], 'th'));
+	printstopsPos.appendChild(printstopsPosHead);
+	var printstopsPosBody = document.createElement('tbody');
+	var printvarsPosRow = this.addRow(['10-bit','-','-','-','-','-','-','-','-','-'],'td');
+	this.printstopsPosVals = printvarsPosRow.getElementsByTagName('td');
+	var printiresPosRow = this.addRow(['%IRE','-','-','-','-','-','-','-','-','-'],'td');
+	this.printstopsPosIREs = printiresPosRow.getElementsByTagName('td');
+	printstopsPosBody.appendChild(printiresPosRow);
+	printstopsPosBody.appendChild(printvarsPosRow);
+	printstopsPos.appendChild(printstopsPosBody);
+	this.printBox.appendChild(printstopsPos);
+	this.printBox.appendChild(document.createElement('br'));
+	var lutLabel = document.createElement('p');
+	lutLabel.innerHTML = 'LUT In vs LUT out:';
+	this.printBox.appendChild(lutLabel);
 };
 LUTInfoBox.prototype.buildChart = function() {
 	var point = '18';
@@ -1282,6 +1346,45 @@ LUTInfoBox.prototype.buildChart = function() {
 	canvas3.style.display = 'none';
 	outCanvas3.style.display = 'none';
 	rgbCanvas3.style.display = 'none';
+	// Set up printing canvas
+	this.printElements = {};
+	var printCan2 = document.createElement('canvas');
+	printCan2.id = 'printcanvas2';
+	printCan2.width = canvas2.width;
+	printCan2.height = canvas2.height;
+	printCan2.getContext('2d').drawImage(canvas2, 0, 0);
+	this.printBox.appendChild(printCan2);
+	var printRec2 = document.createElement('canvas');
+	printRec2.id = 'printrec2';
+	this.printElements.rec2 = printRec2.getContext('2d');
+	printRec2.width = canvas2.width;
+	printRec2.height = canvas2.height;
+	this.printBox.appendChild(printRec2);
+	var printOut2 = document.createElement('canvas');
+	printOut2.id = 'printout2';
+	this.printElements.out2 = printOut2.getContext('2d');
+	printOut2.width = canvas2.width;
+	printOut2.height = canvas2.height;
+	this.printBox.appendChild(printOut2);
+	var printClip2 = document.createElement('canvas');
+	printClip2.id = 'printclip2';
+	this.printElements.clip2 = printClip2.getContext('2d');
+	printClip2.width = canvas2.width;
+	printClip2.height = canvas2.height;
+	this.printBox.appendChild(printClip2);	
+	this.printTables();
+	var printCan3 = document.createElement('canvas');
+	printCan3.id = 'printcanvas3';
+	printCan3.width = canvas3.width;
+	printCan3.height = canvas3.height;
+	printCan3.getContext('2d').drawImage(canvas3, 0, 0);
+	this.printBox.appendChild(printCan3);
+	var printOut3 = document.createElement('canvas');
+	printOut3.id = 'printout3';
+	this.printElements.out3 = printOut3.getContext('2d');
+	printOut3.width = canvas3.width;
+	printOut3.height = canvas3.height;
+	this.printBox.appendChild(printOut3);
 	// Draw The Lines
 //	this.updateGamma();
 };
@@ -1328,16 +1431,83 @@ LUTInfoBox.prototype.instructionsOpt = function() {
 	this.instructionsBox.style.display = 'block';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'none';
+	this.gammaPrintBut.style.display = 'none';
 };
 LUTInfoBox.prototype.gammaInfoOpt = function() {
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'block';
 	this.gammaChartBox.style.display = 'none';
+	this.gammaPrintBut.style.display = 'none';
 };
 LUTInfoBox.prototype.gammaChartOpt = function() {
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'none';
 	this.gammaChartBox.style.display = 'block';
+	if (this.chartType[1].checked || this.chartType[2].checked) {
+		this.gammaPrintBut.style.display = 'inline';
+	} else {
+		this.gammaPrintBut.style.display = 'none';
+	}
+};
+LUTInfoBox.prototype.gammaPrint = function() {
+	var custom = this.messages.isCustomGamma();
+	var title = this.inputs.name.value;
+	var gamma;
+	if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value !== '9999') {
+		gamma = this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue;
+	} else {
+		gamma = this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].lastChild.nodeValue;
+	}
+	if (title === 'Custom LUT') {
+		if (custom) {
+			title = 'Customised ' + gamma;
+		} else {
+			title = gamma;
+		}
+	} else if (custom) {
+		title += ' based on ' + gamma;
+	}
+	this.printTitle.innerHTML = title;
+	this.printDetails.innerHTML = 'Made with LUTCalc ' + this.inputs.version;
+	this.printElements.rec2.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.printElements.out2.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.printElements.clip2.clearRect(0, 0, this.stopChart.width, this.stopChart.height);
+	this.printElements.rec2.drawImage(document.getElementById('reccanvas2'), 0, 0);
+	this.printElements.out2.drawImage(document.getElementById('outcanvas2'), 0, 0);
+	this.printElements.clip2.drawImage(document.getElementById('clipcanvas2'), 0, 0);
+	this.printElements.out3.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
+	this.printElements.out3.drawImage(document.getElementById('outcanvas3'), 0, 0);
+	window.print();
+};
+LUTInfoBox.prototype.updatePrintTables = function() {
+	for (var j=0; j<7; j++) {
+		if (this.tableIREVals[j] < -0.07305936073059) {
+			this.tableIREVals[j] = -0.07305936073059;
+		}
+		this.printOutIREs[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
+		this.printOutVals[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
+		if (parseInt(this.printOutVals[j+1].innerHTML) > 1023) {
+			this.printOutVals[j+1].innerHTML = '-';
+			this.printOutIREs[j+1].innerHTML = '-';
+		}
+	}
+	for (var j=0; j<9; j++) {
+		if (this.stopVals[j] < -0.07305936073059) {
+			this.stopVals[j] = -0.07305936073059;
+		}
+		this.printstopsNegIREs[j+1].innerHTML = Math.round(this.stopVals[j]*100).toString();
+		this.printstopsNegVals[j+1].innerHTML = Math.round((this.stopVals[j]*876)+64).toString();
+		this.printstopsPosIREs[j+1].innerHTML = Math.round(this.stopVals[j+8]*100).toString();
+		this.printstopsPosVals[j+1].innerHTML = Math.round((this.stopVals[j+8]*876)+64).toString();
+		if (parseInt(this.printstopsNegVals[j+1].innerHTML) > 1023) {
+			this.printstopsNegVals[j+1].innerHTML = '-';
+			this.printstopsNegIREs[j+1].innerHTML = '-';
+		}
+		if (parseInt(this.printstopsPosVals[j+1].innerHTML) > 1023) {
+			this.printstopsPosVals[j+1].innerHTML = '-';
+			this.printstopsPosIREs[j+1].innerHTML = '-';
+		}
+	}
 };
 LUTInfoBox.prototype.updateTables = function() {
 	for (var j=0; j<7; j++) {
@@ -1369,6 +1539,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
 		document.getElementById('rgbcanvas3').style.display = 'none';
+		this.gammaPrintBut.style.display = 'none';
 	} else if (this.chartType[1].checked) {
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
@@ -1381,6 +1552,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('chartcanvas3').style.display = 'none';
 		document.getElementById('outcanvas3').style.display = 'none';
 		document.getElementById('rgbcanvas3').style.display = 'none';
+		this.gammaPrintBut.style.display = 'inline';
 	} else{
 		document.getElementById('chartcanvas1').style.display = 'none';
 		document.getElementById('reccanvas1').style.display = 'none';
@@ -1393,6 +1565,7 @@ LUTInfoBox.prototype.changeChart = function() {
 		document.getElementById('chartcanvas3').style.display = 'block';
 		document.getElementById('outcanvas3').style.display = 'block';
 		document.getElementById('rgbcanvas3').style.display = 'block';
+		this.gammaPrintBut.style.display = 'inline';
 	}
 };
 LUTInfoBox.prototype.gotIOGammaNames = function(d) {
@@ -1579,6 +1752,7 @@ LUTInfoBox.prototype.gotChartVals = function(d) {
 	this.refOut = new Float64Array(d.refOut);
 	this.stopX = new Float64Array(d.stopX);
 	this.stopIn = new Float64Array(d.stopIn);
+	this.stopVals = new Float64Array(d.stopVals);
 	this.stopOut = new Float64Array(d.stopOut);
 	this.lutIn = new Float64Array(d.lutIn);
 	this.lutOut = new Float64Array(d.lutOut);
@@ -1587,4 +1761,5 @@ LUTInfoBox.prototype.gotChartVals = function(d) {
 	this.updateStopChart();
 	this.updateLutChart();
 	this.updateTables();
+	this.updatePrintTables();
 };

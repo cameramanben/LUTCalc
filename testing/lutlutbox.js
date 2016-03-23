@@ -46,6 +46,10 @@ LUTLutBox.prototype.io = function() {
 	this.lutOne[1].value = '4096';
 	this.lutOneLabel[1] = document.createElement('label');
 	this.lutOneLabel[1].appendChild(document.createTextNode('4096'));
+	this.lutOne[2] = this.createRadioElement('dimension', false);
+	this.lutOne[2].value = '16384';
+	this.lutOneLabel[2] = document.createElement('label');
+	this.lutOneLabel[2].appendChild(document.createTextNode('16384'));
 	this.lutThree = [];
 	this.lutThreeLabel = [];
 	this.lutThree[0] = this.createRadioElement('dimension', false);
@@ -61,8 +65,8 @@ LUTLutBox.prototype.io = function() {
 	this.lutThree[2].value = '65';
 	this.lutThreeLabel[2] = document.createElement('label');
 	this.lutThreeLabel[2].appendChild(document.createTextNode('65x65x65'));
-	this.inputs.addInput('dimension',[this.lutOne[0],this.lutOne[1],this.lutThree[0],this.lutThree[1],this.lutThree[2]]);	
-	this.inputs.addInput('dimensionLabel',[this.lutOneLabel[0],this.lutOneLabel[1],this.lutThreeLabel[0],this.lutThreeLabel[1],this.lutThreeLabel[2]]);	
+	this.inputs.addInput('dimension',[this.lutOne[0],this.lutOne[1],this.lutOne[2],this.lutThree[0],this.lutThree[1],this.lutThree[2]]);	
+	this.inputs.addInput('dimensionLabel',[this.lutOneLabel[0],this.lutOneLabel[1],this.lutOneLabel[2],this.lutThreeLabel[0],this.lutThreeLabel[1],this.lutThreeLabel[2]]);	
 	this.lutInLegal = this.createRadioElement('inrange', false);
 	this.lutInData = this.createRadioElement('inrange', true);
 	this.inputs.addInput('inRange',[this.lutInLegal,this.lutInData]);	
@@ -137,6 +141,8 @@ LUTLutBox.prototype.ui = function() {
 	this.oneD.appendChild(this.lutOneLabel[0]);
 	this.oneD.appendChild(this.lutOne[1]);
 	this.oneD.appendChild(this.lutOneLabel[1]);
+	this.oneD.appendChild(this.lutOne[2]);
+	this.oneD.appendChild(this.lutOneLabel[2]);
 	this.box.appendChild(this.oneD);
 	// 3D size options
 	this.threeD.setAttribute('class','graybox');

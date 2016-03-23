@@ -263,6 +263,12 @@ TWKLA.prototype.setSettings = function(settings) {
 };
 TWKLA.prototype.getInfo = function(info) {
 };
+TWKLA.prototype.isCustomGamma = function() {
+	return false;
+};
+TWKLA.prototype.isCustomGamut = function() {
+	return false;
+};
 TWKLA.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
