@@ -499,8 +499,8 @@ background:transparent;
 #printrec2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 2;}
 #printout2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 3;}
 #printclip2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 1;}
-#printcanvas3 {display:block;width:25em;height:13em; z-index: 1;}
-#printout3 {display:block;margin-top:-13em;width:25em;height:13em;z-index: 3;}
+#printcanvas3 {display:block;width:19em;height:10em; z-index: 1;}
+#printout3 {display:block;margin-top:-10em;width:19em;height:10em;z-index: 3;}
 
 #chartreclabel {color:red; margin-right:10px;}
 #chartoutlabel {color:blue; margin-left:10px;}
