@@ -411,6 +411,10 @@ TWKLA.prototype.doneStuff = function() {
 	this.storeButton.className = 'twk-button';
 	this.storeBinButton.className = 'twk-button';
 	this.toggleTweak();
+	this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].selected = true;
+	this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].selected = true;
+	this.messages.changeGamma();
+	this.messages.changeGamut();
 };
 TWKLA.prototype.reset = function() {
 	this.tweakCheck.checked = false;

@@ -1,6 +1,16 @@
 LUTCalc Changelog
 =================
 
+v2.4
+------
+* New Feature - LUTAnalyst automatically sets output gamma and gamut to the analysed LUT.
+* New Feature - Alexa Classic 709 (Alexa-X-2) gamma and gamut.
+* New Feature - Amira Rec709 gamma.
+* Feature Change - Improved LogC calculations from Arri's ACES IDTs.
+* Feature Change - Improved luminance coefficient calculation from colourspace primaries.
+* Feature Change - Improved flexibility in preset range settings for particular curve / format combinations.
+* Bugfix - xy/uv gamut outlines were failing for LUTAnalyst colourspaces.
+
 v2.3.8
 ------
 * New Feature - Print out the Stop vs IRE chart, plus exposure table and IRE / 10-bit values for each stop from -8 to +8.

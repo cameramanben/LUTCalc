@@ -103,6 +103,21 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: '1D List (.cube)', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [64,128,256], threeDim: [],
+		defDim: 64,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -116,6 +131,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -129,6 +145,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -142,6 +159,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -161,6 +179,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammasSub: 'All',
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -174,6 +193,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -187,6 +207,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -200,6 +221,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -213,6 +235,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -226,6 +249,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -239,6 +263,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -252,6 +277,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -265,6 +291,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -278,6 +305,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -304,6 +332,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammasSub: 'Sony',
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: 1,
@@ -317,6 +346,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -330,6 +360,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -343,6 +374,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -356,6 +388,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -369,6 +402,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -382,6 +416,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -396,6 +431,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammasSub: 'Nikon',
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -650,35 +686,16 @@ LUTFormats.prototype.updateOptions = function() {
 	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.inRange[0].disabled = !cur.legIn;
 		this.inputs.inRange[1].disabled = !cur.datIn;
-		if (cur.defLegIn) {
-			this.inputs.inRange[0].checked = true;
-		} else {
-			this.inputs.inRange[1].checked = true;
-		}
+		this.updateGammaIn();
 	}
 	// Output range
 	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.outRange[0].disabled = !cur.legOut;
 		this.inputs.outRange[1].disabled = !cur.datOut;
-		if (cur.defLegOut) {
-			this.inputs.outRange[0].checked = true;
-		} else {
-			this.inputs.outRange[1].checked = true;
-		}
+		this.updateGammaOut();
+	} else {
+		this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	}
-	// Check if input and output range can match for log or null output
-	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
-	if (curOut === 9999) {
-		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
-	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
-		if (this.inputs.inRange[1].checked && cur.datOut) {
-			this.inputs.outRange[1].checked = true;
-		} else if (cur.legOut) {
-			this.inputs.outRange[0].checked = true;
-		}
-	}
-	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	// Custom input scaling
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.scaling) {
@@ -717,6 +734,34 @@ LUTFormats.prototype.updateOptions = function() {
 	// Line up current and changed indeces
 	this.curIdx = idx;
 };
+LUTFormats.prototype.updateGammaIn = function() {
+	var cur,idx;
+	if (this.inputs.lutUsage[0].checked) {
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
+		cur = this.grades[idx];
+	} else {
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
+		cur = this.mluts[idx];
+	}
+	var curIn = parseInt(this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value);
+	if (curIn === 9999) {
+		curIn = parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].value);
+	}
+	var gamDat = this.inputs.gammaDataLevel[curIn];
+	if (!cur.defLegDat) {
+		if (gamDat && cur.datIn) {
+			this.inputs.inRange[1].checked = true;
+		} else if (!gamDat && cur.legIn) {
+			this.inputs.inRange[0].checked = true;
+		}
+	} else {
+		if (cur.defLegIn) {
+			this.inputs.inRange[0].checked = true;
+		} else {
+			this.inputs.inRange[1].checked = true;
+		}
+	}
+};
 LUTFormats.prototype.updateGammaOut = function() {
 	var cur,idx;
 	if (this.inputs.lutUsage[0].checked) {
@@ -726,22 +771,22 @@ LUTFormats.prototype.updateGammaOut = function() {
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
-	// Output range
-	if (cur.defLegOut) {
-		this.inputs.outRange[0].checked = true;
-	} else {
-		this.inputs.outRange[1].checked = true;
-	}
-	// Check if input and output range can match for log or null output
 	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
-		if (this.inputs.inRange[1].checked && cur.datOut) {
+	var gamDat = this.inputs.gammaDataLevel[curOut];
+	if (!cur.defLegDat) {
+		if (gamDat && cur.datOut) {
 			this.inputs.outRange[1].checked = true;
-		} else if (cur.legOut) {
+		} else if (!gamDat && cur.legOut) {
 			this.inputs.outRange[0].checked = true;
+		}
+	} else {
+		if (cur.defLegOut) {
+			this.inputs.outRange[0].checked = true;
+		} else {
+			this.inputs.outRange[1].checked = true;
 		}
 	}
 	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
