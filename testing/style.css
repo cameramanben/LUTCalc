@@ -499,8 +499,8 @@ background:transparent;
 #printrec2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 2;}
 #printout2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 3;}
 #printclip2 {display:block;margin-top:-30em;width:56em;height:30em;z-index: 1;}
-#printcanvas3 {display:block;width:37em;height:20em; z-index: 1;}
-#printout3 {display:block;margin-top:-20em;width:37em;height:20em;z-index: 3;}
+#printcanvas3 {display:block;width:25em;height:13em; z-index: 1;}
+#printout3 {display:block;margin-top:-13em;width:25em;height:13em;z-index: 3;}
 
 #chartreclabel {color:red; margin-right:10px;}
 #chartoutlabel {color:blue; margin-left:10px;}
@@ -524,7 +524,7 @@ background:transparent;
 .plusminus {display:inline-block;width:1.5em;}
 /* Preview canvases */
 #can-preview {margin:0px auto;cursor: crosshair; z-index: 1;}
-#can-overlay {margin:0px auto;margin-top: -18.25em; width 32em; height:18em; z-index: 2;}
+#can-overlay {margin:0px auto;margin-top: -18.25em; width: 32em; height:18em; z-index: 2;}
 #can-hide {display:none;}
 #can-waveform {margin:0px auto;}
 #can-vector {margin:0px auto;}
