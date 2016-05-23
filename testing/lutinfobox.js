@@ -1477,7 +1477,11 @@ LUTInfoBox.prototype.gammaPrint = function() {
 	this.printElements.clip2.drawImage(document.getElementById('clipcanvas2'), 0, 0);
 	this.printElements.out3.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
 	this.printElements.out3.drawImage(document.getElementById('outcanvas3'), 0, 0);
-	window.print();
+	if (this.inputs.isApp) {
+		window.lutCalcApp.printCharts();
+	} else {
+		window.print();
+	}
 };
 LUTInfoBox.prototype.updatePrintTables = function() {
 	for (var j=0; j<7; j++) {
