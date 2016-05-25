@@ -258,6 +258,18 @@ TWKBlkHi.prototype.getInfo = function(info) {
 		info.blackLevel = this.blackDefault;
 	}
 };
+TWKBlkHi.prototype.isCustomGamma = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
+TWKBlkHi.prototype.isCustomGamut = function() {
+	return false;
+};
 TWKBlkHi.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

@@ -608,6 +608,24 @@ TWKPSSTCDL.prototype.getInfo = function(info) {
 		info.doPSSTCDL = false;
 	}
 };
+TWKPSSTCDL.prototype.isCustomGamma = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
+TWKPSSTCDL.prototype.isCustomGamut = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
 TWKPSSTCDL.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

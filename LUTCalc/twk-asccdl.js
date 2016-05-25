@@ -298,6 +298,24 @@ TWKASCCDL.prototype.getInfo = function(info) {
 		info.doASCCDL = false;
 	}
 };
+TWKASCCDL.prototype.isCustomGamma = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
+TWKASCCDL.prototype.isCustomGamut = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
 TWKASCCDL.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

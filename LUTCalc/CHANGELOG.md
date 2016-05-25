@@ -1,6 +1,25 @@
 LUTCalc Changelog
 =================
 
+v2.4
+------
+* New Feature - LUTAnalyst automatically sets output gamma and gamut to the analysed LUT.
+* New Feature - Alexa Classic 709 (Alexa-X-2) gamma and gamut.
+* New Feature - Amira Rec709 gamma.
+* Feature Change - Improved LogC calculations from Arri's ACES IDTs.
+* Feature Change - Improved luminance coefficient calculation from colourspace primaries.
+* Feature Change - Improved flexibility in preset range settings for particular curve / format combinations.
+* Bugfix - xy/uv gamut outlines were failing for LUTAnalyst colourspaces.
+
+v2.3.8
+------
+* New Feature - Print out the Stop vs IRE chart, plus exposure table and IRE / 10-bit values for each stop from -8 to +8.
+* New Feature - ProPhoto / ROMM RGB colourspace and gamma.
+* New Feature - Experimentally-derived DJI D-Log gamma for Zenmuse X3 / Osmo.
+* Feature Change - added 14-bit (16384 point) output option to 1D cube files.
+* Feature Change - Linear and conventional gamma options are now listed under 'Linear / γ' rather than 'Linear / Rec709' to avoid confusion.
+* Feature Change / Provisional Bugfix - changed the way that Dolby PQ is scaled due to user feedback.
+
 v2.3.7
 ------
 * Bugfix - typo meant that SPI3D files were generated without the mesh sizes.

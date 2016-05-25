@@ -91,3 +91,30 @@ text-shadow:
 	background-color: #202090;
     z-index:1000;
 }
+/* Printing options
+-------------------------------------------------------------------------------*/
+#printable { display: none; }
+@media print {
+	h1 {
+		font-size: 2em;
+		font-weight:bold;
+	}
+	p {
+		font-size:1.2em;
+	}
+	table {
+		font-size: 1.2em;
+		border:0.05em solid #d0d0d0;
+	}
+	canvas {margin:0px auto;}
+	td {min-width: 3em;}
+	#printable {
+		display: block;
+		text-align:center;
+		margin: 0px auto;
+		line-height: 1.8em;
+	}
+	#titlebar { display: none; }	
+	#main { display: none; }
+	#footer { display: none; }
+}

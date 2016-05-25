@@ -191,3 +191,23 @@ LUTTweaksBox.prototype.setMaxHeight = function(height) {
 	}
 	this.holder.style.maxHeight = height.toString() + 'px';
 };
+LUTTweaksBox.prototype.isCustomGamma = function() {
+	var custom = false;
+	var m = this.tweaksList.length;
+	for (var j=0; j<m; j++) {
+		if (this.tweaksList[j].isCustomGamma()) {
+			custom = true;
+		}
+	}
+	return custom;
+};
+LUTTweaksBox.prototype.isCustomGamut = function() {
+	var custom = false;
+	var m = this.tweaksList.length;
+	for (var j=0; j<m; j++) {
+		if (this.tweaksList[j].isCustomGamut()) {
+			custom = true;
+		}
+	}
+	return custom;
+};

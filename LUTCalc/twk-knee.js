@@ -256,6 +256,18 @@ TWKKnee.prototype.getInfo = function(info) {
 		info.doKnee = false;
 	}
 };
+TWKKnee.prototype.isCustomGamma = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
+TWKKnee.prototype.isCustomGamut = function() {
+	return false;
+};
 TWKKnee.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

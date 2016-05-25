@@ -98,11 +98,26 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'General cube LUT (.cube)', type: 'cube1',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [17,33,65],
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 33,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: '1D List (.cube)', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [64,128,256], threeDim: [],
+		defDim: 64,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -111,11 +126,12 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'DaVinci Resolve (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [17,33,65],
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -124,11 +140,12 @@ LUTFormats.prototype.gradesList = function() {
 	this.grades.push({
 		title: 'Lumetri / Speedgrade (.cube)', type: 'cube3',
 		oneD: true, threeD: true, defThree: true,
-		oneDim: [1024,4096], threeDim: [16,32,64],
+		oneDim: [1024,4096,16384], threeDim: [16,32,64],
 		defDim: 65,
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -142,6 +159,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -153,7 +171,7 @@ LUTFormats.prototype.gradesList = function() {
 		oneDim: [1024,4096], threeDim: [17,33,65],
 		defDim: 4096,
 		someGammas: [
-			'Linear / Rec709',
+			'Linear / Basic Gamma',
 			'PQ (90% Ref=300nits)','PQ (90% Ref=500nits)','PQ (90% Ref=800nits)','PQ (90% Ref=1000nits)','PQ (90% Ref=2000nits)','PQ (90% Ref=4000nits)',
 			'ITU Proposal (400%)','ITU Proposal (800%)',
 			'BBC WHP283 (400%)','BBC WHP283 (800%)'
@@ -161,6 +179,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammasSub: 'All',
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -174,6 +193,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -187,6 +207,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: true,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -200,6 +221,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -213,6 +235,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -226,6 +249,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -239,6 +263,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -252,6 +277,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -265,6 +291,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -278,6 +305,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: false,
 		scaling: false,
 		setBits: true, inBits: 10, outBits: 12,
 		resSDI: false,
@@ -304,6 +332,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammasSub: 'Sony',
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: 1,
@@ -317,6 +346,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -330,6 +360,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -343,6 +374,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -356,6 +388,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -369,6 +402,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -382,6 +416,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -396,6 +431,7 @@ LUTFormats.prototype.mlutsList = function() {
 		someGammasSub: 'Nikon',
 		legIn: true, datIn: false, defLegIn: true,
 		legOut: true, datOut: false, defLegOut: true,
+		defLegDat: true,
 		scaling: false,
 		setBits: false,
 		resSDI: false,
@@ -449,7 +485,12 @@ LUTFormats.prototype.oneOrThree = function() {
 				}
 			}
 		} else {
-			this.inputs.dimension[cur.oneDim.length-1].checked = true;
+			var oneM = cur.oneDim.length;
+			if (oneM > 2) {
+				this.inputs.dimension[1].checked = true;
+			} else {
+				this.inputs.dimension[cur.oneDim.length-1].checked = true;
+			}
 		}
 	} else {
 		this.inputs.oneDBox.className = 'graybox-hide';
@@ -458,14 +499,14 @@ LUTFormats.prototype.oneOrThree = function() {
 			var max = cur.threeDim.length;
 			for (var j=0; j<max; j++) {
 				if (cur.threeDim[j] === cur.defDim) {
-					this.inputs.dimension[j+2].checked = true;
+					this.inputs.dimension[j+3].checked = true;
 				}
 			}
 		} else {
 			if (cur.threeDim.length > 1) {
-					this.inputs.dimension[3].checked = true;
+					this.inputs.dimension[4].checked = true;
 			} else {
-					this.inputs.dimension[2].checked = true;
+					this.inputs.dimension[3].checked = true;
 			}
 		}
 	}
@@ -495,7 +536,7 @@ LUTFormats.prototype.updateOptions = function() {
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
-	// Special settings fo particular formats
+	// Special settings for particular formats
 	if (cur.type === 'ncp') {
 		this.inputs.nikonBox.className = 'emptybox';
 	} else {
@@ -562,6 +603,8 @@ LUTFormats.prototype.updateOptions = function() {
 		this.inputs.dimensionLabel[0].className = 'lut-opt-hide';
 		this.inputs.dimension[1].className = 'lut-opt-hide';	
 		this.inputs.dimensionLabel[1].className = 'lut-opt-hide';
+		this.inputs.dimension[2].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
 		if (cur.oneDim.length > 0) {
 			dim = cur.oneDim[0].toString();
 			this.inputs.dimension[0].value = dim;
@@ -573,7 +616,7 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[0].className = 'lut-opt';
 			this.inputs.dimensionLabel[0].className = 'lut-opt';
 		}
-		if (cur.oneDim.length === 2) {
+		if (cur.oneDim.length > 1) {
 			dim = cur.oneDim[1].toString();
 			this.inputs.dimension[1].value = dim;
 			if (cur.defDim === cur.oneDim[1]) {
@@ -584,31 +627,31 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[1].className = 'lut-opt';
 			this.inputs.dimensionLabel[1].className = 'lut-opt';
 		}
+		if (cur.oneDim.length === 3) {
+			dim = cur.oneDim[2].toString();
+			this.inputs.dimension[2].value = dim;
+			if (cur.defDim === cur.oneDim[2]) {
+				this.inputs.dimension[2].checked = true;
+			}
+			this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
+			this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim));
+			this.inputs.dimension[2].className = 'lut-opt';
+			this.inputs.dimensionLabel[2].className = 'lut-opt';
+		}
 	}
 	// 3D size options
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		var dim;
-		this.inputs.dimension[2].className = 'lut-opt-hide';
-		this.inputs.dimensionLabel[2].className = 'lut-opt-hide';
-		this.inputs.dimension[3].className = 'lut-opt-hide';	
-		this.inputs.dimensionLabel[3].className = 'lut-opt-hide';	
+		this.inputs.dimension[3].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[3].className = 'lut-opt-hide';
 		this.inputs.dimension[4].className = 'lut-opt-hide';	
-		this.inputs.dimensionLabel[4].className = 'lut-opt-hide';
+		this.inputs.dimensionLabel[4].className = 'lut-opt-hide';	
+		this.inputs.dimension[5].className = 'lut-opt-hide';	
+		this.inputs.dimensionLabel[5].className = 'lut-opt-hide';
 		if (cur.threeDim.length > 0) {
 			dim = cur.threeDim[0].toString();
-			this.inputs.dimension[2].value = dim;
-			if (cur.defDim === cur.threeDim[0]) {
-				this.inputs.dimension[2].checked = true;
-			}
-			this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
-			this.inputs.dimensionLabel[2].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
-			this.inputs.dimension[2].className = 'lut-opt';
-			this.inputs.dimensionLabel[2].className = 'lut-opt';
-		}
-		if (cur.threeDim.length > 1) {
-			dim = cur.threeDim[1].toString();
 			this.inputs.dimension[3].value = dim;
-			if (cur.defDim === cur.threeDim[1]) {
+			if (cur.defDim === cur.threeDim[0]) {
 				this.inputs.dimension[3].checked = true;
 			}
 			this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
@@ -616,10 +659,10 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[3].className = 'lut-opt';
 			this.inputs.dimensionLabel[3].className = 'lut-opt';
 		}
-		if (cur.threeDim.length === 3) {
-			dim = cur.threeDim[2].toString();
+		if (cur.threeDim.length > 1) {
+			dim = cur.threeDim[1].toString();
 			this.inputs.dimension[4].value = dim;
-			if (cur.defDim === cur.threeDim[2]) {
+			if (cur.defDim === cur.threeDim[1]) {
 				this.inputs.dimension[4].checked = true;
 			}
 			this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
@@ -627,40 +670,32 @@ LUTFormats.prototype.updateOptions = function() {
 			this.inputs.dimension[4].className = 'lut-opt';
 			this.inputs.dimensionLabel[4].className = 'lut-opt';
 		}
+		if (cur.threeDim.length === 3) {
+			dim = cur.threeDim[2].toString();
+			this.inputs.dimension[5].value = dim;
+			if (cur.defDim === cur.threeDim[2]) {
+				this.inputs.dimension[5].checked = true;
+			}
+			this.inputs.dimensionLabel[5].removeChild(this.inputs.dimensionLabel[5].firstChild);
+			this.inputs.dimensionLabel[5].appendChild(document.createTextNode(dim + 'x' + dim + 'x' + dim));
+			this.inputs.dimension[5].className = 'lut-opt';
+			this.inputs.dimensionLabel[5].className = 'lut-opt';
+		}
 	}
 	// Input range
 	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.inRange[0].disabled = !cur.legIn;
 		this.inputs.inRange[1].disabled = !cur.datIn;
-		if (cur.defLegIn) {
-			this.inputs.inRange[0].checked = true;
-		} else {
-			this.inputs.inRange[1].checked = true;
-		}
+		this.updateGammaIn();
 	}
 	// Output range
 	if (idx !== curIdx || changedType || parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value) !== this.lastGamma) { // Set to default only if the LUT format has changed
 		this.inputs.outRange[0].disabled = !cur.legOut;
 		this.inputs.outRange[1].disabled = !cur.datOut;
-		if (cur.defLegOut) {
-			this.inputs.outRange[0].checked = true;
-		} else {
-			this.inputs.outRange[1].checked = true;
-		}
+		this.updateGammaOut();
+	} else {
+		this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	}
-	// Check if input and output range can match for log or null output
-	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
-	if (curOut === 9999) {
-		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
-	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
-		if (this.inputs.inRange[1].checked && cur.datOut) {
-			this.inputs.outRange[1].checked = true;
-		} else if (cur.legOut) {
-			this.inputs.outRange[0].checked = true;
-		}
-	}
-	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	// Custom input scaling
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.scaling) {
@@ -699,6 +734,34 @@ LUTFormats.prototype.updateOptions = function() {
 	// Line up current and changed indeces
 	this.curIdx = idx;
 };
+LUTFormats.prototype.updateGammaIn = function() {
+	var cur,idx;
+	if (this.inputs.lutUsage[0].checked) {
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
+		cur = this.grades[idx];
+	} else {
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
+		cur = this.mluts[idx];
+	}
+	var curIn = parseInt(this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value);
+	if (curIn === 9999) {
+		curIn = parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].value);
+	}
+	var gamDat = this.inputs.gammaDataLevel[curIn];
+	if (!cur.defLegDat) {
+		if (gamDat && cur.datIn) {
+			this.inputs.inRange[1].checked = true;
+		} else if (!gamDat && cur.legIn) {
+			this.inputs.inRange[0].checked = true;
+		}
+	} else {
+		if (cur.defLegIn) {
+			this.inputs.inRange[0].checked = true;
+		} else {
+			this.inputs.inRange[1].checked = true;
+		}
+	}
+};
 LUTFormats.prototype.updateGammaOut = function() {
 	var cur,idx;
 	if (this.inputs.lutUsage[0].checked) {
@@ -708,22 +771,22 @@ LUTFormats.prototype.updateGammaOut = function() {
 		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
 		cur = this.mluts[idx];
 	}
-	// Output range
-	if (cur.defLegOut) {
-		this.inputs.outRange[0].checked = true;
-	} else {
-		this.inputs.outRange[1].checked = true;
-	}
-	// Check if input and output range can match for log or null output
 	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
-		if (this.inputs.inRange[1].checked && cur.datOut) {
+	var gamDat = this.inputs.gammaDataLevel[curOut];
+	if (!cur.defLegDat) {
+		if (gamDat && cur.datOut) {
 			this.inputs.outRange[1].checked = true;
-		} else if (cur.legOut) {
+		} else if (!gamDat && cur.legOut) {
 			this.inputs.outRange[0].checked = true;
+		}
+	} else {
+		if (cur.defLegOut) {
+			this.inputs.outRange[0].checked = true;
+		} else {
+			this.inputs.outRange[1].checked = true;
 		}
 	}
 	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
@@ -744,23 +807,28 @@ LUTFormats.prototype.resetOptions = function() {
 	this.inputs.dimensionLabel[1].removeChild(this.inputs.dimensionLabel[1].firstChild);
 	this.inputs.dimensionLabel[1].appendChild(document.createTextNode('4096'));
 	this.inputs.dimensionLabel[1].className = 'lut-opt';
-	// 3D size options
-	this.inputs.dimension[2].value = '17';
+	this.inputs.dimension[2].value = '16384';
 	this.inputs.dimension[2].className = 'lut-opt';
 	this.inputs.dimensionLabel[2].removeChild(this.inputs.dimensionLabel[2].firstChild);
-	this.inputs.dimensionLabel[2].appendChild(document.createTextNode('17x17x17'));
+	this.inputs.dimensionLabel[2].appendChild(document.createTextNode('16384'));
 	this.inputs.dimensionLabel[2].className = 'lut-opt';
-	this.inputs.dimension[3].value = '33';
-	this.inputs.dimension[3].checked = true;
+	// 3D size options
+	this.inputs.dimension[3].value = '17';
 	this.inputs.dimension[3].className = 'lut-opt';
 	this.inputs.dimensionLabel[3].removeChild(this.inputs.dimensionLabel[3].firstChild);
-	this.inputs.dimensionLabel[3].appendChild(document.createTextNode('33x33x33'));
+	this.inputs.dimensionLabel[3].appendChild(document.createTextNode('17x17x17'));
 	this.inputs.dimensionLabel[3].className = 'lut-opt';
-	this.inputs.dimension[4].value = '65';
+	this.inputs.dimension[4].value = '33';
+	this.inputs.dimension[4].checked = true;
 	this.inputs.dimension[4].className = 'lut-opt';
 	this.inputs.dimensionLabel[4].removeChild(this.inputs.dimensionLabel[4].firstChild);
-	this.inputs.dimensionLabel[4].appendChild(document.createTextNode('65x65x65'));
+	this.inputs.dimensionLabel[4].appendChild(document.createTextNode('33x33x33'));
 	this.inputs.dimensionLabel[4].className = 'lut-opt';
+	this.inputs.dimension[5].value = '65';
+	this.inputs.dimension[5].className = 'lut-opt';
+	this.inputs.dimensionLabel[5].removeChild(this.inputs.dimensionLabel[5].firstChild);
+	this.inputs.dimensionLabel[5].appendChild(document.createTextNode('65x65x65'));
+	this.inputs.dimensionLabel[5].className = 'lut-opt';
 	// Input Range
 	this.inputs.inRange[0].disabled = false;
 	this.inputs.inRange[1].disabled = false;
@@ -772,7 +840,7 @@ LUTFormats.prototype.resetOptions = function() {
 	if (curOut === 9999) {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
-	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3) {
+	if (this.inputs.gammaCatList[curOut] === 0 || this.inputs.gammaCatList[curOut] === 3 || this.inputs.gammaCatList[curOut] === 7) {
 		this.inputs.outRange[1].checked = true;
 	} else {
 		this.inputs.outRange[0].checked = true;
