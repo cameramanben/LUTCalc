@@ -21,6 +21,7 @@ Supported browsers
 | Firefox < 20   | data: URI     | No           | n/a           | [Blob.js](https://github.com/eligrey/Blob.js) |
 | Chrome         | Blob          | Yes          | [500 MiB][3]  | None         |
 | Chrome for Android | Blob      | Yes          | [500 MiB][3]  | None         |
+| Edge           | Blob          | Yes          | ?             | None         |
 | IE 10+         | Blob          | Yes          | 600 MiB       | None         |
 | Opera 15+      | Blob          | Yes          | 500 MiB       | None         |
 | Opera < 15     | data: URI     | No           | n/a           | [Blob.js](https://github.com/eligrey/Blob.js) |
@@ -53,8 +54,10 @@ Syntax
 ------
 
 ```js
-FileSaver saveAs(in Blob data, in DOMString filename)
+FileSaver saveAs(Blob data, DOMString filename, optional Boolean disableAutoBOM)
 ```
+
+Pass `true` for `disableAutoBOM` if you don't want FileSaver.js to automatically provide Unicode text encoding hints (see: [byte order mark](https://en.wikipedia.org/wiki/Byte_order_mark)).
 
 Examples
 --------
@@ -87,7 +90,7 @@ Note: The standard HTML5 `canvas.toBlob()` method is not available in all browse
 
   [1]: http://eligrey.com/demos/FileSaver.js/
   [2]: https://github.com/eligrey/canvas-toBlob.js
-  [3]: https://code.google.com/p/chromium/codesearch#chromium/src/storage/browser/blob/blob_storage_context.cc&type=cs&sq=package:chromium&l=37&rcl=1418672972
+  [3]: https://code.google.com/p/chromium/issues/detail?id=375297
   [4]: https://developer.mozilla.org/en-US/docs/DOM/Blob
   [5]: https://github.com/eligrey/Blob.js
   [6]: https://github.com/eligrey/canvas-toBlob.js
@@ -98,7 +101,12 @@ Contributing
 The `FileSaver.js` distribution file is compiled with Uglify.js like so:
 
 ```bash
-uglifyjs FileSaver.js --comments /@source/ > FileSaver.min.js
+uglifyjs FileSaver.js --mangle --comments /@source/ > FileSaver.min.js
 ```
 
 Please make sure you build a production version before submitting a pull request.
+
+Bower Installation
+------------------
+
+Please see the [this repo](http://github.com/Teleborder/FileSaver.js) for a bower-compatible fork of FileSaver.js, available under the package name `file-saver.js`.

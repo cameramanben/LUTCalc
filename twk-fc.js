@@ -250,6 +250,18 @@ TWKFC.prototype.getInfo = function(info) {
 		info.doFC = false;
 	}
 };
+TWKFC.prototype.isCustomGamma = function() {
+	return false;
+};
+TWKFC.prototype.isCustomGamut = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
 TWKFC.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

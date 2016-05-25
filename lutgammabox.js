@@ -450,6 +450,7 @@ LUTGammaBox.prototype.changeGammaIn = function() {
 		this.inLin.style.display = 'none';
 		this.inPQ.style.display = 'none';
 	}
+	this.messages.updateGammaIn();
 };
 LUTGammaBox.prototype.changeGammaOut = function() {
 	if (this.outGammaSelect.options[this.outGammaSelect.options.selectedIndex].value == '9999') {
@@ -462,7 +463,7 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 		this.outLin.style.display = 'none';
 		this.outPQ.style.display = 'none';
 	}
-	this.messages.checkFormat();
+	this.messages.updateGammaOut();
 };
 LUTGammaBox.prototype.clearSelect = function(sel) {
 	var m = sel.options.length;

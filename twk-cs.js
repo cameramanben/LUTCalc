@@ -435,6 +435,12 @@ TWKCS.prototype.setSettings = function(settings) {
 };
 TWKCS.prototype.getInfo = function(info) {
 };
+TWKCS.prototype.isCustomGamma = function() {
+	return false;
+};
+TWKCS.prototype.isCustomGamut = function() {
+	return false;
+};
 TWKCS.prototype.events = function() {
 	this.gamList.onchange = function(here){ return function(){
 		here.changeCS();

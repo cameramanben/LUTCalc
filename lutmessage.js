@@ -291,6 +291,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaLinList',d.linList);
 	this.inputs.addInput('gammaCatList',d.catList);
 	this.inputs.addInput('gammaSubNames',d.subNames);
+	this.inputs.addInput('gammaDataLevel',d.gammaDat);
 	var subLists = [];
 	var m = d.subNames.length;
 	var allIdx = m-1;
@@ -469,14 +470,14 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.ui[d.p].gotColSqr(d.o,d.tIdx);
 					break;
 			case 29: // Get Multi Colours
-					this.gaTx(d.p,17,{ o: d.o, hs: d.hs, to:['o','hs']});
+					this.gaTx(d.p,17,{ o: d.o, hs: d.hs, cb:d.cb, to:['o','hs']});
 					break;
 			case 30: //
 					this.gotIOGamutNames(d);
 					break;
 			case 31: // Get LUT In / LUT Out values for primaries
 					if (typeof d.rIn !== 'undefined') {
-						this.gaTx(d.p,18,{ rIn:d.rIn, gIn:d.gIn, bIn:d.bIn, rOut:d.rOut, gOut:d.gOut, bOut:d.bOut, to:['rIn', 'gIn', 'bIn','rOut','gOut','bOut']});
+						this.gaTx(d.p,18,{ rIn:d.rIn, gIn:d.gIn, bIn:d.bIn, rOut:d.rOut, gOut:d.gOut, bOut:d.bOut, cb:d.cb, to:['rIn', 'gIn', 'bIn','rOut','gOut','bOut']});
 					}
 					break;
 			case 32: // Get preview colour correction
@@ -489,7 +490,7 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gaTx(d.p,15,d);
 					break;
 			case 36: // Get PSST-CDL colours
-					this.gaTx(3,16,{b:d.b,a:d.a,to:['b','a']});
+					this.gaTx(3,16,{b:d.b,a:d.a,cb:d.cb,to:['b','a']});
 					break;
 			case 37: // Get Chromatic Adaptation Transform options
 					this.ui[3].gotCATs(d.o);
@@ -608,6 +609,16 @@ LUTMessage.prototype.changeGamma = function() {
 		this.gaSetParams();
 	}
 };
+LUTMessage.prototype.updateGammaIn = function() {
+	if (this.go) {
+		this.ui[11].updateGammaIn();
+	}
+}
+LUTMessage.prototype.updateGammaOut = function() {
+	if (this.go) {
+		this.ui[11].updateGammaOut();
+	}
+}
 LUTMessage.prototype.changeGamut = function() {
 	if (this.go) {
 		this.ui[3].changeGamut();
@@ -657,4 +668,10 @@ LUTMessage.prototype.setSettings = function() {
 };
 LUTMessage.prototype.checkFormat = function() {
 	this.ui[11].updateGammaOut();
+};
+LUTMessage.prototype.isCustomGamma = function() {
+	return this.ui[3].isCustomGamma();
+};
+LUTMessage.prototype.isCustomGamut = function() {
+	return this.ui[3].isCustomGamut();
 };

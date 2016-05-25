@@ -95,7 +95,7 @@ LUTs.prototype.setDetails = function(d) {
 		this.maxL = 1;
 	}
 	if (typeof d.spline !== 'undefined') {
-		this.spline = new Float64Array(d.spline);
+		this.spline = new LUTSpline(d.spline);
 		this.spln = true;
 	}
 	if (d.C.length === 3) {
@@ -109,7 +109,7 @@ LUTs.prototype.setDetails = function(d) {
 	}
 };
 LUTs.prototype.setSpline = function(buff) {
-	this.spline = new Float64Array(buff);
+	this.spline = new LUTSpline(buff);
 	this.spln = true;
 };
 LUTs.prototype.reset = function() {
@@ -150,15 +150,15 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 				Y = (parseFloat(j)*(this.maxL-this.minL))+this.minL;
 				rgbL[0] = (Y-this.min[0])/(this.max[0]-this.min[0]);
 				if (this.spln) {
-					rgbL[0] = this.fs(rgbL[0]);
+					rgbL[0] = this.spline.f(rgbL[0]);
 				}
 				rgbL[1] = (Y-this.min[1])/(this.max[1]-this.min[1]);
 				if (this.spln) {
-					rgbL[1] = this.fs(rgbL[1]);
+					rgbL[1] = this.spline.f(rgbL[1]);
 				}
 				rgbL[2] = (Y-this.min[2])/(this.max[2]-this.min[2]);
 				if (this.spln) {
-					rgbL[2] = this.fs(rgbL[2]);
+					rgbL[2] = this.spline.f(rgbL[2]);
 				}
 				this.l3(rgbL);
 				this.L[j] = (0.2126 * rgbL[0]) + (0.7152 * rgbL[1]) + (0.0722 * rgbL[2]);
@@ -177,17 +177,17 @@ LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each cha
 				Y = (parseFloat(j)*(this.maxL-this.minL))+this.minL;
 				L = (Y-this.min[0])/(this.max[0]-this.min[0]);
 				if (this.spln) {
-					L = this.fs(L);
+					L = this.spline.f(L);
 				}
 				this.L[j] = 0.2126 * this.l(L,0);
 				L = (Y-this.min[1])/(this.max[1]-this.min[1]);
 				if (this.spln) {
-					L = this.fs(L);
+					L = this.spline.f(L);
 				}
 				this.L[j] += 0.7152 * this.l(L,1);
 				L = (Y-this.min[2])/(this.max[2]-this.min[2]);
 				if (this.spln) {
-					L = this.fs(L);
+					L = this.spline.f(L);
 				}
 				this.L[j] += 0.0722 * this.l(L,2);
 			}
@@ -322,12 +322,50 @@ LUTs.prototype.getRGB = function() {
 			this.C[1].buffer,
 			this.C[2].buffer];
 };
+LUTs.prototype.setDYs = function() {
+	var max = this.s - 1;
+	var sign = this.L[max] - this.L[0];
+	if (sign === 0) {
+		this.dyMin = 0.000000001;
+		this.dyMax = 0.000000001;
+	} else if (sign > 0.000000001){
+		this.dyMin = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+		if (this.dyMin < 0.000000001) {
+			this.dyMin = ((4 * this.L[2]) - (3 * this.L[0]) - this.L[4])/4;
+			if (this.dyMin < 0.000000001) {
+				this.dyMin = 0.000000001;
+			}
+		}
+		this.dyMax = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+		if (this.dyMax < 0.000000001) {
+			this.dyMax = (0.5 * this.L[max - 4]) - (2 * this.L[max - 2]) + (1.5 * this.L[max]);
+			if (this.dyMax < 0.000000001) {
+				this.dyMax = 0.000000001;
+			}
+		}
+	} else {
+		this.dyMin = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
+		if (this.dyMin > -0.000000001) {
+			this.dyMin = ((4 * this.L[2]) - (3 * this.L[0]) - this.L[4])/4;
+			if (this.dyMin > -0.000000001) {
+				this.dyMin > -0.000000001;
+			}
+		}
+		this.dyMax = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
+		if (this.dyMax > -0.000000001) {
+			this.dyMax = (0.5 * this.L[max - 4]) - (2 * this.L[max - 2]) + (1.5 * this.L[max]);
+			if (this.dyMax > -0.000000001) {
+				this.dyMax = -0.000000001;
+			}
+		}
+	}
+};
 LUTs.prototype.f = function(L) {
 	if (this.scale) {
 		L =	(L-this.minL)/(this.maxL-this.minL);
 	}
 	if (this.spln) {
-		L = this.fs(L);
+		L = this.spline.f(L);
 	}
 	var max = this.s - 1;
 	L = L * max;
@@ -360,38 +398,6 @@ LUTs.prototype.f = function(L) {
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 };
-LUTs.prototype.fs = function(L) {
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		var dy = ((4 * this.spline[1]) - (3 * this.spline[0]) - this.spline[2])/2;
-		return this.spline[0] + (L * dy);
-	} else if (L >= max) {
-		var dy = (0.5 * this.spline[max - 2]) - (2 * this.spline[max - 1]) + (1.5 * this.spline[max]);
-		return this.spline[max] + ((L - max) * dy);
-	} else {
-		var f = Math.floor(L);
-		var p0 = this.spline[f];
-		var p1 = this.spline[f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.spline[1]) - (3 * this.spline[0]) - this.spline[2])/2;
-		} else {
-			d0 = (this.spline[f + 1] - this.spline[f - 1])/2;
-		}
-		if (f === max - 1) {
-			d1 = (2 * this.spline[max - 2]) + ((this.spline[max - 1] - this.spline[max - 3])/2) - (4 * this.spline[max - 1]) + (2 * this.spline[max]);
-		} else {
-			d1 = (this.spline[f + 2] - this.spline[f])/2;
-		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
-	}
-};
 LUTs.prototype.lLCub = function(L) {
 	if (this.rgbl && this.comp) {
 		var out = this.lRCub(L);
@@ -401,7 +407,7 @@ LUTs.prototype.lLCub = function(L) {
 			L =	(L-this.minL)/(this.maxL-this.minL);
 		}
 		if (this.spln) {
-			L = this.fs(L);
+			L = this.spline.f(L);
 		}
 		var max = this.s - 1;
 		L = L * max;
@@ -445,7 +451,7 @@ LUTs.prototype.lRCub = function(Y) {
 				L =	(L-this.minL)/(this.maxL-this.minL);
 			}
 			if (this.spln) {
-				L = this.fs(L);
+				L = this.spline.f(L);
 			}
 			L *= max;
 			if (L < 0) {
@@ -487,7 +493,7 @@ LUTs.prototype.lRCub = function(Y) {
 					L =	(L-this.min[j])/(this.max[j]-this.min[j]);
 				}
 				if (this.spln) {
-					L = this.fs(L);
+					L = this.spline.f(L);
 				}
 				L *= max;
 				C = this.C[j];
@@ -532,9 +538,9 @@ LUTs.prototype.lRCub = function(Y) {
 			out[2] = (Y-this.min[2])/(this.max[2]-this.min[2]);
 		}
 		if (this.spln) {
-			out[0] = this.fs(out[0]);
-			out[1] = this.fs(out[1]);
-			out[2] = this.fs(out[2]);
+			out[0] = this.spline.f(out[0]);
+			out[1] = this.spline.f(out[1]);
+			out[2] = this.spline.f(out[2]);
 		}
 		this.l3(out);
 		return out;
@@ -557,7 +563,7 @@ LUTs.prototype.lLsCub = function(buff) {
 				o[j] = (o[j]-this.minL)/(this.maxL-this.minL);
 			}
 			if (this.spln) {
-				o[j] = this.fs(o[j]);
+				o[j] = this.spline.f(o[j]);
 			}
 			o[j] *= max;
 			if (o[j] < 0) {
@@ -607,7 +613,7 @@ LUTs.prototype.lLsLin = function(buff) {
 				o[j] = (o[j]-this.minL)/(this.maxL-this.minL);
 			}
 			if (this.spln) {
-				o[j] = this.fs(o[j]);
+				o[j] = this.spline.f(o[j]);
 			}
 			o[j] *= max;
 			if (o[j] < 0) {
@@ -644,7 +650,7 @@ LUTs.prototype.rRsCub = function(buff) {
 					Y =	(Y-this.min[k])/(this.max[k]-this.min[k]);
 				}
 				if (this.spln) {
-					Y = this.fs(Y);
+					Y = this.spline.f(Y);
 				}
 				Y *= max;
 				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
@@ -703,9 +709,9 @@ LUTs.prototype.rRsCub = function(buff) {
 				i[2] =	(i[2]-this.min[2])/(this.max[2]-this.min[2]);
 			}
 			if (this.spln) {
-				i[0] = this.fs(i[0]);
-				i[1] = this.fs(i[1]);
-				i[2] = this.fs(i[2]);
+				i[0] = this.spline.f(i[0]);
+				i[1] = this.spline.f(i[1]);
+				i[2] = this.spline.f(i[2]);
 			}
 			i[0] *= max;
 			i[1] *= max;
@@ -843,9 +849,9 @@ LUTs.prototype.rRsLin = function(buff) {
 				i[2] =	(i[2]-this.min[2])/(this.max[2]-this.min[2]);
 			}
 			if (this.spln) {
-				i[0] = this.fs(i[0]);
-				i[1] = this.fs(i[1]);
-				i[2] = this.fs(i[2]);
+				i[0] = this.spline.f(i[0]);
+				i[1] = this.spline.f(i[1]);
+				i[2] = this.spline.f(i[2]);
 			}
 			i[0] *= max;
 			i[1] *= max;
@@ -1578,19 +1584,8 @@ LUTSpline.prototype.f = function(L1) {
 	var max = this.s - 1;
 	L = L * max;
 	if (L < 0) {
-//		var dy = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
-//		if (dy<0) {
-//			dy = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
-//		}
 		return this.fs[0] + (L * this.fdyMin);
 	} else if (L >= max) {
-//		var dy = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
-//		if (dy<0) {
-//			dy = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
-//			if (dy<0) {
-//				dy = 0;
-//			}
-//		}
 		return this.fs[max] + ((L - max) * this.fdyMax);
 	} else {
 		var f = Math.floor(L);
@@ -1615,24 +1610,48 @@ LUTSpline.prototype.f = function(L1) {
 		return (((((a * L) + b) * L) + c) * L) + d;
 	}
 };
+LUTSpline.prototype.F = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var max = this.s - 1;
+	var L,f,p0,p1,d0,d1,a,b,c,d;
+	for (var j=0; j<m; j++) {
+		L = (c[j] - this.fL)/(this.fH-this.fL);
+		L = L * max;
+		if (L < 0) {
+			c[j] = this.fs[0] + (L * this.fdyMin);
+		} else if (L >= max) {
+			c[j] = this.fs[max] + ((L - max) * this.fdyMax);
+		} else {
+			f = Math.floor(L);
+			p0 = this.fs[f];
+			p1 = this.fs[f + 1];
+			if (f === 0) {
+				d0 = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
+			} else {
+				d0 = (this.fs[f + 1] - this.fs[f - 1])/2;
+			}
+			if (f === max - 1) {
+				d1 = (2 * this.fs[max - 2]) + ((this.fs[max - 1] - this.fs[max - 3])/2) - (4 * this.fs[max - 1]) + (2 * this.fs[max]);
+			} else {
+				d1 = (this.fs[f + 2] - this.fs[f])/2;
+			}
+			a = (2 * p0) + d0 - (2 * p1) + d1;
+			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+			c = d0;
+			d = p0;
+			L -= f;
+			c[j] = (((((a * L) + b) * L) + c) * L) + d;
+		}
+	}
+};
 LUTSpline.prototype.r = function(L1) {
 	var L = (L1 - this.rL)/(this.rH-this.rL);
 	var max = this.sr - 1;
 	L = L * max;
 	if (L < 0) {
-//		var dy = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-//		if (dy<0) {
-//			dy = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
-//		}
 		return this.rs[0] + (L * this.rdyMin);
 	} else if (L >= max) {
-//		var dy = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
-//		if (dy<0) {
-//			dy = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
-//			if (dy<0) {
-//				dy = 0;
-//			}
-//		}
 		return this.rs[max] + ((L - max) * this.rdyMax);
 	} else {
 		var f = Math.floor(L);
@@ -1655,6 +1674,41 @@ LUTSpline.prototype.r = function(L1) {
 		var d = p0;
 		L -= f;
 		return (((((a * L) + b) * L) + c) * L) + d;
+	}
+};
+LUTSpline.prototype.R = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var max = this.sr - 1;
+	var L,f,p0,p1,d0,d1,a,b,c,d;
+	for (var j=0; j<m; j++) {
+		L = (c[j] - this.rL)/(this.rH-this.rL);
+		L = L * max;
+		if (L < 0) {
+			c[j] = this.rs[0] + (L * this.rdyMin);
+		} else if (L >= max) {
+			c[j] = this.rs[max] + ((L - max) * this.rdyMax);
+		} else {
+			f = Math.floor(L);
+			p0 = this.rs[f];
+			p1 = this.rs[f + 1];
+			if (f === 0) {
+				d0 = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
+			} else {
+				d0 = (this.rs[f + 1] - this.rs[f - 1])/2;
+			}
+			if (f === max - 1) {
+				d1 = (2 * this.rs[max - 2]) + ((this.rs[max - 1] - this.rs[max - 3])/2) - (4 * this.rs[max - 1]) + (2 * this.rs[max]);
+			} else {
+				d1 = (this.rs[f + 2] - this.rs[f])/2;
+			}
+			a = (2 * p0) + d0 - (2 * p1) + d1;
+			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
+			c = d0;
+			d = p0;
+			L -= f;
+			c[j] = (((((a * L) + b) * L) + c) * L) + d;
+		}
 	}
 };
 LUTSpline.prototype.getReverse = function() {
