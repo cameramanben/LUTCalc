@@ -46,7 +46,7 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 			}
 		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
-		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(fileName) + '.' + extension);
+		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(fileName) + '.' + extension,true);
 		return true;
 	} else { // Fall back to opening LUT in a new tab for user to save with 'Save As...'
 		window.open("data:text/plain," + encodeURIComponent(data),"_blank");
@@ -81,7 +81,7 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 			}
 		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
-		saveAs(new Blob([data], {type: 'application/octet-stream'}), this.filename(fileName) + '.' + extension);
+		saveAs(new Blob([data], {type: 'application/octet-stream'}), this.filename(fileName) + '.' + extension,true);
 		return true;
 	} else { 
 		console.log('Browser does not support file saving.');
