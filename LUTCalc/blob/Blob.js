@@ -4,7 +4,7 @@
  *
  * By Eli Grey, http://eligrey.com
  * By Devin Samarin, https://github.com/dsamarin
- * License: X11/MIT
+ * License: MIT
  *   See https://github.com/eligrey/Blob.js/blob/master/LICENSE.md
  */
 
@@ -189,9 +189,23 @@
 		var builder = new BlobBuilder();
 		if (blobParts) {
 			for (var i = 0, len = blobParts.length; i < len; i++) {
-				builder.append(blobParts[i]);
+				if (Uint8Array && blobParts[i] instanceof Uint8Array) {
+					builder.append(blobParts[i].buffer);
+				}
+				else {
+					builder.append(blobParts[i]);
+				}
 			}
 		}
-		return builder.getBlob(type);
+		var blob = builder.getBlob(type);
+		if (!blob.slice && blob.webkitSlice) {
+			blob.slice = blob.webkitSlice;
+		}
+		return blob;
 	};
+
+	var getPrototypeOf = Object.getPrototypeOf || function(object) {
+		return object.__proto__;
+	};
+	view.Blob.prototype = getPrototypeOf(new view.Blob());
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
