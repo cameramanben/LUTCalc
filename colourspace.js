@@ -633,6 +633,9 @@ LUTColourSpace.prototype.illuminant = function(name) {
 		case 'f10':	return new Float64Array([ 0.34609, 0.35986, 0.29405 ]);
 		case 'f11':	return new Float64Array([ 0.38052, 0.37713, 0.24235 ]);
 		case 'f12':	return new Float64Array([ 0.43695, 0.40441, 0.15864 ]);
+		case 'iso7589studiotungsten':	return new Float64Array([ 0.43088, 0.40784, 0.16128 ]);
+		case 'iso7589photoflood':		return new Float64Array([ 0.41154, 0.39851, 0.18995 ]);
+		case 'iso7589daylight':			return new Float64Array([ 0.33357, 0.35368, 0.31275 ]);
 	}
 };
 LUTColourSpace.prototype.xyzMatrices = function() {

@@ -176,7 +176,26 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 };
 LUTAnalyst.prototype.updateLACS = function() {
 	this.gtT = this.messages.getGamutThreads();
-	this.messages.gtTxAll(this.p,6,this.cs.getDetails());
+	var d = this.cs.getDetails();
+	var details = {
+		title: d.title,
+		format: d.format,
+		dims: d.d,
+		s: d.s,
+		min: d.min.slice(0),
+		max: d.max.slice(0),
+		rgbl: d.rgbl
+	};
+	if (d.d === 3 || d.C.length === 3) {
+		details.C = [
+			d.C[0].slice(0),
+			d.C[1].slice(0),
+			d.C[2].slice(0)
+		];
+	} else {
+		details.C = [d.C[0].buffer.slice(0)];
+	}
+	this.messages.gtTxAll(this.p,6,details);
 };
 LUTAnalyst.prototype.getRGB = function() {
 	return this.cs.getRGB();

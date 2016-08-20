@@ -109,6 +109,7 @@ LUTFormats.prototype.gradesList = function() {
 		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
+/*
 	this.grades.push({
 		title: '1D List (.cube)', type: 'cube1',
 		oneD: true, threeD: false, defThree: false,
@@ -123,6 +124,7 @@ LUTFormats.prototype.gradesList = function() {
 		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
 	});
+*/
 	this.grades.push({
 		title: 'DaVinci Resolve (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
@@ -164,6 +166,20 @@ LUTFormats.prototype.gradesList = function() {
 		setBits: false,
 		resSDI: false,
 		bClip: 0, wClip: 67025937, hard: false
+	});
+	this.grades.push({
+		title: 'AVID (.cube)', type: 'cube1',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
+		defDim: 65,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: true,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: 0, wClip: 1023, hard: false
 	});
 	this.grades.push({
 		title: 'Display gamma correction (.cube)', type: 'cube1',
