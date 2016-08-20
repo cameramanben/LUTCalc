@@ -92,6 +92,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"PXW-FS5",iso:3200,type:2,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"a7s mkII",iso:1600,type:2,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"a7s",iso:3200,type:2,defgamma:"S-Log2",defgamut:"Sony S-Gamut",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"F65",iso:800,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3",bclip:-8,wclip:6});
@@ -103,6 +104,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C300mkII",iso:800,type:2,defgamma:"Canon C-Log2",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
+	this.cameras.push({make:"Panasonic",model:"GH4",iso:200,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-8,wclip:4});
 	this.cameras.push({make:"GoPro",model:"Hero4",iso:400,type:2,defgamma:"Protune",defgamut:"Protune Native",bclip:-9,wclip:3.3});
 	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
 };

@@ -41,6 +41,15 @@ function LUTGamma() {
 
 	this.doBlkHi = false;
 	this.doASCCDL = false;
+	this.doBlkGam = false;
+	
+	this.blkGamLStop = -1.5;
+	this.blkGamFStop = 2;
+	this.blkGamUL = 0.1;
+	this.blkGamLL = 0.09;
+	this.blkGamF = this.blkGamUL-this.blkGamLL;
+	this.blkGamP = 1;
+	this.blkGamR = 0.1
 
 	this.al = 1;
 	this.bl = 0;
@@ -1260,6 +1269,56 @@ LUTGamma.prototype.setBlkHi = function(params) {
 	out.doBlkHi = this.doBlkHi;
 	return out;
 };
+LUTGamma.prototype.setBlkGam = function(params) {
+	var out = {};
+	this.doBlkGam = false;
+	if (this.tweaks && typeof params.twkBlkGam !== 'undefined') {
+		var p = params.twkBlkGam;
+		if (typeof p.doBlkGam === 'boolean') {
+			this.doBlkGam = p.doBlkGam;	
+		}
+		if (typeof p.upperLim === 'number') {
+			this.blkGamLStop = p.upperLim;
+		}
+		if (typeof p.feather === 'number') {
+			this.blkGamFStop = p.feather;
+		}
+		if (typeof p.power === 'number') {
+			this.blkGamP = p.power;
+		}
+	}
+	var vals = new Float64Array([
+		0,
+		Math.pow(2,this.blkGamLStop)*0.2,
+		Math.pow(2,this.blkGamLStop - this.blkGamFStop)*0.2
+	]);
+	this.getLumVals(vals.buffer);
+	if (this.doBlkHi) {
+		this.blkLevel = (vals[0]*this.al)+this.bl;
+		this.blkGamUL = (vals[1]*this.al)+this.bl;
+		this.blkGamLL = (vals[2]*this.al)+this.bl;
+	} else {
+		this.blkLevel = vals[0];
+		this.blkGamUL = vals[1];
+		this.blkGamLL = vals[2];
+	}
+	this.blkGamF = this.blkGamUL - this.blkGamLL;
+/*
+	this.blkGamLL = this.blkGamUL-this.blkGamF;
+	out.doBlkGam = this.doBlkGam;
+	var blk = new Float64Array([ 0 ]);
+	this.getLumVals(blk.buffer);
+	if (this.doBlkHi) {
+		this.blkLevel = (blk[0]*this.al)+this.bl;
+
+	} else {
+		this.blkLevel = blk[0];
+	}
+*/
+	this.blkGamR = this.blkGamUL-this.blkLevel;
+	out.blkLevel = this.blkLevel;
+	return out;
+};
 // Adjustment functions
 LUTGamma.prototype.f = function(x) {
 	x = Math.pow(2,x)/5;
@@ -1390,6 +1449,27 @@ LUTGamma.prototype.blkHiOut = function(buff) {
 	var m = out.length;
 	for (var j=0; j<m; j++) {
 		out[j] = (out[j]*this.al)+this.bl;
+	}
+};
+LUTGamma.prototype.blkGamOut = function(buff) {
+	var out = new Float64Array(buff);
+	var m = out.length;
+	var r,bg;
+	for (var j=0; j<m; j++) {
+		if (out[j] > this.blkLevel && out[j] <= this.blkGamUL) {
+			if (out[j] > this.blkGamLL) {
+				bg = (Math.pow((out[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+				if (out[j] <= bg) {
+					out[j] = bg;
+				} else {
+					r = (out[j]-this.blkGamLL)/this.blkGamF;
+					r *= r;
+					out[j] = (r*out[j]) + ((1-r)*bg);
+				}
+			} else {
+				out[j] = (Math.pow((out[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+			}
+		}
 	}
 };
 LUTGamma.prototype.fcOut = function(fcBuff,outBuff) {
@@ -2865,6 +2945,7 @@ LUTGamma.prototype.setParams = function(params) {
 	out.twkASCCDL = this.setASCCDL(params);
 	out.twkKnee = this.setKnee(params);
 	out.twkBlkHi = this.setBlkHi(params);
+	out.twkBlkGam = this.setBlkGam(params);
 
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -2920,6 +3001,9 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 		}
 		if (this.doBlkHi) {
 			this.blkHiOut(buff);
+		}
+		if (this.doBlkGam) {
+			this.blkGamOut(buff);
 		}
 	}
 	this.finalOut(buff,false);
@@ -3076,6 +3160,9 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 		if (this.doBlkHi) {
 			this.blkHiOut(i.o);
 		}
+		if (this.doBlkGam) {
+			this.blkGamOut(i.o);
+		}
 		if (i.doFC) {
 			this.fcOut(i.fc,i.o);
 		}
@@ -3172,7 +3259,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	var out = {p: p, t: t+20, v: this.ver};
 	var m = 129;
 	var d = m-1;
-	var k;
+	var k,r,bg;
 	var refX = new Float64Array(m);
 	var refIn = new Float64Array(m);
 	var stopX = new Float64Array(m);
@@ -3229,6 +3316,68 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 				stopVals[j] = (stopVals[j] * this.al) + this.bl;
 			}
 		}
+		if (this.doBlkGam) {
+			for (var j=0; j<m; j++) {
+				if (refOut[j] > this.blkLevel && refOut[j] <= this.blkGamUL) {
+					if (refOut[j] > this.blkGamLL) {
+						bg = (Math.pow((refOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (refOut[j] <= bg) {
+							refOut[j] = bg;
+						} else {
+							r = (refOut[j]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							refOut[j] = (r*refOut[j]) + ((1-r)*bg);
+						}
+					} else {
+						refOut[j] = (Math.pow((refOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+				if (stopOut[j] > this.blkLevel && stopOut[j] <= this.blkGamUL) {
+					if (stopOut[j] > this.blkGamLL) {
+						bg = (Math.pow((stopOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (stopOut[j] <= bg) {
+							stopOut[j] = bg;
+						} else {
+							r = (stopOut[j]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							stopOut[j] = (r*stopOut[j]) + ((1-r)*bg);
+						}
+					} else {
+						stopOut[j] = (Math.pow((stopOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+				if (lutOut[j] > this.blkLevel && lutOut[j] <= this.blkGamUL) {
+					if (lutOut[j] > this.blkGamLL) {
+						bg = (Math.pow((lutOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (lutOut[j] <= bg) {
+							lutOut[j] = bg;
+						} else {
+							r = (lutOut[j]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							lutOut[j] = (r*lutOut[j]) + ((1-r)*bg);
+						}
+					} else {
+						lutOut[j] = (Math.pow((lutOut[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+			}
+			for (var j=0; j<17; j++) {
+				if (stopVals[j] > this.blkLevel && stopVals[j] <= this.blkGamUL) {
+					if (stopVals[j] > this.blkGamLL) {
+						bg = (Math.pow((stopVals[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (stopVals[j] <= bg) {
+							stopVals[j] = bg;
+						} else {
+							r = (stopVals[j]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							stopVals[j] = (r*stopVals[j]) + ((1-r)*bg);
+						}
+					} else {
+						stopVals[j] = (Math.pow((stopVals[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+			}
+		}
 	}
 	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,13.5]);
 	for (var j=0; j<7; j++) {
@@ -3241,6 +3390,24 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 		if (this.doBlkHi) {
 			for (var j=0; j<7; j++) {
 				table[j] = (table[j] * this.al) + this.bl;
+			}
+		}
+		if (this.doBlkGam) {
+			for (var j=0; j<7; j++) {
+				if (table[j] > this.blkLevel && table[j] <= this.blkGamUL) {
+					if (table[j] > this.blkGamLL) {
+						bg = (Math.pow((table[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (table[j] <= bg) {
+							table[j] = bg;
+						} else {
+							r = (table[j]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							table[j] = (r*table[j]) + ((1-r)*bg);
+						}
+					} else {
+						table[j] = (Math.pow((table[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
 			}
 		}
 	}
@@ -3272,6 +3439,7 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	var o = new Uint8Array(max*4);
 	var k=0;
 	var l=0;
+	var r,bg;
 	var mn = -0.073;
 	if (typeof i.cb === 'boolean' && i.cb) {
 		mn = 0;
@@ -3328,6 +3496,50 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				f[ l ] = (f[ l ] * this.al) + this.bl;
 				f[l+1] = (f[l+1] * this.al) + this.bl;
 				f[l+2] = (f[l+2] * this.al) + this.bl;
+			}
+			if (this.doBlkGam) {
+				if (f[ l ] > this.blkLevel && f[ l ] <= this.blkGamUL) {
+					if (f[ l ] > this.blkGamLL) {
+						bg = (Math.pow((f[ l ]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (f[ l ] <= bg) {
+							f[ l ] = bg;
+						} else {
+							r = (f[ l ]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							f[ l ] = (r*f[ l ]) + ((1-r)*bg);
+						}
+					} else {
+						f[ l ] = (Math.pow((f[ l ]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+				if (f[l+1] > this.blkLevel && f[l+1] <= this.blkGamUL) {
+					if (f[l+1] > this.blkGamLL) {
+						bg = (Math.pow((f[l+1]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (f[l+1] <= bg) {
+							f[l+1] = bg;
+						} else {
+							r = (f[l+1]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							f[l+1] = (r*f[l+1]) + ((1-r)*bg);
+						}
+					} else {
+						f[l+1] = (Math.pow((f[l+1]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
+				if (f[l+2] > this.blkLevel && f[l+2] <= this.blkGamUL) {
+					if (f[l+2] > this.blkGamLL) {
+						bg = (Math.pow((f[l+2]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+						if (f[l+2] <= bg) {
+							f[l+2] = bg;
+						} else {
+							r = (f[l+2]-this.blkGamLL)/this.blkGamF;
+							r *= r;
+							f[l+2] = (r*f[l+2]) + ((1-r)*bg);
+						}
+					} else {
+						f[l+2] = (Math.pow((f[l+2]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					}
+				}
 			}
 			f[ l ] = Math.min(1.095,Math.max(mn,(f[ l ])));
 			f[l+1] = Math.min(1.095,Math.max(mn,(f[l+1])));
@@ -3413,6 +3625,7 @@ LUTGamma.prototype.psstColours = function(p,t,i) {
 	var after = new Uint8Array(m);
 	this.gammas[this.curOut].linToL(i.b);
 	this.gammas[this.curOut].linToL(i.a);
+// doBlkGam
 	if (this.doBlkHi) {
 		for (var j=0; j<m; j++) {
 			before[j] = Math.min(255,Math.max(0,Math.round(((b[ j ] * this.al) + this.bl)*255)));
@@ -3443,6 +3656,9 @@ LUTGamma.prototype.multiColours = function(p,t,i) {
 		if (this.doBlkHi) {
 			this.blkHiOut(i.o);
 		}
+		if (this.doBlkGam) {
+			this.blkGamOut(i.o);
+		}
 	}
 	for (var j=0; j<m; j++) {
 		o[j] = Math.max(0,(Math.min(255,input[j]*255/1.09475)));
@@ -3463,12 +3679,58 @@ LUTGamma.prototype.chartRGB = function(p,t,i) {
 	var ra = new Float64Array(i.rOut);
 	var ga = new Float64Array(i.gOut);
 	var ba = new Float64Array(i.bOut);
-	console.log('hmmmm');
+	var r,bg;
 	if (this.doBlkHi) {
 		for (var j=0; j<m; j++) {
 			ra[j] = (ra[j] * this.al) + this.bl;
 			ga[j] = (ga[j] * this.al) + this.bl;
 			ba[j] = (ba[j] * this.al) + this.bl;
+		}
+	}
+	if (this.doBlkGam) {
+		for (var j=0; j<m; j++) {
+			if (ra[j] > this.blkLevel && ra[j] <= this.blkGamUL) {
+				if (ra[j] > this.blkGamLL) {
+					bg = (Math.pow((ra[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					if (ra[j] <= bg) {
+						ra[j] = bg;
+					} else {
+						r = (ra[j]-this.blkGamLL)/this.blkGamF;
+						r *= r;
+						ra[j] = (r*ra[j]) + ((1-r)*bg);
+					}
+				} else {
+					ra[j] = (Math.pow((ra[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+				}
+			}
+			if (ga[j] > this.blkLevel && ga[j] <= this.blkGamUL) {
+				if (ga[j] > this.blkGamLL) {
+					bg = (Math.pow((ga[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					if (ga[j] <= bg) {
+						ga[j] = bg;
+					} else {
+						r = (ga[j]-this.blkGamLL)/this.blkGamF;
+						r *= r;
+						ga[j] = (r*ga[j]) + ((1-r)*bg);
+					}
+				} else {
+					ga[j] = (Math.pow((ga[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+				}
+			}
+			if (ba[j] > this.blkLevel && ba[j] <= this.blkGamUL) {
+				if (ba[j] > this.blkGamLL) {
+					bg = (Math.pow((ba[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+					if (ba[j] <= bg) {
+						ba[j] = bg;
+					} else {
+						r = (ba[j]-this.blkGamLL)/this.blkGamF;
+						r *= r;
+						ba[j] = (r*ba[j]) + ((1-r)*bg);
+					}
+				} else {
+					ba[j] = (Math.pow((ba[j]-this.blkLevel)/this.blkGamR,this.blkGamP)*this.blkGamR)+this.blkLevel;
+				}
+			}
 		}
 	}
 	if (typeof i.cb === 'boolean' && i.cb) {
@@ -3487,6 +3749,9 @@ LUTGamma.prototype.changePQ = function(p,t,i) {
 	return out;
 };
 // Web worker messaging functions
+LUTGamma.prototype.logMsg = function(message) {
+	sendMessage({msg:true,details:message});
+};
 function sendMessage(d) {
 	if (gammas.isTrans && typeof d.to !== 'undefined') {
 		var max = d.to.length;

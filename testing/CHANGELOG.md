@@ -1,8 +1,15 @@
 LUTCalc Changelog
 =================
 
+v2.5
+----
+* New Feature - Black Gamma.
+* New Feature - Sony FS5 camera option.
+* New Feature - Panasonic GH4 V-Log camera option.
+* Bugfix - When using LUTAnalyst, the preview window was not automatically updating to reflect the analysed colour gamut.
+
 v2.4
-------
+----
 * New Feature - LUTAnalyst automatically sets output gamma and gamut to the analysed LUT.
 * New Feature - Alexa Classic 709 (Alexa-X-2) gamma and gamut.
 * New Feature - Amira Rec709 gamma.
