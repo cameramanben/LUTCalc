@@ -1,6 +1,14 @@
 LUTCalc Changelog
 =================
 
+v2.52
+-----
+* Bugfix - Fixed Canon C-Log3 bug.
+
+v2.51
+-----
+* New Feature - Canon C-Log3.
+
 v2.5
 ----
 * New Feature - Black Gamma.
