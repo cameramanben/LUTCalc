@@ -153,6 +153,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('REDColor4'));
 	this.csInSub.push([this.subIdx('RED')]);
+	this.csIn.push(this.toSys('REDWideGamutRGB'));
+	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('Protune Native'));
 	this.csInSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
 	this.rec709In = this.csIn.length;
@@ -209,6 +211,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('REDColor3'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('REDColor4'));
+	this.csOutSub.push([this.subIdx('RED')]);
+	this.csOut.push(this.fromSys('REDWideGamutRGB'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('Protune Native'));
 	this.csOutSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
@@ -688,6 +692,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
 	this.g.push(vgamut);
+// REDWideGamutRGB
+	var redWideGamutRGB = {};
+	redWideGamutRGB.name = 'REDWideGamutRGB';
+	redWideGamutRGB.cat = this.CATs.modelIdx('Bradford Chromatic Adaptation');
+	redWideGamutRGB.xy = new Float64Array([0.780308,0.304253, 0.121595,1.493994, 0.095612,-0.084589]);
+	redWideGamutRGB.white = this.illuminant('d65');
+	redWideGamutRGB.toXYZ = this.RGBtoXYZ(redWideGamutRGB.xy,redWideGamutRGB.white);
+	this.g.push(redWideGamutRGB);
 // DRAGONColor
 	var redDragonColor = {};
 	redDragonColor.name = 'DRAGONColor';

@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v2.53
+-----
+* New Feature - REDWideGamutRGB and Log3G10.
+
 v2.52
 -----
 * Bugfix - Fixed Canon C-Log3 bug.

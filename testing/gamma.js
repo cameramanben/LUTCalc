@@ -149,6 +149,10 @@ LUTGamma.prototype.gammaList = function() {
 		'REDLogFilm', {cv:1023, bp:95, wp: 685, nGamma: 0.6, cv2d:0.002}));
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gammaDat.push(true);
+	this.gammas.push(new LUTGammaLogLog(
+		'RED Log3G10', [ 0.222497,169.379333,1 ]));
+	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
+	this.gammaDat.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film', [ 0.235007442, -0.021824371, 0.367608584, 3.806255082, 10, 0.424864581, 0.123774409, 0.114884702, 0.005175 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
@@ -1962,6 +1966,78 @@ LUTGammaCLog3.prototype.linFromLegal = function(input) {
 		return (input - 0.073059361) / (2.3069815);
 	} else {
 		return (Math.pow(10,(input - 0.069886632)/0.42889912)-1) / (14.98325);
+	}
+};
+// Log and Log across threshold (RED Log3G10)
+function LUTGammaLogLog(name,params) {
+	this.name = name;
+	this.params = params;
+	this.iso = 800;
+	this.cat = 0;
+}
+LUTGammaLogLog.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaLogLog.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	this.linToL(buff);
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaLogLog.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] *= 0.9;
+		if (c[j] < 0) {
+			c[j] = -this.params[0]*Math.log((-c[j]*this.params[1])+this.params[2])/Math.LN10;
+		} else {
+			c[j] = this.params[0]*Math.log((c[j]*this.params[1])+this.params[2])/Math.LN10;
+		}
+	}
+};
+LUTGammaLogLog.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+	this.linFromL(buff);
+};
+LUTGammaLogLog.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var cross = this.params[0]*Math.log(this.params[2])/Math.LN10;
+	for (var j=0; j<m; j++) {
+		if (c[j] < cross) {
+			(Math.pow(10,-c[j]/this.params[0])-this.params[2])/(-this.params[1]*0.9);
+		} else {
+			(Math.pow(10,c[j]/this.params[0])-this.params[2])/(this.params[1]*0.9);
+		}
+	}
+};
+LUTGammaLogLog.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaLogLog.prototype.linToLegal = function(input) {
+		input *= 0.9;
+		if (input < 0) {
+			return -this.params[0]*Math.log((-input*this.params[1])+this.params[2])/Math.LN10;
+		} else {
+			return this.params[0]*Math.log((input*this.params[1])+this.params[2])/Math.LN10;
+		}
+};
+LUTGammaLogLog.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaLogLog.prototype.linFromLegal = function(input) {
+	var cross = this.params[0]*Math.log(this.params[2])/Math.LN10;
+	if (input < cross) {
+		return (Math.pow(10,-input/this.params[0])-this.params[2])/(-this.params[1]*0.9);
+	} else {
+		return (Math.pow(10,input/this.params[0])-this.params[2])/(this.params[1]*0.9);
 	}
 };
 // Conventional Gamma
