@@ -622,6 +622,7 @@ LUTMessage.prototype.updateGammaOut = function() {
 LUTMessage.prototype.changeGamut = function() {
 	if (this.go) {
 		this.ui[3].changeGamut();
+		this.gtSetParams();
 		this.ui[8].testXY();
 	}
 };

@@ -90,6 +90,8 @@ LUTInfoBox.prototype.events = function() {
 	this.custKneeBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustBgm.onclick = function(here){ return function(){ here.showCustBgmInfo(); };}(this);
+	this.custBgmBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
 	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustASC.onclick = function(here){ return function(){ here.showCustASCInfo(); };}(this);
@@ -159,6 +161,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custKnee);
 	this.createCustBhi();
 	this.instructionsBox.appendChild(this.custBhi);
+	this.createCustBgm();
+	this.instructionsBox.appendChild(this.custBgm);
 	this.createCustFC();
 	this.instructionsBox.appendChild(this.custFC);
 	this.createCustLA();
@@ -232,6 +236,10 @@ LUTInfoBox.prototype.showCustBhiInfo = function() {
 	this.hideAll();
 	this.custBhi.style.display = 'block';
 };
+LUTInfoBox.prototype.showCustBgmInfo = function() {
+	this.hideAll();
+	this.custBgm.style.display = 'block';
+};
 LUTInfoBox.prototype.showCustFCInfo = function() {
 	this.hideAll();
 	this.custFC.style.display = 'block';
@@ -258,6 +266,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custHG.style.display = 'none';
 	this.custKnee.style.display = 'none';
 	this.custBhi.style.display = 'none';
+	this.custBgm.style.display = 'none';
 	this.custFC.style.display = 'none';
 	this.custLA.style.display = 'none';
 };
@@ -438,6 +447,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustBhi.setAttribute('class','ins-cust');	
 	this.insCustBhi.setAttribute('id','ins-cust-bhi');	
 	this.custbox.appendChild(this.insCustBhi);
+	this.insCustBgm = document.createElement('div');
+	this.insCustBgm.setAttribute('class','ins-cust');	
+	this.insCustBgm.setAttribute('id','ins-cust-bgm');	
+	this.custbox.appendChild(this.insCustBgm);
 	this.insCustFC = document.createElement('div');
 	this.insCustFC.setAttribute('class','ins-cust');	
 	this.insCustFC.setAttribute('id','ins-cust-fc');	
@@ -848,6 +861,27 @@ LUTInfoBox.prototype.createCustBhi = function() {
 	this.addInfo(this.custBhiInfo,false,null,'Black and Highlight Level adjustments work together, for example to adjust the LC709 and LC709A curves from being legal range - peaking just below 100% - to extended range (Reflected 1350% maps to 108.9%) without changing the black level.');
 	this.custBhi.style.display = 'none';
 	this.custBhi.appendChild(this.custBhiInfo);
+};
+LUTInfoBox.prototype.createCustBgm = function() {
+	this.custBgm = document.createElement('div');
+	this.custBgm.setAttribute('class','instructions');
+	this.custBgm.setAttribute('id','cust-bgm');
+	this.custBgmBack = document.createElement('input');
+	this.custBgmBack.setAttribute('type','button');
+	this.custBgmBack.value = 'Back';
+	this.custBgm.appendChild(this.custBgmBack);
+	this.custBgmInfo = document.createElement('div');
+	this.custBgmInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-bgm-1');
+	this.custBgmInfo.appendChild(fig1);
+	this.addInfo(this.custBgmInfo,false,null,'Black Gamma is a tool for adjusting contrast in the shadows without altering the level of black itself.');
+	this.addInfo(this.custBgmInfo,false,'Stop Limit','This sets the maximum level at which black gamma has an effect. As with the other tools in LUTCalc, it is set based upon the real-world levels being recorded. The value is in stops, with zero being the level of an 18% gray target.');
+	this.addInfo(this.custBgmInfo,false,'Feather','This attempts to smooth the transition between the black gamma and the underlying tone curve. It sets the number of stops below the stop limit in which to transition between the two.');
+	this.addInfo(this.custBgmInfo,false,'Power','Sets the gamma or power value for the black gamma region. Values below 1 lead to reduced contrast, whilst values above 1 lead to increased contrast, emphasising shadows. A value of 1 has no effect.');
+	this.custBgm.style.display = 'none';
+	this.custBgm.appendChild(this.custBgmInfo);
 };
 LUTInfoBox.prototype.createCustFC = function() {
 	this.custFC = document.createElement('div');

@@ -153,6 +153,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('REDColor4'));
 	this.csInSub.push([this.subIdx('RED')]);
+	this.csIn.push(this.toSys('REDWideGamutRGB'));
+	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('Protune Native'));
 	this.csInSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
 	this.rec709In = this.csIn.length;
@@ -209,6 +211,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('REDColor3'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('REDColor4'));
+	this.csOutSub.push([this.subIdx('RED')]);
+	this.csOut.push(this.fromSys('REDWideGamutRGB'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('Protune Native'));
 	this.csOutSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
@@ -633,6 +637,9 @@ LUTColourSpace.prototype.illuminant = function(name) {
 		case 'f10':	return new Float64Array([ 0.34609, 0.35986, 0.29405 ]);
 		case 'f11':	return new Float64Array([ 0.38052, 0.37713, 0.24235 ]);
 		case 'f12':	return new Float64Array([ 0.43695, 0.40441, 0.15864 ]);
+		case 'iso7589studiotungsten':	return new Float64Array([ 0.43088, 0.40784, 0.16128 ]);
+		case 'iso7589photoflood':		return new Float64Array([ 0.41154, 0.39851, 0.18995 ]);
+		case 'iso7589daylight':			return new Float64Array([ 0.33357, 0.35368, 0.31275 ]);
 	}
 };
 LUTColourSpace.prototype.xyzMatrices = function() {
@@ -685,6 +692,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
 	this.g.push(vgamut);
+// REDWideGamutRGB
+	var redWideGamutRGB = {};
+	redWideGamutRGB.name = 'REDWideGamutRGB';
+	redWideGamutRGB.cat = this.CATs.modelIdx('Bradford Chromatic Adaptation');
+	redWideGamutRGB.xy = new Float64Array([0.780308,0.304253, 0.121595,1.493994, 0.095612,-0.084589]);
+	redWideGamutRGB.white = this.illuminant('d65');
+	redWideGamutRGB.toXYZ = this.RGBtoXYZ(redWideGamutRGB.xy,redWideGamutRGB.white);
+	this.g.push(redWideGamutRGB);
 // DRAGONColor
 	var redDragonColor = {};
 	redDragonColor.name = 'DRAGONColor';
