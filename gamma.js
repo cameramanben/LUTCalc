@@ -150,7 +150,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gammaDat.push(true);
 	this.gammas.push(new LUTGammaLogLog(
-		'RED Log3G10', [ 0.222497,169.379333,1 ]));
+		'RED Log3G10', [ 0.224282,155.975327,0.01 ]));
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gammaDat.push(true);
 	this.gammas.push(new LUTGammaLog(
@@ -672,6 +672,12 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gammaDat.push(false);
+
+	this.gammas.push(new LUTGammaRec2100PQ(
+		'Rec2100 PQ'));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+
 	this.gammas.push(new LUTGammaHLG(
 		'Hybrid-Log Gamma', {r: 0.5, a: 0.17883277, b: 0.28466892, c: c = 0.55991073}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
@@ -1991,10 +1997,11 @@ LUTGammaLogLog.prototype.linToL = function(buff) {
 	var m = c.length;
 	for (var j=0; j<m; j++) {
 		c[j] *= 0.9;
+		c[j] += this.params[2];
 		if (c[j] < 0) {
-			c[j] = -this.params[0]*Math.log((-c[j]*this.params[1])+this.params[2])/Math.LN10;
+			c[j] = -this.params[0]*Math.log((-c[j]*this.params[1])+1)/Math.LN10;
 		} else {
-			c[j] = this.params[0]*Math.log((c[j]*this.params[1])+this.params[2])/Math.LN10;
+			c[j] = this.params[0]*Math.log((c[j]*this.params[1])+1)/Math.LN10;
 		}
 	}
 };
@@ -2009,12 +2016,11 @@ LUTGammaLogLog.prototype.linFromD = function(buff) {
 LUTGammaLogLog.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	var cross = this.params[0]*Math.log(this.params[2])/Math.LN10;
 	for (var j=0; j<m; j++) {
-		if (c[j] < cross) {
-			(Math.pow(10,-c[j]/this.params[0])-this.params[2])/(-this.params[1]*0.9);
+		if (c[j] < 0) {
+			c[j] = (((Math.pow(10,-c[j]/this.params[0])-1)/-this.params[1])-this.params[2])/0.9;
 		} else {
-			(Math.pow(10,c[j]/this.params[0])-this.params[2])/(this.params[1]*0.9);
+			c[j] = (((Math.pow(10,c[j]/this.params[0])-1)/this.params[1])-this.params[2])/0.9;
 		}
 	}
 };
@@ -2022,22 +2028,22 @@ LUTGammaLogLog.prototype.linToData = function(input) {
 	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
 };
 LUTGammaLogLog.prototype.linToLegal = function(input) {
-		input *= 0.9;
-		if (input < 0) {
-			return -this.params[0]*Math.log((-input*this.params[1])+this.params[2])/Math.LN10;
-		} else {
-			return this.params[0]*Math.log((input*this.params[1])+this.params[2])/Math.LN10;
-		}
+	input *= 0.9;
+	input += this.params[2];
+	if (input < 0) {
+		return -this.params[0]*Math.log((-input*this.params[1])+1)/Math.LN10;
+	} else {
+		return this.params[0]*Math.log((input*this.params[1])+1)/Math.LN10;
+	}
 };
 LUTGammaLogLog.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaLogLog.prototype.linFromLegal = function(input) {
-	var cross = this.params[0]*Math.log(this.params[2])/Math.LN10;
-	if (input < cross) {
-		return (Math.pow(10,-input/this.params[0])-this.params[2])/(-this.params[1]*0.9);
+	if (input < 0) {
+		return (((Math.pow(10,-input/this.params[0])-1)/-this.params[1])-this.params[2])/0.9;
 	} else {
-		return (Math.pow(10,input/this.params[0])-this.params[2])/(this.params[1]*0.9);
+		return (((Math.pow(10,input/this.params[0])-1)/this.params[1])-this.params[2])/0.9;
 	}
 };
 // Conventional Gamma
@@ -2166,6 +2172,103 @@ LUTGammaLin.prototype.linFromData = function(input) {
 LUTGammaLin.prototype.linFromLegal = function(input) {
 	return input / this.zero;
 };
+// Rec2100 PQ
+function LUTGammaRec2100PQ(name) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 7;
+}
+LUTGammaRec2100PQ.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaRec2100PQ.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * this.zero * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaRec2100PQ.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var m1 = 2610/16384;
+	var m2 = 128*2523/4096;
+	var c2 = 32*2413/4096
+	var c3 = 32*2392/4096;
+	var c1 = c3 - c2 + 1;
+	for (var j=0; j<m; j++) {
+		c[j] *= 0.01; // scale to 0:1
+		if (c[j] > 0.0003024) {
+			c[j] = (1.099*Math.pow(59.5208*c[j],0.45))-0.099;
+		} else {
+			c[j] = 267.84*Math.max(c[j],0);
+		}
+		c[j] = Math.pow(c[j],2.4)/100;
+		c[j] = Math.pow((c1+(c2*Math.pow(c[j],m1)))/(1+(c3*Math.pow(c[j],m1))),m2)
+	}
+};
+LUTGammaRec2100PQ.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / (0.85630498533724 * this.zero);
+	}
+};
+LUTGammaRec2100PQ.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var m1 = 2610/16384;
+	var m2 = 128*2523/4096;
+	var c2 = 32*2413/4096
+	var c3 = 32*2392/4096;
+	var c1 = c3 - c2 + 1;
+	for (var j=0; j<m; j++) {
+		c[j] = Math.pow(Math.max(Math.pow(c[j],1/m2)-c1,0)/(c2-(c3*Math.pow(c[j],1/m2))),1/m1);
+		c[j] = Math.pow(c[j]*100,1/2.4);
+		if (c[j] > 0.080994816) {
+			c[j] = Math.pow((c[j] + 0.099)/1.099,1/0.45)/59.5208;
+		} else {
+			c[j] /= 267.84;
+		}
+		c[j] /= 0.01;
+	}
+};
+LUTGammaRec2100PQ.prototype.linToData = function(input) {
+	return (input * this.zero * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaRec2100PQ.prototype.linToLegal = function(input) {
+	var m1 = 2610/16384;
+	var m2 = 128*2523/4096;
+	var c2 = 32*2413/4096
+	var c3 = 32*2392/4096;
+	var c1 = c3 - c2 + 1;
+	input *= 0.01; // scale to 0:1
+	if (input > 0.0003024) {
+		input = (1.099*Math.pow(59.5208*input,0.45))-0.099;
+	} else {
+		input = 267.84*Math.max(input,0);
+	}
+	input = Math.pow(input,2.4)/100;
+	return Math.pow((c1+(c2*Math.pow(input,m1)))/(1+(c3*Math.pow(input,m1))),m2)
+};
+LUTGammaRec2100PQ.prototype.linFromData = function(input) {
+	return (input - 0.06256109481916) / (0.85630498533724 * this.zero);
+};
+LUTGammaRec2100PQ.prototype.linFromLegal = function(input) {
+	var m1 = 2610/16384;
+	var m2 = 128*2523/4096;
+	var c2 = 32*2413/4096
+	var c3 = 32*2392/4096;
+	var c1 = c3 - c2 + 1;
+	input = Math.pow(Math.max(Math.pow(input,1/m2)-c1,0)/(c2-(c3*Math.pow(input,1/m2))),1/m1);
+	input = Math.pow(input*100,1/2.4);
+	if (input > 0.080994816) {
+		input = Math.pow((input + 0.099)/1.099,1/0.45)/59.5208;
+	} else {
+		input /= 267.84;
+	}
+	return input/0.01;
+};
 // Dolby PQ
 function LUTGammaPQ(name,params) {
 	this.name = name;
@@ -2188,16 +2291,16 @@ LUTGammaPQ.prototype.changeISO = function(iso) {
 	this.L = this.Lmax;
 	this.e = this.linToData(0);
 };
-LUTGammaPQ.prototype.linToL = function(buff) {
+LUTGammaPQ.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	this.linToD(buff);
+	this.linToL(buff);
 	for (var j=0; j<m; j++) {
-		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
-//		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+//		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaPQ.prototype.linToD = function(buff) {
+LUTGammaPQ.prototype.linToL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
@@ -2210,16 +2313,16 @@ LUTGammaPQ.prototype.linToD = function(buff) {
 		}
 	}
 };
-LUTGammaPQ.prototype.linFromL = function(buff) {
+LUTGammaPQ.prototype.linFromD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
-		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
-//		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+//		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 	}
-	this.linFromD(buff);
+	this.linFromL(buff);
 };
-LUTGammaPQ.prototype.linFromD = function(buff) {
+LUTGammaPQ.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
@@ -2232,11 +2335,11 @@ LUTGammaPQ.prototype.linFromD = function(buff) {
 		}
 	}
 };
-LUTGammaPQ.prototype.linToLegal = function(input) {
-	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
-//	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
-};
 LUTGammaPQ.prototype.linToData = function(input) {
+//	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaPQ.prototype.linToLegal = function(input) {
 	if (input < 0) {
 		return this.e;
 	} else {
@@ -2244,11 +2347,11 @@ LUTGammaPQ.prototype.linToData = function(input) {
 		return Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m);
 	}
 };
-LUTGammaPQ.prototype.linFromLegal = function(input) {
-	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
-//	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
-};
 LUTGammaPQ.prototype.linFromData = function(input) {
+//	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaPQ.prototype.linFromLegal = function(input) {
 	if (input <= this.e) {
 		return 0;
 	} else {
