@@ -102,10 +102,11 @@ LUTColourSpace.prototype.subIdx = function(cat) {
 		case 'Adobe': return 6;
 		case 'Rec709': return 7;
 		case 'Rec2020': return 8;
-		case 'P3': return 9;
-		case 'Wide Gamut': return 10;
-		case 'ACES': return 11;
-		case 'All': return 12;
+		case 'Rec2100': return 9;
+		case 'P3': return 10;
+		case 'Wide Gamut': return 11;
+		case 'ACES': return 12;
+		case 'All': return 13;
 	}
 	return false;
 };
@@ -119,6 +120,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 						'Adobe',
 						'Rec709',
 						'Rec2020',
+						'Rec2100',
 						'P3',
 						'Wide Gamut',
 						'ACES',
@@ -162,6 +164,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Rec709')]);
 	this.csIn.push(this.toSys('Rec2020'));
 	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('Rec2100'));
+	this.csInSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('sRGB'));
 	this.csInSub.push([]);
 	this.csIn.push(this.toSys('ACES AP0'));
@@ -331,6 +335,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Rec709')]);
 	this.csOut.push(this.fromSys('Rec2020'));
 	this.csOutSub.push([this.subIdx('Rec2020'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('Rec2100'));
+	this.csOutSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('sRGB'));
 	this.csOutSub.push([]);
 	this.csOut.push(this.fromSysMatrix('Luma B&W', new Float64Array([ this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2], this.y[0],this.y[1],this.y[2] ]), this.system.white.buffer.slice(0)));
@@ -773,6 +779,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	rec2020.white = this.illuminant('d65');
 	rec2020.toXYZ = this.RGBtoXYZ(rec2020.xy,rec2020.white);
 	this.g.push(rec2020);
+// Rec2100
+	var rec2100 = {};
+	rec2100.name = 'Rec2100';
+	rec2100.cat = this.sysCATIdx;
+	rec2100.xy = new Float64Array([0.708,0.292, 0.170,0.797, 0.131,0.046]);
+	rec2100.white = this.illuminant('d65');
+	rec2100.toXYZ = this.RGBtoXYZ(rec2100.xy,rec2100.white);
+	this.g.push(rec2100);
 // sRGB
 	var srgb = {};
 	srgb.name = 'sRGB';

@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v2.54
+-----
+* Feature Change / Bugfix - RED Log3G10 code updated to version 2 of the spec, with bugfix to the chart input gamma code.
+* New Feature - Rec2100 PQ gamma option including display linear code.
+
 v2.53
 -----
 * New Feature - REDWideGamutRGB and Log3G10.
