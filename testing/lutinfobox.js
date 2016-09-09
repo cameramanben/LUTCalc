@@ -75,8 +75,9 @@ LUTInfoBox.prototype.events = function() {
 	this.insPreBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainGen.onclick = function(here){ return function(){ here.showGenInfo(); };}(this);
 	this.insGenBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
-	this.insMainSav.onclick = function(here){ return function(){ here.showSetInfo(); };}(this);
-	this.insMainLod.onclick = function(here){ return function(){ here.showSetInfo(); };}(this);
+	this.insMainGst.onclick = function(here){ return function(){ here.showGstInfo(); };}(this);
+	this.insGstBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
+	this.insMainSet.onclick = function(here){ return function(){ here.showSetInfo(); };}(this);
 	this.insSetBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insMainInf.onclick = function(here){ return function(){ here.showInfInfo(); };}(this);
 	this.insInfBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
@@ -141,6 +142,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.insPre);
 	this.createGenInfo();
 	this.instructionsBox.appendChild(this.insGen);
+	this.createGstInfo();
+	this.instructionsBox.appendChild(this.insGst);
 	this.createSetInfo();
 	this.instructionsBox.appendChild(this.insSet);
 	this.createInfInfo();
@@ -195,6 +198,10 @@ LUTInfoBox.prototype.showPreInfo = function() {
 LUTInfoBox.prototype.showGenInfo = function() {
 	this.hideAll();
 	this.insGen.style.display = 'block';
+};
+LUTInfoBox.prototype.showGstInfo = function() {
+	this.hideAll();
+	this.insGst.style.display = 'block';
 };
 LUTInfoBox.prototype.showSetInfo = function() {
 	this.hideAll();
@@ -256,6 +263,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.insLut.style.display = 'none';
 	this.insPre.style.display = 'none';
 	this.insGen.style.display = 'none';
+	this.insGst.style.display = 'none';
 	this.insSet.style.display = 'none';
 	this.insInf.style.display = 'none';
 	this.custColour.style.display = 'none';
@@ -316,14 +324,14 @@ LUTInfoBox.prototype.createMainscreen = function() {
 	this.insMainGen.setAttribute('class','ins-main-but');
 	this.insMainGen.setAttribute('id','ins-main-gen');
 	buttons.appendChild(this.insMainGen);
-	this.insMainSav = document.createElement('div');
-	this.insMainSav.setAttribute('class','ins-main-but');
-	this.insMainSav.setAttribute('id','ins-main-sav');
-	buttons.appendChild(this.insMainSav);
-	this.insMainLod = document.createElement('div');
-	this.insMainLod.setAttribute('class','ins-main-but');
-	this.insMainLod.setAttribute('id','ins-main-lod');
-	buttons.appendChild(this.insMainLod);
+	this.insMainGst = document.createElement('div');
+	this.insMainGst.setAttribute('class','ins-main-but');
+	this.insMainGst.setAttribute('id','ins-main-gst');
+	buttons.appendChild(this.insMainGst);
+	this.insMainSet = document.createElement('div');
+	this.insMainSet.setAttribute('class','ins-main-but');
+	this.insMainSet.setAttribute('id','ins-main-set');
+	buttons.appendChild(this.insMainSet);
 	right.appendChild(buttons);
 	this.insMainInf = document.createElement('div');
 	this.insMainInf.setAttribute('class','ins-main');
@@ -571,6 +579,22 @@ LUTInfoBox.prototype.createGenInfo = function() {
 	this.insGen.style.display = 'none';
 	this.insGen.appendChild(this.insGenInfo);
 };
+LUTInfoBox.prototype.createGstInfo = function() {
+	this.insGst = document.createElement('div');
+	this.insGst.setAttribute('class','instructions');
+	this.insGst.setAttribute('id','ins-gst');
+	this.insGstBack = document.createElement('input');
+	this.insGstBack.setAttribute('type','button');
+	this.insGstBack.value = 'Back';
+	this.insGst.appendChild(this.insGstBack);
+	this.insGstInfo = document.createElement('div');
+	this.insGstInfo.setAttribute('class','infotext');
+	this.addInfo(this.insGstInfo,false,'Generate Set','allows you to batch generate multiple versions of your LUT across a range of exposure compensations.');
+	this.addInfo(this.insGstInfo,false,null,'The options available are to set the lower and upper bounds of the exposure range you wish to generate, then the step size in fractions of a stop.');
+	this.addInfo(this.insGstInfo,false,null,'The default is to produce a set from two stops below native to two stops above, in steps of 1/3 of a stop.');
+	this.insGst.style.display = 'none';
+	this.insGst.appendChild(this.insGstInfo);
+};
 LUTInfoBox.prototype.createSetInfo = function() {
 	this.insSet = document.createElement('div');
 	this.insSet.setAttribute('class','instructions');
@@ -581,7 +605,7 @@ LUTInfoBox.prototype.createSetInfo = function() {
 	this.insSet.appendChild(this.insSetBack);
 	this.insSetInfo = document.createElement('div');
 	this.insSetInfo.setAttribute('class','infotext');
-	this.addInfo(this.insSetInfo,false,'Save Settings & Load Settings','These allow you to save the current state of all the options and customisations in LUTCalc, to quickly reload preferred settings at a later date.');
+	this.addInfo(this.insSetInfo,false,'Settings','Here you have the option to save the current state of all the options and customisations in LUTCalc, or to reload preferred settings previously saved.');
 	this.addInfo(this.insSetInfo,false,null,"The settings are saved in files ending '.lutcalc'.");
 	this.insSet.style.display = 'none';
 	this.insSet.appendChild(this.insSetInfo);

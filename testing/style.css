@@ -513,6 +513,14 @@ background:transparent;
 }
 .settings-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
 }
+.lutset-popup { position:fixed; top: 10em; left: 50%; display:block;
+}
+.lutset-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
+}
+.setprog-popup { position:fixed; top: 10em; left: 50%; display:block;
+}
+.setprog-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
+}
 .picker-can {display:inline-block;cursor: crosshair; z-index: 1;}
 .picker-info {display:inline-block;padding-top:2em;vertical-align:top;width: 10em;}
 .picker-colour {margin:0px auto;margin-top:1em;width:3.5em;height:3.5em;background-color:#808080;}

@@ -258,16 +258,15 @@ TWKBlkGam.prototype.testLim = function(slider) {
 			l = -9;
 		}
 	} else {
-		l = this.limInput.value;
-		var L = parseFloat(l);
-		if (isNaN(L)) {
-			l = this.limSlider.value;
-		} else if (L < -9) {
-			l = '-9';
+		l = parseFloat(this.limInput.value);
+		if (isNaN(l)) {
+			l = parseFloat(this.limSlider.value);
+		} else if (l < -9) {
+			l = -9;
 		}
 	}
 	this.limInput.value = parseFloat(l).toFixed(1).toString();
-	this.limSlider.value = l;
+	this.limSlider.value = l.toString();
 };
 TWKBlkGam.prototype.resetLim = function() {
 	this.limSlider.value = '-1.5';
@@ -281,16 +280,15 @@ TWKBlkGam.prototype.testFea = function(slider) {
 			l = 0;
 		}
 	} else {
-		l = this.feaInput.value;
-		var L = parseFloat(l);
-		if (isNaN(L)) {
-			l = this.feaSlider.value;
-		} else if (L < 0) {
-			l = '0';
+		l = parseFloat(this.feaInput.value);
+		if (isNaN(l)) {
+			l = parseFloat(this.feaSlider.value);
+		} else if (l < 0) {
+			l = 0;
 		}
 	}
 	this.feaInput.value = parseFloat(l).toFixed(1).toString();
-	this.feaSlider.value = l;
+	this.feaSlider.value = l.toString();
 };
 TWKBlkGam.prototype.resetFea = function() {
 	this.feaSlider.value = '2';
@@ -308,16 +306,15 @@ TWKBlkGam.prototype.testGam = function(slider) {
 			s = 0.01;
 		}
 	} else {
-		s = this.gamInput.value;
-		S = parseFloat(s);
-		if (isNaN(S)) {
+		s = parseFloat(this.gamInput.value);
+		if (isNaN(s)) {
 			s = (c3*Math.exp((c1*parseFloat(this.gamSlider.value))+c2)) + c4;
-		} else if (S < 0.01) {
+		} else if (s < 0.01) {
 			s = 0.01;
 		}
 	}
 	this.gamInput.value = s.toFixed(2).toString();
-	this.gamSlider.value = ((Math.log((s-c4)/c3)-c2)/c1).toString();;
+	this.gamSlider.value = ((Math.log((s-c4)/c3)-c2)/c1).toString();
 };
 TWKBlkGam.prototype.resetGam = function() {
 	this.gamSlider.value = '1';

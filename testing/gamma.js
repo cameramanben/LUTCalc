@@ -3214,6 +3214,10 @@ LUTGamma.prototype.setParams = function(params) {
 };
 LUTGamma.prototype.oneDCalc = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, start: i.start, vals: i.vals, dim: i.dim};
+	var eiMult = this.eiMult;
+	if (typeof i.eiMult === 'number') {
+		eiMult = i.eiMult;
+	}
 	var s = i.start;
 	var max = i.vals;
 	var o = new Float64Array(max*3);
@@ -3242,9 +3246,9 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 				k = (k*(this.sMax-this.sMin)) + this.sMin;
 			}
 			if (this.inL) {
-				o[(j*3)] = this.gammas[this.curIn].linFromLegal(k)*this.eiMult;
+				o[(j*3)] = this.gammas[this.curIn].linFromLegal(k)*eiMult;
 			} else {
-				o[(j*3)] = this.gammas[this.curIn].linFromData(k)*this.eiMult;
+				o[(j*3)] = this.gammas[this.curIn].linFromData(k)*eiMult;
 			}
 			o[(j*3)+1] = o[(j*3)];
 			o[(j*3)+2] = o[(j*3)];
@@ -3297,7 +3301,11 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 	return out;
 };
 LUTGamma.prototype.inCalcRGB = function(p,t,i) {
-	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim, eiMult: this.eiMult};
+	var eiMult = this.eiMult;
+	if (typeof i.eiMult === 'number') {
+		eiMult = i.eiMult;
+	}
+	var out = { p: p, t: t+20, v: this.ver, R:i.R, G:i.G, B:i.B, vals: i.vals, dim: i.dim, eiMult: eiMult};
 	var B = i.B;
 	var max = i.dim;
 	var o = new Float64Array(i.vals*3);

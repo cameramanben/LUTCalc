@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v2.60
+-----
+* New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.
+
 v2.54
 -----
 * Feature Change / Bugfix - RED Log3G10 code updated to version 2 of the spec, with bugfix to the chart input gamma code.
