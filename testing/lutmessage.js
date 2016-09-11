@@ -114,7 +114,9 @@ LUTMessage.prototype.gaSetParams = function() {
 			natISO: parseFloat(this.inputs.nativeISO.innerHTML),
 			camType: parseInt(this.inputs.cameraType.value),
 			stopShift: parseFloat(this.inputs.stopShift.value),
-			clip: this.inputs.clipCheck.checked,
+//			clip: this.inputs.clipCheck.checked,
+			clipSelect: parseInt(this.inputs.clipSelect.options[this.inputs.clipSelect.selectedIndex].value),
+			clipLegal: this.inputs.clipLegalCheck.checked,
 			isTrans: this.inputs.isTrans
 		};
 		if (this.inputs.inRange[0].checked) {
@@ -634,11 +636,11 @@ LUTMessage.prototype.changeFormat = function() {
 	this.gtSetParams();
 };
 LUTMessage.prototype.oneOrThree = function() {
-		this.ui[11].oneOrThree();
-		this.ui[2].oneOrThree();
-		this.ui[3].toggleTweaks();
-		this.gtSetParams();
-		this.gaSetParams();
+	this.ui[11].oneOrThree();
+	this.ui[2].oneOrThree();
+	this.ui[3].toggleTweaks();
+	this.gtSetParams();
+	this.gaSetParams();
 };
 LUTMessage.prototype.showPreview = function() {
 	this.ui[3].toggleTweaks();
@@ -675,4 +677,7 @@ LUTMessage.prototype.isCustomGamma = function() {
 };
 LUTMessage.prototype.isCustomGamut = function() {
 	return this.ui[3].isCustomGamut();
+};
+LUTMessage.prototype.displayCLC = function() {
+	this.ui[4].displayCLC();
 };

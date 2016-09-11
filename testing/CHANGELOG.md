@@ -4,6 +4,8 @@ LUTCalc Changelog
 v2.60
 -----
 * New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.
+* Feature Change - White and Black clipping can be set individually, and either to the LUT's output range, or always legal.
+* Bugfix - Fixed broken ACEScc input code. ACEScc as a 'Rec Gamma' option now works as expected.
 
 v2.54
 -----

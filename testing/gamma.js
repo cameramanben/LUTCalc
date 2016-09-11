@@ -21,6 +21,9 @@ function LUTGamma() {
 	this.inL = false;
 	this.outL = true;
 	this.clip = false;
+	this.clipB = false;
+	this.clipW = false;
+	this.clipL = false;
 	
 	this.sIn = false;
 	this.sMin = 0;
@@ -1528,12 +1531,29 @@ LUTGamma.prototype.finalOut = function(buff,cb) {
 		}
 		cMax = this.wClip / 1023;
 	}
-	if (this.clip && cMin<0) {
-		cMin = 0;
+	if (this.clip) {
+		if (this.outL || !this.clipL) {
+			if (this.clipB && cMin<0) {
+				cMin = 0;
+			}
+			if (this.clipW && cMax>1) {
+				cMax = 1;
+			}
+		} else {
+			if (this.clipB && cMin<64/1023) {
+				cMin = 64/1023;
+			}
+			if (this.clipW && cMax>959/1023) {
+				cMax = 959/1023;
+			}
+		}
 	}
-	if (this.clip && cMax>1) {
-		cMax = 1;
-	}
+//	if (this.clip && cMin<0) {
+//		cMin = 0;
+//	}
+//	if (this.clip && cMax>1) {
+//		cMax = 1;
+//	}
 	for (var j=0; j<m; j++) {
 		if (!this.outL) {
 			out[j] = ((out[j]*876)+64)/1023;
@@ -2651,9 +2671,9 @@ LUTGammaACEScc.prototype.linFromL = function(buff) {
 	var m = c.length;
 	for (var j=0; j<m; j++) {
 		if (c[j] < this.low2) {
-			c[j] = (Math.exp(2,(c[j]*17.52)-9.72)-Math.pow(2,-16))*2/0.9;
+			c[j] = (Math.pow(2,(c[j]*17.52)-9.72)-Math.pow(2,-16))*2/0.9;
 		} else if (c[j] < this.mid) {
-			c[j] = Math.exp(2,(c[j]*17.52)-9.72)/0.9;
+			c[j] = Math.pow(2,(c[j]*17.52)-9.72)/0.9;
 		} else {
 			c[j] = 65504/0.9;
 		}
@@ -2676,9 +2696,9 @@ LUTGammaACEScc.prototype.linFromData = function(input) {
 };
 LUTGammaACEScc.prototype.linFromLegal = function(input) {
 	if (input < this.low2) {
-		return (Math.exp(2,(input*17.52)-9.72)-Math.pow(2,-16))*2/0.9;
+		return (Math.pow(2,(input*17.52)-9.72)-Math.pow(2,-16))*2/0.9;
 	} else if (input < this.mid) {
-		return Math.exp(2,(input*17.52)-9.72)/0.9;
+		return Math.pow(2,(input*17.52)-9.72)/0.9;
 	} else {
 		return 65504/0.9;
 	}
@@ -3187,10 +3207,35 @@ LUTGamma.prototype.setParams = function(params) {
 	if (typeof params.pqNits === 'number') {
 		this.gammas[this.PQ].changeLMax(params.pqNits);
 	}
-	if (typeof params.clip === 'boolean') {
-		this.clip = params.clip;
-		out.clip = this.clip;
+	if (typeof params.clipSelect === 'number') {
+		switch(params.clipSelect) {
+			case 0: this.clipB = false;
+					this.clipW = false;
+					this.clip = false;
+					break;
+			case 1: this.clipB = true;
+					this.clipW = true;
+					this.clip = true;
+					break;
+			case 2: this.clipB = true;
+					this.clipW = false;
+					this.clip = true;
+					break;
+			case 3: this.clipB = false;
+					this.clipW = true;
+					this.clip = true;
+					break;
+		}
+		out.clipSelect = params.clipSelect;
 	}
+	if (typeof params.clipLegal === 'boolean') {
+		this.clipL = params.clipLegal;
+		out.clipLegal = this.clipL;
+	}
+//	if (typeof params.clip === 'boolean') {
+//		this.clip = params.clip;
+//		out.clip = this.clip;
+//	}
 	if (typeof params.bClip === 'number') {
 		this.bClip = params.bClip;
 		this.wClip = params.wClip;

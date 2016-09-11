@@ -510,8 +510,14 @@ LUTInfoBox.prototype.createLutInfo = function() {
 	this.addInfo(this.insLutInfo,true,'Camera LUT (MLUT)','This option is for generating LUT suitable for loading into a camera for use as a monitor LUT, or MLUT.');
 	this.addInfo(this.insLutInfo,false,null,'Some LUT formats allow for scaling of the inputs, to allow for inputs which needs to lie outside of 0-1.0. An example would be a linear to log LUT, where the linear range between 0 and 1.0 is only a small portion of a log curve. Scaling means that the input range in this case could be between 0 and 12.0.');
 	this.addInfo(this.insLutInfo,false,null,'Where a LUT format supports scaling, LUTCalc will display minimum and maximum boxes. These default to 0 and 1.0 respectively, and generally do not need to be changed.');
-	this.addInfo(this.insLutInfo,true,'Hard Clip 0-1.0','Many LUT formats allows for output values beyond 0-1. This allows limited dynamic range conversions such as linear or Rec709 to be performed non destructively, ie the overexposed data can still be pulled back into range.');
-	this.addInfo(this.insLutInfo,true,null,'Some software does not handle out of range values correctly, so this option hard clips from 0-1.0. This does mean that data outside of that range is lost.');
+	var fig2 = document.createElement('div');
+	fig2.setAttribute('class','ins-fig');
+	fig2.setAttribute('id','ins-lut-2');
+	this.insLutInfo.appendChild(fig1);
+	this.addInfo(this.insLutInfo,true,'Hard Clip','Many LUT formats permit output values beyond 0-1. This allows limited dynamic range conversions such as linear or Rec709 to be performed non-destructively, ie the overexposed data can still be pulled back into range.');
+	this.addInfo(this.insLutInfo,true,null,'Some software does not handle out of range values correctly, so this drop down allows for clipping of black (0), white (1) or both black and white.');
+	this.addInfo(this.insLutInfo,true,null,"If clipping is applied and the output range for LUTs is set to 'Data', an additional checkbox will appear, 'Legal'. Check this and the clipping will be held to legal range, ie for 10-bit data range black is 64 and white 959 out of 1023.");
+	this.addInfo(this.insLutInfo,true,null,'Use of hard clipping does mean that data outside of the clipped range is lost.');
 	this.insLut.style.display = 'none';
 	this.insLut.appendChild(this.insLutInfo);
 };
