@@ -3593,8 +3593,10 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 		lutOut[j] = ((k*1023) - 64)/876;
 		colIn[j] = k;
 	}
+	var stopPreVals = new Float64Array(17);
 	var stopVals = new Float64Array(17);
 	for (var j=0; j<17; j++) {
+		stopPreVals[j] = Math.pow(2,j-8) / 5;
 		stopVals[j] = Math.pow(2,j-8) / 5;
 	}
 	var refOut = new Float64Array(refIn);
@@ -3607,6 +3609,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	if (this.nul) {
 		refOut = new Float64Array(refIn);
 		stopOut = new Float64Array(stopIn);
+		this.gammas[this.curIn].linToL(stopPreVals.buffer);
 		this.gammas[this.curIn].linToL(stopVals.buffer);
 	} else {
 		this.gammas[this.curIn].linFromL(lutOut.buffer);
@@ -3618,9 +3621,13 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 //		for (var j=0; j<17; j++) {
 //			stopVals[j] *= this.eiMult;
 //		}
+		for (var j=0; j<17; j++) {
+			stopPreVals[j] /= this.eiMult;
+		}
 		this.getLumVals(refOut.buffer);
 		this.getLumVals(stopOut.buffer);
 		this.getLumVals(lutOut.buffer);
+		this.gammas[this.curIn].linToL(stopPreVals.buffer);
 		this.getLumVals(stopVals.buffer);
 		if (this.doBlkHi) {
 			for (var j=0; j<m; j++) {
@@ -3734,6 +3741,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	out.stopX = stopX.buffer;
 	out.stopIn = stopIn.buffer;
 	out.stopOut = stopOut.buffer;
+	out.stopPreVals = stopPreVals.buffer;
 	out.stopVals = stopVals.buffer;
 	out.lutIn = lutIn.buffer;
 	out.lutOut = lutOut.buffer;
@@ -3741,7 +3749,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	out.colOut = colIn.buffer.slice(0);
 	out.table = table.buffer;
 	out.eiMult = this.eiMult;
-	out.to = ['refX','refIn','refOut','stopX','stopIn','stopOut','stopVals','lutIn','lutOut','colIn','table'];
+	out.to = ['refX','refIn','refOut','stopX','stopIn','stopOut','stopPreVals','stopVals','lutIn','lutOut','colIn','table'];
 	return out;
 };
 LUTGamma.prototype.preview = function(p,t,i) {
