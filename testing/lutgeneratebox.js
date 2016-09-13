@@ -27,6 +27,8 @@ function LUTGenerateBox(fieldset, inputs, messages, file, formats) {
 	this.setMin = -2;
 	this.setMax = 2;
 	this.setStep = 3;
+	this.setPass = 1;
+	this.setTotal = ((this.setMax - this.setMin)*this.setStep)+1;
 	this.doSet = false;
 	this.setVal = 0;
 	this.currentName = '';
@@ -163,12 +165,15 @@ LUTGenerateBox.prototype.generateSet = function() {
 	this.setMax = parseFloat(this.genSetMax.options[this.genSetMax.selectedIndex].value);
 	this.setStep = parseFloat(this.genSetStep.options[this.genSetStep.selectedIndex].value);
 	this.setVal = this.setMin;
+	this.setPass = 1;
+	this.setTotal = ((this.setMax - this.setMin)*this.setStep)+1;
 	this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
 	if (this.setVal < -0.000001 || setVal > 0.000001) {
 		this.inputs.name.value = this.currentName + '_' + this.setVal.toFixed(2).toString().replace('.','p');
 	} else {
 		this.inputs.name.value = this.currentName + '_' +'0-Native';
 	}
+	this.setProgText.innerHTML = 'Generating Set - File ' + this.setPass.toString() + ' Of ' + this.setTotal.toString();
 	if (this.inputs.d[0].checked) {
 		this.oneDLUT();
 	} else {
@@ -234,24 +239,29 @@ LUTGenerateBox.prototype.got1D = function(d) {
 	if (this.lT === this.dimension) {
 		this.lT = 0;
 		this.formats.output(this.lut.buffer);
-		if (this.doSet && this.setVal < this.setMax) {
-			this.setVal += 1/this.setStep;
-			this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
-			if (this.setVal < -0.000001 || this.setVal > 0.000001) {
-				this.inputs.name.value = this.currentName + '_' + this.setVal.toFixed(2).toString().replace('.','p');
+		if (!this.inputs.isApp && !this.inputs.isChromeApp) {
+			if (this.doSet && this.setPass < this.setTotal) {
+				this.setVal += 1/this.setStep;
+				this.setPass++;
+				this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
+				if (this.setVal < -0.000001 || this.setVal > 0.000001) {
+					this.inputs.name.value = this.currentName + '_' + this.setVal.toFixed(2).toString().replace('.','p');
+				} else {
+					this.inputs.name.value = this.currentName + '_' +'0-Native';
+				}
+				this.setProgText.innerHTML = 'Generating Set - File ' + this.setPass.toString() + ' Of ' + this.setTotal.toString();
+				this.oneDLUT();
 			} else {
-				this.inputs.name.value = this.currentName + '_' +'0-Native';
+				if (this.doSet) {
+					this.inputs.name.value = this.currentName;
+					this.inputs.stopShift.value = this.currentStop;
+				}
+				this.doSet = false;
+				this.setVal = this.setMin;
+				this.setPass = 1;
+				modalBox.className = 'modalbox-hide';
+				this.setProgHolder.className = 'setprog-popup-hide';
 			}
-			this.oneDLUT();
-		} else {
-			if (this.doSet) {
-				this.inputs.name.value = this.currentName;
-				this.inputs.stopShift.value = this.currentStop;
-			}
-			this.doSet = false;
-			this.setVal = this.setMin;
-			modalBox.className = 'modalbox-hide';
-			this.setProgHolder.className = 'setprog-popup-hide';
 		}
 	}
 };
@@ -262,15 +272,49 @@ LUTGenerateBox.prototype.got3D = function(d) {
 	if (this.lT === this.dimension) {
 		this.lT = 0;
 		this.formats.output(this.lut.buffer);
-		if (this.doSet && this.setVal < this.setMax) {
+		if (!this.inputs.isApp && !this.inputs.isChromeApp) {
+			if (this.doSet && this.setPass < this.setTotal) {
+				this.setVal += 1/this.setStep;
+				this.setPass++;
+				this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
+				if (this.setVal < -0.000001 || this.setVal > 0.000001) {
+					this.inputs.name.value = this.currentName + '_' + this.setVal.toFixed(2).toString().replace('.','p');
+				} else {
+					this.inputs.name.value = this.currentName + '_' +'0-Native';
+				}
+				this.setProgText.innerHTML = 'Generating Set - File ' + this.setPass.toString() + ' Of ' + this.setTotal.toString();
+				this.threeDLUT();
+			} else {
+				if (this.doSet) {
+					this.inputs.name.value = this.currentName;
+					this.inputs.stopShift.value = this.currentStop;
+				}
+				this.doSet = false;
+				this.setVal = this.setMin;
+				this.setPass = 1;
+				modalBox.className = 'modalbox-hide';
+				this.setProgHolder.className = 'setprog-popup-hide';
+			}
+		}
+	}
+};
+LUTGenerateBox.prototype.saved = function(success) {
+	if (this.inputs.isApp || this.inputs.isChromeApp) {
+		if (success && this.doSet && this.setPass < this.setTotal) {
 			this.setVal += 1/this.setStep;
+			this.setPass++;
 			this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
 			if (this.setVal < -0.000001 || this.setVal > 0.000001) {
 				this.inputs.name.value = this.currentName + '_' + this.setVal.toFixed(2).toString().replace('.','p');
 			} else {
 				this.inputs.name.value = this.currentName + '_' +'0-Native';
 			}
-			this.threeDLUT();
+			this.setProgText.innerHTML = 'Generating Set - File ' + this.setPass.toString() + ' Of ' + this.setTotal.toString();
+			if (this.inputs.d[0].checked) {
+				this.oneDLUT();
+			} else {
+				this.threeDLUT();
+			}
 		} else {
 			if (this.doSet) {
 				this.inputs.name.value = this.currentName;
@@ -278,6 +322,7 @@ LUTGenerateBox.prototype.got3D = function(d) {
 			}
 			this.doSet = false;
 			this.setVal = this.setMin;
+			this.setPass = 1;
 			modalBox.className = 'modalbox-hide';
 			this.setProgHolder.className = 'setprog-popup-hide';
 		}
@@ -358,7 +403,8 @@ LUTGenerateBox.prototype.buildSetProgressPopup = function() {
 	this.setProgHolder.className = 'setprog-popup-hide';
 	this.setProgBox = document.createElement('div');
 	this.setProgBox.className = 'popup';
-	this.setProgBox.appendChild(document.createTextNode('Temp Text'));
+	this.setProgText = document.createElement('p');
+	this.setProgBox.appendChild(this.setProgText);
 	this.setProgBox.appendChild(this.cancelProgButton);
 	this.setProgHolder.appendChild(this.setProgBox);
 	modalBox.appendChild(this.setProgHolder);

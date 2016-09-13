@@ -458,7 +458,8 @@ TWKLA.prototype.store = function(cube) {
 				this.inputs.lutAnalyst.getRGB()
 			),
 			this.title.value,
-			'lacube'
+			'lacube',
+			0
 		);
 	} else {
 		this.files.saveBinary(
@@ -468,7 +469,8 @@ TWKLA.prototype.store = function(cube) {
 				this.inputs.lutAnalyst.getRGB()
 			),
 			this.title.value,
-			'labin'
+			'labin',
+			0
 		);
 	}
 /*

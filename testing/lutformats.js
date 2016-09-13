@@ -887,9 +887,9 @@ LUTFormats.prototype.output = function(buff) {
 	var out = this.formats[idx].build(buff, this.inputs.name.value, this.exts[idx]);
 	if (out) {
 		if (this.txt[idx]) {
-			this.file.save(out.lut, out.fileName, out.ext);
+			this.file.save(out.lut, out.fileName, out.ext, 1);
 		} else {
-			this.file.saveBinary(out.lut, out.fileName, out.ext);
+			this.file.saveBinary(out.lut, out.fileName, out.ext, 1);
 		}
 	}
 };

@@ -682,3 +682,11 @@ LUTMessage.prototype.isCustomGamut = function() {
 LUTMessage.prototype.displayCLC = function() {
 	this.ui[4].displayCLC();
 };
+LUTMessage.prototype.saved = function(source, success) {
+	switch (source) {
+		case 0: break; // LALutss or LABins - don't need a further response
+		case 1: this.ui[5].saved(success); // LUTs saved using the Generate buttons
+				break;
+		default: break;
+	}
+};
