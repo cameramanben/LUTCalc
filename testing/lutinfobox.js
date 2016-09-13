@@ -1618,11 +1618,18 @@ LUTInfoBox.prototype.updateTables = function() {
 		this.lutOutVals[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
 		this.lutOutIREsChart[j+1].innerHTML = Math.round(this.tableIREVals[j]*100).toString();
 		this.lutOutValsChart[j+1].innerHTML = Math.round((this.tableIREVals[j]*876)+64).toString();
-		if (parseInt(this.lutOutVals[j+1].innerHTML) > 1023) {
-			this.lutOutVals[j+1].innerHTML = '-';
-			this.lutOutIREs[j+1].innerHTML = '-';
-			this.lutOutValsChart[j+1].innerHTML = '-';
-			this.lutOutIREsChart[j+1].innerHTML = '-';
+		if (parseInt(this.lutOutVals[j+1].innerHTML) > 1019) {
+			if (j<6) {
+				this.lutOutVals[j+1].innerHTML = '-';
+				this.lutOutIREs[j+1].innerHTML = '-';
+				this.lutOutValsChart[j+1].innerHTML = '-';
+				this.lutOutIREsChart[j+1].innerHTML = '-';
+			} else {
+				this.lutOutVals[j+1].innerHTML = '>1019';
+				this.lutOutIREs[j+1].innerHTML = '>109';
+				this.lutOutValsChart[j+1].innerHTML = '>1019';
+				this.lutOutIREsChart[j+1].innerHTML = '>109';
+			}
 		}
 	}
 	for (var j=0; j<9; j++) {
@@ -1633,11 +1640,11 @@ LUTInfoBox.prototype.updateTables = function() {
 		this.tableStopsNegVals[j+1].innerHTML = Math.round((this.stopVals[j]*876)+64).toString();
 		this.tableStopsPosIREs[j+1].innerHTML = Math.round(this.stopVals[j+8]*100).toString();
 		this.tableStopsPosVals[j+1].innerHTML = Math.round((this.stopVals[j+8]*876)+64).toString();
-		if (parseInt(this.tableStopsNegVals[j+1].innerHTML) > 1023) {
+		if (parseInt(this.tableStopsNegVals[j+1].innerHTML) > 1019) {
 			this.tableStopsNegVals[j+1].innerHTML = '-';
 			this.tableStopsNegIREs[j+1].innerHTML = '-';
 		}
-		if (parseInt(this.tableStopsPosVals[j+1].innerHTML) > 1023) {
+		if (parseInt(this.tableStopsPosVals[j+1].innerHTML) > 1019) {
 			this.tableStopsPosVals[j+1].innerHTML = '-';
 			this.tableStopsPosIREs[j+1].innerHTML = '-';
 		}
