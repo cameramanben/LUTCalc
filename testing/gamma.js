@@ -3615,9 +3615,9 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			stopOut[j] *= this.eiMult;
 			lutOut[j] *= this.eiMult;
 		}
-		for (var j=0; j<17; j++) {
-			stopVals[j] *= this.eiMult;
-		}
+//		for (var j=0; j<17; j++) {
+//			stopVals[j] *= this.eiMult;
+//		}
 		this.getLumVals(refOut.buffer);
 		this.getLumVals(stopOut.buffer);
 		this.getLumVals(lutOut.buffer);
