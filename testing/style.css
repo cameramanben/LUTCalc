@@ -59,8 +59,8 @@
     z-index:999;
 }
 .modalbox-hide {display:none;}
-.ref-table {margin-bottom: 0.75em;}
-.ire-table {table-layout: fixed; margin-bottom: 0.5em;}
+.ref-table {margin-bottom: 0.5em;}
+.ire-table {table-layout: fixed; margin-bottom: 0.4em;}
 .ire-table td {width:3.25em;}
 /* LUT options */
 .lut-opt { display: inline; }
