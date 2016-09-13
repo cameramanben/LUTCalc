@@ -52,7 +52,9 @@ function LUTGamma() {
 	this.blkGamLL = 0.09;
 	this.blkGamF = this.blkGamUL-this.blkGamLL;
 	this.blkGamP = 1;
-	this.blkGamR = 0.1
+	this.blkGamR = 0.1;
+	
+	this.camClip = 11.52;
 
 	this.al = 1;
 	this.bl = 0;
@@ -3189,6 +3191,9 @@ LUTGamma.prototype.setParams = function(params) {
 		this.eiMult = Math.pow(2,params.stopShift);
 	}
 	out.eiMult = this.eiMult;
+	if (typeof params.camClip === 'number') {
+		this.camClip = params.camClip;
+	}
 	if (typeof params.inL === 'boolean') {
 		this.inL = params.inL;
 	}
@@ -3690,7 +3695,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			}
 		}
 	}
-	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,14.4]);
+	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,this.camClip]);
 	for (var j=0; j<7; j++) {
 		table[j] /= 0.9;
 	}

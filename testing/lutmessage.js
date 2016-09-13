@@ -114,6 +114,7 @@ LUTMessage.prototype.gaSetParams = function() {
 			natISO: parseFloat(this.inputs.nativeISO.innerHTML),
 			camType: parseInt(this.inputs.cameraType.value),
 			stopShift: parseFloat(this.inputs.stopShift.value),
+			camClip: Math.pow(2,parseFloat(this.inputs.wclip))*0.18,
 //			clip: this.inputs.clipCheck.checked,
 			clipSelect: parseInt(this.inputs.clipSelect.options[this.inputs.clipSelect.selectedIndex].value),
 			clipLegal: this.inputs.clipLegalCheck.checked,

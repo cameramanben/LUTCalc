@@ -997,13 +997,13 @@ LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	infoBox.appendChild(para);
 };
 LUTInfoBox.prototype.gammaInfo = function() {
-	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,14.4]);
+	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,Math.pow(2,parseFloat(this.inputs.wclip))*0.18]);
 	this.tableIREVals = new Float64Array(7);
 	this.gammaInfoBox.setAttribute('class','graybox infobox');
 	this.addText(this.gammaInfoBox,'Output gamma including any customisations:');
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
-	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1440'], 'th'));
+	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','Clip'], 'th'));
 	curires.appendChild(curiresHead);
 	var curiresBody = document.createElement('tbody');
 	var curvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
@@ -1124,7 +1124,7 @@ LUTInfoBox.prototype.gammaChart = function() {
 	this.gammaChartBox.appendChild(document.createTextNode('Output gamma including any customisations:'));
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
-	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1440'], 'th'));
+	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','Clip'], 'th'));
 	curires.appendChild(curiresHead);
 	var curiresBody = document.createElement('tbody');
 	var curvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
@@ -1142,7 +1142,7 @@ LUTInfoBox.prototype.printTables = function() {
 	this.printBox.appendChild(printLabel);
 	var printires = document.createElement('table');
 	var printiresHead = document.createElement('thead');
-	printiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1350'], 'th'));
+	printiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','Clip'], 'th'));
 	printires.appendChild(printiresHead);
 	var printiresBody = document.createElement('tbody');
 	var printvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
