@@ -5,6 +5,8 @@ v2.60
 -----
 * New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.
 * Feature Change - White and Black clipping can be set individually, and either to the LUT's output range, or always legal.
+* Feature Change - The 'Log Info' information button is now 'Tables', and shows IRE and 10-bit values for the current output gamma, both for various common reflectances and for each of +/- 8 stops around 18% gray.
+* Feature Change - 1350% reflectance has been replaced by 1440% reflectance, to reflect the 1600% linear IRE which seems to be becoming a manufacturer reference level.
 * Bugfix - Fixed broken ACEScc input code. ACEScc as a 'Rec Gamma' option now works as expected.
 
 v2.54

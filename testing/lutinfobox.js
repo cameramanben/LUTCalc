@@ -29,7 +29,7 @@ LUTInfoBox.prototype.io = function() {
 	this.instructionsBut.value = 'Instructions';
 	this.gammaInfoBut = document.createElement('input');
 	this.gammaInfoBut.setAttribute('type','button');
-	this.gammaInfoBut.value = 'Log Info';
+	this.gammaInfoBut.value = 'Tables';
 	this.gammaChartBut = document.createElement('input');
 	this.gammaChartBut.setAttribute('type','button');
 	this.gammaChartBut.value = 'Charts';
@@ -636,7 +636,7 @@ LUTInfoBox.prototype.createInfInfo = function() {
 	this.insInfInfo.appendChild(fig1);
 	this.addInfo(this.insInfInfo,false,null,'This box contains provides information about the current LUT under construction including suggested exposure values and transfer curves, plus instructions for LUTCalc.');
 	this.addInfo(this.insInfInfo,false,'Instructions','Hopefully fairly obvious, after all here you are!');
-	this.addInfo(this.insInfInfo,false,'Log Info','This shows tables of % IRE and 10-bit values for the main log and gamma curves, plus the current output curve.');
+	this.addInfo(this.insInfInfo,false,'Tables','This shows tables of % IRE and 10-bit values for the current output curve, both for common reflectances and for stops above and below 18% gray.');
 	this.addInfo(this.insInfInfo,false,'Charts','This provides three different ways of comparing input and output levels:');
 	this.addInfo(this.insInfInfo,true,'Reflected/IRE','Reflectance levels of the scene (eg 18% gray, 90% white) against % IRE. The simplest chart, but as the x-axis is linear it is hard to read anything meaningful from it.');
 	this.addInfo(this.insInfInfo,true,'Stop/IRE','Shows the output level against input stops. Clearly shows the difference between linear/gamma (keep increasing in slope), log curves (tend towards a straight line slope in the highlights and curves with knee (tend towards a horizontal line in the highlights). Also gives a good idea of dynamic range in stops.');
@@ -997,13 +997,13 @@ LUTInfoBox.prototype.addInfo = function(infoBox,indent,title,text) {
 	infoBox.appendChild(para);
 };
 LUTInfoBox.prototype.gammaInfo = function() {
-	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,13.5]);
+	this.tableRefVals = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,14.4]);
 	this.tableIREVals = new Float64Array(7);
 	this.gammaInfoBox.setAttribute('class','graybox infobox');
 	this.addText(this.gammaInfoBox,'Output gamma including any customisations:');
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
-	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1350'], 'th'));
+	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1440'], 'th'));
 	curires.appendChild(curiresHead);
 	var curiresBody = document.createElement('tbody');
 	var curvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
@@ -1015,6 +1015,37 @@ LUTInfoBox.prototype.gammaInfo = function() {
 	curires.appendChild(curiresBody);
 	this.gammaInfoBox.appendChild(curires);
 	this.gammaInfoBox.appendChild(document.createElement('br'));
+	this.addText(this.gammaInfoBox,'Levels for stops above and below 18% gray (Stop 0)');
+	var tableStopsNeg = document.createElement('table');
+	tableStopsNeg.setAttribute('class','ire-table');
+	var tableStopsNegHead = document.createElement('thead');
+	tableStopsNegHead.appendChild(this.addRow(['Stop','-8','-7','-6','-5','-4','-3','-2','-1','0'], 'th'));
+	tableStopsNeg.appendChild(tableStopsNegHead);
+	var tableStopsNegBody = document.createElement('tbody');
+	var tableVarsNegRow = this.addRow(['10-bit','-','-','-','-','-','-','-','-','-'],'td');
+	this.tableStopsNegVals = tableVarsNegRow.getElementsByTagName('td');
+	var tableIREsNegRow = this.addRow(['%IRE','-','-','-','-','-','-','-','-','-'],'td');
+	this.tableStopsNegIREs = tableIREsNegRow.getElementsByTagName('td');
+	tableStopsNegBody.appendChild(tableIREsNegRow);
+	tableStopsNegBody.appendChild(tableVarsNegRow);
+	tableStopsNeg.appendChild(tableStopsNegBody);
+	this.gammaInfoBox.appendChild(tableStopsNeg);
+	var tableStopsPos = document.createElement('table');
+	tableStopsPos.setAttribute('class','ire-table');
+	var tableStopsPosHead = document.createElement('thead');
+	tableStopsPosHead.appendChild(this.addRow(['Stop','0','1','2','3','4','5','6','7','8'], 'th'));
+	tableStopsPos.appendChild(tableStopsPosHead);
+	var tableStopsPosBody = document.createElement('tbody');
+	var tableVarsPosRow = this.addRow(['10-bit','-','-','-','-','-','-','-','-','-'],'td');
+	this.tableStopsPosVals = tableVarsPosRow.getElementsByTagName('td');
+	var tableIREsPosRow = this.addRow(['%IRE','-','-','-','-','-','-','-','-','-'],'td');
+	this.tableStopsPosIREs = tableIREsPosRow.getElementsByTagName('td');
+	tableStopsPosBody.appendChild(tableIREsPosRow);
+	tableStopsPosBody.appendChild(tableVarsPosRow);
+	tableStopsPos.appendChild(tableStopsPosBody);
+	this.gammaInfoBox.appendChild(tableStopsPos);
+	this.gammaInfoBox.appendChild(document.createElement('br'));
+/*
 	var logvars = document.createElement('table');
 	var logvarsHead = document.createElement('thead');
 	logvarsHead.appendChild(this.addRow(['Gamma','0% Black','18% Grey (20% IRE)','90% White (100% IRE)'], 'th'));
@@ -1053,6 +1084,7 @@ LUTInfoBox.prototype.gammaInfo = function() {
 	this.gammaInfoBox.appendChild(document.createElement('br'));
 	this.addText(this.gammaInfoBox,'%IRE mappings from reflected values:');
 	this.gammaInfoBox.appendChild(gamires);
+*/
 };
 LUTInfoBox.prototype.gammaChart = function() {
 	var m = 129;
@@ -1092,7 +1124,7 @@ LUTInfoBox.prototype.gammaChart = function() {
 	this.gammaChartBox.appendChild(document.createTextNode('Output gamma including any customisations:'));
 	var curires = document.createElement('table');
 	var curiresHead = document.createElement('thead');
-	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1350'], 'th'));
+	curiresHead.appendChild(this.addRow(['Reflected %','0','18','38','44','90','720','1440'], 'th'));
 	curires.appendChild(curiresHead);
 	var curiresBody = document.createElement('tbody');
 	var curvarsRow = this.addRow(['10-bit Values','-','-','-','-','-','-','-'],'td');
@@ -1501,7 +1533,7 @@ LUTInfoBox.prototype.gammaInfoOpt = function() {
 	this.instructionsBox.style.display = 'none';
 	this.gammaInfoBox.style.display = 'block';
 	this.gammaChartBox.style.display = 'none';
-	this.gammaPrintBut.style.display = 'none';
+	this.gammaPrintBut.style.display = 'inline';
 };
 LUTInfoBox.prototype.gammaChartOpt = function() {
 	this.instructionsBox.style.display = 'none';
@@ -1591,6 +1623,23 @@ LUTInfoBox.prototype.updateTables = function() {
 			this.lutOutIREs[j+1].innerHTML = '-';
 			this.lutOutValsChart[j+1].innerHTML = '-';
 			this.lutOutIREsChart[j+1].innerHTML = '-';
+		}
+	}
+	for (var j=0; j<9; j++) {
+		if (this.stopVals[j] < -0.07305936073059) {
+			this.stopVals[j] = -0.07305936073059;
+		}
+		this.tableStopsNegIREs[j+1].innerHTML = Math.round(this.stopVals[j]*100).toString();
+		this.tableStopsNegVals[j+1].innerHTML = Math.round((this.stopVals[j]*876)+64).toString();
+		this.tableStopsPosIREs[j+1].innerHTML = Math.round(this.stopVals[j+8]*100).toString();
+		this.tableStopsPosVals[j+1].innerHTML = Math.round((this.stopVals[j+8]*876)+64).toString();
+		if (parseInt(this.tableStopsNegVals[j+1].innerHTML) > 1023) {
+			this.tableStopsNegVals[j+1].innerHTML = '-';
+			this.tableStopsNegIREs[j+1].innerHTML = '-';
+		}
+		if (parseInt(this.tableStopsPosVals[j+1].innerHTML) > 1023) {
+			this.tableStopsPosVals[j+1].innerHTML = '-';
+			this.tableStopsPosIREs[j+1].innerHTML = '-';
 		}
 	}
 };

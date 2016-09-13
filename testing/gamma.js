@@ -3690,7 +3690,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			}
 		}
 	}
-	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,13.5]);
+	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,14.4]);
 	for (var j=0; j<7; j++) {
 		table[j] /= 0.9;
 	}
