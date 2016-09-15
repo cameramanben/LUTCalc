@@ -20,10 +20,10 @@ function LUTGamma() {
 	this.stopShift = 0;
 	this.inL = false;
 	this.outL = true;
-	this.clip = false;
-	this.clipB = false;
+	this.clip = true;
+	this.clipB = true;
 	this.clipW = false;
-	this.clipL = false;
+	this.clipL = true;
 	
 	this.sIn = false;
 	this.sMin = 0;
@@ -55,6 +55,20 @@ function LUTGamma() {
 	this.blkGamR = 0.1;
 	
 	this.camClip = 11.52;
+
+	this.dGamut = new Float64Array([0.2126, 0.7152, 0.0722]);
+	this.dGamutA = new Float64Array(7);
+	this.dGamutM = new Float64Array(7);
+	this.dGamutP = new Float64Array([	0,0,1,
+										1,0,1,
+										1,0,0,
+										1,1,0,
+										0,1,0,
+										0,1,1 ]);
+	this.dGamutPb = new Float64Array(7);
+	this.dGamutPr = new Float64Array(7);
+
+	this.firstGamLim();
 
 	this.al = 1;
 	this.bl = 0;
@@ -1338,6 +1352,54 @@ LUTGamma.prototype.setBlkGam = function(params) {
 	out.blkLevel = this.blkLevel;
 	return out;
 };
+LUTGamma.prototype.setGamutLim = function(params) {
+	var out = {};
+	this.doGamutLim = false;
+	if (this.tweaks && typeof params.twkGamutLim !== 'undefined') {
+		var p = params.twkGamutLim;
+		if (typeof p.doGamutLim === 'boolean') {
+			this.doGamutLim = p.doGamutLim;	
+		}
+		if (typeof p.display === 'number') {
+			var changed = false;
+			switch (p.display) {
+				case 1: if (this.dGamut[0] !== 0.2627) { changed = true; }
+						this.dGamut = new Float64Array([0.2627, 0.6780, 0.0593]);
+						break;
+				case 0:
+				default: if (this.dGamut[0] !== 0.2126) { changed = true; }
+						this.dGamut = new Float64Array([0.2126, 0.7152, 0.0722]);
+						break;
+			}
+			if (changed) {
+				var rgb = new Float64Array(3);
+				var ycc = new Float64Array(3);
+				var i;
+				for (var j=0; j<6; j++) {
+					i = j*3;
+					rgb[0] = this.dGamutP[ i ];
+					rgb[1] = this.dGamutP[i+1];
+					rgb[2] = this.dGamutP[i+2];
+					ycc[0] = (rgb[0]*this.dGamut[0]) + (rgb[1]*this.dGamut[1]) + (rgb[2]*this.dGamut[2]);
+					ycc[1] = (rgb[2]-ycc[0])/(1-this.dGamut[2]);
+					ycc[2] = (rgb[0]-ycc[0])/(1-this.dGamut[0]);
+					this.dGamutPb[j] = ycc[1];
+					this.dGamutPr[j] = ycc[2];
+					this.dGamutM[j] = Math.pow((ycc[1]*ycc[1])+(ycc[2]*ycc[2]),0.5); // magnitude
+					this.dGamutA[j] = Math.atan2(ycc[2],ycc[1]); // angle
+					if (j>0 && this.dGamutA[j] < 0) {
+						this.dGamutA[j] += 2*Math.PI;
+					}
+				}
+				this.dGamutPb[6] = this.dGamutPb[0];
+				this.dGamutPr[6] = this.dGamutPb[0];
+				this.dGamutM[6] = this.dGamutPb[0];
+				this.dGamutA[6] = this.dGamutPb[0]+(2*Math.PI);
+			}
+		}
+	}
+	return out;
+}
 // Adjustment functions
 LUTGamma.prototype.f = function(x) {
 	x = Math.pow(2,x)/5;
@@ -1403,6 +1465,31 @@ LUTGamma.prototype.kneeVal = function(lin) {
 		}
 	}
 	return out;
+};
+LUTGamma.prototype.firstGamLim = function() {
+	var rgb = new Float64Array(3);
+	var ycc = new Float64Array(3);
+	var i;
+	for (var j=0; j<6; j++) {
+		i = j*3;
+		rgb[0] = this.dGamutP[ i ];
+		rgb[1] = this.dGamutP[i+1];
+		rgb[2] = this.dGamutP[i+2];
+		ycc[0] = (rgb[0]*this.dGamut[0]) + (rgb[1]*this.dGamut[1]) + (rgb[2]*this.dGamut[2]);
+		ycc[1] = (rgb[2]-ycc[0])/(1-this.dGamut[2]);
+		ycc[2] = (rgb[0]-ycc[0])/(1-this.dGamut[0]);
+		this.dGamutPb[j] = ycc[1];
+		this.dGamutPr[j] = ycc[2];
+		this.dGamutM[j] = Math.pow((ycc[1]*ycc[1])+(ycc[2]*ycc[2]),0.5); // magnitude
+		this.dGamutA[j] = Math.atan2(ycc[2],ycc[1]); // angle
+		if (j>0 && this.dGamutA[j] < 0) {
+			this.dGamutA[j] += 2*Math.PI;
+		}
+	}
+	this.dGamutPb[6] = this.dGamutPb[0];
+	this.dGamutPr[6] = this.dGamutPb[0];
+	this.dGamutM[6] = this.dGamutPb[0];
+	this.dGamutA[6] = this.dGamutPb[0]+(2*Math.PI);
 };
 LUTGamma.prototype.ASCCDLOut = function(buff) {
 	var vals = new Float64Array(buff);
@@ -1514,6 +1601,48 @@ LUTGamma.prototype.fcOut = function(fcBuff,outBuff) {
 		}
 	}
 };
+LUTGamma.prototype.gamutLimOut = function(buff) {
+	var out = new Float64Array(buff);
+	var m = out.length/3;
+	var i;
+	var i1,i2,ratio;
+	var ycc = new Float64Array(6);
+	for (var j=0; j<m; j++) {
+		i = j*3;
+		out[ i ] = Math.max(0,out[ i ]);
+		out[i+1] = Math.max(0,out[i+1]);
+		out[i+2] = Math.max(0,out[i+2]);
+		ycc[0] = (out[ i ]*this.dGamut[0]) + (out[i+1]*this.dGamut[1]) + (out[i+2]*this.dGamut[2]);
+		ycc[1] = (out[i+2]-ycc[0])/(1-this.dGamut[2]);
+		ycc[2] = (out[ i ]-ycc[0])/(1-this.dGamut[0]);
+		if((Math.abs(ycc[1])+Math.abs(ycc[2])) > 0.5) { // ignore grays and very desaturated colours
+			ycc[3] = Math.atan2(ycc[2],ycc[1]); // angle
+			if (ycc[3] < this.dGamutA[0]) {
+				ycc[3] += 2*Math.PI;
+			}
+			ycc[4] = Math.pow((ycc[1]*ycc[1])+(ycc[2]*ycc[2]),0.5); // magnitude
+			// get primaries and secondaries on either side
+			i1 = (Math.round(2.75*(ycc[3]-this.dGamutA[0])/Math.PI)+6)%6;
+			if (this.dGamutA[i1] > ycc[3]) {
+				i2 = i1;
+				i1 = (i1+5)%6;
+			} else {
+				i2 = (i1+1)%7;
+			}
+			// linear interpolate primary magnitude from angle difference
+			ratio = (ycc[3]-this.dGamutA[i1])/(this.dGamutA[i2]-this.dGamutA[i1]);
+			ycc[4] = ycc[4]/((ratio*this.dGamutM[i2])+((1-ratio)*this.dGamutM[i1]));
+			// find point where line between 100%s and our colour from origin cross
+			if (ycc[4] > 1) {
+				ycc[4] = 1/ycc[4];
+				ycc[5] = (ycc[0] * (1-ycc[4]));
+				out[ i ] = (out[ l ] * ycc[4]) + ycc[5];
+				out[i+1] = (out[l+1] * ycc[4]) + ycc[5];
+				out[i+2] = (out[l+2] * ycc[4]) + ycc[5];					
+			}					
+		}
+	}
+};
 LUTGamma.prototype.finalOut = function(buff,cb) {
 	var out = new Float64Array(buff);
 	var m = out.length;
@@ -1550,12 +1679,6 @@ LUTGamma.prototype.finalOut = function(buff,cb) {
 			}
 		}
 	}
-//	if (this.clip && cMin<0) {
-//		cMin = 0;
-//	}
-//	if (this.clip && cMax>1) {
-//		cMax = 1;
-//	}
 	for (var j=0; j<m; j++) {
 		if (!this.outL) {
 			out[j] = ((out[j]*876)+64)/1023;
@@ -3254,6 +3377,7 @@ LUTGamma.prototype.setParams = function(params) {
 	out.twkKnee = this.setKnee(params);
 	out.twkBlkHi = this.setBlkHi(params);
 	out.twkBlkGam = this.setBlkGam(params);
+	out.twkGamutLim = this.setGamutLim(params);
 
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -3479,6 +3603,9 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 		if (this.doBlkGam) {
 			this.blkGamOut(i.o);
 		}
+		if (this.doGamutLim) {
+			this.gamutLimOut(i.o);
+		}
 		if (i.doFC) {
 			this.fcOut(i.fc,i.o);
 		}
@@ -3583,6 +3710,19 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	var lutIn = new Float64Array(m);
 	var lutOut = new Float64Array(m);
 	var colIn = new Float64Array(m);
+	var cMin,cMax;
+	cMin = (this.bClip - 64)/876;
+	cMax = (this.wClip - 64)/876;
+	if (this.clip) {
+		if (this.outL || this.clipL) {
+			if (this.clipB && cMin<0) {
+				cMin = 0;
+			}
+			if (this.clipW && cMax>1) {
+				cMax = 1;
+			}
+		}
+	}
 	for (var j=0; j<m; j++) {
 		k = j/d;
 		refX[j] = 14*k;
@@ -3618,9 +3758,6 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			stopOut[j] *= this.eiMult;
 			lutOut[j] *= this.eiMult;
 		}
-//		for (var j=0; j<17; j++) {
-//			stopVals[j] *= this.eiMult;
-//		}
 		for (var j=0; j<17; j++) {
 			stopPreVals[j] /= this.eiMult;
 		}
@@ -3701,6 +3838,16 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 				}
 			}
 		}
+// Final clipping
+		for (var j=0; j<m; j++) {
+			refOut[ j ] = Math.min(cMax,Math.max(cMin,refOut[ j ]));
+			stopOut[ j ] = Math.min(cMax,Math.max(cMin,stopOut[ j ]));
+			lutOut[ j ] = Math.min(cMax,Math.max(cMin,lutOut[ j ]));
+		}
+		for (var j=0; j<17; j++) {
+			stopVals[ j ] = Math.min(cMax,Math.max(cMin,stopVals[ j ]));
+		}
+//
 	}
 	var table = new Float64Array([0,0.18,0.38,0.44,0.9,7.2,this.camClip]);
 	for (var j=0; j<7; j++) {
@@ -3761,18 +3908,41 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	var f = new Float64Array(i.o);
 	var max = Math.round(f.length/3);
 	var o = new Uint8Array(max*4);
+	var ycc = new Float64Array(6);
 	var k=0;
 	var l=0;
 	var r,bg;
-	var mn = -0.073;
+	var mn,mx,mx2;
+	var i1,i2;
+	var ratio;
 	if (typeof i.cb === 'boolean' && i.cb) {
 		mn = 0;
+	} else {
+		mn = (this.bClip - 64)/876;
+	}
+	mn = Math.max(mn,-0.073);
+	mx = (this.wClip - 64)/876;
+	mx = Math.min(mx,1.095);
+	if (this.clip) {
+		if (this.outL || this.clipL) {
+			if (this.clipB && mn<0) {
+				mn = 0;
+			}
+			if (this.clipW && mx>1) {
+				mx = 1;
+			}
+		}
+	}
+	if (i.leg) {
+		mx2 = 255;
+	} else {
+		mx2 = mx*255/1.095;
 	}
 	if (this.nul) {
 		for (var j=0; j<max; j++) {
-			f[ l ] = Math.min(1.095,Math.max(mn,this.gammas[this.SL3].linToLegal(f[ l ])));
-			f[l+1] = Math.min(1.095,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+1])));
-			f[l+2] = Math.min(1.095,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+2])));
+			f[ l ] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[ l ])));
+			f[l+1] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+1])));
+			f[l+2] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+2])));
 			o[ k ] = Math.min(255,Math.max(0,Math.round(f[ l ]*255)));
 			o[k+1] = Math.min(255,Math.max(0,Math.round(f[l+1]*255)));
 			o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*255)));
@@ -3865,9 +4035,45 @@ LUTGamma.prototype.preview = function(p,t,i) {
 					}
 				}
 			}
-			f[ l ] = Math.min(1.095,Math.max(mn,(f[ l ])));
-			f[l+1] = Math.min(1.095,Math.max(mn,(f[l+1])));
-			f[l+2] = Math.min(1.095,Math.max(mn,(f[l+2])));
+			if (this.doGamutLim) {
+				f[ l ] = Math.max(0,f[ l ]);
+				f[l+1] = Math.max(0,f[l+1]);
+				f[l+2] = Math.max(0,f[l+2]);
+				ycc[0] = (f[ l ]*this.dGamut[0]) + (f[l+1]*this.dGamut[1]) + (f[l+2]*this.dGamut[2]);
+				ycc[1] = (f[l+2]-ycc[0])/(1-this.dGamut[2]);
+				ycc[2] = (f[ l ]-ycc[0])/(1-this.dGamut[0]);
+				
+				if((Math.abs(ycc[1])+Math.abs(ycc[2])) > 0.5) { // ignore grays and very desaturated colours
+					ycc[3] = Math.atan2(ycc[2],ycc[1]); // angle
+					if (ycc[3] < this.dGamutA[0]) {
+						ycc[3] += 2*Math.PI;
+					}
+					ycc[4] = Math.pow((ycc[1]*ycc[1])+(ycc[2]*ycc[2]),0.5); // magnitude
+
+					// get primaries and secondaries on either side
+					i1 = (Math.round(2.75*(ycc[3]-this.dGamutA[0])/Math.PI)+6)%6;
+					if (this.dGamutA[i1] > ycc[3]) {
+						i2 = i1;
+						i1 = (i1+5)%6;
+					} else {
+						i2 = (i1+1)%7;
+					}
+					// linear interpolate primary magnitude from angle difference
+					ratio = (ycc[3]-this.dGamutA[i1])/(this.dGamutA[i2]-this.dGamutA[i1]);
+					ycc[4] = ycc[4]/((ratio*this.dGamutM[i2])+((1-ratio)*this.dGamutM[i1]));
+					// find point where line between 100%s and our colour from origin cross
+					if (ycc[4] > 1) {
+						ycc[4] = 1/ycc[4];
+						ycc[5] = (ycc[0] * (1-ycc[4]));
+						f[ l ] = (f[ l ] * ycc[4]) + ycc[5];
+						f[l+1] = (f[l+1] * ycc[4]) + ycc[5];
+						f[l+2] = (f[l+2] * ycc[4]) + ycc[5];					
+					}					
+				}
+			}
+			f[ l ] = Math.min(mx,Math.max(mn,(f[ l ])));
+			f[l+1] = Math.min(mx,Math.max(mn,(f[l+1])));
+			f[l+2] = Math.min(mx,Math.max(mn,(f[l+2])));
 			if (i.doFC) {
 				switch(fc[j]) {
 					case 0: f[ l ] = 0.75;	f[l+1] = 0;		f[l+2] = 0.75;	// Purple
@@ -3887,14 +4093,14 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				}
 			}
 			if (i.leg) {
-				o[ k ] = Math.min(255,Math.max(0,Math.round(f[ l ]*255)));
-				o[k+1] = Math.min(255,Math.max(0,Math.round(f[l+1]*255)));
-				o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*255)));
+				o[ k ] = Math.min(mx2,Math.max(0,Math.round(f[ l ]*255)));
+				o[k+1] = Math.min(mx2,Math.max(0,Math.round(f[l+1]*255)));
+				o[k+2] = Math.min(mx2,Math.max(0,Math.round(f[l+2]*255)));
 				o[k+3] = 255;
 			} else {
-				o[ k ] = Math.min(255,Math.max(0,Math.round(f[ l ]*239)));
-				o[k+1] = Math.min(255,Math.max(0,Math.round(f[l+1]*239)));
-				o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*239)));
+				o[ k ] = Math.min(mx2,Math.max(0,Math.round(f[ l ]*239)));
+				o[k+1] = Math.min(mx2,Math.max(0,Math.round(f[l+1]*239)));
+				o[k+2] = Math.min(mx2,Math.max(0,Math.round(f[l+2]*239)));
 				o[k+3] = 255;
 			}
 			k += 4;

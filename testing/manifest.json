@@ -36,6 +36,7 @@
 				"twk-psstcdl.js",
 				"twk-hg.js",
 				"twk-multi.js",
+				"twk-gamlim.js",
 				"twk-knee.js",
 				"twk-blkhi.js",
 				"twk-blkgam.js",

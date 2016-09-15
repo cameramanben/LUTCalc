@@ -151,6 +151,7 @@ LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
 };
 LUTGenerateBox.prototype.generate = function() {
 	this.doSet = false;
+	this.inputs.doSaveDialog = 1;
 	if (this.inputs.d[0].checked) {
 		this.oneDLUT();
 	} else {
@@ -159,6 +160,7 @@ LUTGenerateBox.prototype.generate = function() {
 };
 LUTGenerateBox.prototype.generateSet = function() {
 	this.doSet = true;
+	this.inputs.doSaveDialog = 2;
 	this.currentName = this.inputs.name.value;
 	this.currentStop = this.inputs.stopShift.value;
 	this.setMin = parseFloat(this.genSetMin.options[this.genSetMin.selectedIndex].value);
@@ -301,6 +303,7 @@ LUTGenerateBox.prototype.got3D = function(d) {
 LUTGenerateBox.prototype.saved = function(success) {
 	if (this.inputs.isApp || this.inputs.isChromeApp) {
 		if (success && this.doSet && this.setPass < this.setTotal) {
+			this.inputs.doSaveDialog = 0;
 			this.setVal += 1/this.setStep;
 			this.setPass++;
 			this.inputs.stopShift.value = Math.round(this.setVal*100)/100;
@@ -321,6 +324,7 @@ LUTGenerateBox.prototype.saved = function(success) {
 				this.inputs.stopShift.value = this.currentStop;
 			}
 			this.doSet = false;
+			this.inputs.doSaveDialog = 1;
 			this.setVal = this.setMin;
 			this.setPass = 1;
 			modalBox.className = 'modalbox-hide';

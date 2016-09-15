@@ -18,10 +18,11 @@ function LUTFile(inputs, messages) {
 	} catch(e){
 		this.filesaver = false;
 	}
+	this.inputs.addInput('doSaveDialog',1);
 }
 LUTFile.prototype.save = function(data, fileName, extension, source) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension, source);
+        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
 			{
@@ -60,7 +61,7 @@ LUTFile.prototype.save = function(data, fileName, extension, source) {
 };
 LUTFile.prototype.saveBinary = function(data, fileName, extension, source) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension, source);
+        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
 			{

@@ -267,9 +267,9 @@ LUTLutBox.prototype.ui = function() {
 	this.lutClip.appendChild(this.lutClipSelect);
 	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
 	this.lutClipLegalCheck.setAttribute('type','checkbox');
-	this.lutClipLegalCheck.checked = false;
+	this.lutClipLegalCheck.checked = true;
 	this.clipLegalBox.appendChild(this.lutClipLegalCheck);
-	this.clipLegalBox.style.display = 'none';
+	this.clipLegalBox.style.display = 'inline';
 	this.lutClip.appendChild(this.clipLegalBox);
 //	this.lutClipCheck.setAttribute('type','checkbox');
 //	this.lutClipCheck.checked = false;
@@ -345,7 +345,8 @@ LUTLutBox.prototype.buildClipSelect = function() {
 	var optWhite = document.createElement('option');
 	optWhite.value = 3;
 	optWhite.innerHTML = 'White Only';
-	this.lutClipSelect.appendChild(optWhite);	
+	this.lutClipSelect.appendChild(optWhite);
+	this.lutClipSelect.options[2].selected = true;	
 };
 LUTLutBox.prototype.cleanName = function() {
 	this.lutName.value = this.lutName.value.replace(/[/"/']/gi, '');
