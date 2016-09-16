@@ -113,7 +113,7 @@ TWKGamutLim.prototype.setSettings = function(settings) {
 				case 'Rec2020 / Rec2100': this.gamSelect.options[1].selected = true;
 					break;
 				case 'Rec709 / sRGB':
-				default: this.gamselect.options[0].selected = true;
+				default: this.gamSelect.options[0].selected = true;
 					break;
 			}
 		}
