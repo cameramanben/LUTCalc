@@ -748,7 +748,7 @@ LUTFormats.prototype.updateOptions = function() {
 //			this.inputs.clipCheck.disabled = false;
 //			this.inputs.clipCheck.checked = false;
 			this.inputs.clipSelect.disabled = false;
-			this.inputs.clipSelect.options[0].selected = true;
+			this.inputs.clipSelect.options[2].selected = true;
 		}
 	}
 	this.messages.displayCLC();
@@ -874,7 +874,7 @@ LUTFormats.prototype.resetOptions = function() {
 //	this.inputs.clipCheck.disabled = false;
 //	this.inputs.clipCheck.checked = false;
 	this.inputs.clipSelect.disabled = false;
-	this.inputs.clipSelect.options[0].selected = true;
+	this.inputs.clipSelect.options[2].selected = true;
 	this.messages.displayCLC();
 };
 LUTFormats.prototype.output = function(buff) {
