@@ -173,13 +173,17 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gammaDat.push(true);
 	this.gammas.push(new LUTGammaLog(
-		'BMD Film', [ 0.235007442, -0.021824371, 0.367608584, 3.806255082, 10, 0.424864581, 0.123774409, 0.114884702, 0.005175 ]));
+		'BMD Film', [ 0.261115778, -0.024248528, 0.367608577, 0.86786483, 10, 0.644065346, 0.03135747, 0.114002127, 0.005519226 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gammaDat.push(false);
 	this.gammas.push(new LUTGammaLog(
-		'BMD Film4k', [ 0.335139188, -0.031122728, 0.582240631, 2.733951639, 10, 0.477563161, 0.218018711, 0.10830634, 0.005175 ]));
+		'BMD Film4k', [ 0.37237694, -0.034580801, 0.582240088, 2.617961052, 10, 0.461883884, 0.231964429, 0.10772883, 0.005534931 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaLog(
+		'BMD Film4.6k', [ 0.195367159, -0.014273567, 0.36274758, 1.05345192, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 ]));
+	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
+	this.gammaDat.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Protune', [ 0,0, 876/1023, 53.39427221, 113, 64/1023, 1, 0, 0 ]));
 	this.gammaSub.push([this.subIdx('GoPro'),this.subIdx('Log')]);
