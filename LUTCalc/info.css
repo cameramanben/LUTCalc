@@ -81,20 +81,20 @@
 }
 #ins-main-gen {
 	background-image: url('pngs/main-but-gen.png');
-	background-size:3.04em 0.5em;
-	width:3.04em;
+	background-size:2.83em 0.5em;
+	width:2.83em;
 	height:0.5em;
 }
-#ins-main-sav {
-	background-image: url('pngs/main-but-sav.png');
-	background-size:3.04em 0.5em;
-	width:3.04em;
+#ins-main-gst {
+	background-image: url('pngs/main-but-gst.png');
+	background-size:2.83em 0.5em;
+	width:2.83em;
 	height:0.5em;
 }
-#ins-main-lod {
-	background-image: url('pngs/main-but-lod.png');
-	background-size:2.96em 0.5em;
-	width:2.96em;
+#ins-main-set {
+	background-image: url('pngs/main-but-set.png');
+	background-size:1.88em 0.5em;
+	width:1.88em;
 	height:0.5em;
 }
 #ins-main-inf {
@@ -130,6 +130,12 @@
 	background-size:21em 8.58em;
 	width:21em;
 	height:8.58em;
+}
+#ins-lut-2 {
+	background-image: url('pngs/ins-lut-2.png');
+	background-size:21em 3.61em;
+	width:21em;
+	height:3.61em;
 }
 #ins-pre-1 {
 	background-image: url('pngs/ins-pre-1.jpg');

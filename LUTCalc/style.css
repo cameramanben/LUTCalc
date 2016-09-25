@@ -59,6 +59,9 @@
     z-index:999;
 }
 .modalbox-hide {display:none;}
+.ref-table {margin-bottom: 0.5em;}
+.ire-table {table-layout: fixed; margin-bottom: 0.4em;}
+.ire-table td {width:3.25em;}
 /* LUT options */
 .lut-opt { display: inline; }
 .lut-opt-hide { display: none; }
@@ -512,6 +515,14 @@ background:transparent;
 .settings-popup { position:fixed; top: 10em; left: 50%; display:block;
 }
 .settings-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
+}
+.lutset-popup { position:fixed; top: 10em; left: 50%; display:block;
+}
+.lutset-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
+}
+.setprog-popup { position:fixed; top: 10em; left: 50%; display:block;
+}
+.setprog-popup-hide { position:fixed; top: 10em; left: 50%; display:none;
 }
 .picker-can {display:inline-block;cursor: crosshair; z-index: 1;}
 .picker-info {display:inline-block;padding-top:2em;vertical-align:top;width: 10em;}

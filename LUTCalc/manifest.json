@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "2.54",
+	"version": "2.60",
 	"manifest_version": 2,
 	"minimum_chrome_version": "23",
 	"app": {
@@ -36,6 +36,7 @@
 				"twk-psstcdl.js",
 				"twk-hg.js",
 				"twk-multi.js",
+				"twk-gamlim.js",
 				"twk-knee.js",
 				"twk-blkhi.js",
 				"twk-blkgam.js",

@@ -116,8 +116,14 @@ LUTLutBox.prototype.io = function() {
 	this.nikonHue.setAttribute('value',0);
 	this.inputs.addInput('nikonHue',this.nikonHue);
 	this.nikonHueLabel = document.createElement('label');
-	this.lutClipCheck = document.createElement('input');
-	this.inputs.addInput('clipCheck',this.lutClipCheck);
+//	this.lutClipCheck = document.createElement('input');
+//	this.inputs.addInput('clipCheck',this.lutClipCheck);
+	this.lutClipSelect = document.createElement('select');
+	this.inputs.addInput('clipSelect',this.lutClipSelect);
+	this.clipLegalBox = document.createElement('div');
+	this.lutClipLegalCheck = document.createElement('input');
+	this.inputs.addInput('clipLegalCheck',this.lutClipLegalCheck);
+	this.buildClipSelect();
 };
 LUTLutBox.prototype.ui = function() {
 	// LUT title / filename
@@ -257,10 +263,17 @@ LUTLutBox.prototype.ui = function() {
 	// 0-1.0 hard clip checkbox
 	this.lutClip = document.createElement('div');
 	this.lutClip.setAttribute('class','emptybox');
-	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip 0-1.0')));
-	this.lutClipCheck.setAttribute('type','checkbox');
-	this.lutClipCheck.checked = false;
-	this.lutClip.appendChild(this.lutClipCheck);
+	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip')));
+	this.lutClip.appendChild(this.lutClipSelect);
+	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.lutClipLegalCheck.setAttribute('type','checkbox');
+	this.lutClipLegalCheck.checked = true;
+	this.clipLegalBox.appendChild(this.lutClipLegalCheck);
+	this.clipLegalBox.style.display = 'inline';
+	this.lutClip.appendChild(this.clipLegalBox);
+//	this.lutClipCheck.setAttribute('type','checkbox');
+//	this.lutClipCheck.checked = false;
+//	this.lutClip.appendChild(this.lutClipCheck);
 	this.lutUsage.appendChild(document.createElement('br'));
 	this.lutUsage.appendChild(this.lutClip);
 };
@@ -269,9 +282,16 @@ LUTLutBox.prototype.events = function() {
 		here.cleanName();
 		lutFile.filename();
 	};}(this);
-	this.lutClipCheck.onchange = function(here){ return function(){
+	this.lutClipSelect.onchange = function(here){ return function(){
+		here.displayCLC();
 		here.messages.gaSetParams();
 	};}(this);
+	this.lutClipLegalCheck.onchange = function(here){ return function(){
+		here.messages.gaSetParams();
+	};}(this);
+//	this.lutClipCheck.onchange = function(here){ return function(){
+//		here.messages.gaSetParams();
+//	};}(this);
 	this.lutOneD.onchange = function(here){ return function(){
 		here.messages.oneOrThree();
 	};}(this);
@@ -285,9 +305,11 @@ LUTLutBox.prototype.events = function() {
 		here.messages.gaSetParams();
 	};}(this);
 	this.lutOutLegal.onchange = function(here){ return function(){
+		here.displayCLC();
 		here.messages.gaSetParams();
 	};}(this);
 	this.lutOutData.onchange = function(here){ return function(){
+		here.displayCLC();
 		here.messages.gaSetParams();
 	};}(this);
 	this.scaleMin.oninput = function(here){ return function(){
@@ -307,6 +329,25 @@ LUTLutBox.prototype.events = function() {
 	};}(this);
 };
 // Set Up Data
+LUTLutBox.prototype.buildClipSelect = function() {
+	var optNone = document.createElement('option');
+	optNone.value = 0;
+	optNone.innerHTML = 'Unclipped';
+	this.lutClipSelect.appendChild(optNone);
+	var optBoth = document.createElement('option');
+	optBoth.value = 1;
+	optBoth.innerHTML = 'Both B&W';
+	this.lutClipSelect.appendChild(optBoth);
+	var optBlack = document.createElement('option');
+	optBlack.value = 2;
+	optBlack.innerHTML = 'Black Only';
+	this.lutClipSelect.appendChild(optBlack);
+	var optWhite = document.createElement('option');
+	optWhite.value = 3;
+	optWhite.innerHTML = 'White Only';
+	this.lutClipSelect.appendChild(optWhite);
+	this.lutClipSelect.options[2].selected = true;	
+};
 LUTLutBox.prototype.cleanName = function() {
 	this.lutName.value = this.lutName.value.replace(/[/"/']/gi, '');
 };
@@ -350,7 +391,9 @@ LUTLutBox.prototype.getSettings = function(data) {
 		meshSize: meshSize,
 		legalIn: this.lutInLegal.checked,
 		legalOut: this.lutOutLegal.checked,
-		hardClip: this.lutClipCheck.checked,
+//		hardClip: this.lutClipCheck.checked,
+		clipOption: parseInt(this.lutClipSelect.options[this.lutClipSelect.selectedIndex].value),
+		clipLegal: this.lutClipLegalCheck.checked,
 		grading: this.gradeOpt.checked,
 		gradeOption: this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
 		mlutOption: this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
@@ -387,9 +430,26 @@ LUTLutBox.prototype.setSettings = function(settings) {
 		if (typeof data.legalOut === 'boolean') {
 			this.lutOutLegal.checked = data.legalOut;
 			this.lutOutData.checked = !data.legalOut;
+			this.displayCLC();
 		}
 		if (typeof data.hardClip === 'boolean') {
-			this.lutClipCheck.checked = data.hardClip;
+//			this.lutClipCheck.checked = data.hardClip;
+			if (data.hardClip) {
+				this.lutClipSelect.options[1].selected = true;
+			} else {
+				this.lutClipSelect.options[0].selected = true;
+			}
+		}
+		if (typeof data.clipOption === 'number') {
+			for (var j=0; j<4; j++) {
+				if (parseFloat(this.lutClipSelect.options[j].value) === data.clipOption) {
+					this.lutClipSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.clipLegal === 'boolean') {
+			this.lutClipLegalCheck.checked = data.clipLegal;
 		}
 		if (typeof data.scaleMin === 'number') {
 			this.scaleMin.value = data.scaleMin;
@@ -451,11 +511,16 @@ LUTLutBox.prototype.getInfo = function(info) {
 	} else {
 		info.mlut = false;
 	}
-	if (this.lutClipCheck.checked) {
+	if (this.lutClipSelect.selectedIndex > 0) {
 		info.hardClip = true;
 	} else {
 		info.hardClip = false;
 	}
+//	if (this.lutClipCheck.checked) {
+//		info.hardClip = true;
+//	} else {
+//		info.hardClip = false;
+//	}
 	if (this.lutInLegal.checked) {
 		info.legalIn = true;
 	} else {
@@ -474,4 +539,11 @@ LUTLutBox.prototype.getInfo = function(info) {
 	info.nikonSharp = parseInt(this.nikonShr.value);
 	info.nikonSat = parseInt(this.nikonSat.value);
 	info.nikonHue = parseInt(this.nikonHue.value);
+};
+LUTLutBox.prototype.displayCLC = function() {
+	if (this.lutClipSelect.selectedIndex > 0 && this.lutOutData.checked) {
+		this.clipLegalBox.style.display = 'inline'
+	} else {
+		this.clipLegalBox.style.display = 'none';
+	}
 };

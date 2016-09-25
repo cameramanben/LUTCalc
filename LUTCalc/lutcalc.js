@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Build UI
 	lutMessage = new LUTMessage(lutInputs);
 	lutTests.isTransTest(lutMessage.getWorker());
-	lutFile = new LUTFile(lutInputs);
+	lutFile = new LUTFile(lutInputs, lutMessage);
 	lutFormats = new LUTFormats(lutInputs, lutMessage, lutFile);
 	document.getElementById('version').appendChild(document.createTextNode(lutInputs.version));
 	// Create HTML Structure

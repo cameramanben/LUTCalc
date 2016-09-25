@@ -9,18 +9,20 @@
 * First License: GPLv2
 * Github: https://github.com/cameramanben/LUTCalc
 */
-function LUTFile(inputs) {
+function LUTFile(inputs, messages) {
 	this.inputs = inputs;
+	this.messages = messages;
 	this.filesaver = true;
 	try {
 		var isFileSaverSupported = !!new Blob();
 	} catch(e){
 		this.filesaver = false;
 	}
+	this.inputs.addInput('doSaveDialog',1);
 }
-LUTFile.prototype.save = function(data, fileName, extension) {
+LUTFile.prototype.save = function(data, fileName, extension, source) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension);
+        return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
 			{
@@ -35,11 +37,13 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 				writableFileEntry.createWriter(
 					function(writer) {
 						writer.onwriteend = function(e) {
-							notifyUser('LUTCalc',writableFileEntry.name + ' saved');
+							savedFromApp(source, 1);
+							notifyUser('LUTCalc',source + writableFileEntry.name + ' saved');
 						};
 						writer.write(new Blob([data],{type: 'text/plain;charset=UTF-8'})); 
 					},
 					function() {
+						savedFromApp(source, 0);
 						notifyUser('LUTCalc','File could not be saved');
 					}
 				);
@@ -47,15 +51,17 @@ LUTFile.prototype.save = function(data, fileName, extension) {
 		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'text/plain;charset=UTF-8'}), this.filename(fileName) + '.' + extension,true);
+        this.messages.saved(source, true);
 		return true;
 	} else { // Fall back to opening LUT in a new tab for user to save with 'Save As...'
 		window.open("data:text/plain," + encodeURIComponent(data),"_blank");
+		this.messages.saved(source, true);
 		return true;
 	}
 };
-LUTFile.prototype.saveBinary = function(data, fileName, extension) {
+LUTFile.prototype.saveBinary = function(data, fileName, extension, source) {
     if (this.inputs.isApp) { // From native app detection in lutcalc.js
-        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension);
+        return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
 			{
@@ -70,11 +76,13 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 				writableFileEntry.createWriter(
 					function(writer) {
 						writer.onwriteend = function(e) {
+							savedFromApp(source, 1);
 							notifyUser('LUTCalc',writableFileEntry.name + ' saved');
 						};
 						writer.write(new Blob([data],{type: 'application/octet-stream'})); 
 					},
 					function() {
+						savedFromApp(source, 0);
 						notifyUser('LUTCalc','File could not be saved');
 					}
 				);
@@ -82,9 +90,11 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension) {
 		);
     } else if (this.filesaver) { // Detect FileSaver.js applicability for browsers other than Safari and older IE
 		saveAs(new Blob([data], {type: 'application/octet-stream'}), this.filename(fileName) + '.' + extension,true);
+    	this.messages.saved(source, true);
 		return true;
 	} else { 
 		console.log('Browser does not support file saving.');
+    	this.messages.saved(source, false);
 		return false;
 	}
 };
@@ -249,4 +259,11 @@ function loadImgFromApp(format, title, content, destination, parentIdx, next) {
          theDestination.imageData[ j ] = sample;
      }
      nextObject.followUp(parseInt(next));
+}
+function savedFromApp(source, success) {
+    if (parseInt(success) === 1) {
+        lutMessage.saved(parseInt(source), true);
+    } else {
+        lutMessage.saved(parseInt(source), false);
+    }
 }

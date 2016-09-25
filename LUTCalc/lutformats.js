@@ -740,13 +740,18 @@ LUTFormats.prototype.updateOptions = function() {
 	// Release hard clip option
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.hard) {
-			this.inputs.clipCheck.disabled = true;
-			this.inputs.clipCheck.checked = true;
+//			this.inputs.clipCheck.disabled = true;
+//			this.inputs.clipCheck.checked = true;
+			this.inputs.clipSelect.disabled = true;
+			this.inputs.clipSelect.options[1].selected = true;
 		} else {
-			this.inputs.clipCheck.disabled = false;
-			this.inputs.clipCheck.checked = false;
+//			this.inputs.clipCheck.disabled = false;
+//			this.inputs.clipCheck.checked = false;
+			this.inputs.clipSelect.disabled = false;
+			this.inputs.clipSelect.options[2].selected = true;
 		}
 	}
+	this.messages.displayCLC();
 	// Line up current and changed indeces
 	this.curIdx = idx;
 };
@@ -805,6 +810,7 @@ LUTFormats.prototype.updateGammaOut = function() {
 			this.inputs.outRange[1].checked = true;
 		}
 	}
+	this.messages.displayCLC();
 	this.lastGamma = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
 };
 LUTFormats.prototype.resetOptions = function() {
@@ -865,8 +871,11 @@ LUTFormats.prototype.resetOptions = function() {
 	this.inputs.bClip = cur.bClip;
 	this.inputs.wClip = cur.wClip;
 	// Release hard clip option
-	this.inputs.clipCheck.disabled = false;
-	this.inputs.clipCheck.checked = false;
+//	this.inputs.clipCheck.disabled = false;
+//	this.inputs.clipCheck.checked = false;
+	this.inputs.clipSelect.disabled = false;
+	this.inputs.clipSelect.options[2].selected = true;
+	this.messages.displayCLC();
 };
 LUTFormats.prototype.output = function(buff) {
 	var idx;
@@ -878,9 +887,9 @@ LUTFormats.prototype.output = function(buff) {
 	var out = this.formats[idx].build(buff, this.inputs.name.value, this.exts[idx]);
 	if (out) {
 		if (this.txt[idx]) {
-			this.file.save(out.lut, out.fileName, out.ext);
+			this.file.save(out.lut, out.fileName, out.ext, 1);
 		} else {
-			this.file.saveBinary(out.lut, out.fileName, out.ext);
+			this.file.saveBinary(out.lut, out.fileName, out.ext, 1);
 		}
 	}
 };

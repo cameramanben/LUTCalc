@@ -1,6 +1,16 @@
 LUTCalc Changelog
 =================
 
+v2.60
+-----
+* New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.
+* New Feature - Gamut Limiter. Aims to contain the YPbPr of the output to within the display's range (Rec709/sRGB or Rec2020) when going from a wide gamut to a narrower one, even if the luminance is above legal and extended.
+* Feature Change - White and Black clipping can be set individually, and either to the LUT's output range, or always legal.
+* Feature Change - Preview display and charts now reflect any legal-range clipping applied.
+* Feature Change - The 'Log Info' information button is now 'Tables', and shows IRE and 10-bit values for the current output gamma, both for various common reflectances and for each of +/- 8 stops around 18% gray.
+* Feature Change - 1350% reflectance has been replaced by 'Clip', to reflect the white clip level of the currently selected camera.
+* Bugfix - Fixed broken ACEScc input code. ACEScc as a 'Rec Gamma' option now works as expected.
+
 v2.54
 -----
 * Feature Change / Bugfix - RED Log3G10 code updated to version 2 of the spec, with bugfix to the chart input gamma code.
