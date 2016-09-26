@@ -4067,6 +4067,11 @@ LUTGamma.prototype.preview = function(p,t,i) {
 					ycc[4] = ycc[4]/((ratio*this.dGamutM[i2])+((1-ratio)*this.dGamutM[i1]));
 					// find point where line between 100%s and our colour from origin cross
 					if (ycc[4] > 1) {
+//						ycc[1] /= ycc[4];
+//						ycc[2] /= ycc[4];
+//						f[ l ] = (ycc[2]*(1-this.dGamut[0]))+ycc[0];
+//						f[l+2] = (ycc[1]*(1-this.dGamut[2]))+ycc[0];
+//						f[l+1] = (ycc[0] - (f[ l ]*this.dGamut[0]) - (f[l+2]*this.dGamut[2]))/this.dGamut[1];
 						ycc[4] = 1/ycc[4];
 						ycc[5] = (ycc[0] * (1-ycc[4]));
 						f[ l ] = (f[ l ] * ycc[4]) + ycc[5];
@@ -4283,11 +4288,59 @@ LUTGamma.prototype.changePQ = function(p,t,i) {
 	return out;
 };
 // Web worker messaging functions
-LUTGamma.prototype.logMsg = function(message) {
-	sendMessage({msg:true,details:message});
-};
-function sendMessage(d) {
-	if (gammas.isTrans && typeof d.to !== 'undefined') {
+function LUTGammaWorker() {
+	this.gammas = new LUTGamma();
+	addEventListener('message', function(e) {
+		var d = e.data;
+		if (typeof d.t === 'undefined') {
+		} else if (d.t !== 0 && d.t < 20 && d.v !== lutGammaWorker.gammas.ver) {
+			postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
+		} else {
+			switch (d.t) {
+				case 0:	lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.setParams(d.d));
+						break;
+				case 1: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
+						break;
+				case 2: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.laCalcRGB(d.p,d.t,d.d));
+						break;
+				case 3: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.inCalcRGB(d.p,d.t,d.d)); 
+						break;
+				case 4: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.outCalcRGB(d.p,d.t,d.d)); 
+						break;
+				case 5: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.getLists(d.p,d.t)); 
+						break;
+				case 6: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.setLA(d.p,d.t,d.d)); 
+						break;
+				case 7: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.setLATitle(d.p,d.t,d.d)); 
+						break;
+				case 8: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.SL3Val(d.p,d.t,d.d)); 
+						break;
+				case 9: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.laCalcInput(d.p,d.t,d.d)); 
+						break;
+				case 10:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.ioNames(d.p,d.t));
+						break;
+				case 11:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.chartVals(d.p,d.t));
+						break;
+				case 12:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.preview(d.p,d.t,d.d));
+						break;
+				case 14:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.previewLin(d.p,d.t,d.d));
+						break;
+				case 15:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.getPrimaries(d.p,d.t,d.d));
+						break;
+				case 16:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.psstColours(d.p,d.t,d.d));
+						break;
+				case 17:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.multiColours(d.p,d.t,d.d));
+						break;
+				case 18:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.chartRGB(d.p,d.t,d.d));
+						break;
+				case 19:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.changePQ(d.p,d.t,d.d));
+						break;
+			}
+		}
+	}, false);
+}
+LUTGammaWorker.prototype.sendGammaMessage = function(d) {
+	if (this.gammas.isTrans && typeof d.to !== 'undefined') {
 		var max = d.to.length;
 		var objArray = [];
 		for (var j=0; j < max; j++) {
@@ -4297,57 +4350,121 @@ function sendMessage(d) {
 	} else {
 		postMessage(d);
 	}
+};
+// Stringify for inline Web Worker
+function getGammaWorkerString() {
+	var out = "";
+	// Main Object Function
+	out += LUTGamma.toString() + "\n";
+	for (var j in LUTGamma.prototype) {
+		out += 'LUTGamma.prototype.' + j + '=' + LUTGamma.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLog
+	out += LUTGammaLog.toString() + "\n";
+	for (var j in LUTGammaLog.prototype) {
+		out += 'LUTGammaLog.prototype.' + j + '=' + LUTGammaLog.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLogClip
+	out += LUTGammaLogClip.toString() + "\n";
+	for (var j in LUTGammaLogClip.prototype) {
+		out += 'LUTGammaLogClip.prototype.' + j + '=' + LUTGammaLogClip.prototype[j].toString() + "\n";
+	}
+	// LUTGammaCineon
+	out += LUTGammaCineon.toString() + "\n";
+	for (var j in LUTGammaCineon.prototype) {
+		out += 'LUTGammaCineon.prototype.' + j + '=' + LUTGammaCineon.prototype[j].toString() + "\n";
+	}
+	// LUTGammaArri
+	out += LUTGammaArri.toString() + "\n";
+	for (var j in LUTGammaArri.prototype) {
+		out += 'LUTGammaArri.prototype.' + j + '=' + LUTGammaArri.prototype[j].toString() + "\n";
+	}
+	// LUTGammaCLog3
+	out += LUTGammaCLog3.toString() + "\n";
+	for (var j in LUTGammaCLog3.prototype) {
+		out += 'LUTGammaCLog3.prototype.' + j + '=' + LUTGammaCLog3.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLogLog
+	out += LUTGammaLogLog.toString() + "\n";
+	for (var j in LUTGammaLogLog.prototype) {
+		out += 'LUTGammaLogLog.prototype.' + j + '=' + LUTGammaLogLog.prototype[j].toString() + "\n";
+	}
+	// LUTGammaGam
+	out += LUTGammaGam.toString() + "\n";
+	for (var j in LUTGammaGam.prototype) {
+		out += 'LUTGammaGam.prototype.' + j + '=' + LUTGammaGam.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLin
+	out += LUTGammaLin.toString() + "\n";
+	for (var j in LUTGammaLin.prototype) {
+		out += 'LUTGammaLin.prototype.' + j + '=' + LUTGammaLin.prototype[j].toString() + "\n";
+	}
+	// LUTGammaRec2100PQ
+	out += LUTGammaRec2100PQ.toString() + "\n";
+	for (var j in LUTGammaRec2100PQ.prototype) {
+		out += 'LUTGammaRec2100PQ.prototype.' + j + '=' + LUTGammaRec2100PQ.prototype[j].toString() + "\n";
+	}
+	// LUTGammaPQ
+	out += LUTGammaPQ.toString() + "\n";
+	for (var j in LUTGammaPQ.prototype) {
+		out += 'LUTGammaPQ.prototype.' + j + '=' + LUTGammaPQ.prototype[j].toString() + "\n";
+	}
+	// LUTGammaHLG
+	out += LUTGammaHLG.toString() + "\n";
+	for (var j in LUTGammaHLG.prototype) {
+		out += 'LUTGammaHLG.prototype.' + j + '=' + LUTGammaHLG.prototype[j].toString() + "\n";
+	}
+	// LUTGammaITUProp
+	out += LUTGammaITUProp.toString() + "\n";
+	for (var j in LUTGammaITUProp.prototype) {
+		out += 'LUTGammaITUProp.prototype.' + j + '=' + LUTGammaITUProp.prototype[j].toString() + "\n";
+	}
+	// LUTGammaBBC283
+	out += LUTGammaBBC283.toString() + "\n";
+	for (var j in LUTGammaBBC283.prototype) {
+		out += 'LUTGammaBBC283.prototype.' + j + '=' + LUTGammaBBC283.prototype[j].toString() + "\n";
+	}
+	// LUTGammaACEScc
+	out += LUTGammaACEScc.toString() + "\n";
+	for (var j in LUTGammaACEScc.prototype) {
+		out += 'LUTGammaACEScc.prototype.' + j + '=' + LUTGammaACEScc.prototype[j].toString() + "\n";
+	}
+	// LUTGammaACESProxy
+	out += LUTGammaACESProxy.toString() + "\n";
+	for (var j in LUTGammaACESProxy.prototype) {
+		out += 'LUTGammaACESProxy.prototype.' + j + '=' + LUTGammaACESProxy.prototype[j].toString() + "\n";
+	}
+	// LUTGammaGen
+	out += LUTGammaGen.toString() + "\n";
+	for (var j in LUTGammaGen.prototype) {
+		out += 'LUTGammaGen.prototype.' + j + '=' + LUTGammaGen.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLUT
+	out += LUTGammaLUT.toString() + "\n";
+	for (var j in LUTGammaLUT.prototype) {
+		out += 'LUTGammaLUT.prototype.' + j + '=' + LUTGammaLUT.prototype[j].toString() + "\n";
+	}
+	// LUTGammaIOLUT
+	out += LUTGammaIOLUT.toString() + "\n";
+	for (var j in LUTGammaIOLUT.prototype) {
+		out += 'LUTGammaIOLUT.prototype.' + j + '=' + LUTGammaIOLUT.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLA
+	out += LUTGammaLA.toString() + "\n";
+	for (var j in LUTGammaLA.prototype) {
+		out += 'LUTGammaLA.prototype.' + j + '=' + LUTGammaLA.prototype[j].toString() + "\n";
+	}
+	// LUTGammaNull
+	out += LUTGammaNull.toString() + "\n";
+	for (var j in LUTGammaNull.prototype) {
+		out += 'LUTGammaNull.prototype.' + j + '=' + LUTGammaNull.prototype[j].toString() + "\n";
+	}
+	// LUTGammaWorker
+	out += LUTGammaWorker.toString() + "\n";
+	for (var j in LUTGammaWorker.prototype) {
+		out += 'LUTGammaWorker.prototype.' + j + '=' + LUTGammaWorker.prototype[j].toString() + "\n";
+	}
+	out += 'var lutGammaWorker = new LUTGammaWorker();' + "\n";
+	return out;
 }
-if (typeof importScripts === 'function') {
-	importScripts('lut.js');
-	var gammas = new LUTGamma();
-	var trans = false;
-	addEventListener('message', function(e) {
-		var d = e.data;
-		if (typeof d.t === 'undefined') {
-		} else if (d.t !== 0 && d.t < 20 && d.v !== gammas.ver) {
-			postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
-		} else {
-			switch (d.t) {
-				case 0:	sendMessage(gammas.setParams(d.d));
-						break;
-				case 1: sendMessage(gammas.oneDCalc(d.p,d.t,d.d)); // Calculate 1D (gamma only) conversion from input to output
-						break;
-				case 2: sendMessage(gammas.laCalcRGB(d.p,d.t,d.d));
-						break;
-				case 3: sendMessage(gammas.inCalcRGB(d.p,d.t,d.d)); 
-						break;
-				case 4: sendMessage(gammas.outCalcRGB(d.p,d.t,d.d)); 
-						break;
-				case 5: sendMessage(gammas.getLists(d.p,d.t)); 
-						break;
-				case 6: sendMessage(gammas.setLA(d.p,d.t,d.d)); 
-						break;
-				case 7: sendMessage(gammas.setLATitle(d.p,d.t,d.d)); 
-						break;
-				case 8: sendMessage(gammas.SL3Val(d.p,d.t,d.d)); 
-						break;
-				case 9: sendMessage(gammas.laCalcInput(d.p,d.t,d.d)); 
-						break;
-				case 10:sendMessage(gammas.ioNames(d.p,d.t));
-						break;
-				case 11:sendMessage(gammas.chartVals(d.p,d.t));
-						break;
-				case 12:sendMessage(gammas.preview(d.p,d.t,d.d));
-						break;
-				case 14:sendMessage(gammas.previewLin(d.p,d.t,d.d));
-						break;
-				case 15:sendMessage(gammas.getPrimaries(d.p,d.t,d.d));
-						break;
-				case 16:sendMessage(gammas.psstColours(d.p,d.t,d.d));
-						break;
-				case 17:sendMessage(gammas.multiColours(d.p,d.t,d.d));
-						break;
-				case 18:sendMessage(gammas.chartRGB(d.p,d.t,d.d));
-						break;
-				case 19:sendMessage(gammas.changePQ(d.p,d.t,d.d));
-						break;
-			}
-		}
-	}, false);
-}
+var workerGammaString = getGammaWorkerString();

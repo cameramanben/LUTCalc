@@ -105,7 +105,8 @@ LUTGenerateBox.prototype.events = function() {
 	};}(this);
 	this.cancelSetButton.onclick = function(here){ return function(e){
 		modalBox.className = 'modalbox-hide';
-		here.settingsHolder.className = 'lutset-popup-hide';
+		here.genSetHolder.className = 'lutset-popup-hide';
+		here.setProgHolder.className = 'setprog-popup-hide';
 	};}(this);
 	this.cancelProgButton.onclick = function(here){ return function(e){
 		here.doSet = false;

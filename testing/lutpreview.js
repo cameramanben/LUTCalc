@@ -214,6 +214,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.defNext = 4;
 	this.defOpt = 0;
 	this.loadDefault(this.defNext);
+//	this.defaultImgs();
 };
 LUTPreview.prototype.uiPopup = function() {
 	modalBox.className = 'modalbox-hide';
@@ -334,6 +335,29 @@ LUTPreview.prototype.updatePrimaries = function(data) {
 	}
 };
 // Image loading
+LUTPreview.prototype.defaultImgs = function() {
+	this.defImgs = [];
+	var shed = document.getElementById('shed'); // invisible place to tuck stuff away until useful
+	shed.style.display = 'none';
+	var fileNames = [
+			'HDRPreviewMSB.png',
+			'HDRPreviewLSB.png',
+			'LDRPreviewMSB.png',
+			'LDRPreviewLSB.png',
+			'CWMSB.png',
+			'CWLSB.png',
+			'xyuvMSB.png',
+			'xyuvLSB.png',
+			'GrayMSB.png',
+			'GrayLSB.png'
+	];
+	var m = fileNames.length;
+	for (var j=0; j<m; j++) {
+		this.defImgs[j] = document.createElement('img');
+		this.defImgs[j].src = fileNames[j];
+		shed.appendChild(this.defImgs[j]);
+	}
+};
 LUTPreview.prototype.loadDefault = function(opt) {
 	this.gotMSB = false;
 	this.gotLSB = false;

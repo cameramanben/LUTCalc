@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v2.99alpha
+----------
+* New Feature - BMDFilm4.6k Gamma.
+* Feature Change - Reanalysed BMDFilm and BMDFilm4k Gamma.
+
 v2.60
 -----
 * New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.
