@@ -29,6 +29,7 @@ function LUTMessage(inputs) {
 	// 12 - twkWHITE
 	// 13 - twkCS
 	// 14 - twkMulti
+	// 15 - twkSampler
 	this.blobWorkers = true;
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
@@ -750,6 +751,8 @@ LUTMessage.prototype.saved = function(source, success) {
 		case 0: break; // LALutss or LABins - don't need a further response
 		case 1: this.ui[5].saved(success); // LUTs saved using the Generate buttons
 				break;
+		case 2: break; // RGB Sampler files - don't need a further response
+		case 3: break; // Settings files - don't need a further response
 		default: break;
 	}
 };
@@ -820,4 +823,21 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		});
 		xhr.send();
 	}
+};
+LUTMessage.prototype.takePreviewClick = function(twk) {
+	if (twk === 1 && this.ui[12].sample) { // RGB Sampler wants to take charge - check if White Balance needs turning off
+		this.ui[12].toggleSample();
+	} else if (twk === 0 && this.ui[15].setSample) { // White Balance wants to take charge - check if sampler needs turning off
+		this.ui[15].toggleSample();
+	}
+};
+LUTMessage.prototype.previewSample = function(x,y) {
+	if (this.ui[12].sample) {
+		this.ui[12].previewSample(x,y);
+	} else if (this.ui[15].setSample) {
+		this.ui[15].previewSample(x,y);
+	}
+};
+LUTMessage.prototype.getSamples = function(gridX,gridY) {
+	return this.ui[8].rgbSamples(gridX,gridY);
 };

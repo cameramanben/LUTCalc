@@ -62,6 +62,7 @@ LUTTweaksBox.prototype.ui = function() {
 	this.tweaksList.push(new TWKBlkGam(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKGamutLim(this.holder, this.inputs, this.messages));
 	this.tweaksList.push(new TWKFC(this.holder, this.inputs, this.messages));
+	this.tweaksList.push(new TWKSampler(this.holder, this.inputs, this.messages, this.files));
 	this.LA = this.tweaksList.length;
 	this.tweaksList.push(new TWKLA(this.holder, this.inputs, this.messages, this.files, this.formats));
 

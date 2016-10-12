@@ -129,6 +129,19 @@ TWKGamutLim.prototype.getInfo = function(info) {
 		info.doGamutLim = false;
 	}
 };
+TWKGamutLim.prototype.isCustomGamma = function() {
+	return false;
+};
+TWKGamutLim.prototype.isCustomGamut = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+	return false;
+};
 TWKGamutLim.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();

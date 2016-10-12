@@ -280,7 +280,7 @@ LUTLutBox.prototype.ui = function() {
 LUTLutBox.prototype.events = function() {
 	this.lutName.onchange = function(here){ return function(){
 		here.cleanName();
-		lutFile.filename();
+//		lutFile.filename();
 	};}(this);
 	this.lutClipSelect.onchange = function(here){ return function(){
 		here.displayCLC();

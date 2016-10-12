@@ -120,7 +120,7 @@ LUTGenerateBox.prototype.events = function() {
 		here.settingsHolder.className = 'settings-popup';
 	};}(this);
 	this.saveButton.onclick = function(here){ return function(){
-		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc');
+		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc',3);
 	};}(this);
 	this.loadButton.onclick = function(here){ return function(){
 		if (here.inputs.isApp) {
