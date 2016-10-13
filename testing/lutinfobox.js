@@ -972,6 +972,7 @@ LUTInfoBox.prototype.createCustSamp = function() {
 	this.addInfo(this.custSampInfo,false,null,'A grid of sample point can be constructed, and then used to compare preview images.');
 	this.addInfo(this.custSampInfo,false,'Set Sample Grid',"Pressing this initially reveals two further buttons - 'Start Click To Add Sample Point' and 'Reset Grid'.");
 	this.addInfo(this.custSampInfo,true,'Start Click To Add Sample Point',"Pressing this allows you to define points on the preview window you wish to sample. Take the cursor over to the preview, click and a circle should appear containing a number - initially '1'. Move and click again and a circle containing '2' will appear. In this way you can build up a set of points to sample. When you have all the points required, you can click 'Stop Click To Add Sample Point' to avoid accidentally adding more. The grid overlay can be hidden by clicking 'Hide Sample Grid'.");
+	this.addInfo(this.custSampInfo,false,null,'The actual area sampled is a weighted average of nine pixels at the centre of the circle - much smaller than the circle itself.');
 	this.addInfo(this.custSampInfo,true,'Reset Grid','Grayed out until you have created at least one a sample point, this will remove all sample points so that you can start again.');
 	this.addInfo(this.custSampInfo,false,'File Name','This is filename under which the samples should be saved.');
 	this.addInfo(this.custSampInfo,false,'Component Separator','The separator character to be used between the red, green and blue component values. Defaults to a tab.');

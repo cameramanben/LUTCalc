@@ -287,10 +287,10 @@ TWKSampler.prototype.previewSample = function(x,y) {
 		this.inputs.samplerCtx.beginPath();
 		this.inputs.samplerCtx.strokeStyle = '#00ffff';
 		this.inputs.samplerCtx.lineWidth = 2;
-		this.inputs.samplerCtx.arc(x,y,17,0,2*Math.PI,false);
+		this.inputs.samplerCtx.arc(x,y,14,0,2*Math.PI,false);
 		this.inputs.samplerCtx.stroke();
 		this.inputs.samplerCtx.fillStyle = '#00ffff';
-		this.inputs.samplerCtx.font = '24px  "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
+		this.inputs.samplerCtx.font = '20px  "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif';
 		this.inputs.samplerCtx.lineWidth = 1;
 		this.inputs.samplerCtx.textBaseline = "middle";
 		this.inputs.samplerCtx.textAlign = "center";
