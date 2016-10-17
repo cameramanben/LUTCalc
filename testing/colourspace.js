@@ -1191,7 +1191,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 				this.roundOff(edXYZ[1]/edDg), this.roundOff(edXYZ[4]/edDg),
 				this.roundOff(edXYZ[2]/edDb), this.roundOff(edXYZ[5]/edDb),
 			]);
-			console.log(edW[0] + ', ' + edP[0] + ',' + edP[1] + ', ' + edP[2] + ',' + edP[3] + ', ' + edP[4] + ',' + edP[5]);
+//			console.log(edW[0] + ', ' + edP[0] + ',' + edP[1] + ', ' + edP[2] + ',' + edP[3] + ', ' + edP[4] + ',' + edP[5]);
 		}
 		if (p.input.isMatrix) {
 			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));

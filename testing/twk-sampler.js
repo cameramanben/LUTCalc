@@ -319,8 +319,6 @@ TWKSampler.prototype.saveSamples = function() {
 	var gridInfo = this.gridInfoCheck.checked;
 	var m = this.titles.length;
 	var m2,k,data;
-	console.log(this.titles);
-	console.log(this.sampleData);
 	for (var j=0; j<m; j++) {
 		out += this.titles[j] + "\n";
 		if (gridInfo) {
