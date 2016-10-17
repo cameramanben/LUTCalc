@@ -22,6 +22,7 @@ function TWKSampler(tweaksBox, inputs, messages, files) {
 	this.sampleData = [];
 	this.gridX = [];
 	this.gridY = [];
+	this.sampleSet = 1;
 	this.io();
 	this.ui();
 	this.events();
@@ -92,7 +93,8 @@ TWKSampler.prototype.io = function() {
 	// Take Samples Button
 	this.sampleButton = document.createElement('input');
 	this.sampleButton.setAttribute('type','button');
-	this.sampleButton.value = 'Take Samples';
+	this.sampleButton.id = 'twk-sampler-button';
+	this.sampleButton.value = 'Take Sample Set';
 	this.sampleButton.disabled = true;
 	// Samples Filename
 	this.fileName = document.createElement('input');
@@ -263,6 +265,8 @@ TWKSampler.prototype.getSamples = function() {
 	this.gridsX.push(new Float64Array(this.gridX));
 	this.gridsY.push(new Float64Array(this.gridY));
 	this.sampleData.push(data.samples);
+	this.sampleSet++;
+	this.sampleButton.value = 'Take Sample Set ' + this.sampleSet.toString();
 	if (this.clearDataButton.disabled) {
 		this.clearDataButton.disabled = false;
 		this.saveSamplesButton.disabled = false;
@@ -272,6 +276,8 @@ TWKSampler.prototype.clearData = function() {
 	this.titles = [];
 	this.grids = [];
 	this.sampleData = [];
+	this.sampleSet = 1;
+	this.sampleButton.value = 'Take Sample Set';
 	this.saveSamplesButton.disabled = true;
 	this.clearDataButton.disabled = true;
 };

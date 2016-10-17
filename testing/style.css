@@ -533,6 +533,9 @@ background:transparent;
 .twk-multi-tab {display:inline-block;}
 .twk-multi-pmbox {display:inline-block;width:3.5em;vertical-align:top;margin-top:1.3em;}
 .plusminus {display:inline-block;width:1.5em;}
+
+#twk-sampler-button { text-align:center; padding:1em; margin: 0.5em; border-radius: 0.75em; }
+#twk-sampler-button:hover { color:#2020B0; }
 /* Preview canvases */
 #preview-box {margin:0px auto; padding:0px;}
 #can-preview {margin:0px; padding:0px; border:0; margin-bottom: -0.25em; cursor: crosshair; width: 32em; height:18em; z-index: 1;}
