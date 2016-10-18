@@ -101,6 +101,8 @@ LUTInfoBox.prototype.events = function() {
 	this.custMultiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustFC.onclick = function(here){ return function(){ here.showCustFCInfo(); };}(this);
 	this.custFCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustSamp.onclick = function(here){ return function(){ here.showCustSampInfo(); };}(this);
+	this.custSampBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustLA.onclick = function(here){ return function(){ here.showCustLAInfo(); };}(this);
 	this.custLABack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.instructionsBut.onclick = function(here){ return function(){
@@ -168,6 +170,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custBgm);
 	this.createCustFC();
 	this.instructionsBox.appendChild(this.custFC);
+	this.createCustSamp();
+	this.instructionsBox.appendChild(this.custSamp);
 	this.createCustLA();
 	this.instructionsBox.appendChild(this.custLA);
 };
@@ -251,6 +255,10 @@ LUTInfoBox.prototype.showCustFCInfo = function() {
 	this.hideAll();
 	this.custFC.style.display = 'block';
 };
+LUTInfoBox.prototype.showCustSampInfo = function() {
+	this.hideAll();
+	this.custSamp.style.display = 'block';
+};
 LUTInfoBox.prototype.showCustLAInfo = function() {
 	this.hideAll();
 	this.custLA.style.display = 'block';
@@ -276,6 +284,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custBhi.style.display = 'none';
 	this.custBgm.style.display = 'none';
 	this.custFC.style.display = 'none';
+	this.custSamp.style.display = 'none';
 	this.custLA.style.display = 'none';
 };
 LUTInfoBox.prototype.createMainscreen = function() {
@@ -463,6 +472,10 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.insCustFC.setAttribute('class','ins-cust');	
 	this.insCustFC.setAttribute('id','ins-cust-fc');	
 	this.custbox.appendChild(this.insCustFC);
+	this.insCustSamp = document.createElement('div');
+	this.insCustSamp.setAttribute('class','ins-cust');	
+	this.insCustSamp.setAttribute('id','ins-cust-samp');	
+	this.custbox.appendChild(this.insCustSamp);
 	this.insCustLA = document.createElement('div');
 	this.insCustLA.setAttribute('class','ins-cust');
 	this.insCustLA.setAttribute('id','ins-cust-la');
@@ -940,6 +953,37 @@ LUTInfoBox.prototype.createCustFC = function() {
 	this.addInfo(this.custFCInfo,false,null,'False colour LUTs should be 33x33x33 or larger.');
 	this.custFC.style.display = 'none';
 	this.custFC.appendChild(this.custFCInfo);
+};
+LUTInfoBox.prototype.createCustSamp = function() {
+	this.custSamp = document.createElement('div');
+	this.custSamp.setAttribute('class','instructions');
+	this.custSamp.setAttribute('id','cust-samp');
+	this.custSampBack = document.createElement('input');
+	this.custSampBack.setAttribute('type','button');
+	this.custSampBack.value = 'Back';
+	this.custSamp.appendChild(this.custSampBack);
+	this.custSampInfo = document.createElement('div');
+	this.custSampInfo.setAttribute('class','infotext');
+	var fig1 = document.createElement('div');
+	fig1.setAttribute('class','ins-cust-fig');
+	fig1.setAttribute('id','ins-cust-samp-1');
+	this.custSampInfo.appendChild(fig1);
+	this.addInfo(this.custSampInfo,false,null,"RGB Sampler is a tool for capturing sets of pixel RGB code values from the preview window. It becomes available when the preview window is visible.");
+	this.addInfo(this.custSampInfo,false,null,'A grid of sample point can be constructed, and then used to compare preview images.');
+	this.addInfo(this.custSampInfo,false,'Set Sample Grid',"Pressing this initially reveals two further buttons - 'Start Click To Add Sample Point' and 'Reset Grid'.");
+	this.addInfo(this.custSampInfo,true,'Start Click To Add Sample Point',"Pressing this allows you to define points on the preview window you wish to sample. Take the cursor over to the preview, click and a circle should appear containing a number - initially '1'. Move and click again and a circle containing '2' will appear. In this way you can build up a set of points to sample. When you have all the points required, you can click 'Stop Click To Add Sample Point' to avoid accidentally adding more. The grid overlay can be hidden by clicking 'Hide Sample Grid'.");
+	this.addInfo(this.custSampInfo,false,null,'The actual area sampled is a weighted average of nine pixels at the centre of the circle - much smaller than the circle itself.');
+	this.addInfo(this.custSampInfo,true,'Reset Grid','Grayed out until you have created at least one a sample point, this will remove all sample points so that you can start again.');
+	this.addInfo(this.custSampInfo,false,'File Name','This is filename under which the samples should be saved.');
+	this.addInfo(this.custSampInfo,false,'Component Separator','The separator character to be used between the red, green and blue component values. Defaults to a tab.');
+	this.addInfo(this.custSampInfo,false,'Sample Separator','The separator character to be used between each RGB sample. Defaults to a new line.');
+	this.addInfo(this.custSampInfo,false,'Sample Precision','The scaling used on the sample values. 8, 10 or 12-bit integers covering full range, or floating point values from -0.07 to 1.09. The online version of LUTCalc is restricted to reading in user images at 8-bit depth, but the Mac App version can read 16-bit tiffs and pngs.');
+	this.addInfo(this.custSampInfo,false,'Include Grid Coordinates',"When a set of samples is taken, it automatically includes the filename of the preview image followed by a list of the red, green and blue values. If 'Include Grid Coordinates' is selected, the file will also contain the coordinates on the image (between 0-1.0 of the width and height) of each sample point next to the relevent values. This may be useful if the grid is changed between samples.");
+	this.addInfo(this.custSampInfo,false,'Take Samples','Click this to read a set of samples from the image.');
+	this.addInfo(this.custSampInfo,false,'Save Samples','Save all currently collected samples to a file.');
+	this.addInfo(this.custSampInfo,false,'Clear Sample Data','Clear all currently collected samples from memory. Once you have saved your sample file, you can either continue to build up more data or press this button to start afresh.');
+	this.custSamp.style.display = 'none';
+	this.custSamp.appendChild(this.custSampInfo);
 };
 LUTInfoBox.prototype.createCustLA = function() {
 	this.custLA = document.createElement('div');

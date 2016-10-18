@@ -533,9 +533,14 @@ background:transparent;
 .twk-multi-tab {display:inline-block;}
 .twk-multi-pmbox {display:inline-block;width:3.5em;vertical-align:top;margin-top:1.3em;}
 .plusminus {display:inline-block;width:1.5em;}
+
+#twk-sampler-button { text-align:center; padding:1em; margin: 0.5em; border-radius: 0.75em; }
+#twk-sampler-button:hover { color:#2020B0; }
 /* Preview canvases */
-#can-preview {margin:0px auto;cursor: crosshair; z-index: 1;}
-#can-overlay {margin:0px auto;margin-top: -18.25em; width: 32em; height:18em; z-index: 2;}
+#preview-box {margin:0px auto; padding:0px;}
+#can-preview {margin:0px; padding:0px; border:0; margin-bottom: -0.25em; cursor: crosshair; width: 32em; height:18em; z-index: 1;}
+#can-sampler {margin:0px; padding:0px; border:0; margin-top: -18em; margin-bottom: -0.25em; cursor: crosshair; width: 32em; height:18em; z-index: 3;}
+#can-overlay {margin:0px; padding:0px; border:0; margin-top: -18em; cursor: crosshair; width: 32em; height:18em; z-index: 2;}
 #can-hide {display:none;}
 #can-waveform {margin:0px auto;}
 #can-vector {margin:0px auto;}

@@ -10,6 +10,8 @@
 * Github: https://github.com/cameramanben/LUTCalc
 */
 function LUTColourSpace() {
+	this.ready = 0;
+	
 	this.g = [];
 	this.csIn = [];
 	this.csOut = [];
@@ -31,6 +33,8 @@ function LUTColourSpace() {
 	this.systemMatrices();
 	this.setSaturated();
 	this.setYCoeffs();
+
+	this.defLUTs = {};
 
 	this.nul = false;
 	this.isTrans = false;
@@ -89,6 +93,9 @@ function LUTColourSpace() {
 	this.loadColourSpaces();
 	this.buildColourSquare();
 	this.buildMultiColours();
+	
+	this.ready++;
+	
 }
 // Prepare colour spaces
 LUTColourSpace.prototype.subIdx = function(cat) {
@@ -97,16 +104,17 @@ LUTColourSpace.prototype.subIdx = function(cat) {
 		case 'Arri': return 1;
 		case 'Canon': return 2;
 		case 'Panasonic': return 3;
-		case 'RED': return 4;
-		case 'GoPro': return 5;
-		case 'Adobe': return 6;
-		case 'Rec709': return 7;
-		case 'Rec2020': return 8;
-		case 'Rec2100': return 9;
-		case 'P3': return 10;
-		case 'Wide Gamut': return 11;
-		case 'ACES': return 12;
-		case 'All': return 13;
+		case 'Fujifilm': return 4;
+		case 'RED': return 5;
+		case 'GoPro': return 6;
+		case 'Adobe': return 7;
+		case 'Rec709': return 8;
+		case 'Rec2020': return 9;
+		case 'Rec2100': return 10;
+		case 'P3': return 11;
+		case 'Wide Gamut': return 12;
+		case 'ACES': return 13;
+		case 'All': return 14;
 	}
 	return false;
 };
@@ -115,6 +123,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 						'Arri',
 						'Canon',
 						'Panasonic',
+						'Fujifilm',
 						'RED',
 						'GoPro',
 						'Adobe',
@@ -143,6 +152,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
 	this.csInSub.push([this.subIdx('Panasonic'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('Fujifilm F-Log Gamut'));
+	this.csInSub.push([this.subIdx('Fujifilm'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('DRAGONColor'));
 	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('DRAGONColor2'));
@@ -188,9 +199,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Wide Gamut')]);
 	this.custIn = this.csIn.length;
 	this.csIn.push(this.toSys('Custom In'));
-	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
 	this.csIn.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
-	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
 
 	this.csOut.push(this.fromSys('Sony S-Gamut3.cine'));
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
@@ -204,6 +215,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Panasonic V-Gamut'));
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('Fujifilm F-Log Gamut'));
+	this.csOutSub.push([this.subIdx('Fujifilm'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('DRAGONColor'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('DRAGONColor2'));
@@ -224,6 +237,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOutSub.push([this.subIdx('Rec709')]);
 
+/*
 	this.csOut.push(
 		this.fromSysTC('Alexa-X-2',
 			{
@@ -237,11 +251,11 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 						 0.299169962,0.452321901,0.633391140,0.788816601,
 						 0.892986853,0.951081756,0.975328639,0.985494457,
 						 1
-/*
+//
 						0.000000000,0.000244609,0.002996164,0.007811365,0.018090643,0.042819458,0.095668875,0.180450053,
 						0.299217751,0.452358216,0.633413727,0.788828584,0.892992556,0.951084268,0.975329885,0.985495185,
 						1.000000000
-*/
+//
 					]).buffer,1,0),
 				tcMatrix: new Float64Array([
 						 1.485007,-0.401216,-0.083791,
@@ -257,15 +271,14 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('Arri'),this.subIdx('Rec709')]);
-
+*/
+	this.defLUTs.LC709 = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('LC709',
 			{
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				filename: 'LC709.labin',
-				le: this.isLE,
 				wp: this.illuminant('d65')
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
@@ -273,14 +286,13 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
+	this.defLUTs.LC709A = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('LC709A',
 			{
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				filename: 'LC709A.labin',
-				le: this.isLE,
 				wp: this.illuminant('d65')
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
@@ -288,14 +300,13 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
+	this.defLUTs.cpoutdaylight = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('Canon CP IDT (Daylight)',
 			{
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				filename: 'cpouttungsten.labin',
-				le: this.isLE,
 				wp: this.illuminant('d65')
 			},
 			new Float64Array([0.6509, 0.2827, 0.3177, 0.8953, 0.1289, -0.0468]),
@@ -303,14 +314,13 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
+	this.defLUTs.cpouttungsten = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('Canon CP IDT (Tungsten)',
 			{
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				filename: 'cpoutdaylight.labin',
-				le: this.isLE,
 				wp: this.illuminant('d65')
 			},
 			new Float64Array([0.6577, 0.2653, 0.3417, 1.0909, 0.1475, -0.0018]),
@@ -318,14 +328,13 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
+	this.defLUTs.V709 = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('Varicam V709',
 			{
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				filename: 'V709.labin',
-				le: this.isLE,
 				wp: this.illuminant('d65')
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
@@ -362,14 +371,14 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Wide Gamut')]);
 	this.custOut = this.csOut.length;
 	this.csOut.push(this.toSys('Custom Out'));
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
 	this.pass = this.csOut.length;
 	this.csOut.push(this.fromSysMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 	this.csM.push(this.csOut[this.csOut.length - 1]);
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
 	this.LA = this.csOut.length;
 	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
 
 	var max = this.csIn.length;
 	for (var j=0; j<max; j++) {
@@ -698,6 +707,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
 	this.g.push(vgamut);
+// Fujifilm F-Log Gamut
+	var fgamut = {};
+	fgamut.name = 'Fujifilm F-Log Gamut';
+	fgamut.cat = this.sysCATIdx;
+	fgamut.xy = new Float64Array([0.70800,0.29200, 0.17000,0.79700, 0.13100,0.04600]);
+	fgamut.white = this.illuminant('d65');
+	fgamut.toXYZ = this.RGBtoXYZ(fgamut.xy,fgamut.white);
+	this.g.push(fgamut);
 // REDWideGamutRGB
 	var redWideGamutRGB = {};
 	redWideGamutRGB.name = 'REDWideGamutRGB';
@@ -1174,7 +1191,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 				this.roundOff(edXYZ[1]/edDg), this.roundOff(edXYZ[4]/edDg),
 				this.roundOff(edXYZ[2]/edDb), this.roundOff(edXYZ[5]/edDb),
 			]);
-			console.log(edW[0] + ', ' + edP[0] + ',' + edP[1] + ', ' + edP[2] + ',' + edP[3] + ', ' + edP[4] + ',' + edP[5]);
+//			console.log(edW[0] + ', ' + edP[0] + ',' + edP[1] + ', ' + edP[2] + ',' + edP[3] + ', ' + edP[4] + ',' + edP[5]);
 		}
 		if (p.input.isMatrix) {
 			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
@@ -2705,65 +2722,21 @@ function CSLUT(name,params) {
 	this.name = name;
 	this.wp = params.wp.buffer;
 	this.lut = new LUTs();
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', params.filename, true);
-	xhr.responseType = 'arraybuffer';
-	xhr.onload = (function(lut) {
-//		var lut = lut;
-		return function(e) {
-			var lutBuf = this.response;
-  			if (!lut.le) { // files are little endian, swap if system is big endian
-self.postMessage({msg:true,details:'Gamut LUTs: Big Endian System'});
-  				var lutArr = new Uint8Array(lutBuf);
-  				var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
-  				var i,b0,b1,b2,b3;
-  				for (var j=0; j<max; j++) {
-  					i = j*4;
-  					b0=lutArr[ i ];
-  					b1=lutArr[i+1];
-  					b2=lutArr[i+2];
-  					b3=lutArr[i+3];
-  					lutArr[ i ] = b3;
-  					lutArr[i+1] = b2;
-  					lutArr[i+2] = b1;
-  					lutArr[i+3] = b0;
-  				}
-  			}
-  			var in32 = new Int32Array(lutBuf);
-  			var tfS = in32[0];
-	  		var dim = in32[1];
- 			var csS = dim*dim*dim;
-// Internal processing is Float64, files are scaled Int32
- 			var C = [	new Float64Array(csS),
- 						new Float64Array(csS),
- 						new Float64Array(csS) ];
- 			for (var j=0; j<csS; j++){
- 				C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
- 				C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
- 				C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
- 			}
-  			lut.lut.setDetails({
-				title: lut.name,
-				format: lut.format,
-				dims: 3,
-				s: dim,
-				min: lut.min,
-				max: lut.max,
-				C: [	C[0].buffer,
- 						C[1].buffer,
- 						C[2].buffer ]
-			});
-		};
-	})({
-		name: name,
-		lut: this.lut,
-		format: params.format,
-		min: params.min,
-		max: params.max,
-		le: params.le
-	});
-	xhr.send();
+	this.format = params.format;
+	this.min = params.min;
+	this.max = params.max;
 }
+CSLUT.prototype.loadLUT = function(s,C) {
+	this.lut.setDetails({
+		title: this.name,
+		format: this.format,
+		dims: 3,
+		s: s,
+		min: this.min,
+		max: this.max,
+		C: C
+	});
+};
 CSLUT.prototype.getWP = function() {
 	return new Float64Array(this.wp.slice(0));
 };
@@ -3250,6 +3223,12 @@ LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
 	var matrix = this.mMult(oToN,oMat);
 	out.matrix = matrix.buffer;
 	out.to = ['matrix'];
+	return out;
+};
+LUTColourSpace.prototype.loadDefaultLUTs = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver};
+	var lut = this.csOut[this.defLUTs[i.fileName]];
+	lut.loadLUT(i.s,[i.C0,i.C1,i.C2]);
 	return out;
 };
 LUTColourSpace.prototype.getLists = function(p,t) {
@@ -3796,8 +3775,59 @@ console.log(
 	};
 };
 // Web worker messaging functions
-function sendMessage(d) {
-	if (cs.isTrans && typeof d.to !== 'undefined') {
+function LUTCSWorker() {
+	this.cs = new LUTColourSpace();
+	addEventListener('message', function(e) {
+		var d = e.data;
+		if (typeof d.t === 'undefined') {
+		} else if (d.t !== 0 && d.t < 20 && d.v !== lutCSWorker.cs.ver) {
+			postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
+		} else {
+			switch (d.t) {
+				case 0:	lutCSWorker.sendCSMessage(lutCSWorker.cs.setParams(d.d));
+						break;
+				case 1: lutCSWorker.sendCSMessage(lutCSWorker.cs.calc(d.p,d.t,d.d,true)); 
+						break;
+				case 2: lutCSWorker.sendCSMessage(lutCSWorker.cs.laCalc(d.p,d.t,d.d)); 
+						break;
+				case 3: lutCSWorker.sendCSMessage(lutCSWorker.cs.recalcMatrix(d.p,d.t,d.d)); 
+						break;
+				case 4: lutCSWorker.sendCSMessage(lutCSWorker.cs.loadDefaultLUTs(d.p,d.t,d.d)); 
+						break;
+				case 5: lutCSWorker.sendCSMessage(lutCSWorker.cs.getLists(d.p,d.t)); 
+						break;
+				case 6: lutCSWorker.sendCSMessage(lutCSWorker.cs.setLA(d.p,d.t,d.d)); 
+						break;
+				case 7: lutCSWorker.sendCSMessage(lutCSWorker.cs.setLATitle(d.p,d.t,d.d)); 
+						break;
+				case 8: lutCSWorker.sendCSMessage(lutCSWorker.cs.getColSqr(d.p,d.t,d.d)); 
+						break;
+				case 9: lutCSWorker.sendCSMessage(lutCSWorker.cs.multiColours(d.p,d.t,d.d)); 
+						break;
+				case 10:lutCSWorker.sendCSMessage(lutCSWorker.cs.ioNames(d.p,d.t));
+						break;
+				case 11:lutCSWorker.sendCSMessage(lutCSWorker.cs.chartVals(d.p,d.t,d.d));
+						break;
+				case 12:lutCSWorker.sendCSMessage(lutCSWorker.cs.calc(d.p,d.t,d.d,false)); 
+						break;
+				case 14:lutCSWorker.sendCSMessage(lutCSWorker.cs.previewLin(d.p,d.t,d.d));
+						break;
+				case 15:lutCSWorker.sendCSMessage(lutCSWorker.cs.getPrimaries(d.p,d.t));
+						break;
+				case 16:lutCSWorker.sendCSMessage(lutCSWorker.cs.psstColours(d.p,d.t));
+						break;
+				case 17:lutCSWorker.sendCSMessage(lutCSWorker.cs.getCATs(d.p,d.t));
+						break;
+				case 18:lutCSWorker.sendCSMessage(lutCSWorker.cs.getCCTDuv(d.p,d.t,d.d));
+						break;
+				case 19:lutCSWorker.sendCSMessage(lutCSWorker.cs.calcPrimaries(d.p,d.t));
+						break;
+			}
+		}
+	}, false);
+}
+LUTCSWorker.prototype.sendCSMessage = function(d) {
+	if (this.cs.isTrans && typeof d.to !== 'undefined') {
 		var max = d.to.length;
 		var objArray = [];
 		for (var j=0; j < max; j++) {
@@ -3807,55 +3837,86 @@ function sendMessage(d) {
 	} else {
 		postMessage(d);
 	}
+};
+// Stringify for inline Web Workers
+function getCSString() {
+	var out = "";
+	// LUTColourSpace
+	out += LUTColourSpace.toString() + "\n";
+	for (var j in LUTColourSpace.prototype) {
+		out += 'LUTColourSpace.prototype.' + j + '=' + LUTColourSpace.prototype[j].toString() + "\n";
+	}
+	// CCTxy
+	out += CCTxy.toString() + "\n";
+	for (var j in CCTxy.prototype) {
+		out += 'CCTxy.prototype.' + j + '=' + CCTxy.prototype[j].toString() + "\n";
+	}
+	// Planck
+	out += Planck.toString() + "\n";
+	for (var j in Planck.prototype) {
+		out += 'Planck.prototype.' + j + '=' + Planck.prototype[j].toString() + "\n";
+	}
+	// CSCAT
+	out += CSCAT.toString() + "\n";
+	for (var j in CSCAT.prototype) {
+		out += 'CSCAT.prototype.' + j + '=' + CSCAT.prototype[j].toString() + "\n";
+	}
+	// CSWB
+	out += CSWB.toString() + "\n";
+	for (var j in CSWB.prototype) {
+		out += 'CSWB.prototype.' + j + '=' + CSWB.prototype[j].toString() + "\n";
+	}
+	// CSSL3
+	out += CSSL3.toString() + "\n";
+	for (var j in CSSL3.prototype) {
+		out += 'CSSL3.prototype.' + j + '=' + CSSL3.prototype[j].toString() + "\n";
+	}
+	// CSLogC
+	out += CSLogC.toString() + "\n";
+	for (var j in CSLogC.prototype) {
+		out += 'CSLogC.prototype.' + j + '=' + CSLogC.prototype[j].toString() + "\n";
+	}
+	// CSVLog
+	out += CSVLog.toString() + "\n";
+	for (var j in CSVLog.prototype) {
+		out += 'CSVLog.prototype.' + j + '=' + CSVLog.prototype[j].toString() + "\n";
+	}
+	// CSMatrix
+	out += CSMatrix.toString() + "\n";
+	for (var j in CSMatrix.prototype) {
+		out += 'CSMatrix.prototype.' + j + '=' + CSMatrix.prototype[j].toString() + "\n";
+	}
+	// CSToneCurve
+	out += CSToneCurve.toString() + "\n";
+	for (var j in CSToneCurve.prototype) {
+		out += 'CSToneCurve.prototype.' + j + '=' + CSToneCurve.prototype[j].toString() + "\n";
+	}
+	// CSToneCurvePlus
+	out += CSToneCurvePlus.toString() + "\n";
+	for (var j in CSToneCurvePlus.prototype) {
+		out += 'CSToneCurvePlus.prototype.' + j + '=' + CSToneCurvePlus.prototype[j].toString() + "\n";
+	}
+	// CSLUT
+	out += CSLUT.toString() + "\n";
+	for (var j in CSLUT.prototype) {
+		out += 'CSLUT.prototype.' + j + '=' + CSLUT.prototype[j].toString() + "\n";
+	}
+	// CSLA
+	out += CSLA.toString() + "\n";
+	for (var j in CSLA.prototype) {
+		out += 'CSLA.prototype.' + j + '=' + CSLA.prototype[j].toString() + "\n";
+	}
+	// CSCanonIDT
+	out += CSCanonIDT.toString() + "\n";
+	for (var j in CSCanonIDT.prototype) {
+		out += 'CSCanonIDT.prototype.' + j + '=' + CSCanonIDT.prototype[j].toString() + "\n";
+	}
+	// LUTCSWorker
+	out += LUTCSWorker.toString() + "\n";
+	for (var j in LUTCSWorker.prototype) {
+		out += 'LUTCSWorker.prototype.' + j + '=' + LUTCSWorker.prototype[j].toString() + "\n";
+	}
+	out += 'var lutCSWorker = new LUTCSWorker();' + "\n";
+	return out;
 }
-if (typeof importScripts === 'function') {
-	importScripts('lut.js','ring.js','brent.js');
-	var cs = new LUTColourSpace();
-	var trans = false;
-	this.addEventListener('message', function(e) {
-		var d = e.data;
-		if (typeof d.t === 'undefined') {
-		} else if (d.t !== 0 && d.t < 20 && d.v !== cs.ver) {
-			this.postMessage({p: d.p, t: d.t, v: d.v, resend: true, d: d.d});
-		} else {
-			switch (d.t) {
-				case 0:	sendMessage(cs.setParams(d.d));
-						break;
-				case 1: sendMessage(cs.calc(d.p,d.t,d.d,true)); 
-						break;
-				case 2: sendMessage(cs.laCalc(d.p,d.t,d.d)); 
-						break;
-				case 3: sendMessage(cs.recalcMatrix(d.p,d.t,d.d)); 
-						break;
-				case 5: sendMessage(cs.getLists(d.p,d.t)); 
-						break;
-				case 6: sendMessage(cs.setLA(d.p,d.t,d.d)); 
-						break;
-				case 7: sendMessage(cs.setLATitle(d.p,d.t,d.d)); 
-						break;
-				case 8: sendMessage(cs.getColSqr(d.p,d.t,d.d)); 
-						break;
-				case 9: sendMessage(cs.multiColours(d.p,d.t,d.d)); 
-						break;
-				case 10:sendMessage(cs.ioNames(d.p,d.t));
-						break;
-				case 11:sendMessage(cs.chartVals(d.p,d.t,d.d));
-						break;
-				case 12:sendMessage(cs.calc(d.p,d.t,d.d,false)); 
-						break;
-				case 14:sendMessage(cs.previewLin(d.p,d.t,d.d));
-						break;
-				case 15:sendMessage(cs.getPrimaries(d.p,d.t));
-						break;
-				case 16:sendMessage(cs.psstColours(d.p,d.t));
-						break;
-				case 17:sendMessage(cs.getCATs(d.p,d.t));
-						break;
-				case 18:sendMessage(cs.getCCTDuv(d.p,d.t,d.d));
-						break;
-				case 19:sendMessage(cs.calcPrimaries(d.p,d.t));
-						break;
-			}
-		}
-	}.bind(this), false);
-}
+var workerCSString = getCSString();

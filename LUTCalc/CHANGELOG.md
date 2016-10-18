@@ -1,6 +1,18 @@
 LUTCalc Changelog
 =================
 
+v2.90
+-----
+* New Feature - BMDFilm4.6k Gamma.
+* New Feature - Canon EOS Standard Gamma (plus a version scaled to within legal range).
+* New Feature - Canon Normal 1,2,3 & 4.
+* New Feature - BBC 0.4, 0.5 and 0.6 Gammas.
+* New Feature - RGB Sampler for sampling multiple points on preview images.
+* Feature Change - Reanalysed BMDFilm and BMDFilm4k Gamma.
+* Bugfix - Fixed 'Print Chart' bug from the last update.
+* Bugfix - Fixed issue in Mac App where white balances could not be taken from the CIE xy / uv preview image.
+* Feature Removal - ALEXA-X-2 Gamut until I have reanalysed the tone map used.
+
 v2.60
 -----
 * New Feature - Batch-generate sets of exposure compensation LUTs across a user-selectable EI range and step size.

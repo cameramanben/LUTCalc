@@ -47,6 +47,37 @@ LUTPreview.prototype.io = function() {
 		option.appendChild(document.createTextNode(defs[j]));
 		this.defSelect.appendChild(option);
 	}
+	var defFiles = [
+		'HDRPreview',
+		'LDRPreview',
+		'CW',
+		'xyuv',
+		'Gray'
+	];
+	var defExts = [
+		'png',
+		'png',
+		'png',
+		'png',
+		'png'
+	];
+	var m = defFiles.length;
+	var shed = document.getElementById('shed');
+	shed.style.display = 'none';
+	for (var j=0; j<m; j++) {
+//		var MSB = this.inputs['defmsb'+j];
+		var MSB = document.createElement('img');
+		MSB.alt = 'defmsb' + j;
+		MSB.id = 'defmsb' + j;
+		MSB.src = defFiles[j] + 'MSB.' + defExts[j];
+		shed.appendChild(MSB);
+//		var LSB = this.inputs['deflsb'+j];
+		var LSB = document.createElement('img');
+		LSB.alt = 'deflsb' + j;
+		LSB.id = 'deflsb' + j;
+		LSB.src = defFiles[j] + 'LSB.' + defExts[j];
+		shed.appendChild(LSB);
+	}
 	//
 	this.buttonHolder = document.createElement('fieldset');
 	this.buttonHolder.className = 'button-holder';
@@ -147,27 +178,41 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.leg = true;
 	this.initPrimaries();
 	// Preview image canvases
+	this.pBox = document.createElement('div');
+	this.pBox.setAttribute('id','preview-box');
 	this.pCan = document.createElement('canvas');
 	this.pCan.setAttribute('id','can-preview');
 	this.inputs.addInput('previewCanvas',this.pCan);
 	this.pCan.width = this.width.toString();
 	this.pCan.height = this.height.toString();
-	this.pCan.style.width = '32em';
-	this.pCan.style.height = '18em';
+//	this.pCan.style.width = '32em';
+//	this.pCan.style.height = '18em';
 	this.pCtx = this.pCan.getContext('2d');
 	this.pData = this.pCtx.createImageData(this.width,this.height);
 	this.pRaw = new Float64Array(this.width * this.height * 3);
 	this.inputs.addInput('preRaw',this.pRaw);
-	this.box.appendChild(this.pCan);
+	this.pBox.appendChild(this.pCan);
+	this.sCan = document.createElement('canvas');
+	this.sCan.setAttribute('id','can-sampler');
+	this.inputs.addInput('samplerCanvas',this.sCan);
+	this.sCan.width = this.width.toString();
+	this.sCan.height = this.height.toString();
+//	this.sCan.style.width = '32em';
+//	this.sCan.style.height = '18em';
+	this.sCan.style.display = 'none';
+	this.sCtx = this.sCan.getContext('2d');
+	this.inputs.addInput('samplerCtx',this.sCtx);
+	this.pBox.appendChild(this.sCan);
 	this.oCan = document.createElement('canvas');
 	this.oCan.setAttribute('id','can-overlay');
 	this.oCan.width = this.width.toString();
 	this.oCan.height = this.height.toString();
-	this.oCan.style.width = '32em';
-	this.oCan.style.height = '18em';
+//	this.oCan.style.width = '32em';
+//	this.oCan.style.height = '18em';
 	this.oCan.style.display = 'none';
 	this.oCtx = this.oCan.getContext('2d');
-	this.box.appendChild(this.oCan);
+	this.pBox.appendChild(this.oCan);
+	this.box.appendChild(this.pBox);
 	this.lCan = document.createElement('canvas');
 	this.lCan.setAttribute('id','can-hide');
 	this.lCan.width = this.width.toString();
@@ -213,7 +258,8 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.def = [];
 	this.defNext = 4;
 	this.defOpt = 0;
-	this.loadDefault(this.defNext);
+//	this.loadDefault(this.defNext);
+	this.defaultImgs(this.defNext);
 };
 LUTPreview.prototype.uiPopup = function() {
 	modalBox.className = 'modalbox-hide';
@@ -299,6 +345,21 @@ LUTPreview.prototype.events = function() {
 	this.pCan.onmousemove = function(here){ return function(e){
 		here.rgbVals(e.clientX, e.clientY);
 	};}(this);
+	this.pCan.onclick = function(here){ return function(e){
+		here.messages.previewSample(e.clientX, e.clientY);
+	};}(this);
+	this.oCan.onmousemove = function(here){ return function(e){
+		here.rgbVals(e.clientX, e.clientY);
+	};}(this);
+	this.oCan.onclick = function(here){ return function(e){
+		here.messages.previewSample(e.clientX, e.clientY);
+	};}(this);
+	this.sCan.onmousemove = function(here){ return function(e){
+		here.rgbVals(e.clientX, e.clientY);
+	};}(this);
+	this.sCan.onclick = function(here){ return function(e){
+		here.messages.previewSample(e.clientX, e.clientY);
+	};}(this);
 };
 // Base data
 LUTPreview.prototype.initPrimaries = function() {
@@ -334,6 +395,44 @@ LUTPreview.prototype.updatePrimaries = function(data) {
 	}
 };
 // Image loading
+LUTPreview.prototype.defaultImgs = function(opt) {
+	this.gotMSB = false;
+	this.gotLSB = false;
+	var MSB = document.getElementById('defmsb' + opt);
+	var LSB = document.getElementById('deflsb' + opt);
+	if (MSB.complete) {
+		this.loadedMSB(opt)
+	} else {
+		MSB.addEventListener('load',(function(i){
+                return function(){
+                    i.here.loadedMSB(i.opt);
+                }
+            })({here:this,opt:opt}),
+            false
+        );
+	}
+	if (LSB.complete) {
+		this.loadedLSB(opt)
+	} else {
+		LSB.addEventListener('load',(function(i){
+                return function(){
+                    i.here.loadedLSB(i.opt);
+                }
+            })({here:this,opt:opt}),
+            false
+        );
+	}
+};
+LUTPreview.prototype.loadedMSB = function(opt) {
+	this.pCtx.drawImage(document.getElementById('defmsb' + opt),0,0);
+	this.gotMSB = true;
+	this.loadedDefault();
+}
+LUTPreview.prototype.loadedLSB = function(opt) {
+	this.lCtx.drawImage(document.getElementById('deflsb' + opt),0,0);
+	this.gotLSB = true;
+	this.loadedDefault();
+}
 LUTPreview.prototype.loadDefault = function(opt) {
 	this.gotMSB = false;
 	this.gotLSB = false;
@@ -415,9 +514,17 @@ LUTPreview.prototype.loadedDefault = function() {
 		this.def[this.defNext] = def;
 		this.defNext--;
 		if (this.defNext >= 0) {
-			this.loadDefault(this.defNext);
+//			this.loadDefault(this.defNext);
+			this.defaultImgs(this.defNext);
 		} else {
 			this.pre = this.def[0];
+			var shed = document.getElementById('shed');
+			var imgs = shed.getElementsByTagName('img');
+			max = imgs.length-1;
+			for (var j=max; j>=0; j--) {
+				shed.removeChild(imgs[j]);
+				imgs[j] = null;
+			}
 			this.refresh();
 			lutcalcReady(this.p);
 		}
@@ -969,9 +1076,14 @@ LUTPreview.prototype.toggleSize = function() {
 		right.style.width = '52em';
 		this.pCan.style.width = '48em';
 		this.pCan.style.height = '27em';
+		this.pCan.style.marginBottom = '-0.25em';
+		this.sCan.style.width = '48em';
+		this.sCan.style.height = '27em';
+		this.sCan.style.marginTop = '-27em';
+		this.sCan.style.marginBottom = '-0.25em';
 		this.oCan.style.width = '48em';
 		this.oCan.style.height = '27em';
-		this.oCan.style.marginTop = '-27.25em';
+		this.oCan.style.marginTop = '-27em';
 		this.lCan.style.width = '48em';
 		this.lCan.style.height = '27em';
 		this.wCan.style.width = '48em';
@@ -987,9 +1099,14 @@ LUTPreview.prototype.toggleSize = function() {
 		right.style.width = '36em';
 		this.pCan.style.width = '32em';
 		this.pCan.style.height = '18em';
+		this.pCan.style.marginBottom = '-0.25em';
+		this.sCan.style.width = '32em';
+		this.sCan.style.height = '18em';
+		this.sCan.style.marginTop = '-18em';
+		this.sCan.style.marginBottom = '-0.25em';
 		this.oCan.style.width = '32em';
 		this.oCan.style.height = '18em';
-		this.oCan.style.marginTop = '-18.25em';
+		this.oCan.style.marginTop = '-18em';
 		this.lCan.style.width = '32em';
 		this.lCan.style.height = '18em';
 		this.wCan.style.width = '32em';
@@ -1062,4 +1179,58 @@ LUTPreview.prototype.rgbVals = function(x,y) {
 	this.rgbR.innerHTML = Math.min(1023,Math.round(876*this.pRaw[ i ])+64).toString();
 	this.rgbG.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+1])+64).toString();
 	this.rgbB.innerHTML = Math.min(1023,Math.round(876*this.pRaw[i+2])+64).toString();
+};
+LUTPreview.prototype.rgbSamples = function(gridX,gridY) {
+	var m = gridX.length; // sample count
+	var out = new Float64Array(m*3); // r,g,b samples list to return to twk-samples.js
+//	var stop = new Float64Array(m);
+	var k,l;
+	var x,y,i;
+//	var r,g,b;
+	var step = 3*960;
+	for (var j=0; j<m; j++) {
+		l = j*3;
+		x = Math.min(958,Math.max(1,Math.round(960*gridX[j])));
+		y = 960 * Math.min(538,Math.max(1,Math.round(540*gridY[j])));
+		i = (x + y)*3;
+		out[ l ] = this.pRaw[ i ];
+		out[l+1] = this.pRaw[i+1];
+		out[l+2] = this.pRaw[i+2];
+		out[ l ] += this.pRaw[i-3];
+		out[l+1] += this.pRaw[i-2];
+		out[l+2] += this.pRaw[i-1];
+		out[ l ] += this.pRaw[i+3];
+		out[l+1] += this.pRaw[i+4];
+		out[l+2] += this.pRaw[i+5];
+		out[ l ] += this.pRaw[ i  + step];
+		out[l+1] += this.pRaw[i+1 + step];
+		out[l+2] += this.pRaw[i+2 + step];
+		out[ l ] += this.pRaw[ i  - step];
+		out[l+1] += this.pRaw[i+1 - step];
+		out[l+2] += this.pRaw[i+2 - step];
+		out[ l ] += this.pRaw[i-3 + step]*0.7;
+		out[l+1] += this.pRaw[i-2 + step]*0.7;
+		out[l+2] += this.pRaw[i-1 + step]*0.7;
+		out[ l ] += this.pRaw[i-3 - step]*0.7;
+		out[l+1] += this.pRaw[i-2 - step]*0.7;
+		out[l+2] += this.pRaw[i-1 - step]*0.7;
+		out[ l ] += this.pRaw[i+3 + step]*0.7;
+		out[l+1] += this.pRaw[i+4 + step]*0.7;
+		out[l+2] += this.pRaw[i+5 + step]*0.7;
+		out[ l ] += this.pRaw[i+3 - step]*0.7;
+		out[l+1] += this.pRaw[i+4 - step]*0.7;
+		out[l+2] += this.pRaw[i+5 - step]*0.7;
+		out[ l ] /= 7.8;
+		out[l+1] /= 7.8;
+		out[l+2] /= 7.8;
+//		r = this.pre[ i ] + this.pre[i-3] + this.pre[i+3] + this.pre[ i  + step] + this.pre[ i  - step] + ((this.pre[i-3 + step] + this.pre[i-3 - step] + this.pre[i+3 + step] + this.pre[i+3 - step])*0.7);
+//		g = this.pre[i+1] + this.pre[i-2] + this.pre[i+4] + this.pre[i+1 + step] + this.pre[i+1 - step] + ((this.pre[i-2 + step] + this.pre[i-2 - step] + this.pre[i+4 + step] + this.pre[i+4 - step])*0.7);
+//		g = this.pre[i+2] + this.pre[i-1] + this.pre[i+5] + this.pre[i+2 + step] + this.pre[i+2 - step] + ((this.pre[i-1 + step] + this.pre[i-1 - step] + this.pre[i+5 + step] + this.pre[i+5 - step])*0.7);
+//		stop[j] = ((0.21507582011558746*r) + (0.8850685017437284*g) + (-0.10014432185931582*b))/7.8;
+	}
+	return {
+		title:this.defSelect.options[this.defSelect.selectedIndex].innerHTML,
+		samples: out
+//		stops: stop
+	};
 };

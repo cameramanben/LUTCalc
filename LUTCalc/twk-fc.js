@@ -181,11 +181,10 @@ TWKFC.prototype.getCSParams = function(params) {
 	params.twkFC = out;
 };
 TWKFC.prototype.setParams = function(params) {
-	if (typeof params.twkBLANK !== 'undefined') {
-		var p = params.twkBLANK;
+	if (typeof params.twkFC !== 'undefined') {
+		var p = params.twkFC;
 		this.toggleTweaks();
 	}
-	// Any changes to UI inputs coming from the gamma and gamut workers should go here
 };
 TWKFC.prototype.getSettings = function(data) {
 	data.falseColour = {

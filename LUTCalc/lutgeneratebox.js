@@ -105,7 +105,8 @@ LUTGenerateBox.prototype.events = function() {
 	};}(this);
 	this.cancelSetButton.onclick = function(here){ return function(e){
 		modalBox.className = 'modalbox-hide';
-		here.settingsHolder.className = 'lutset-popup-hide';
+		here.genSetHolder.className = 'lutset-popup-hide';
+		here.setProgHolder.className = 'setprog-popup-hide';
 	};}(this);
 	this.cancelProgButton.onclick = function(here){ return function(e){
 		here.doSet = false;
@@ -119,7 +120,7 @@ LUTGenerateBox.prototype.events = function() {
 		here.settingsHolder.className = 'settings-popup';
 	};}(this);
 	this.saveButton.onclick = function(here){ return function(){
-		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc');
+		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc',3);
 	};}(this);
 	this.loadButton.onclick = function(here){ return function(){
 		if (here.inputs.isApp) {

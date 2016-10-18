@@ -12,6 +12,7 @@
 function LUTMessage(inputs) {
 	this.inputs = inputs;
 	this.ui = []; // Links to UI objects for function returns
+	this.p = 0;
 	this.ui[0] = this;
 	this.go = false;
 	// 1 - camerabox
@@ -28,6 +29,8 @@ function LUTMessage(inputs) {
 	// 12 - twkWHITE
 	// 13 - twkCS
 	// 14 - twkMulti
+	// 15 - twkSampler
+	this.blobWorkers = true;
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -62,9 +65,23 @@ LUTMessage.prototype.setReady = function() {
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
 	var max = this.gaT;
+	var windowURL = window.URL || window.webkitURL;
+	var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+	var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
 	for (var i=0; i<max; i++) {
 		var _this = this;
-		this.gas[i] = new Worker('gamma.js');
+		if (this.blobWorkers) {
+			try {
+				var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
+				this.gas[i] = new Worker(blobURL);
+				URL.revokeObjectURL(blobURL);
+			} catch (e) { // Fallback for - IE10 and 11
+				this.blobWorkers = false;
+				this.gas[i] = new Worker('gammaworker.js');
+			}
+		} else {
+			this.gas[i] = new Worker('gammaworker.js');
+		}
 		this.gas[i].onmessage = function(e) {
 			_this.gaRx(e.data);
 		};
@@ -82,9 +99,24 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 		this.gaT = T;
 		var max = this.gas.length;
 		if (T > max) {
+			var windowURL = window.URL || window.webkitURL;
+			var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+			var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
 			for (var i=max; i<T; i++) {
 				var _this = this;
-				this.gas[i] = new Worker('gamma.js');
+				if (this.blobWorkers) {
+					try {
+						var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
+						this.gas[i] = new Worker(blobURL);
+						URL.revokeObjectURL(blobURL);
+					} catch (e) { // Fallback for - IE10 and 11
+						this.blobWorkers = false;
+console.log('No Inline Web Workers');
+						this.gas[i] = new Worker('gammaworker.js');
+					}
+				} else {
+					this.gas[i] = new Worker('gammaworker.js');
+				}
 				this.gas[i].onmessage = function(e) {
 					_this.gaRx(e.data);
 				};
@@ -342,9 +374,24 @@ LUTMessage.prototype.gotHighLevelDefault = function(d) {
 // Gamut Message Handling
 LUTMessage.prototype.startGtThreads = function() {
 	var max = this.gtT;
+	var windowURL = window.URL || window.webkitURL;
+	var workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
+	var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
 	for (var i=0; i<max; i++) {
 		var _this = this;
-		this.gts[i] = new Worker('colourspace.js');
+		if (this.blobWorkers) {
+			try {
+				var blobURL = windowURL.createObjectURL(csWorkerBlob);
+				this.gts[i] = new Worker(blobURL);
+				URL.revokeObjectURL(blobURL);
+			} catch (e) { // Fallback for - IE10 and 11
+console.log('No Inline Web Workers');
+				this.blobWorkers = false;
+				this.gts[i] = new Worker('colourspaceworker.js');
+			}
+		} else {
+			this.gts[i] = new Worker('colourspaceworker.js');
+		}
 		this.gts[i].onmessage = function(e) {
 			_this.gtRx(e.data);
 		};
@@ -362,9 +409,23 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 		this.gtT = T;
 		var max = this.gts.length;
 		if (T > max) {
+			var windowURL = window.URL || window.webkitURL;
+			var workerString = (workerLUTString + workerRingString + workerBrentString + workerGammaString).replace('"use strict";', '');
+			var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
 			for (var i=max; i<T; i++) {
 				var _this = this;
-				this.gts[i] = new Worker('colourspace.js');
+				if (this.blobWorkers) {
+					try {
+						var blobURL = windowURL.createObjectURL(csWorkerBlob);
+						this.gts[i] = new Worker(blobURL);
+						URL.revokeObjectURL(blobURL);
+					} catch (e) { // Fallback for - IE10 and 11
+						this.blobWorkers = false;
+						this.gts[i] = new Worker('colourspaceworker.js');
+					}
+				} else {
+					this.gts[i] = new Worker('colourspaceworker.js');
+				}
 				this.gts[i].onmessage = function(e) {
 					_this.gtRx(e.data);
 				};
@@ -457,7 +518,10 @@ LUTMessage.prototype.gtRx = function(d) {
 			case 23: // Recalculated custom matrix for changed colourspace
 					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
 					break;
+			case 24: // Send Default LUT-based Gamuts from file to Worker
+					break;
 			case 25: // Get lists of gamuts
+					this.loadGamutLUTs();
 					this.gotGamutLists(d);
 					break;
 			case 26: // Set LA LUT
@@ -687,6 +751,93 @@ LUTMessage.prototype.saved = function(source, success) {
 		case 0: break; // LALutss or LABins - don't need a further response
 		case 1: this.ui[5].saved(success); // LUTs saved using the Generate buttons
 				break;
+		case 2: break; // RGB Sampler files - don't need a further response
+		case 3: break; // Settings files - don't need a further response
 		default: break;
 	}
+};
+LUTMessage.prototype.loadGamutLUTs = function() {
+	var fileNames = [
+		'LC709',
+		'LC709A',
+		'cpouttungsten',
+		'cpoutdaylight',
+		'V709'
+	];
+	var m = fileNames.length;
+	var isLE;
+	if ((new Int8Array(new Int16Array([1]).buffer)[0]) > 0) {
+		isLE = true;
+	} else {
+		isLE = false;
+	}
+	for (var j=0; j<m; j++) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', fileNames[j] + '.labin', true);
+		xhr.responseType = 'arraybuffer';
+		xhr.onload = (function(here) {
+			return function(e) {
+				var buff = this.response;
+	  			if (!here.isLE) { // files are little endian, swap if system is big endian
+					// console.log('Gamut LUTs: Big Endian System');
+	  				var lutArr = new Uint8Array(buff);
+	  				var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
+	  				var i,b0,b1,b2,b3;
+	  				for (var j=0; j<max; j++) {
+	  					i = j*4;
+	  					b0=lutArr[ i ];
+	  					b1=lutArr[i+1];
+	  					b2=lutArr[i+2];
+	  					b3=lutArr[i+3];
+	  					lutArr[ i ] = b3;
+	  					lutArr[i+1] = b2;
+	  					lutArr[i+2] = b1;
+	  					lutArr[i+3] = b0;
+	  				}
+	  			}
+	  			var in32 = new Int32Array(buff);
+	  			var tfS = in32[0];
+		  		var dim = in32[1];
+	 			var csS = dim*dim*dim;
+				// Internal processing is Float64, files are scaled Int32
+	 			var C = [	new Float64Array(csS),
+	 						new Float64Array(csS),
+	 						new Float64Array(csS) ];
+	 			for (var j=0; j<csS; j++){
+	 				C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
+	 				C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
+	 				C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
+	 			}
+	  			here.messages.gtTxAll(0, 4, {
+					fileName: here.fileName,
+					s: dim,
+					C0: C[0].buffer,
+	 				C1: C[1].buffer,
+	 				C2: C[2].buffer
+				});
+			};
+		})({
+			fileName: fileNames[j],
+			isLE: isLE,
+			messages: this
+		});
+		xhr.send();
+	}
+};
+LUTMessage.prototype.takePreviewClick = function(twk) {
+	if (twk === 1 && this.ui[12].sample) { // RGB Sampler wants to take charge - check if White Balance needs turning off
+		this.ui[12].toggleSample();
+	} else if (twk === 0 && this.ui[15].setSample) { // White Balance wants to take charge - check if sampler needs turning off
+		this.ui[15].toggleSample();
+	}
+};
+LUTMessage.prototype.previewSample = function(x,y) {
+	if (this.ui[12].sample) {
+		this.ui[12].previewSample(x,y);
+	} else if (this.ui[15].setSample) {
+		this.ui[15].previewSample(x,y);
+	}
+};
+LUTMessage.prototype.getSamples = function(gridX,gridY) {
+	return this.ui[8].rgbSamples(gridX,gridY);
 };

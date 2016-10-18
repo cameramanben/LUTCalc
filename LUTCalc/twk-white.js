@@ -395,9 +395,9 @@ TWKWHITE.prototype.events = function() {
 	this.lampButton.onclick = function(here){ return function(){
 		here.toggleLamp();
 	};}(this);
-	this.inputs.previewCanvas.onclick = function(here){ return function(e){
-		here.previewSample(e.clientX, e.clientY);
-	};}(this);
+//	this.inputs.previewCanvas.onclick = function(here){ return function(e){
+//		here.previewSample(e.clientX, e.clientY);
+//	};}(this);
 	this.advancedCheck.onclick = function(here){ return function(){
 		here.toggleAdvanced();
 	};}(this);
@@ -625,6 +625,7 @@ TWKWHITE.prototype.toggleSample = function() {
 	} else {
 		this.sampleButton.value = 'Stop Preview Click For White';
 		this.sample = true;
+		this.messages.takePreviewClick(0);
 	}
 };
 TWKWHITE.prototype.toggleLamp = function() {

@@ -190,3 +190,14 @@ Brent.prototype.brent = function(a,fa,b,fb,rtol) {
 console.log('none');
     return b;
 };
+// Stringify for inline Web Workers
+function getBrentString() {
+	var out = "";
+	// Brent
+	out += Brent.toString() + "\n";
+	for (var j in Brent.prototype) {
+		out += 'Brent.prototype.' + j + '=' + Brent.prototype[j].toString() + "\n";
+	}
+	return out;
+}
+var workerBrentString = getBrentString();

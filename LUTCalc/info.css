@@ -55,11 +55,11 @@
 }
 #ins-main-twk {
 	background-image: url('pngs/main-twk.png');
-	background-size:12em 9.26em;
+	background-size:12em 10.01em;
 	width:12em;
-	height:9.26em;
+	height:10.01em;
 }
-#ins-main-spacer {margin:0;padding:0;background-size:12em 1.04em;width:12em;height:1.04em;}
+#ins-main-spacer {margin:0;padding:0;background-size:12em 0.29em;width:12em;height:0.29em;}
 #ins-main-right {width:12.6em;margin:0;padding:0;float:right;}
 #ins-main-lut {
 	background-image: url('pngs/main-lut.png');
@@ -257,6 +257,12 @@
 	width:21em;
 	height:1.32em;
 }
+#ins-cust-samp {
+	background-image: url('pngs/cust-samp.png');
+	background-size:21em 1.32em;
+	width:21em;
+	height:1.32em;
+}
 #ins-cust-la {
 	background-image: url('pngs/cust-la.png');
 	background-size:21em 3.24em;
@@ -342,6 +348,12 @@
 	background-size:21em 14.86em;
 	width:21em;
 	height:14.86em;
+}
+#ins-cust-samp-1 {
+	background-image: url('pngs/cust-samp-1.png');
+	background-size:21em 10.17em;
+	width:21em;
+	height:10.17em;
 }
 #ins-cust-la-1 {
 	background-image: url('pngs/cust-la-1.png');
