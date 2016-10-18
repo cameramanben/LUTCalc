@@ -410,3 +410,14 @@ Ring.prototype.linMod = function(buff) {
 		o[j] = (p0 * (1 - dy)) + (p1 * dy);
 	}
 };
+// Stringify for inline Web Workers
+function getRingString() {
+	var out = "";
+	// Ring
+	out += Ring.toString() + "\n";
+	for (var j in Ring.prototype) {
+		out += 'Ring.prototype.' + j + '=' + Ring.prototype[j].toString() + "\n";
+	}
+	return out;
+}
+var workerRingString = getRingString();

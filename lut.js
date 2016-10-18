@@ -1732,3 +1732,20 @@ LUTSpline.prototype.getHighLow = function() {
 LUTSpline.prototype.getSR = function() {
 	return this.sr;
 };
+// Stringify for inline Web Workers
+function getLUTString() {
+	var out = "";
+	// LUTs
+	out += LUTs.toString() + "\n";
+	for (var j in LUTs.prototype) {
+		out += 'LUTs.prototype.' + j + '=' + LUTs.prototype[j].toString() + "\n";
+	}
+	// LUTSpline
+	out += LUTSpline.toString() + "\n";
+	for (var j in LUTSpline.prototype) {
+		out += 'LUTSpline.prototype.' + j + '=' + LUTSpline.prototype[j].toString() + "\n";
+	}
+
+	return out;
+}
+var workerLUTString = getLUTString();
