@@ -107,14 +107,16 @@ LUTColourSpace.prototype.subIdx = function(cat) {
 		case 'Fujifilm': return 4;
 		case 'RED': return 5;
 		case 'GoPro': return 6;
-		case 'Adobe': return 7;
-		case 'Rec709': return 8;
-		case 'Rec2020': return 9;
-		case 'Rec2100': return 10;
-		case 'P3': return 11;
-		case 'Wide Gamut': return 12;
-		case 'ACES': return 13;
-		case 'All': return 14;
+		case 'Blackmagic': return 7;
+		case 'Bolex': return 8;
+		case 'Adobe': return 9;
+		case 'Rec709': return 10;
+		case 'Rec2020': return 11;
+		case 'Rec2100': return 12;
+		case 'P3': return 13;
+		case 'Wide Gamut': return 14;
+		case 'ACES': return 15;
+		case 'All': return 16;
 	}
 	return false;
 };
@@ -126,6 +128,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 						'Fujifilm',
 						'RED',
 						'GoPro',
+						'Blackmagic',
+						'Bolex',
 						'Adobe',
 						'Rec709',
 						'Rec2020',
@@ -170,6 +174,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('Protune Native'));
 	this.csInSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('Bolex Wide Gamut'));
+	this.csInSub.push([this.subIdx('Bolex'),this.subIdx('Wide Gamut')]);
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
 	this.csInSub.push([this.subIdx('Rec709')]);
@@ -199,9 +205,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Wide Gamut')]);
 	this.custIn = this.csIn.length;
 	this.csIn.push(this.toSys('Custom In'));
-	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
+	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.csIn.push(new CSMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
-	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
+	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 
 	this.csOut.push(this.fromSys('Sony S-Gamut3.cine'));
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
@@ -233,6 +239,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('Protune Native'));
 	this.csOutSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('Bolex Wide Gamut'));
+	this.csOutSub.push([this.subIdx('Bolex'),this.subIdx('Wide Gamut')]);
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOutSub.push([this.subIdx('Rec709')]);
@@ -371,14 +379,14 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Wide Gamut')]);
 	this.custOut = this.csOut.length;
 	this.csOut.push(this.toSys('Custom Out'));
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.pass = this.csOut.length;
 	this.csOut.push(this.fromSysMatrix('Passthrough', new Float64Array([1,0,0, 0,1,0, 0,0,1]), this.system.white.buffer.slice(0)));
 	this.csM.push(this.csOut[this.csOut.length - 1]);
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.LA = this.csOut.length;
 	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
-	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13]);
+	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 
 	var max = this.csIn.length;
 	for (var j=0; j<max; j++) {
@@ -771,6 +779,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	redColor4.white = this.illuminant('e');
 	redColor4.toXYZ = this.RGBtoXYZ(redColor4.xy,redColor4.white);
 	this.g.push(redColor4);
+// Bolex
+	var bolex = {};
+	bolex.name = 'Bolex Wide Gamut';
+	bolex.cat = this.CATs.modelIdx('Bradford Chromatic Adaptation');
+	bolex.xy = new Float64Array([0.73000,0.29400, 0.22300,0.82000, 0.10300,-0.05500]);
+	bolex.white = this.illuminant('d65');
+	bolex.toXYZ = this.RGBtoXYZ(bolex.xy,bolex.white);
+	this.g.push(bolex);
 // Protune Native
 	var protune = {};
 	protune.name = 'Protune Native';

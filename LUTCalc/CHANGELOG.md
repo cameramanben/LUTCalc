@@ -1,6 +1,13 @@
 LUTCalc Changelog
 =================
 
+v2.91
+-----
+* New Feature - RED Gamma 1 and RED Gamma 2 using data from https://github.com/videovillage/RED-Conversion-LUTs.
+* New Feature - Bolex Log and Bolex Wide Gamut.
+* Bugfix - Reanalysed RED Gamma 4 against RED's 1D LUTs.
+* Bugfix - BMD4.6kFilm Gamma output range.
+
 v2.90
 -----
 * New Feature - BMDFilm4.6k Gamma.
