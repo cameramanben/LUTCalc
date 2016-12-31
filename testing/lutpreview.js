@@ -519,7 +519,8 @@ LUTPreview.prototype.loadedDefault = function() {
 		} else {
 			this.pre = this.def[0];
 			var shed = document.getElementById('shed');
-			var imgs = shed.getElementsByTagName('img');
+			var imgs = [];
+			[].push.apply(imgs,shed.getElementsByTagName('img'));
 			max = imgs.length-1;
 			for (var j=max; j>=0; j--) {
 				shed.removeChild(imgs[j]);

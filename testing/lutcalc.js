@@ -23,12 +23,13 @@ var titFootHeight,
 	lutBox,
 	lutGenerate,
 	lutInfoBox;
-document.addEventListener("DOMContentLoaded", function() {
+// Browser feature tests
+lutTests = new LUTTests(lutInputs);
+// Build app once the DOM is loaded
+document.addEventListener("DOMContentLoaded", function() { setTimeout(function() { // setTimeout gives time for asynchronous browser tests to finish (eg inline web workers)
 	// Housekeeping
 	titFootHeight = parseInt(document.getElementById('titlebar').clientHeight) + parseInt(document.getElementById('footer').clientHeight);
 	lutCalcForm = document.getElementById('lutcalcform');
-	// Browser feature tests
-	lutTests = new LUTTests(lutInputs);
 	// Build UI
 	lutMessage = new LUTMessage(lutInputs);
 	lutTests.isTransTest(lutMessage.getWorker());
@@ -53,11 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	lutMessage.gtTx(0,5,{});
 	lutMessage.gtTx(0,11,{});
 	lutGammaBox.oneOrThree();
-	// Set Up Events
-	window.onresize = function(){
-		maxHeights();
-	};
-});
+},600)});
 // Window resize adjustments
 function maxHeights() {
 	var winHeight = isNaN(window.innerHeight) ? window.clientHeight : window.innerHeight;
@@ -85,6 +82,11 @@ function lutcalcReady(p) {
 		splash.style.display = 'none';
 		modalBox.className = 'modalbox-hide';
 		lutMessage.setReady();
+		// Set Up Events
+		window.onresize = function(){
+			maxHeights();
+		};
+		// Populate Settings
 		lutMessage.gtSetParams();
 		lutMessage.gaSetParams();
 	}

@@ -36,7 +36,7 @@ vltLUT.prototype.header = function() {
 	out += 'LUT_3D_SIZE ' + info.dimension.toString() + "\n\n";
 	return out;
 };
-vltLUT.prototype.parse = function(title, text, lut) {
+vltLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
@@ -124,6 +124,19 @@ vltLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 		}
+		return lutMaker.setLUT(
+			lutDest,
+			{
+				title: title,
+				format: 'vlt',
+				dims: dimensions,
+				s: size,
+				min: minimum,
+				max: maximum,
+				C: [R.buffer,G.buffer,B.buffer]
+			}
+		);
+/*
 		lut.setDetails({
 			title: title,
 			format: 'vlt',
@@ -134,6 +147,7 @@ vltLUT.prototype.parse = function(title, text, lut) {
 			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
+*/
 	} else {
 		return false;
 	}

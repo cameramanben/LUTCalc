@@ -30,8 +30,8 @@ TWKLA.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox-hide';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-	this.inLUT = new LUTs();
-	this.inputs.addInput('laInLUT',this.inLUT);
+//	this.inLUT = new LUTs();
+//	this.inputs.addInput('laInLUT',this.inLUT);
 //	this.inputs.addInput('laGammaLUT',{text:[]});
 //	this.inputs.addInput('laGamutLUT',{text:[]});
 
@@ -94,6 +94,11 @@ TWKLA.prototype.io = function() {
 	this.doButton.setAttribute('class','twk-button-hide');
 	this.doButton.value = 'Analyse';
 
+	this.declampButton = document.createElement('input');
+	this.declampButton.setAttribute('type','button');
+	this.declampButton.setAttribute('class','twk-button-hide');
+	this.declampButton.value = 'Declip';
+
 	this.dim33 = this.createRadioElement('lutAnalystDim',false);
 	this.dim65 = this.createRadioElement('lutAnalystDim',true);
 	this.inputs.addInput('laDim',[this.dim33,this.dim65]);
@@ -113,6 +118,7 @@ TWKLA.prototype.io = function() {
 	this.backButton.setAttribute('class','twk-button-hide');
 	this.backButton.value = 'New LUT';
 
+	this.showGt = true;
 	// LUTAnalyst Object
 	lutInputs.addInput('lutAnalyst',new LUTAnalyst(this.inputs, this.messages));
 };
@@ -177,6 +183,7 @@ TWKLA.prototype.ui = function() {
 	this.box.appendChild(this.doButton);
 	this.box.appendChild(this.storeButton);
 	this.box.appendChild(this.storeBinButton);
+	this.box.appendChild(this.declampButton);
 	this.box.appendChild(this.backButton);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
@@ -217,6 +224,13 @@ TWKLA.prototype.toggleTweak = function() {
 			this.inputs.twkHGSelect.appendChild(laOption);
 		} else {
 			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
+		}
+		if (this.showGt) {
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].style.display = 'block';
+			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].style.display = 'block';
+		} else {
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].style.display = 'none';
+			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].style.display = 'none';
 		}
 	} else {
 		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value) === this.inputs.gammaLA) {
@@ -294,6 +308,9 @@ TWKLA.prototype.events = function() {
 	this.doButton.onclick = function(here){ return function(){
 		here.doStuff();
 	};}(this);
+	this.declampButton.onclick = function(here){ return function(){
+		here.deClamp();
+	};}(this);
 	this.backButton.onclick = function(here){ return function(){
 		here.reset();
 		here.messages.gaSetParams();
@@ -356,35 +373,54 @@ TWKLA.prototype.gotFile = function() {
 		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		if (this.inputs.laFileData.isTxt) {
-			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.inLUT);
+			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst, 'inLUT');
 		} else {
-			var parsed2 = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst.inLUT);
+			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst, 'inLUT');
 		}
 		if (parsed) {
 			this.title.value = this.inputs.lutAnalyst.getTitle('in');
 			this.doButton.className = 'twk-button';
 			if (this.inputs.lutAnalyst.is3D()) {
+				this.showGt = true;
 				this.gamutBox.className = 'twk-tab';
 			} else {
+				this.showGt = false;
 				this.gamutBox.className = 'twk-tab-hide';
 			}
+			if (this.inputs.lutAnalyst.inLUT.isClamped()) {
+				this.declampButton.value = 'Declip';
+				this.declampButton.disabled = false;
+			} else {
+				this.declampButton.value = 'Unclipped';
+				this.declampButton.disabled = true;
+			}
+			this.declampButton.className = 'twk-button';
+			
 		} else {
 			this.reset();
 		}
 	} else {
 		this.doButton.className = 'twk-button-hide';
+		this.declampButton.className = 'twk-button-hide';
 		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		switch (this.inputs.laFileData.format) {
-			case 'lacube': parsed = this.inputs.laCube.parse(this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst.tf, this.inputs.lutAnalyst.cs);
+			case 'lacube': parsed = this.inputs.laCube.parse(this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst, 'tf', 'cs');
 						   break;
-			case 'labin': parsed = this.inputs.laBin.parse(this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst.tf, this.inputs.lutAnalyst.cs);
+			case 'labin': parsed = this.inputs.laBin.parse(this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst, 'tf', 'cs');
 						  break;
 		}
 		if (parsed) {
+			if (this.inputs.lutAnalyst.cs) {
+				this.showGt = true;
+			} else {
+				this.showGt = false;
+			}
 			this.title.value = this.inputs.lutAnalyst.getTitle('tf');
-			this.inputs.lutAnalyst.updateLATF();
-			this.inputs.lutAnalyst.updateLACS();
+			this.inputs.lutAnalyst.updateLATF(true);
+			if (this.showGt) {
+				this.inputs.lutAnalyst.updateLACS();
+			}
 			this.tweakCheck.checked = true;
 			this.tweakCheck.className = 'twk-checkbox';
 			this.toggleTweak();
@@ -412,9 +448,13 @@ TWKLA.prototype.doneStuff = function() {
 	this.storeBinButton.className = 'twk-button';
 	this.toggleTweak();
 	this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].selected = true;
-	this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].selected = true;
+	if (this.showGt) {
+		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].selected = true;
+	}
 	this.messages.changeGamma();
-	this.messages.changeGamut();
+	if (this.showGt) {
+		this.messages.changeGamut();
+	}
 };
 TWKLA.prototype.reset = function() {
 	this.tweakCheck.checked = false;
@@ -447,6 +487,7 @@ TWKLA.prototype.reset = function() {
 	this.backButton.className = 'twk-button-hide';
 	this.storeButton.className = 'twk-button-hide';
 	this.storeBinButton.className = 'twk-button-hide';
+	this.declampButton.className = 'twk-button-hide';
 	this.doButton.className = 'twk-button-hide';
 };
 TWKLA.prototype.store = function(cube) {
@@ -478,6 +519,26 @@ TWKLA.prototype.store = function(cube) {
 		this.title.value,
 		this.inputs.lutAnalyst.getL()
 	);
+*/
+};
+TWKLA.prototype.deClamp = function() {
+	this.inputs.lutAnalyst.inLUT.deClamp();
+	this.declampButton.value = 'Declipped';
+	this.declampButton.disabled = true;
+	if (this.doButton.value === 'Re-Analyse') {
+		this.doStuff();
+	}
+/*
+		this.files.save(
+			this.inputs.laCube.build(
+				this.title.value,
+				new Float64Array(3).buffer,
+				this.inputs.lutAnalyst.inLUT.getRGB()
+			),
+			'test',
+			'cube',
+			0
+		);
 */
 };
 TWKLA.prototype.cleanTitle = function() {

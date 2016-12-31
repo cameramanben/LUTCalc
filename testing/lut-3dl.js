@@ -152,7 +152,7 @@ threedlLUT.prototype.footer = function(info) {
 	out += 'gamma 1.0' + "\n";
 	return out;
 };
-threedlLUT.prototype.parse = function(title, text, lut) {
+threedlLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var size = false;
 	var minimum = [0,0,0];
 	var maximum = [1,1,1];
@@ -269,7 +269,7 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 			for (var j=0; j<m; j++) {
 				shaper[j] /= maxIn;
 			}
-//			var lutSpline = new LUTSpline(shaper.buffer);
+//			var lutSpline = new LUTRSpline(shaper.buffer);
 //			spline = new Float64Array(lutSpline.getReverse());
 			spline = shaper;
 		}
@@ -347,6 +347,20 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 			if (doShaper) {
+				return lutMaker.setLUT(
+					lutDest,
+					{
+						title: title,
+						format: format,
+						dims: 3,
+						s: size,
+						min: minimum,
+						max: maximum,
+						spline: spline.buffer,
+						C: [R.buffer,G.buffer,B.buffer]
+					}
+				);
+/*
 				lut.setDetails({
 					title: title,
 					format: format,
@@ -357,7 +371,21 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 					spline: spline.buffer,
 					C: [R.buffer,G.buffer,B.buffer]
 				});
+*/
 			} else {
+				return lutMaker.setLUT(
+					lutDest,
+					{
+						title: title,
+						format: format,
+						dims: 3,
+						s: size,
+						min: minimum,
+						max: maximum,
+						C: [R.buffer,G.buffer,B.buffer]
+					}
+				);
+/*
 				lut.setDetails({
 					title: title,
 					format: format,
@@ -367,8 +395,9 @@ threedlLUT.prototype.parse = function(title, text, lut) {
 					max: maximum,
 					C: [R.buffer,G.buffer,B.buffer]
 				});
+*/
 			}
-			return true;
+//			return true;
 		} else {
 			return false;
 		}

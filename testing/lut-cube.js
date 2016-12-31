@@ -83,7 +83,7 @@ cubeLUT.prototype.header = function() {
 	out += ' - ' + 'Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
 	return out;
 };
-cubeLUT.prototype.parse = function(title, text, lut) {
+cubeLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
@@ -171,16 +171,18 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 		}
-		lut.setDetails({
-			title: title,
-			format: 'cube',
-			dims: dimensions,
-			s: size,
-			min: minimum,
-			max: maximum,
-			C: [R.buffer,G.buffer,B.buffer]
-		});
-		return true;
+		return lutMaker.setLUT(
+			lutDest,
+			{
+				title: title,
+				format: 'cube',
+				dims: dimensions,
+				s: size,
+				min: minimum,
+				max: maximum,
+				C: [R.buffer,G.buffer,B.buffer]
+			}
+		);
 	} else {
 		return false;
 	}

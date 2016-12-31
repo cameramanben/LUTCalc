@@ -824,27 +824,17 @@ TWKCS.prototype.updateOutMatrix = function() {
 		}
 	}
 };
-TWKCS.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+TWKCS.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 TWKCS.prototype.changeCS = function() {

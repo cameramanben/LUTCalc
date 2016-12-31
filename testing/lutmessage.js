@@ -30,7 +30,11 @@ function LUTMessage(inputs) {
 	// 13 - twkCS
 	// 14 - twkMulti
 	// 15 - twkSampler
-	this.blobWorkers = true;
+	if (typeof this.inputs.blobWorkers !== 'undefined') {
+		this.blobWorkers = this.inputs.blobWorkers;
+	} else {
+		this.blobWorkers = false;
+	}
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -65,9 +69,12 @@ LUTMessage.prototype.setReady = function() {
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
 	var max = this.gaT;
-	var windowURL = window.URL || window.webkitURL;
-	var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
-	var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	var windowURL,workerString,gammaWorkerBlob;
+	if (this.blobWorkers) {
+		windowURL = window.URL || window.webkitURL;
+		workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+		gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	}
 	for (var i=0; i<max; i++) {
 		var _this = this;
 		if (this.blobWorkers) {
@@ -76,6 +83,7 @@ LUTMessage.prototype.startGaThreads = function() {
 				this.gas[i] = new Worker(blobURL);
 				URL.revokeObjectURL(blobURL);
 			} catch (e) { // Fallback for - IE10 and 11
+console.log('No Inline Web Workers');
 				this.blobWorkers = false;
 				this.gas[i] = new Worker('gammaworker.js');
 			}
@@ -99,9 +107,12 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 		this.gaT = T;
 		var max = this.gas.length;
 		if (T > max) {
-			var windowURL = window.URL || window.webkitURL;
-			var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
-			var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			var windowURL,workerString,gammaWorkerBlob;
+			if (this.blobWorkers) {
+				windowURL = window.URL || window.webkitURL;
+				workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+				gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			}
 			for (var i=max; i<T; i++) {
 				var _this = this;
 				if (this.blobWorkers) {
@@ -374,9 +385,12 @@ LUTMessage.prototype.gotHighLevelDefault = function(d) {
 // Gamut Message Handling
 LUTMessage.prototype.startGtThreads = function() {
 	var max = this.gtT;
-	var windowURL = window.URL || window.webkitURL;
-	var workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
-	var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	var windowURL,workerString,csWorkerBlob;
+	if (this.blobWorkers) {
+		windowURL = window.URL || window.webkitURL;
+		workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
+		csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	}
 	for (var i=0; i<max; i++) {
 		var _this = this;
 		if (this.blobWorkers) {
@@ -409,9 +423,12 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 		this.gtT = T;
 		var max = this.gts.length;
 		if (T > max) {
-			var windowURL = window.URL || window.webkitURL;
-			var workerString = (workerLUTString + workerRingString + workerBrentString + workerGammaString).replace('"use strict";', '');
-			var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			var windowURL,workerString,csWorkerBlob;
+			if (this.blobWorkers) {
+				windowURL = window.URL || window.webkitURL;
+				workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
+				csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			}
 			for (var i=max; i<T; i++) {
 				var _this = this;
 				if (this.blobWorkers) {
@@ -762,6 +779,8 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		'LC709A',
 		'cpouttungsten',
 		'cpoutdaylight',
+		'Amira709',
+		'AlexaX2',
 		'V709'
 	];
 	var m = fileNames.length;

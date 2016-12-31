@@ -925,7 +925,7 @@ TWKPSSTCDL.prototype.updateR = function(control) {
 	var ring = this.baseRings[control];
 	for (var j=0; j<29; j++) {
 		if (j%4 === 0 || !locks[j]) {
-			vals[j] = ring.lLCub(j/28);
+			vals[j] = ring.fCub(j/28);
 			if ((control === 1 || control === 4) && vals[j] < 0) {
 				vals[j] = 0;
 			}

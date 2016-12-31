@@ -14,11 +14,10 @@ function LUTAnalyst(inputs, messages) {
 	this.messages = messages;
 	this.p = 7;
 	this.messages.addUI(this.p,this);
+	this.lutMaker = new LUTs();
+	this.showGt = true;
 	this.lutRange();
-	this.title = 'LUT Analyst';
-	this.inLUT = new LUTs();
-	this.tf = new LUTs();
-	this.cs = new LUTs();
+	this.reset();
 	lutcalcReady(this.p);
 }
 LUTAnalyst.prototype.getTitle = function(lut) {
@@ -32,9 +31,9 @@ LUTAnalyst.prototype.getTitle = function(lut) {
 };
 LUTAnalyst.prototype.reset = function() {
 	this.title = 'LUT Analyst';
-	this.inLUT = new LUTs();
-	this.tf = new LUTs();
-	this.cs = new LUTs();
+	this.inLUT = false;
+	this.tf = false;
+	this.cs = false;
 };
 LUTAnalyst.prototype.lutRange = function() {
 	if (this.inputs.laRange[3].checked || this.inputs.laRange[2].checked) {
@@ -71,14 +70,17 @@ LUTAnalyst.prototype.getTF = function() {
 		gamma: this.gammaIn
 	});
 };
-LUTAnalyst.prototype.updateLATF = function() {
+LUTAnalyst.prototype.updateLATF = function(laFile) {
 	this.gaT = this.messages.getGammaThreads();
-	var dets = this.tf.getDetails();
+	var dets = this.tf.getDetails(true);
+	if (typeof laFile !== 'undefined' && laFile) {
+		this.tfSpline = new LUTRSpline({buff:dets.C[0], fL:0, fH:1});
+	}
 	var HL = this.tfSpline.getHighLow();
 	dets.R = [this.tfSpline.getReverse()];
-	dets.sr = this.tfSpline.getSR();
-	dets.minR = [HL.revL,HL.revL,HL.revL];
-	dets.maxR = [HL.revH,HL.revH,HL.revH];
+	dets.sr = this.tfSpline.getRM();
+	dets.minR = new Float64Array([HL.revL,HL.revL,HL.revL]);
+	dets.maxR = new Float64Array([HL.revH,HL.revH,HL.revH]);
 	this.messages.gaTxAll(this.p,6,dets);
 };
 LUTAnalyst.prototype.getL = function() {
@@ -103,13 +105,13 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 	if (this.pass === 0) { // Transfer function pass
 		var C = new Float64Array(buff);
 		var max = C.length;
-		this.inLUT.lLsCub(buff);
-		for (var j=0; j<max; j++) {
-			if (this.legOut) {
+		this.inLUT.FCub(buff);
+		if (this.legOut) {
+			for (var j=0; j<max; j++) {
 				C[j] = ((C[j]*876)+64)/1023;
 			}
 		}
-		this.tf.setDetails({
+		this.tf = this.lutMaker.newLUT({
 			title: 'Transfer Function',
 			format: 'cube',
 			dims: 1,
@@ -118,17 +120,16 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 			max: [1,1,1],
 			C: [buff]
 		});
-		this.tfSpline = new LUTSpline(buff,1,0);
+		this.tfSpline = new LUTRSpline({buff:buff, fL:0, fH:1});
 		this.pass = 1;
 		this.getCS();
-	} else { // Colour Space Pass
-		this.brent = new Brent(this.tf,0,1);
+	} else if (this.inLUT.is3D()) { // Colour Space Pass
 		var max = dim*dim*dim;
 		var R = new Float64Array(max);
 		var G = new Float64Array(max);
 		var B = new Float64Array(max);
 		var rgb = new Float64Array(buff);
-		this.inLUT.rRsCub(buff);
+		this.inLUT.RGBCub(buff);
 		for (var j=0; j<max; j++) {
 			k = j*3;
 			if (this.legOut) {
@@ -141,27 +142,34 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 				B[j] = this.tfSpline.r(rgb[k+2]);
 			}
 		}
-		var minMax = this.tfSpline.getMinMax();
-		var a = minMax.a;
-		var b = minMax.b;
+		var minMax = this.inLUT.minMax();
+		if (this.legOut) {
+			for (var j=0; j<6; j++) {
+				minMax[j] = ((minMax[j]*876)+64)/1023;
+			}
+		}
+// console.log(this.tfSpline.r(0));
+		var	a = Math.min(0,					this.tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // min value of 0 or lower if the analysed grayscale or any of the original mesh points get there
+		var b = Math.max(1.1740560044504333,this.tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // max value of 10 stops above mid gray (S-Log3) or higher if the analysed grayscale or any of the original mesh points get there
+// console.log(a+' - '+b);
 		for (var j=0; j<max; j++) {
-			if (R[j] < -65535) {
+			if (R[j] < a) {
 				R[j] = a;
-			} else if (R[j] > 65535) {
+			} else if (R[j] > b) {
 				R[j] = b;
 			}
-			if (G[j] < -65535) {
+			if (G[j] < a) {
 				G[j] = a;
-			} else if (B[j] > 65535) {
+			} else if (G[j] > b) {
 				G[j] = b;
 			}
-			if (B[j] < -65535) {
+			if (B[j] < a) {
 				B[j] = a;
-			} else if (B[j] > 65535) {
+			} else if (B[j] > b) {
 				B[j] = b;
 			}
-		}		
-		this.cs.setDetails({
+		}
+		this.cs = this.lutMaker.newLUT({
 			title: 'Colour Space',
 			format: 'cube',
 			dims: 3,
@@ -170,8 +178,12 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 			max: [1,1,1],
 			C: [R.buffer,G.buffer,B.buffer]
 		});
+		this.showGt = true;
 		this.updateLATF();
 		this.updateLACS();
+	} else {
+		this.showGt = false;
+		this.updateLATF();
 	}
 };
 LUTAnalyst.prototype.updateLACS = function() {
@@ -180,11 +192,10 @@ LUTAnalyst.prototype.updateLACS = function() {
 	var details = {
 		title: d.title,
 		format: d.format,
-		dims: d.d,
+		dims: d.dims,
 		s: d.s,
 		min: d.min.slice(0),
 		max: d.max.slice(0),
-		rgbl: d.rgbl
 	};
 	if (d.d === 3 || d.C.length === 3) {
 		details.C = [
@@ -193,10 +204,29 @@ LUTAnalyst.prototype.updateLACS = function() {
 			d.C[2].slice(0)
 		];
 	} else {
-		details.C = [d.C[0].buffer.slice(0)];
+		details.C = [d.C[0].slice(0)];
 	}
 	this.messages.gtTxAll(this.p,6,details);
 };
 LUTAnalyst.prototype.getRGB = function() {
-	return this.cs.getRGB();
+	if (this.showGt) {
+		return this.cs.getRGB();
+	} else {
+		return false;
+	}
+};
+LUTAnalyst.prototype.setLUT = function(lut, data) {
+	this[lut] = this.lutMaker.newLUT(data);
+	if (typeof this[lut] !== 'undefined') {
+		this.showGt = true;
+		return true;
+	} else {
+		return false;
+	}
+};
+LUTAnalyst.prototype.noCS = function() {
+	this.showGt = false;
+};
+LUTAnalyst.prototype.showGamut = function() {
+	return this.showGt;
 };

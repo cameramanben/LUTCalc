@@ -15,28 +15,33 @@ function lacubeLUT(messages, isLE) {
 }
 lacubeLUT.prototype.build = function(title, tfBuff, csBuff) {
 	var tf = new Float64Array(tfBuff);
-	var cs = [	new Float64Array(csBuff[0]),
-				new Float64Array(csBuff[1]),
-				new Float64Array(csBuff[2])];
+	var cs;
+	// 1D Transfer function
 	var out =	'# LUT Analyst LA LUT File -------------------------------------------------------' + "\n";
 	out +=		'TITLE "' + title + '"' + "\n" +
 				'LUT_1D_SIZE ' + tf.length.toString() + "\n" +
 				'# LUT Analyst - 1D Transfer Function Shaper - S-Log3->' + title + ' Gamma' + "\n";
-	var max = tf.length;
-	for (var j=0; j<max; j++) {
+	var m = tf.length;
+	for (var j=0; j<m; j++) {
 		out += tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\n";
 	}
-	out +=		'# -------------------------------------------------------------------------------' + "\n";
-	out +=  	'TITLE "' + title + '"' + "\n" +
-				'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
-				'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
-	max = cs[0].length;
-	for (var j=0; j<max; j++) {
-		out += cs[0][j].toFixed(8).toString() + "\t" + cs[1][j].toFixed(8).toString() + "\t" + cs[2][j].toFixed(8).toString() + "\n";
+	// 3D Colourspace if present
+	if (csBuff) {
+		cs = [	new Float64Array(csBuff[0]),
+				new Float64Array(csBuff[1]),
+				new Float64Array(csBuff[2])];
+		out +=		'# -------------------------------------------------------------------------------' + "\n";
+		out +=  	'TITLE "' + title + '"' + "\n" +
+					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
+					'# LUT Analyst - 3D Colour Space Transform - S-Gamut3.cine->' + title + ' Colour' + "\n";
+		m = cs[0].length;
+		for (var j=0; j<m; j++) {
+			out += cs[0][j].toFixed(8).toString() + "\t" + cs[1][j].toFixed(8).toString() + "\t" + cs[2][j].toFixed(8).toString() + "\n";
+		}
 	}
 	return out;
 };
-lacubeLUT.prototype.parse = function(title, text, gammaLut, gamutLut) {
+lacubeLUT.prototype.parse = function(title, text, lutMaker, gammaDest, gamutDest) {
 	var max = text.length;
 	var parsed = false;
 	if (max === 0) {
@@ -56,10 +61,14 @@ lacubeLUT.prototype.parse = function(title, text, gammaLut, gamutLut) {
 		}
 	}
 	var gammaCube = new cubeLUT(this.messages, this.isLE);
-	parsed = gammaCube.parse(title, gammaText, gammaLut);
-	if (both && parsed) {
-		var gamutCube = new cubeLUT(this.messages, this.isLE);
-		parsed = gamutCube.parse(title, gamutText, gamutLut);
+	parsed = gammaCube.parse(title, gammaText, lutMaker, gammaDest);
+	if (parsed) {
+		if (both) {
+			var gamutCube = new cubeLUT(this.messages, this.isLE);
+			parsed = gamutCube.parse(title, gamutText, lutMaker, gamutDest);
+		} else {
+			lutMaker.noCS();
+		}
 	}
 	return parsed;
 };
@@ -69,20 +78,31 @@ function labinLUT(messages, isLE) {
 }
 labinLUT.prototype.build = function(title, tfBuff, csBuff) {
 	var tf = new Float64Array(tfBuff);
-	var cs = [	new Float64Array(csBuff[0]),
+	var tfSize = tf.length;
+	var out64;
+	var cs,csSize;
+	if (csBuff) {
+		cs = [	new Float64Array(csBuff[0]),
 				new Float64Array(csBuff[1]),
 				new Float64Array(csBuff[2]) ];
-	var tfSize = tf.length;
-	var csSize = cs[0].length;
-	var out64 = new Float64Array(2 + tfSize + (3*csSize));
-	out64.set(tf,2);
-	out64.set(cs[0], 2 + tfSize);
-	out64.set(cs[1], 2 + tfSize + csSize);
-	out64.set(cs[2], 2 + tfSize + (2*csSize));
+		csSize = cs[0].length;
+		out64 = new Float64Array(2 + tfSize + (3*csSize));
+	} else {
+		csSize = 0;
+		out64 = new Float64Array(2 + tfSize);
+	}
 	var dim = out64.length;
 	var out = new Int32Array(dim); // internal processing is done on Float64s, files are scaled Int32s for same precision / smaller size
+	out64.set(tf,2);
 	out[0] = tfSize;
-	out[1] = Math.round(Math.pow(csSize,1/3));
+	if (csBuff) {
+		out64.set(cs[0], 2 + tfSize);
+		out64.set(cs[1], 2 + tfSize + csSize);
+		out64.set(cs[2], 2 + tfSize + (2*csSize));
+		out[1] = Math.round(Math.pow(csSize,1/3));
+	} else {
+		out[1] = 0;
+	}
 	for (var j=2; j<dim; j++) {
 		if (out64[j] > 1.99) {
 			out[j] = 2136746230;
@@ -115,7 +135,7 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff) {
   	return byteOut;
 //  	return out.buffer;
 };
-labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
+labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest) {
 	if (!this.isLE) { // files are little endian, swap if system is big endian
 		console.log('Gamut LUTs: Big Endian System');
 		var lutArr = new Uint8Array(buff);
@@ -134,21 +154,12 @@ labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
 		}
 	}
 	var in32 = new Int32Array(buff);
-	var tfS = in32[0];
-	var dim = in32[1];
-	var csS = dim*dim*dim;
 	// Internal processing is Float64, files are scaled Int32
+	// 1D Transfer function
+	var tfS = in32[0];
 	var T = new Float64Array(tfS);
 	for (var j=0; j<tfS; j++){
 		T[j] = parseFloat(in32[2 + j])/1073741824;
-	}
-	var C = [	new Float64Array(csS),
-				new Float64Array(csS),
-				new Float64Array(csS) ];
-	for (var j=0; j<csS; j++){
-		C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
-		C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
-		C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
 	}
 	var tfOut = {
 		title: title,
@@ -159,22 +170,37 @@ labinLUT.prototype.parse = function(title, buff, gammaLut, gamutLut) {
 		max: [1,1,1],
 		C: [T.buffer]
 	};
-	gammaLut.setDetails(tfOut);
-	var csOut = {
-		title: 'cs',
-		format: 'cube',
-		dims: 3,
-		s: dim,
-		min: [0,0,0],
-		max: [1,1,1],
-		C: [	C[0].buffer,
-				C[1].buffer,
-				C[2].buffer]
-	};
-	gamutLut.setDetails(csOut);
-	if (T.length > 0 || C[0].length > 0) {
-		return true;
-	} else {
+	if (!lutMaker.setLUT(gammaDest,tfOut)) {
 		return false;
 	}
+	// 3D Colourspace if present
+	var dim = in32[1];
+	if (dim > 0) {
+		var csS = dim*dim*dim;
+		var C = [	new Float64Array(csS),
+					new Float64Array(csS),
+					new Float64Array(csS) ];
+		for (var j=0; j<csS; j++){
+			C[0][j] = parseFloat(in32[((2+tfS)) + j])/1073741824;
+			C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
+			C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
+		}
+		var csOut = {
+			title: 'cs',
+			format: 'cube',
+			dims: 3,
+			s: dim,
+			min: [0,0,0],
+			max: [1,1,1],
+			C: [	C[0].buffer,
+					C[1].buffer,
+					C[2].buffer]
+		};
+		if (!lutMaker.setLUT(gamutDest,csOut)) {
+			return false;
+		}
+	} else {
+		lutMaker.noCS();
+	}
+	return true;
 };

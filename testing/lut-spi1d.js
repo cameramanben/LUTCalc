@@ -46,7 +46,7 @@ spi1dLUT.prototype.header = function(info) {
 	}
 	return out;
 };
-spi1dLUT.prototype.parse = function(title, text, lut) {
+spi1dLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = 1;
 	var channels = false;
 	var size = false;
@@ -89,6 +89,19 @@ spi1dLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 			if (s === size) {
+			return lutMaker.setLUT(
+				lutDest,
+				{
+					title: title,
+					format: 'spi1d',
+					dims: 1,
+					s: size,
+					min: [from,from,from],
+					max: [to,to,to],
+					C: [L.buffer]
+				}
+			);
+/*
 				lut.setDetails({
 					title: title,
 					format: 'spi1d',
@@ -99,7 +112,7 @@ spi1dLUT.prototype.parse = function(title, text, lut) {
 					C: [L.buffer]
 				});
 				return true;
-			} else {
+*/			} else {
 				return false;
 			}
 		} else if (channels < 4) {
