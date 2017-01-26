@@ -19,6 +19,15 @@ LUTs.prototype.newLUT = function(d) {
 	if (typeof d.format === 'string') {
 		params.format = d.format;
 	}
+	if (typeof d.inputCS === 'string') {
+		params.inputCS = d.inputCS;
+	}
+	if (typeof d.inputTF === 'string') {
+		params.inputTF = d.inputTF;
+	}
+	if (typeof d.inputMatrix !== 'undefined' && d.inputMatrix.length === 9) {
+		params.inputMatrix = d.inputMatrix;
+	}
 	if (typeof d.dims === 'number') {
 		this.dims = d.dims;
 	} else {
@@ -89,6 +98,11 @@ function LUTSpline(params) {
 		this.format = params.format;
 	} else {
 		this.format = '';
+	}
+	if (typeof params.inputTF === 'string') {
+		this.inputTF = params.inputTF;
+	} else {
+		this.inputTF = '';
 	}
 	// Precalculate forward parameters
 	this.FD = new Float64Array(params.buff);
@@ -239,6 +253,26 @@ LUTSpline.prototype.fCub = function(L) {
 		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
 	}
 };
+LUTSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
 LUTSpline.prototype.fLin = function(L) {
 	var s = this.FM;
 	var r,l;
@@ -282,6 +316,32 @@ LUTSpline.prototype.FCub = function(buff) {
 			l = Math.floor(c[j]);
 			r = c[j]-l;
 			c[j] = (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		}
+	}
+};
+LUTSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
 		}
 	}
 };
@@ -332,6 +392,27 @@ LUTSpline.prototype.fRGBCub = function(L) {
 	}
 	return new Float64Array([L,L,L]);
 };
+LUTSpline.prototype.fRGBTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		L = (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		L = ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		L = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+	return new Float64Array([L,L,L]);
+};
 LUTSpline.prototype.fRGBLin = function(L) {
 	var s = this.FM;
 	var r,l;
@@ -358,6 +439,11 @@ LUTSpline.prototype.rgbCub = function(rgb) {
 	this.FCub(out.buffer);
 	return out;
 };
+LUTSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FTet(out.buffer);
+	return out;
+};
 LUTSpline.prototype.rgbLin = function(rgb) {
 	var out = new Float64Array(rgb.buffer.slice(0));
 	this.FLin(out.buffer);
@@ -365,6 +451,9 @@ LUTSpline.prototype.rgbLin = function(rgb) {
 };
 LUTSpline.prototype.RGBCub = function(buff) {
 	this.FCub(out);
+};
+LUTSpline.prototype.RGBLin = function(buff) {
+	this.FTet(out);
 };
 LUTSpline.prototype.RGBLin = function(buff) {
 	this.FLin(out);
@@ -434,7 +523,7 @@ LUTSpline.prototype.JInv = function(rgbIn) {
 	}
 };
 LUTSpline.prototype.getDetails = function() {
-	return {
+	var out = {
 		title: this.title,
 		format: this.format,
 		dims: 1,
@@ -443,6 +532,10 @@ LUTSpline.prototype.getDetails = function() {
 		max: new Float64Array([this.fH,this.fH,this.fH]),
 		C: [this.FD.buffer]
 	};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	return out;
 };
 LUTSpline.prototype.getL = function() {
 	return this.FD.buffer;
@@ -462,8 +555,16 @@ LUTSpline.prototype.is3D = function() {
 LUTSpline.prototype.getTitle = function() {
 	return this.title;
 };
+LUTSpline.prototype.getInputDetails = function() {
+	var out = {};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	return out;
+};
 // LUTRSpline - spline object with arbitrary input range and inverse automatically calculated
 function LUTRSpline(params) {
+	this.method = 0; // choose which approach to use on 'f(x)', cubic, or linear - used by brent to calculate the reverse
 	// Metadata
 	if (typeof params.title === 'string') {
 		this.title = params.title;
@@ -474,6 +575,11 @@ function LUTRSpline(params) {
 		this.format = params.format;
 	} else {
 		this.format = '';
+	}
+	if (typeof params.inputTF === 'string') {
+		this.inputTF = params.inputTF;
+	} else {
+		this.inputTF = '';
 	}
 	// Precalculate forward parameters
 	this.FD = new Float64Array(params.buff);
@@ -579,84 +685,9 @@ function LUTRSpline(params) {
 	} else {
 		rm = Math.max(fm, 1024);
 	}
-	this.RD = new Float64Array(rm);
-	var brent = new Brent(this);
-	var x;
-	for (var j=0; j<rm; j++) {
-		x = ((j/(rm-1))*(this.rLH)) + this.rL;
-		if (j === 0 || x <= 0 || isNaN(this.RD[j-1]) || this.RD[j-1] < -65534 || this.RD[j-1] > 65534) {
-			this.RD[j] = brent.findRoot(x,x);
-		} else {
-			this.RD[j] = brent.findRoot(this.RD[j-1],x);
-		}
-		if (this.RD[j] < -65534) {
-			this.RD[j] = -65534;
-		} else if (this.RD[j] > 65534) {
-			this.RD[j] = 65534;
-		}
-	}
-	if (isNaN(this.RD[0])) {
-		for (var j=0; j<rm; j++) {
-			if (!isNaN(this.RD[j])) {
-				this.RD[0] = this.RD[j];
-				break;
-			}
-		}
-	}
-	for (var j=1; j<rm; j++) {
-		if (isNaN(this.RD[j])) {
-			this.RD[j] = this.RD[j-1];
-		}
-	}
-	for (var j=1; j<rm; j++) {
-		this.RD[j] = (this.RD[j] * this.fLH) + this.fL;
-	}
-	mono = this.RD[rm-1]-this.RD[0]; // If things are working, should be unchanged, but belt and braces....
-	if (mono >= 0) {
-		mono = 1;
-	} else if (mono < 0) {
-		mono = -1;
-	}
-	// Precalculate reverse parameters
-	this.RA = new Float64Array(rm);
-	this.RB = new Float64Array(rm);
-	this.RC = new Float64Array(rm);
-	var RP1 = new Float64Array(rm);
-	var RD1 = new Float64Array(rm);
-	for (var j=0; j<rm; j++) {
-		if (j === 0) {
-			RP1[0] = this.RD[1];
-			this.RC[0] = (0.1*this.RD[3]) - (0.8*this.RD[2]) + (2.3*this.RD[1]) - (1.6*this.RD[0]);
-			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
-				this.RC[0] = -(0.5*this.RD[2]) + (2*this.RD[1]) - (1.5*this.RD[0]);
-				if (this.RC[0]*mono <= 0) { // still opposite slope to monotonic
-					this.RC[0] = 0.0075 * mono / (fm-1);
-				}
-			}
-			RD1[0] = (this.RD[2] - this.RD[0])/2;
-		} else if (j < rm-1) {
-			RP1[j] = this.RD[j+1];
-			this.RC[j] = (this.RD[j+1] - this.RD[j-1])/2
-			if (j === rm-2) {
-				FD1[j] = (-0.1*this.RD[j-2]) + (0.8*this.RD[j-1]) - (2.3*this.RD[j]) + (1.6*this.RD[j+1]);
-				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
-					RD1[j] = (0.5*this.RD[j-1]) - (2*this.RD[j]) + (1.5*this.RD[j+1]);
-					if (RD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
-						RD1[j] = 0.0075 * mono / (fm-1);
-					}
-				}
-			} else {
-				RD1[j] = (this.RD[j+2] - this.RD[j])/2;
-			}
-		} else {
-			RP1[j] = this.RD[j];
-			this.RC[j] = RD1[j-1];
-			RD1[j] = RD1[j-1];
-		}
-		this.RA[j] = (2*this.RD[j]) + this.RC[j] - (2*RP1[j]) + RD1[j];
-		this.RB[j] = (-3*this.RD[j]) - (2*this.RC[j]) + (3*RP1[j]) - RD1[j];
-	}
 	this.RM = rm-1;
+	this.brent = new Brent(this);
+	this.buildReverse();
 }
 LUTRSpline.prototype.f = function(L) {
 	var s = this.FM;
@@ -675,7 +706,11 @@ LUTRSpline.prototype.f = function(L) {
 	} else {
 		l = Math.floor(L);
 		r = L-l;
-		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		if (this.method === 0) { // cubic
+			return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		} else { // tetrahedral or linear
+			return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
 	}
 };
 LUTRSpline.prototype.df = function(L) {
@@ -696,7 +731,11 @@ LUTRSpline.prototype.df = function(L) {
 	} else {
 		l = Math.floor(L);
 		r = L-l;
-		o = s*((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		if (this.method === 0) { // cubic
+			o = s*((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		} else { // tetrahedral or linear
+			return s*(this.FD[l+1]-this.FD[l]);
+		}
 	}
 	// Allow for nonlinear inputs
 	if (this.sin) {
@@ -726,6 +765,26 @@ LUTRSpline.prototype.fCub = function(L) {
 		l = Math.floor(L);
 		r = L-l;
 		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTRSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
 	}
 };
 LUTRSpline.prototype.fLin = function(L) {
@@ -774,6 +833,32 @@ LUTRSpline.prototype.FCub = function(buff) {
 		}
 	}
 };
+LUTRSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
 LUTRSpline.prototype.FLin = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -804,6 +889,10 @@ LUTRSpline.prototype.fRGBCub = function(L) {
 	L = this.f(L);
 	return new Float64Array([L,L,L]);
 };
+LUTRSpline.prototype.fRGBTet = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
 LUTRSpline.prototype.fRGBLin = function(L) {
 	L = this.fLin(L);
 	return new Float64Array([L,L,L]);
@@ -813,6 +902,11 @@ LUTRSpline.prototype.rgbCub = function(rgb) {
 	this.FCub(out.buffer);
 	return out;
 };
+LUTRSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
 LUTRSpline.prototype.rgbLin = function(rgb) {
 	var out = new Float64Array(rgb.buffer.slice(0));
 	this.FLin(out.buffer);
@@ -820,6 +914,9 @@ LUTRSpline.prototype.rgbLin = function(rgb) {
 };
 LUTRSpline.prototype.RGBCub = function(buff) {
 	this.FCub(out);
+};
+LUTRSpline.prototype.RGBTet = function(buff) {
+	this.FLin(out);
 };
 LUTRSpline.prototype.RGBLin = function(buff) {
 	this.FLin(out);
@@ -889,7 +986,7 @@ LUTRSpline.prototype.JInv = function(rgbIn) {
 	}
 };
 LUTRSpline.prototype.getDetails = function() {
-	return {
+	var out = {
 		title: this.title,
 		format: this.format,
 		dims: 1,
@@ -898,6 +995,10 @@ LUTRSpline.prototype.getDetails = function() {
 		max: new Float64Array([this.fH,this.fH,this.fH]),
 		C: [this.FD.buffer]
 	};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	return out;
 };
 LUTRSpline.prototype.getL = function() {
 	return this.FD.buffer;
@@ -917,6 +1018,13 @@ LUTRSpline.prototype.is3D = function() {
 LUTRSpline.prototype.getTitle = function() {
 	return this.title;
 };
+LUTRSpline.prototype.getInputDetails = function() {
+	var out = {};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	return out;
+};
 //
 LUTRSpline.prototype.r = function(L) {
 	var s = this.RM;
@@ -929,7 +1037,11 @@ LUTRSpline.prototype.r = function(L) {
 	} else {
 		l = Math.floor(L);
 		r = L-l;
-		return (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+		if (this.method === 0) { // cubic
+			return (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+		} else { // tetrahedral or linear
+			return ((1-r)*this.RD[l]) + (r*this.RD[l+1]);
+		}
 	}
 };
 LUTRSpline.prototype.R = function(buff) {
@@ -946,9 +1058,104 @@ LUTRSpline.prototype.R = function(buff) {
 		} else {
 			l = Math.floor(c[j]);
 			r = c[j]-l;
-			c[j] = (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+			if (this.method === 0) { // cubic
+				c[j] = (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+			} else { // tetrahedral or linear
+				c[j] = ((1-r)*this.RD[l]) + (r*this.RD[l+1]);
+			}
 		}
 	}
+};
+LUTRSpline.prototype.buildReverse = function() {
+	var rm = this.RM + 1;
+	this.RD = new Float64Array(rm);
+	var x;
+	for (var j=0; j<rm; j++) {
+		x = ((j/(rm-1))*(this.rLH)) + this.rL;
+		if (j === 0 || x <= 0 || isNaN(this.RD[j-1]) || this.RD[j-1] <= -65534 || this.RD[j-1] >= 65534) {
+			this.RD[j] = this.brent.findRoot(x,x);
+		} else {
+			this.RD[j] = this.brent.findRoot(this.RD[j-1],x);
+		}
+		if (this.RD[j] < -65534) {
+			this.RD[j] = -65534;
+		} else if (this.RD[j] > 65534) {
+			this.RD[j] = 65534;
+		}
+	}
+	if (isNaN(this.RD[0])) {
+		for (var j=0; j<rm; j++) {
+			if (!isNaN(this.RD[j])) {
+				this.RD[0] = this.RD[j];
+				break;
+			}
+		}
+	}
+	for (var j=1; j<rm; j++) {
+		if (isNaN(this.RD[j])) {
+			this.RD[j] = this.RD[j-1];
+		}
+	}
+	for (var j=1; j<rm; j++) {
+		this.RD[j] = (this.RD[j] * this.fLH) + this.fL;
+	}
+	mono = this.RD[rm-1]-this.RD[0]; // If things are working, should be unchanged, but belt and braces....
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
+	}
+	// Precalculate reverse parameters
+	this.RA = new Float64Array(rm);
+	this.RB = new Float64Array(rm);
+	this.RC = new Float64Array(rm);
+	var RP1 = new Float64Array(rm);
+	var RD1 = new Float64Array(rm);
+	for (var j=0; j<rm; j++) {
+		if (j === 0) {
+			RP1[0] = this.RD[1];
+			this.RC[0] = (0.1*this.RD[3]) - (0.8*this.RD[2]) + (2.3*this.RD[1]) - (1.6*this.RD[0]);
+			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
+				this.RC[0] = -(0.5*this.RD[2]) + (2*this.RD[1]) - (1.5*this.RD[0]);
+				if (this.RC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.RC[0] = 0.0075 * mono / (fm-1);
+				}
+			}
+			RD1[0] = (this.RD[2] - this.RD[0])/2;
+		} else if (j < rm-1) {
+			RP1[j] = this.RD[j+1];
+			this.RC[j] = (this.RD[j+1] - this.RD[j-1])/2
+			if (j === rm-2) {
+				RD1[j] = (-0.1*this.RD[j-2]) + (0.8*this.RD[j-1]) - (2.3*this.RD[j]) + (1.6*this.RD[j+1]);
+				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
+					RD1[j] = (0.5*this.RD[j-1]) - (2*this.RD[j]) + (1.5*this.RD[j+1]);
+					if (RD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						RD1[j] = 0.0075 * mono / (fm-1);
+					}
+				}
+			} else {
+				RD1[j] = (this.RD[j+2] - this.RD[j])/2;
+			}
+		} else {
+			RP1[j] = this.RD[j];
+			this.RC[j] = RD1[j-1];
+			RD1[j] = RD1[j-1];
+		}
+		this.RA[j] = (2*this.RD[j]) + this.RC[j] - (2*RP1[j]) + RD1[j];
+		this.RB[j] = (-3*this.RD[j]) - (2*this.RC[j]) + (3*RP1[j]) - RD1[j];
+	}
+};
+LUTRSpline.prototype.setMethod = function(idx) {
+	if (typeof idx === 'number') {
+		this.method = idx;
+		this.buildReverse();
+		return true;
+	} else {
+		return false;
+	}
+};
+LUTRSpline.prototype.getMethod = function() {
+	return this.method;
 };
 LUTRSpline.prototype.getReverse = function() {
 	return this.RD.buffer;
@@ -1069,6 +1276,20 @@ LUTQSpline.prototype.fCub = function(L) {
 		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
 	}
 };
+LUTQSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
 LUTQSpline.prototype.fLin = function(L) {
 	var s = this.FM;
 	var r,l;
@@ -1101,6 +1322,24 @@ LUTQSpline.prototype.FCub = function(buff) {
 		}
 	}
 };
+LUTQSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
 LUTQSpline.prototype.FLin = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1123,6 +1362,10 @@ LUTQSpline.prototype.fRGBCub = function(L) {
 	L = this.f(L);
 	return new Float64Array([L,L,L]);
 };
+LUTQSpline.prototype.fRGBTet = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
 LUTQSpline.prototype.fRGBLin = function(L) {
 	L = this.fLin(L);
 	return new Float64Array([L,L,L]);
@@ -1132,6 +1375,11 @@ LUTQSpline.prototype.rgbCub = function(rgb) {
 	this.FCub(out.buffer);
 	return out;
 };
+LUTQSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
 LUTQSpline.prototype.rgbLin = function(rgb) {
 	var out = new Float64Array(rgb.buffer.slice(0));
 	this.FLin(out.buffer);
@@ -1139,6 +1387,9 @@ LUTQSpline.prototype.rgbLin = function(rgb) {
 };
 LUTQSpline.prototype.RGBCub = function(buff) {
 	this.FCub(out);
+};
+LUTQSpline.prototype.RGBTet = function(buff) {
+	this.FLin(out);
 };
 LUTQSpline.prototype.RGBLin = function(buff) {
 	this.FLin(out);
@@ -1202,8 +1453,8 @@ LUTQSpline.prototype.JInv = function(rgbIn) {
 };
 LUTQSpline.prototype.getDetails = function() {
 	return {
-		title: this.title,
-		format: this.format,
+		title: '',
+		format: '',
 		dims: 1,
 		s: this.FM+1,
 		min: new Float64Array([0,0,0]),
@@ -1227,7 +1478,10 @@ LUTQSpline.prototype.is3D = function() {
 	return false;
 };
 LUTQSpline.prototype.getTitle = function() {
-	return this.title;
+	return '';
+};
+LUTQSpline.prototype.getInputDetails = function() {
+	return {};
 };
 //
 LUTQSpline.prototype.dRGB = function(rgbIn) {
@@ -1287,6 +1541,19 @@ function LUTRGBSpline(params) {
 		this.format = params.format;
 	} else {
 		this.format = '';
+	}
+	if (typeof params.inputCS === 'string') {
+		this.inputCS = params.inputCS;
+	} else {
+		this.inputCS = '';
+	}
+	if (typeof params.inputTF === 'string') {
+		this.inputTF = params.inputTF;
+	} else {
+		this.inputTF = '';
+	}
+	if (typeof params.inputMatrix !== 'undefined') {
+		this.inputMatrix = params.inputMatrix;
 	}
 	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
 	// Set forward range
@@ -1556,6 +1823,24 @@ LUTRGBSpline.prototype.fCub = function(L) {
 		return (((((this.FA[3][l] * r) + this.FB[3][l]) * r) + this.FC[3][l]) * r) + this.FD[3][l];
 	}
 };
+LUTRGBSpline.prototype.fTet = function(L) {
+	var s = this.FM[3];
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		return (L * this.FC[3][0]) + this.FD[3][0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[3][s]) + this.FD[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
+	}
+};
 LUTRGBSpline.prototype.fLin = function(L) {
 	var s = this.FM[3];
 	var r,l;
@@ -1596,6 +1881,31 @@ LUTRGBSpline.prototype.FCub = function(buff) {
 			l = Math.floor(c[j]);
 			r = c[j]-l;
 			c[j] = (((((this.FA[3][l] * r) + this.FB[3][l]) * r) + this.FC[3][l]) * r) + this.FD[3][l];
+		}
+	}
+};
+LUTRGBSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM[3];
+	var fL = this.fL[3];
+	var fLH = this.fLH[3];
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = s * (c[j] - fL)/(fLH);
+		}
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[3][0]) + this.FD[3][0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[3][s]) + this.FD[3][s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
 		}
 	}
 };
@@ -1651,6 +1961,33 @@ LUTRGBSpline.prototype.fRGBCub = function(L) {
 	}
 	return o;
 };
+LUTRGBSpline.prototype.fRGBTet = function(L) {
+	var s;
+	var r,l;
+	var o = new Float64Array(3);
+	if (this.fS) {
+		o[0] = (L - this.fL[0])/(this.fLH[0]);
+		o[1] = (L - this.fL[1])/(this.fLH[1]);
+		o[2] = (L - this.fL[2])/(this.fLH[2]);
+	}
+	if (this.sin) {
+		this.ins.FCub(o.buffer);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		o[i] *= s;
+		if (o[i] <= 0) {
+			o[i] = (o[i] * this.FC[i][0]) + this.FD[i][0];
+		} else if (o[i] >= s) {
+			o[i] = ((o[i]-s) * this.FC[i][s]) + this.FD[i][s];
+		} else {
+			l = Math.floor(o[i]);
+			r = o[i]-l;
+			o[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
+		}
+	}
+	return o;
+};
 LUTRGBSpline.prototype.fRGBLin = function(L) {
 	var s;
 	var r,l;
@@ -1681,6 +2018,11 @@ LUTRGBSpline.prototype.fRGBLin = function(L) {
 LUTRGBSpline.prototype.rgbCub = function(rgb) {
 	var out = new Float64Array(rgb.buffer.slice(0));
 	this.RGBCub(out.buffer);
+	return out;
+};
+LUTRGBSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.RGBLin(out.buffer);
 	return out;
 };
 LUTRGBSpline.prototype.rgbLin = function(rgb) {
@@ -1717,6 +2059,39 @@ LUTRGBSpline.prototype.RGBCub = function(buff) {
 				l = Math.floor(c[k]);
 				r = c[k]-l;
 				c[k] = (((((this.FA[i][l] * r) + this.FB[i][l]) * r) + this.FC[i][l]) * r) + this.FD[i][l];
+			}
+		}
+	}
+};
+LUTRGBSpline.prototype.RGBTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var fL = this.fL;
+	var fLH = this.fLH;
+	var s,k,l,r;
+	if (this.fS) {
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		for (var j=0; j<m; j+=3) {
+			k = j+i;
+			c[k] *= s;
+			if (c[k] <= 0) {
+				c[k] = (c[k] * this.FC[i][0]) + this.FD[i][0];
+			} else if (c[k] >= s) {
+				c[k] = ((c[k]-s) * this.FC[i][s]) + this.FD[i][s];
+			} else {
+				l = Math.floor(c[k]);
+				r = c[k]-l;
+				c[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
 			}
 		}
 	}
@@ -1855,8 +2230,9 @@ LUTRGBSpline.prototype.JInv = function(rgbIn) {
 	}
 };
 LUTRGBSpline.prototype.getDetails = function(L) {
+	var out;
 	if (typeof L !== 'undefined' && L ) {
-		return {
+		out = {
 			title: this.title,
 			format: this.format,
 			dims: 1,
@@ -1866,7 +2242,7 @@ LUTRGBSpline.prototype.getDetails = function(L) {
 			C: [this.FD[3].buffer]
 		};
 	} else {
-		return {
+		out = {
 			title: this.title,
 			format: this.format,
 			dims: 1,
@@ -1876,6 +2252,16 @@ LUTRGBSpline.prototype.getDetails = function(L) {
 			C: [this.FD[0].buffer,this.FD[1].buffer,this.FD[2].buffer]
 		};
 	}
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	if (this.inputCS !== '') {
+		out.inputCS = this.inputCS;
+	}
+	if (typeof this.inputMatrix !== 'undefined') {
+		out.inputMatrix = this.inputMatrix;
+	}
+	return out;
 };
 LUTRGBSpline.prototype.getL = function() {
 	return this.FD[3].buffer;
@@ -1895,7 +2281,19 @@ LUTRGBSpline.prototype.is3D = function() {
 LUTRGBSpline.prototype.getTitle = function() {
 	return this.title;
 };
-//
+LUTRGBSpline.prototype.getInputDetails = function() {
+	var out = {};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	if (this.inputCS !== '') {
+		out.inputCS = this.inputCS;
+	}
+	if (typeof this.inputMatrix !== 'undefined') {
+		out.inputMatrix = this.inputMatrix;
+	}
+	return out;
+};
 LUTRGBSpline.prototype.isClamped = function() {
 	if (typeof this.clamped === 'undefined') {
 		var mm = this.minMax();
@@ -1958,6 +2356,64 @@ LUTRGBSpline.prototype.deClamp = function() {
 		this.clamped = false;
 	}
 };
+//
+LUTRGBSpline.prototype.getColourSpace = function() {
+	var d = this.d;
+	var fL = this.fL;
+	var fH = this.fH;
+	var fLH = this.fLH;
+	var out = {
+		title: this.title + 'CS',
+		format: this.format,
+		fLR: fL[0],
+		fLG: fL[1],
+		fLB: fL[2],
+		fHR: fH[0],
+		fHG: fH[1],
+		fHB: fH[2]
+	};
+	var reverse = new LUTRSpline({ buff:this.L.getL(), fH:fH[3], fL:fL[3] });
+	var base = this.getRGB();
+	reverse.R(base[0]);
+	reverse.R(base[1]);
+	reverse.R(base[2]);
+	out.buffR = base[0];
+	out.buffG = base[1];
+	out.buffB = base[2];
+	return new LUTRGBSpline(out);
+};
+LUTRGBSpline.prototype.compare = function(tgtBuff,tstBuff,method) {
+	// returns the RMS differences in the red channels between a target dataset (tgt) and a test dataset (tst) which 'compare' passes through the lut
+	// method sets the interpolation method used on the test set, currently trilinear (1, 'lin' or 'linear') or tricubic (anything else or the default if 'method' is not present.
+	var tgt = new Float64Array(tgtBuff.slice(0));
+	var tst = new Float64Array(tstBuff.slice(0));
+	var m = tgt.length;
+	if (m !== tst.length) {
+		return false;
+	}
+	if (typeof method !== 'undefined') {
+		method = method.toString().toLowerCase();
+		if (method === '1' || method === 'tet') {
+			this.RGBTet(tst.buffer);
+		} else if (method === '2' || method === 'lin') {
+			this.RGBLin(tst.buffer);
+		} else {
+			this.RGBCub(tst.buffer);
+		}
+	} else {
+		this.RGBCub(tst.buffer);
+	} 
+	var e = new Float64Array(3);
+	for (var j=0; j<m; j += 3) {
+		e[0]  += Math.pow(tst[ j ] - tgt[ j ],2);
+		e[1]  += Math.pow(tst[j+1] - tgt[j+1],2);
+		e[2]  += Math.pow(tst[j+2] - tgt[j+2],2);
+	}
+	e[0] = Math.pow(e[0]*3/m,0.5);
+	e[1] = Math.pow(e[1]*3/m,0.5);
+	e[2] = Math.pow(e[2]*3/m,0.5);
+	return e;
+};
 LUTRGBSpline.prototype.minMax = function() {
 	var x = new Float64Array([
 		 9999, 9999, 9999,	// Absolute min values
@@ -1990,6 +2446,21 @@ function LUTVolume(params) {
 		this.format = params.format;
 	} else {
 		this.format = '';
+	}
+	if (typeof params.inputCS === 'string') {
+		this.inputCS = params.inputCS;
+	} else {
+		this.inputCS = '';
+	}
+	if (typeof params.inputTF === 'string') {
+		this.inputTF = params.inputTF;
+	} else {
+		this.inputTF = '';
+	}
+	if (typeof params.inputMatrix !== 'undefined') {
+		this.inputMatrix = params.inputMatrix;
+	} else {
+		this.inputMatrix = false;
 	}
 	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
 	// Set forward range
@@ -2039,6 +2510,8 @@ function LUTVolume(params) {
 		this.fL[2] = params.fLB;
 		this.fH[2] = params.fHB;
 	}
+	this.fL[3] = Math.min(this.fL[0],this.fL[1],this.fL[2]);
+	this.fH[3] = Math.max(this.fH[0],this.fH[1],this.fH[2]);
 	this.fLH = new Float64Array([this.fH[0]-this.fL[0],this.fH[1]-this.fL[1],this.fH[2]-this.fL[2],0]);
 	if (this.fL[0] !== 0 || this.fL[1] !== 0 || this.fL[2] !== 0 || this.fH[0] !== 1 || this.fH[1] !== 1 || this.fH[2] !== 1) {
 		this.fS = true;
@@ -2051,6 +2524,9 @@ function LUTVolume(params) {
 		this.sin = false;
 	}
 	// create a 'mesh' object to do the 3D interpolation
+	this.pR = new Float64Array(4);
+	this.pG = new Float64Array(4);
+	this.pB = new Float64Array(4);
 	this.buildMesh(params.buffR,params.buffG,params.buffB);
 	// Precalculate Luma arrays
 	this.buildL();
@@ -2117,8 +2593,8 @@ LUTVolume.prototype.buildMesh = function(buffR,buffG,buffB) {
 	this.B = new Float64Array(8);
 };
 LUTVolume.prototype.buildL = function() {
-	var fL = Math.min(this.fL[0],this.fL[1],this.fL[2]);
-	var fH = Math.max(this.fH[0],this.fH[1],this.fH[2]);
+	var fL = this.fL[3];
+	var fH = this.fH[3];
 	var fLH= fH-fL;
 	var m = this.getSize();
 	if (m < 65) {
@@ -2161,11 +2637,17 @@ LUTVolume.prototype.df = function(L) {
 LUTVolume.prototype.fCub = function(L) {
 	return this.L.fCub(L);
 };
+LUTVolume.prototype.fTet = function(L) {
+	return this.L.fLin(L);
+};
 LUTVolume.prototype.fLin = function(L) {
 	return this.L.fLin(L);
 };
 LUTVolume.prototype.FCub = function(buff) {
 	this.L.FCub(buff);
+};
+LUTVolume.prototype.FTet = function(buff) {
+	this.L.FLin(buff);
 };
 LUTVolume.prototype.FLin = function(buff) {
 	this.L.FLin(buff);
@@ -2173,6 +2655,11 @@ LUTVolume.prototype.FLin = function(buff) {
 LUTVolume.prototype.fRGBCub = function(L) {
 	var o = new Float64Array([L,L,L]);
 	this.RGBCub(o.buffer);
+	return o;
+};
+LUTVolume.prototype.fRGBTet = function(L) {
+	var o = new Float64Array([L,L,L]);
+	this.RGBTet(o.buffer);
 	return o;
 };
 LUTVolume.prototype.fRGBLin = function(L) {
@@ -2183,6 +2670,11 @@ LUTVolume.prototype.fRGBLin = function(L) {
 LUTVolume.prototype.rgbCub = function(rgbIn) {
 	var rgb = new Float64Array(rgbIn.buffer.slice(0));
 	this.RGBCub(rgb.buffer);
+	return rgb;
+};
+LUTVolume.prototype.rgbTet = function(rgbIn) {
+	var rgb = new Float64Array(rgbIn.buffer.slice(0));
+	this.RGBTet(rgb.buffer);
 	return rgb;
 };
 LUTVolume.prototype.rgbLin = function(rgbIn) {
@@ -2508,6 +3000,347 @@ LUTVolume.prototype.RGBCub = function(buff) {
 							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
 							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
 							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+	}
+};
+LUTVolume.prototype.RGBTet = function(buff) {
+	var c = new Float64Array(buff);
+	var p = this.mesh;
+	var o = this.off;
+	var rgb = this.rgb;
+	var m = c.length;
+	var mm = Math.round(this.mesh.length/3);
+	var s = this.s;
+	var nd = s + 2;
+	var nd1 = nd + 1;
+	var k,b;
+	var R = this.R;
+	var G = this.G;
+	var B = this.B;
+	var E = false;
+	var rE = false;
+	var gE = false;
+	var bE = false;
+	if (this.fS) {
+		var fL = this.fL;
+		var fLH = this.fLH;
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j +=3) {
+		c[ j ] *= s;
+		c[j+1] *= s;
+		c[j+2] *= s;
+		rgb[ 9] = Math.max(0,Math.min(s-1,Math.floor(c[ j ])));
+		rgb[10] = Math.max(0,Math.min(s-1,Math.floor(c[j+1])));
+		rgb[11] = Math.max(0,Math.min(s-1,Math.floor(c[j+2])));
+		c[ j ] -= rgb[ 9];
+		c[j+1] -= rgb[10];
+		c[j+2] -= rgb[11];
+		// clamp values between 0-1.0 for interpolation
+		rgb[0] = Math.max(0,Math.min(1,c[ j ]));
+		rgb[1] = Math.max(0,Math.min(1,c[j+1]));
+		rgb[2] = Math.max(0,Math.min(1,c[j+2]));
+		// note that extrapolation will be needed if values were clamped
+		if (rgb[0] !== c[ j ]) {
+			rE = true;
+			E = true;
+		}
+		if (rgb[1] !== c[j+1]) {
+			gE = true;
+			E = true;
+		}
+		if (rgb[2] !== c[j+2]) {
+			bE = true;
+			E = true;
+		}
+		// if any or all channels need extrapolation find out the scaling
+		if (rE) {
+			rgb[12] = c[ j ] - rgb[0];
+		}
+		if (gE) {
+			rgb[13] = c[j+1] - rgb[1];
+		}
+		if (bE) {
+			rgb[14] = c[j+2] - rgb[2];
+		}
+		// set value for first control point in the mesh - P[-1,-1,-1]
+		b = (rgb[9]) + ((rgb[10] + (rgb[11]*nd1))*nd1);
+		k = b;
+		// find which tetrahedron to use
+		var tet = (rgb[0]>rgb[1]) + ((rgb[1]>rgb[2])*2) + ((rgb[2]>rgb[0])*4);
+		// perform tetrahedral interpolation
+		switch (tet) {
+			case 0: // rgb[0] === rgb[1] === rgb[2] so straight linear interpolation
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 1:
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				break;
+			case 2:
+				c[ j ] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 3:
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 4:
+				c[ j ] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				break;
+			case 5:
+				c[ j ] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				break;
+			case 6:
+				c[ j ] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				break;
+			default: // shouldn't be possible, but include fallback to trilinear interpolation
+				c[ j ]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+				k += mm;
+				c[j+1]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+				k += mm;
+				c[j+2]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+		}
+		// find slopes and perform extrapolation as needed
+		if (E) {
+			// check for and perform extrapolation
+			if (rE) {
+				k=b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[22]]-p[k+o[21]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[26]]-p[k+o[25]];
+						k += mm;
+						rgb[16] = p[k+o[26]]-p[k+o[25]];
+						k += mm;
+						rgb[17] = p[k+o[26]]-p[k+o[25]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[22]]-p[k+o[21]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[41]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[38]]-p[k+o[37]];
+						k += mm;
+						rgb[16] = p[k+o[38]]-p[k+o[37]];
+						k += mm;
+						rgb[17] = p[k+o[38]]-p[k+o[37]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[41]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+						k += mm;
+						rgb[16] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+						k += mm;
+						rgb[17] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+				}
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				k = b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[38]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[25]]-p[k+o[21]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[26]]-p[k+o[22]];
+						k += mm;
+						rgb[16] = p[k+o[26]]-p[k+o[22]];
+						k += mm;
+						rgb[17] = p[k+o[26]]-p[k+o[22]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[41]]-p[k+o[37]];
+						k += mm;
+						rgb[16] = p[k+o[41]]-p[k+o[37]];
+						k += mm;
+						rgb[17] = p[k+o[41]]-p[k+o[37]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[38]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[25]]-p[k+o[21]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+						k += mm;
+						rgb[16] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+						k += mm;
+						rgb[17] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+				}
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				k = b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[38]]-p[k+o[22]];
+						k += mm;
+						rgb[16] = p[k+o[38]]-p[k+o[22]];
+						k += mm;
+						rgb[17] = p[k+o[38]]-p[k+o[22]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[26]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[26]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[37]]-p[k+o[21]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[37]]-p[k+o[21]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[41]]-p[k+o[25]];
+						k += mm;
+						rgb[16] = p[k+o[41]]-p[k+o[25]];
+						k += mm;
+						rgb[17] = p[k+o[41]]-p[k+o[25]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+						k += mm;
+						rgb[16] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+						k += mm;
+						rgb[17] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+				}
 				c[ j ] += rgb[14] * rgb[15];	
 				c[j+1] += rgb[14] * rgb[16];
 				c[j+2] += rgb[14] * rgb[17];
@@ -2938,7 +3771,7 @@ LUTVolume.prototype.JInv = function(rgbIn) {
 	]);
 };
 LUTVolume.prototype.getDetails = function() {
-	return {
+	var out = {
 		title: this.title,
 		format: this.format,
 		dims: 3,
@@ -2947,6 +3780,16 @@ LUTVolume.prototype.getDetails = function() {
 		max: new Float64Array([this.fH[0],this.fH[1],this.fH[2]]),
 		C: this.getRGB()
 	};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	if (this.inputCS !== '') {
+		out.inputCS = this.inputCS;
+	}
+	if (typeof this.inputMatrix !== 'undefined') {
+		out.inputMatrix = this.inputMatrix;
+	}
+	return out;
 };
 LUTVolume.prototype.getL = function() {
 	return this.L.getL();
@@ -2988,7 +3831,19 @@ LUTVolume.prototype.is3D = function() {
 LUTVolume.prototype.getTitle = function() {
 	return this.title;
 };
-//
+LUTVolume.prototype.getInputDetails = function() {
+	var out = {};
+	if (this.inputTF !== '') {
+		out.inputTF = this.inputTF;
+	}
+	if (this.inputCS !== '') {
+		out.inputCS = this.inputCS;
+	}
+	if (typeof this.inputMatrix !== 'undefined') {
+		out.inputMatrix = this.inputMatrix;
+	}
+	return out;
+};
 LUTVolume.prototype.isClamped = function() {
 	if (typeof this.clamped === 'undefined') {
 		var mm = this.minMax();
@@ -3007,7 +3862,33 @@ LUTVolume.prototype.deClamp = function() {
 		this.deClamp1D();
 		this.deClamp3D();
 	}
-}
+};
+//
+LUTVolume.prototype.getColourSpace = function() {
+	var d = this.d;
+	var fL = this.fL;
+	var fH = this.fH;
+	var fLH = this.fLH;
+	var out = {
+		title: this.title + 'CS',
+		format: this.format,
+		fLR: fL[0],
+		fLG: fL[1],
+		fLB: fL[2],
+		fHR: fH[0],
+		fHG: fH[1],
+		fHB: fH[2]
+	};
+	var reverse = new LUTRSpline({ buff:this.L.getL(), fH:fH[3], fL:fL[3] });
+	var base = this.getRGB();
+	reverse.R(base[0]);
+	reverse.R(base[1]);
+	reverse.R(base[2]);
+	out.buffR = base[0];
+	out.buffG = base[1];
+	out.buffB = base[2];
+	return new LUTVolume(out);
+};
 LUTVolume.prototype.deClamp1D = function() {
 	var m = this.d;
 	var r = new Float64Array(m);
@@ -3276,194 +4157,38 @@ LUTVolume.prototype.deClamp3D = function() {
 			}
 		}
 	}
-	// Now fill in the edges and corners as in this.fillEdges()
-	// Edges
-	for (var x=1; x<(d-1); x++) {
-// Red Varies
-		// B0,G0
-		k = (x+1) + ((1 + nd)*nd);
-		p3 =  k + nd + nd2;
-		p2 = p3 + nd + nd2;
-		p1 = p2 + nd + nd2;
-		p0 = p1 + nd + nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// B0,G1
-		k = (x+1) + ((d + nd)*nd);
-		p3 =  k - nd + nd2;
-		p2 = p3 - nd + nd2;
-		p1 = p2 - nd + nd2;
-		p0 = p1 - nd + nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// B1,G0
-		k = (x+1) + ((1 + (d*nd))*nd);
-		p3 =  k + nd - nd2;
-		p2 = p3 + nd - nd2;
-		p1 = p2 + nd - nd2;
-		p0 = p1 + nd - nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// B1,G1
-		k = (x+1) + ((d + (d*nd))*nd);
-		p3 = k - nd - nd2;
-		p2 = p3 - nd - nd2;
-		p1 = p2 - nd - nd2;
-		p0 = p1 - nd - nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-// Green Varies
-		// R0,B0
-		k = 1 + (((x+1) + nd)*nd);
-		p3 =  k + 1 + nd2;
-		p2 = p3 + 1 + nd2;
-		p1 = p2 + 1 + nd2;
-		p0 = p1 + 1 + nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// R0,B1
-		k = 1 + (((x+1) + (d*nd))*nd);
-		p3 =  k + 1 - nd2;
-		p2 = p3 + 1 - nd2;
-		p1 = p2 + 1 - nd2;
-		p0 = p1 + 1 - nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// R1,B0
-		k = d + (((x+1) + nd)*nd);
-		p3 =  k - 1 + nd2;
-		p2 = p3 - 1 + nd2;
-		p1 = p2 - 1 + nd2;
-		p0 = p1 - 1 + nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// R1,B1
-		k = d + (((x+1) + (d*nd))*nd);
-		p3 =  k - 1 - nd2;
-		p2 = p3 - 1 - nd2;
-		p1 = p2 - 1 - nd2;
-		p0 = p1 - 1 - nd2;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-// Blue Varies
-		// G0,R0
-		k = 1 + ((1 + ((x+1)*nd))*nd);
-		p3 =  k + 1 + nd;
-		p2 = p3 + 1 + nd;
-		p1 = p2 + 1 + nd;
-		p0 = p1 + 1 + nd;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// G0,R1
-		k = d + ((1 + ((x+1)*nd))*nd);
-		p3 =  k - 1 + nd;
-		p2 = p3 - 1 + nd;
-		p1 = p2 - 1 + nd;
-		p0 = p1 - 1 + nd;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// G1,R0
-		k = 1 + ((d + ((x+1)*nd))*nd);
-		p3 =  k + 1 - nd;
-		p2 = p3 + 1 - nd;
-		p1 = p2 + 1 - nd;
-		p0 = p1 + 1 - nd;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
-		// G1,R1
-		k = d + ((d + ((x+1)*nd))*nd);
-		p3 =  k - 1 - nd;
-		p2 = p3 - 1 - nd;
-		p1 = p2 - 1 - nd;
-		p0 = p1 - 1 - nd;
-		if (M[ k  ]===0 || M[ k  ] === 1) { M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]); }
-		if (M[sG+k]===0 || M[sG+k] === 1) { M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]); }
-		if (M[sB+k]===0 || M[sB+k] === 1) { M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]); }
+	// Now fill in the edges and corners as with this.fillEdges()
+	d--;
+	for (var x=1; x<(d); x++) {
+		for (var y=0; y<d; y++) {
+			this.n3b( x, y, 0);
+			this.n3b( x, y, d);
+			this.n3b( x, 0, y);
+			this.n3b( x, d, y);
+			this.n3b( 0, x, y);
+			this.n3b( d, x, y);
+		}
+		this.n3b( x, 0, 0);
+		this.n3b( x, 0, d);
+		this.n3b( x, d, 0);
+		this.n3b( x, d, d);
+		this.n3b( 0, x, 0);
+		this.n3b( 0, x, d);
+		this.n3b( d, x, 0);
+		this.n3b( d, x, d);
+		this.n3b( 0, 0, x);
+		this.n3b( 0, d, x);
+		this.n3b( d, 0, x);
+		this.n3b( d, d, x);
 	}
-	// Corners
-	// B0,G0,R0
-	k = 1 + ((1 + nd)*nd);
-	p3 =  k + 1 + nd + nd2;
-	p2 = p3 + 1 + nd + nd2;
-	p1 = p2 + 1 + nd + nd2;
-	p0 = p1 + 1 + nd + nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B0,G0,R1
-	k = d + ((1 + nd)*nd);
-	p3 =  k - 1 + nd + nd2;
-	p2 = p3 - 1 + nd + nd2;
-	p1 = p2 - 1 + nd + nd2;
-	p0 = p1 - 1 + nd + nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B0,G1,R0
-	k = 1 + ((d + nd)*nd);
-	p3 =  k + 1 - nd + nd2;
-	p2 = p3 + 1 - nd + nd2;
-	p1 = p2 + 1 - nd + nd2;
-	p0 = p1 + 1 - nd + nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B0,G1,R1
-	k = d + ((d + nd)*nd);
-	p3 =  k - 1 - nd + nd2;
-	p2 = p3 - 1 - nd + nd2;
-	p1 = p2 - 1 - nd + nd2;
-	p0 = p1 - 1 - nd + nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G0,R0
-	k = 1 + ((1+ (d*nd))*nd);
-	p3 =  k + 1 + nd - nd2;
-	p2 = p3 + 1 + nd - nd2;
-	p1 = p2 + 1 + nd - nd2;
-	p0 = p1 + 1 + nd - nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G0,R1
-	k = d + ((1 + (d*nd))*nd);
-	p3 =  k - 1 + nd - nd2;
-	p2 = p3 - 1 + nd - nd2;
-	p1 = p2 - 1 + nd - nd2;
-	p0 = p1 - 1 + nd - nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G1,R0
-	k = 1 + ((d + (d*nd))*nd);
-	p3 =  k + 1 - nd - nd2;
-	p2 = p3 + 1 - nd - nd2;
-	p1 = p2 + 1 - nd - nd2;
-	p0 = p1 + 1 - nd - nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G1,R1
-	k = d + ((d + (d*nd))*nd);
-	p3 =  k - 1 - nd - nd2;
-	p2 = p3 - 1 - nd - nd2;
-	p1 = p2 - 1 - nd - nd2;
-	p0 = p1 - 1 - nd - nd2;
-	M[ k  ] = this.n2(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n2(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n2(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
+	this.n3b( 0, 0, 0);
+	this.n3b( 0, 0, d);
+	this.n3b( 0, d, 0);
+	this.n3b( 0, d, d);
+	this.n3b( d, 0, 0);
+	this.n3b( d, 0, d);
+	this.n3b( d, d, 0);
+	this.n3b( d, d, d);
 	// Repopulate the outer edges of the mesh
 	this.fillEdges();
 	this.clamped = false;
@@ -3513,339 +4238,326 @@ LUTVolume.prototype.extrap = function(c,L,H,limits) {
 	}
 };
 LUTVolume.prototype.fillEdges = function() {
-	var k,l;
 	var d = this.d;
-	var nd = d + 2;
-	var nd2 = nd * nd;
-	var nd3 = nd2 * nd;
-	var sG = nd3;
-	var sB = 2 * sG;
-	var Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
-	
-	var M = this.mesh;
-	var p0,p1,p2,p3;
 	// fill in the gaps in the new mesh
 	for (var x=0; x<d; x++) {
 		for (var y=0; y<d; y++) {
-			// precalculate the new mesh faces
-			// B0
-			k = (x+1) + ((y+1)*nd);
-			p3 = k + nd2;
-			p2 = p3 + nd2;
-			p1 = p2 + nd2;
-			p0 = p1 + nd2;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-			// B1
-			k += (nd-1)*nd2;
-			p3 = k - nd2;
-			p2 = p3 - nd2;
-			p1 = p2 - nd2;
-			p0 = p1 - nd2;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-			// G0
-			k = (x+1) + ((y+1)*nd2);
-			p3 = k + nd;
-			p2 = p3 + nd;
-			p1 = p2 + nd;
-			p0 = p1 + nd;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-			// G1
-			k += (nd-1)*nd;
-			p3 = k - nd;
-			p2 = p3 - nd;
-			p1 = p2 - nd;
-			p0 = p1 - nd;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-			// R0
-			k = ((x+1)*nd) + ((y+1)*nd2);
-			p3 = k + 1;
-			p2 = p3 + 1;
-			p1 = p2 + 1;
-			p0 = p1 + 1;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-			// R1
-			k += (nd-1);
-			p3 = k - 1;
-			p2 = p3 - 1;
-			p1 = p2 - 1;
-			p0 = p1 - 1;
-			M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-			M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-			M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
+			this.n3( x, y,-1);
+			this.n3( x, y, d);
+			this.n3( x,-1, y);
+			this.n3( x, d, y);
+			this.n3(-1, x, y);
+			this.n3( d, x, y);
 		}
-		// precalculate the new mesh edges
-		// Red Varies
-		// B0,G0
-		k = x+1;
-		p3 = k + nd + nd2;
-		p2 = p3 + nd + nd2;
-		p1 = p2 + nd + nd2;
-		p0 = p1 + nd + nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// B0,G1
-		k += (nd-1)*nd;
-		p3 = k - nd + nd2;
-		p2 = p3 - nd + nd2;
-		p1 = p2 - nd + nd2;
-		p0 = p1 - nd + nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// B1,G0
-		k = x+1+((nd-1)*nd2);
-		p3 = k + nd - nd2;
-		p2 = p3 + nd - nd2;
-		p1 = p2 + nd - nd2;
-		p0 = p1 + nd - nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// B1,G1
-		k += (nd-1)*nd;
-		p3 = k - nd - nd2;
-		p2 = p3 - nd - nd2;
-		p1 = p2 - nd - nd2;
-		p0 = p1 - nd - nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// Green Varies
-		// R0,B0
-		k = (x+1)*nd;
-		p3 = k + 1 + nd2;
-		p2 = p3 + 1 + nd2;
-		p1 = p2 + 1 + nd2;
-		p0 = p1 + 1 + nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// R0,B1
-		k += (nd-1)*nd2;
-		p3 = k + 1 - nd2;
-		p2 = p3 + 1 - nd2;
-		p1 = p2 + 1 - nd2;
-		p0 = p1 + 1 - nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// R1,B0
-		k = ((x+1)*nd)+(nd-1);
-		p3 = k - 1 + nd2;
-		p2 = p3 - 1 + nd2;
-		p1 = p2 - 1 + nd2;
-		p0 = p1 - 1 + nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// R1,B1
-		k += (nd-1)*nd2;
-		p3 = k - 1 - nd2;
-		p2 = p3 - 1 - nd2;
-		p1 = p2 - 1 - nd2;
-		p0 = p1 - 1 - nd2;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// Blue Varies
-		// G0,R0
-		k = (x+1)*nd2;
-		p3 = k + 1 + nd;
-		p2 = p3 + 1 + nd;
-		p1 = p2 + 1 + nd;
-		p0 = p1 + 1 + nd;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// G0,R1
-		k += nd-1;
-		p3 = k - 1 + nd;
-		p2 = p3 - 1 + nd;
-		p1 = p2 - 1 + nd;
-		p0 = p1 - 1 + nd;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// G1,R0
-		k = ((x+1)*nd2)+((nd-1)*nd);
-		p3 = k + 1 - nd;
-		p2 = p3 + 1 - nd;
-		p1 = p2 + 1 - nd;
-		p0 = p1 + 1 - nd;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-		// G1,R1
-		k += nd-1;
-		p3 = k - 1 - nd;
-		p2 = p3 - 1 - nd;
-		p1 = p2 - 1 - nd;
-		p0 = p1 - 1 - nd;
-		M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-		M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-		M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
+		this.n3( x,-1,-1);
+		this.n3( x,-1, d);
+		this.n3( x, d,-1);
+		this.n3( x, d, d);
+		this.n3(-1, x,-1);
+		this.n3(-1, x, d);
+		this.n3( d, x,-1);
+		this.n3( d, x, d);
+		this.n3(-1,-1, x);
+		this.n3(-1, d, x);
+		this.n3( d,-1, x);
+		this.n3( d, d, x);
 	}
-	// precalculate the new mesh corners
-	// B0,G0,R1
-	k = nd-1;
-	p3 = k - 1 + nd + nd2;
-	p2 = p3 - 1 + nd + nd2;
-	p1 = p2 - 1 + nd + nd2;
-	p0 = p1 - 1 + nd + nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B0,G1,R0
-	k = nd2-nd;
-	p3 = k + 1 - nd + nd2;
-	p2 = p3 + 1 - nd + nd2;
-	p1 = p2 + 1 - nd + nd2;
-	p0 = p1 + 1 - nd + nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B0,G1,R1
-	k = nd2-1;
-	p3 = k - 1 - nd + nd2;
-	p2 = p3 - 1 - nd + nd2;
-	p1 = p2 - 1 - nd + nd2;
-	p0 = p1 - 1 - nd + nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G0,R0
-	k = nd3-nd2;
-	p3 = k + 1 + nd - nd2;
-	p2 = p3 + 1 + nd - nd2;
-	p1 = p2 + 1 + nd - nd2;
-	p0 = p1 + 1 + nd - nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G0,R1
-	k = nd3-nd2+nd-1;
-	p3 = k - 1 + nd - nd2;
-	p2 = p3 - 1 + nd - nd2;
-	p1 = p2 - 1 + nd - nd2;
-	p0 = p1 - 1 + nd - nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// B1,G1,R0
-	k = nd3-nd;
-	p3 = k + 1 - nd - nd2;
-	p2 = p3 + 1 - nd - nd2;
-	p1 = p2 + 1 - nd - nd2;
-	p0 = p1 + 1 - nd - nd2;
-	M[ k  ] = this.n(M[ p0  ], M[ p1  ], M[ p2  ], M[ p3  ]);
-	M[sG+k] = this.n(M[p0+sG], M[p1+sG], M[p2+sG], M[p3+sG]);
-	M[sB+k] = this.n(M[p0+sB], M[p1+sB], M[p2+sB], M[p3+sB]);
-	// Black and White corners
-	p0 = k + 1 + nd + nd2;
-	p1 = nd3 -2 - nd - nd2;
-	var mono = (Y[0]*(M[p0]-M[p1]))+(Y[1]*(M[p0+sG]-M[p1+sG]))+(Y[2]*(M[p0+sB]-M[p1+sB]));
-	if (mono >= 0) {
-		mono = 1;
-	} else if (mono < 0) {
-		mono = -1;
-	}
-	var slope;
-	// B0,G0,R0
-	k = 0;
-	p3 = k + 1 + nd + nd2;
-	p2 = p3 + 1 + nd + nd2;
-	p1 = p2 + 1 + nd + nd2;
-	p0 = p1 + 1 + nd + nd2;
-	slope = (0.1*M[ p0  ]) - (0.8*M[ p1  ]) + (2.3*M[ p2  ]) - (1.6*M[ p3  ]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = -(0.5*M[ p1  ]) + (2*M[ p2  ]) - (1.5*M[ p3  ]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[ k  ] = -(M[ p1  ]) + (5*M[ p2  ]) - (3*M[ p3  ]) - (4*slope);
-	slope = (0.1*M[p0+sG]) - (0.8*M[p1+sG]) + (2.3*M[p2+sG]) - (1.6*M[p3+sG]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = -(0.5*M[p1+sG]) + (2*M[p2+sG]) - (1.5*M[p3+sG]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[k+sG] = -(M[p1+sG]) + (5*M[p2+sG]) - (3*M[p3+sG]) - (4*slope);
-	slope = (0.1*M[p0+sB]) - (0.8*M[p1+sB]) + (2.3*M[p2+sB]) - (1.6*M[p3+sB]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = -(0.5*M[p1+sB]) + (2*M[p2+sB]) - (1.5*M[p3+sB]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[k+sB] = -(M[p1+sB]) + (5*M[p2+sB]) - (3*M[p3+sB]) - (4*slope);
-	// B1,G1,R1
-	k = nd3-1
-	p3 = k - 1 - nd - nd2;
-	p2 = p3 - 1 - nd - nd2;
-	p1 = p2 - 1 - nd - nd2;
-	p0 = p1 - 1 - nd - nd2;
-	slope = -(0.1*M[ p0  ]) + (0.8*M[ p1  ]) - (2.3*M[ p2  ]) + (1.6*M[ p3  ]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = (0.5*M[ p1  ]) - (2*M[ p2  ]) + (1.5*M[ p3  ]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[ k  ] = -(M[ p1  ]) + (5*M[ p2  ]) - (3*M[ p3  ]) + (4*slope);
-	slope = -(0.1*M[p0+sG]) + (0.8*M[p1+sG]) - (2.3*M[p2+sG]) + (1.6*M[p3+sG]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = (0.5*M[p1+sG]) - (2*M[p2+sG]) + (1.5*M[p3+sG]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[k+sG] = -(M[p1+sG]) + (5*M[p2+sG]) - (3*M[p3+sG]) + (4*slope);
-	slope = -(0.1*M[p0+sB]) + (0.8*M[p1+sB]) - (2.3*M[p2+sB]) + (1.6*M[p3+sB]);
-	if (slope*mono <= 0) { // opposite slope to monotonic
-		slope = (0.5*M[p1+sB]) - (2*M[p2+sB]) + (1.5*M[p3+sB]);
-		if (slope*mono <= 0) { // still opposite slope to monotonic
-			slope = 0.0075 * mono / (d-1);
-		}
-	}
-	M[k+sB] = -(M[p1+sB]) + (5*M[p2+sB]) - (3*M[p3+sB]) + (4*slope);
+	this.n3(-1,-1,-1);
+	this.n3(-1,-1, d);
+	this.n3(-1, d,-1);
+	this.n3(-1, d, d);
+	this.n3( d,-1,-1);
+	this.n3( d,-1, d);
+	this.n3( d, d,-1);
+	this.n3( d, d, d);
 };
-LUTVolume.prototype.n2 = function(p0,p1,p2,p3) {
-	// point to calculate is y(1), where p0,p1,p2,p3 are y(-2),y(-1),y(0) and y(1) respectively
-	var o = - (0.1*p0) + (0.8*p1) - (2.3*p2) + (1.6*p3);
-	return o+p3;
+LUTVolume.prototype.setP = function(rM,gM,bM,rgb) {
+	// setP is used to change an individual mesh point. The inputs rM, gM, bM are zero-indexed coordinates on the base mesh
+	// rgb is a Float64Array of the r, g and b values to be set at the specified mesh point
+	// setP returns a Float64Array of the rgb value before changing
+	var M = this.mesh;
+	var d = this.d-1;
+	var s = d-4;
+	var nd = this.nd;
+	var nd2 = nd*nd;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var k = (rM + 1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	var o = new Float64Array([M[ k ], M[k+sG], M[k+sB]]);
+	M[ k ] = rgb[0];
+	M[k+sG] = rgb[1];
+	M[k+sB] = rgb[2];
+	// recalculate any edges, faces or corners in the extended mesh affected by the value change
+	if (rM < 4) {
+		// faces
+		this.n3(-1,gM,bM);
+		// edges
+		if (gM ===   rM) { this.n3(-1,-1,bM); }
+		if (gM === s-rM) { this.n3(-1, d,bM); }
+		if (bM ===   rM) { this.n3(-1,gM,-1); }
+		if (bM === s-rM) { this.n3(-1,gM, d); }
+		// corners
+		if (gM ===   rM && bM ===   rM) { this.n3(-1,-1,-1); }
+		if (gM === s-rM && bM ===   rM) { this.n3(-1, d,-1); }
+		if (gM === s-rM && bM === s-rM) { this.n3(-1, d, d); }
+		if (gM ===   rM && bM === s-rM) { this.n3(-1,-1, d); }
+	}
+	if (rM > s) {
+		// faces
+		this.n3( d,gM,bM);
+		// edges
+		if (gM ===   rM) { this.n3( d, d,bM); }
+		if (gM === rM-s) { this.n3( d,-1,bM); }
+		if (bM ===   rM) { this.n3( d,gM, d); }
+		if (bM === rM-s) { this.n3( d,gM,-1); }
+		// corners
+		if (gM ===   rM && bM ===   rM) { this.n3( d, d, d); }
+		if (gM === rM-s && bM ===   rM) { this.n3( d,-1, d); }
+		if (gM === rM-s && bM === rM-s) { this.n3( d,-1,-1); }
+		if (gM ===   rM && bM === rM-s) { this.n3( d, d,-1); }
+	}
+	if (gM < 4) {
+		// faces
+		this.n3(rM,-1,bM);
+		// edges
+		if (bM ===   gM) { this.n3(rM,-1,-1); }
+		if (bM === s-gM) { this.n3(rM,-1, d); }
+	}
+	if (gM > s) {
+		// faces
+		this.n3(rM, d,bM);
+		// edges
+		if (bM ===   gM) { this.n3(rM, d,-1); }
+		if (bM === gM-s) { this.n3(rM, d, d); }
+	}
+	if (bM < 4) { this.n3(rM,gM,-1); }
+	if (bM > s) { this.n3(rM,gM, d); }
+	return o;
 };
-LUTVolume.prototype.n = function(p0,p1,p2,p3) {
-	// point to calculate is y(2), where p0,p1,p2,p3 are y(-2),y(-1),y(0) and y(1) respectively
-	// point is from a cubic where y(0) = p2, y(1) = p3, dy(0) = (p3-p1)/2, dy(-1) = (p2-p0)/2
-	var m;
-	if (p3 === p1) {
-		return p3;
-	} else if (p3 > p1) {
+LUTVolume.prototype.getP = function(rM,gM,bM) {
+	var M = this.mesh;
+	var nd = this.nd;
+	var nd2 = nd*nd;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var k = (rM + 1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	return new Float64Array([M[ k ],M[k+sG],M[k+sB]]);
+};
+LUTVolume.prototype.n3 = function(rM,gM,bM,mono) {
+	// 3D extrapolation - calculates all colour channels at once
+	// rM, gM and bM are mesh point coordinates relative to the base mesh, not the extended, precalculated one
+	// ie -1 means the bottom edge of the extended mesh, this.d the top edge
+	var rD,gD,bD;
+	var d = this.d - 1;
+	var pR = this.pR;
+	var pG = this.pG;
+	var pB = this.pB;
+	var o,m;
+	// Get the array position on the extended mesh that we are going to fill
+	var nd = this.nd;
+	var nd2 = nd*nd
+	var k = (rM+1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	// Establish which way the points need to go, and from what base
+	if (rM < 0) {
+		rD = 1;
+	} else if (rM > d) {
+		rD = -1;
+	} else {
+		rD = 0;
+	}
+	if (gM < 0) {
+		gD = 1;
+	} else if (gM > d) {
+		gD = -1;
+	} else {
+		gD = 0;
+	}
+	if (bM < 0) {
+		bD = 1;
+	} else if (bM > d) {
+		bD = -1;
+	} else {
+		bD = 0;
+	}
+	// Fill in the points to be extrapolated
+	var M = this.mesh;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var l = k + rD + (gD*nd) + (bD*nd2);
+	pR[3] = M[l];
+	pG[3] = M[l + sG];
+	pB[3] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[2] = M[l];
+	pG[2] = M[l + sG];
+	pB[2] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[1] = M[l];
+	pG[1] = M[l + sG];
+	pB[1] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[0] = M[l];
+	pG[0] = M[l + sG];
+	pB[0] = M[l + sB];
+	// Now calculate the values
+	// Red
+	m = 0;
+	if (pR[3] === pR[1]) {
+		M[k] = pR[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*rD;
+	} else if (pR[3] > pR[1]) {
 		m = 1;
 	} else {
 		m = -1;
 	}
-	var o = (0.6*p0) + (2.2*p1) - (5.2*p2) + (3.4*p3);
-	if ((o-p2)*m <= 0) { // make sure that the slope at y(1) doesn't change sign
-		o = p1 - (3*p2) + (3*p3);
-		if ((o-p2)*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
-			o = p2; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+
+	if (m !== 0) {
+		o = (-0.4*pR[0]) + (2.2*pR[1]) - (4.2*pR[2]) + (3.4*pR[3]);
+		if ((o-pR[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pR[1] - (3*pR[2]) + (3*pR[3]);
+			if ((o-pR[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pR[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
 		}
+		M[k] = o;
 	}
-	return o;
+	// Green
+	m = 0;
+	if (pG[3] === pG[1]) {
+		M[k + sG] = pG[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*gD;
+	} else if (pG[3] > pG[1]) {
+		m = 1;
+	} else {
+		m = -1;
+	}
+	if (m !== 0) {
+		o = (-0.4*pG[0]) + (2.2*pG[1]) - (4.2*pG[2]) + (3.4*pG[3]);
+		if ((o-pG[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pG[1] - (3*pG[2]) + (3*pG[3]);
+			if ((o-pG[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pG[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
+		}
+		M[k + sG] = o;
+	}
+	// Blue
+	m = 0;
+	if (pB[3] === pB[1]) {
+		M[k + sB] = pB[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*bD;
+	} else if (pB[3] > pB[1]) {
+		m = 1;
+	} else {
+		m = -1;
+	}
+	if (m !== 0) {
+		o = (-0.4*pB[0]) + (2.2*pB[1]) - (4.2*pB[2]) + (3.4*pB[3]);
+		if ((o-pB[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pB[1] - (3*pB[2]) + (3*pB[3]);
+			if ((o-pB[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pB[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
+		}
+		M[k + sB] = o;
+	}
+};
+LUTVolume.prototype.n3b = function(rM,gM,bM) {
+	// 3D extrapolation - calculates all colour channels at once
+	// rM, gM and bM are mesh point coordinates relative to the base mesh, not the extended, precalculated one
+	// this differs from the basic n3 as it is for filling in the edges, corners and faces of the base mesh
+	// after a declamp, to allow for interaction of colour channels, ie 0 is to bottom, this.d-1 the top.
+	var rD,gD,bD;
+	var d = this.d - 1;
+	var pR = this.pR;
+	var pG = this.pG;
+	var pB = this.pB;
+	var o,m;
+	// Get the array position on the extended mesh that we are going to fill
+	var nd = this.nd;
+	var nd2 = nd*nd
+	var k = (rM+1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	// Establish which way the points need to go, and from what base
+	if (rM <= 0) {
+		rD = 1;
+	} else if (rM >= d) {
+		rD = -1;
+	} else {
+		rD = 0;
+	}
+	if (gM <= 0) {
+		gD = 1;
+	} else if (gM >= d) {
+		gD = -1;
+	} else {
+		gD = 0;
+	}
+	if (bM <= 0) {
+		bD = 1;
+	} else if (bM >= d) {
+		bD = -1;
+	} else {
+		bD = 0;
+	}
+	// Fill in the points to be extrapolated
+	var M = this.mesh;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var l = k + rD + (gD*nd) + (bD*nd2);
+	pR[3] = M[l];
+	pG[3] = M[l + sG];
+	pB[3] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[2] = M[l];
+	pG[2] = M[l + sG];
+	pB[2] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[1] = M[l];
+	pG[1] = M[l + sG];
+	pB[1] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[0] = M[l];
+	pG[0] = M[l + sG];
+	pB[0] = M[l + sB];
+	// Now calculate the values
+	M[ k  ] = - (0.1*pR[0]) + (0.8*pR[1]) - (2.3*pR[2]) + (2.6*pR[3]);
+	M[k+sG] = - (0.1*pG[0]) + (0.8*pG[1]) - (2.3*pG[2]) + (2.6*pG[3]);
+	M[k+sB] = - (0.1*pB[0]) + (0.8*pB[1]) - (2.3*pB[2]) + (2.6*pB[3]);
+};
+LUTVolume.prototype.compare = function(tgtBuff,tstBuff,method) {
+	// returns the RMS differences in the red channels between a target dataset (tgt) and a test dataset (tst) which 'compare' passes through the lut
+	// method sets the interpolation method used on the test set, currently trilinear (1, 'lin' or 'linear') or tricubic (anything else or the default if 'method' is not present.
+	var tgt = new Float64Array(tgtBuff.slice(0));
+	var tst = new Float64Array(tstBuff.slice(0));
+	var m = tgt.length;
+	if (m !== tst.length) {
+		return false;
+	}
+	if (typeof method !== 'undefined') {
+		method = method.toString().toLowerCase();
+		if (method === '1' || method === 'tet') {
+			this.RGBTet(tst.buffer);
+		} else if (method === '2' || method === 'lin') {
+			this.RGBLin(tst.buffer);
+		} else {
+			this.RGBCub(tst.buffer);
+		}
+	} else {
+		this.RGBCub(tst.buffer);
+	} 
+	var e = new Float64Array(3);
+	for (var j=0; j<m; j += 3) {
+		e[0]  += Math.pow(tst[ j ] - tgt[ j ],2);
+		e[1]  += Math.pow(tst[j+1] - tgt[j+1],2);
+		e[2]  += Math.pow(tst[j+2] - tgt[j+2],2);
+	}
+	e[0] = Math.pow(e[0]*3/m,0.5);
+	e[1] = Math.pow(e[1]*3/m,0.5);
+	e[2] = Math.pow(e[2]*3/m,0.5);
+	return e;
 };
 LUTVolume.prototype.NR3D = function(tgt,tolerence,maxIterations,seed) { // Multivariate (3D) Newton-Raphson
 	if (tgt.length === 3) {

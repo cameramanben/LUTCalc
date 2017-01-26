@@ -252,7 +252,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 0
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -266,7 +268,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 2,
+				preInt: 2
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -280,7 +284,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 1
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -294,7 +300,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 1
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -308,7 +316,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 1
 			},
 			new Float64Array([0.6509, 0.2827, 0.3177, 0.8953, 0.1289, -0.0468]),
 			this.illuminant('d65')
@@ -322,7 +332,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 1
 			},
 			new Float64Array([0.6577, 0.2653, 0.3417, 1.0909, 0.1475, -0.0018]),
 			this.illuminant('d65')	
@@ -336,7 +348,9 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 0,
+				preInt: 1
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -391,17 +405,21 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 			this.outList.push({name: this.csOut[j].name,idx: j});
 		}
 	}
-	max = this.inList.length;
+//	max = this.inList.length;
 	max2 = this.outList.length;
+	var k=0;
 	for (var i=0; i<max; i++) {
-		this.laList.push({name: this.inList[i].name});
-		this.csLASub.push(this.csInSub[i].slice(0));
-		for (var j=0; j<max2; j++) {
-			if (this.laList[i].name === this.outList[j].name) {
-				this.laList[i].idx = this.outList[j].idx;
-				this.csLASub[i] = this.csOutSub[j].slice(0);
-				break;
+		if (this.csIn[i].isMatrix() && this.csIn[i].name !== 'Passthrough') {
+			this.laList.push({name: this.csIn[i].name});
+			this.csLASub.push(this.csInSub[i].slice(0));
+			for (var j=0; j<max2; j++) {
+				if (this.laList[k].name === this.outList[j].name) {
+					this.laList[k].idx = this.outList[j].idx;
+					this.csLASub[k] = this.csOutSub[j].slice(0);
+					break;
+				}
 			}
+			k++;
 		}
 	}
 };
@@ -2383,6 +2401,9 @@ CSMatrix.prototype.getWP = function() {
 CSMatrix.prototype.isMatrix = function() {
 	return true;
 };
+CSMatrix.prototype.getMatrix = function() {
+	return this.m;
+};
 CSMatrix.prototype.cb = function() {
 	return false;
 };
@@ -2812,8 +2833,20 @@ function CSLUT(name,params,colours) {
 	this.min = params.min;
 	this.max = params.max;
 	this.colours = colours;
+	this.im = false;
+	if (typeof params.genInt === 'number' && typeof params.preInt === 'number') {
+		this.genInt = params.genInt;
+		this.preInt = params.preInt;
+	} else {
+		this.genInt = 0;
+		this.preInt = 1;
+	}
 }
-CSLUT.prototype.loadLUT = function(s,C,lutMaker) {
+CSLUT.prototype.loadLUT = function(s,C,lutMaker,inputMatrix) {
+	if (typeof inputMatrix !== 'undefined' && inputMatrix) {
+		this.inM = inputMatrix;
+		this.im = true;
+	}
 	this.lut = lutMaker.newLUT({
 		title: this.name,
 		format: this.format,
@@ -2889,6 +2922,10 @@ CSLUT.prototype.setRC = function() {
 CSLUT.prototype.getWP = function() {
 	return new Float64Array(this.wp.slice(0));
 };
+CSLUT.prototype.setInterpolation = function(genInt,preInt) {
+	this.genInt = genInt;
+	this.preInt = preInt;
+};
 CSLUT.prototype.isMatrix = function() {
 	return false;
 };
@@ -2898,6 +2935,18 @@ CSLUT.prototype.cb = function() {
 CSLUT.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+		}
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.0125) {
 			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
@@ -2905,7 +2954,13 @@ CSLUT.prototype.lc = function(buff) {
 			c[j] = (c[j] + 0.0155818840)/0.1677922920;
 		}
 	}
-	this.lut.RGBCub(buff);
+	if (this.genInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.genInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.1673609920) {
 			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
@@ -2917,6 +2972,18 @@ CSLUT.prototype.lc = function(buff) {
 CSLUT.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+		}
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.0125) {
 			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
@@ -2924,7 +2991,13 @@ CSLUT.prototype.lf = function(buff) {
 			c[j] = (c[j] + 0.0155818840)/0.1677922920;
 		}
 	}
-	this.lut.RGBLin(buff);
+	if (this.preInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.preInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.1673609920) {
 			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
@@ -2952,11 +3025,18 @@ function CSLA(name,wp,lutMaker,colours) {
 	this.wp = wp.buffer;
 	this.lutMaker = lutMaker;
 	this.colours = colours;
+	this.genInt = 1;
+	this.preInt = 1;
+	this.im = false;
 }
 CSLA.prototype.getWP = function() {
 	return new Float64Array(this.wp.slice(0));
 };
-CSLA.prototype.setLUT = function(params) {
+CSLA.prototype.setLUT = function(params,inputMatrix) {
+	if (typeof inputMatrix !== 'undefined' && inputMatrix) {
+		this.inM = inputMatrix;
+		this.im = true;
+	}
 	this.lut = this.lutMaker.newLUT(params);
 	this.setRC();
 };
@@ -3024,6 +3104,10 @@ CSLA.prototype.setRC = function() {
 CSLA.prototype.setTitle = function(name) {
 	this.name = name;
 };
+CSLA.prototype.setInterpolation = function(genInt,preInt) {
+	this.genInt = genInt;
+	this.preInt = preInt;
+};
 CSLA.prototype.isMatrix = function() {
 	return false;
 };
@@ -3033,6 +3117,18 @@ CSLA.prototype.cb = function() {
 CSLA.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+		}
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.0125) {
 			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
@@ -3040,7 +3136,13 @@ CSLA.prototype.lc = function(buff) {
 			c[j] = (c[j] + 0.0155818840)/0.1677922920;
 		}
 	}
-	this.lut.RGBCub(buff);
+	if (this.genInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.genInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.1673609920) {
 			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
@@ -3052,6 +3154,18 @@ CSLA.prototype.lc = function(buff) {
 CSLA.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+		}
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.0125) {
 			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
@@ -3059,7 +3173,13 @@ CSLA.prototype.lf = function(buff) {
 			c[j] = (c[j] + 0.0155818840)/0.1677922920;
 		}
 	}
-	this.lut.RGBLin(buff);
+	if (this.preInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.preInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] >= 0.1673609920) {
 			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
@@ -3247,6 +3367,20 @@ LUTColourSpace.prototype.setParams = function(params) {
 		this.tweaks = params.tweaks;
 	} else {
 		this.tweaks = false;
+	}
+	if (typeof params.twkLA !== 'undefined') {
+		var genInt,preInt;
+		if (typeof params.twkLA.genInt === 'number' ) {
+			genInt = params.twkLA.genInt;
+		} else {
+			genInt = 0; // tricubic
+		}
+		if (typeof params.twkLA.preInt === 'number' ) {
+			preInt = params.twkLA.preInt;
+		} else {
+			preInt = 1; // tetrahedral
+		}
+		this.csOut[this.LA].setInterpolation(genInt,preInt);
 	}
 	out.twkCS = this.setCS(params);
 	out.twkWB = this.setWB(params);
@@ -3449,9 +3583,16 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 	return out;
 };
 LUTColourSpace.prototype.laCalc = function(p,t,i) {
-	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
-	this.csOut[i.gamut].lc(i.o);
-	out.to = ['o'];
+//	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
+	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut };
+//	this.csOut[i.gamut].lc(i.o);
+	if (i.gamut === this.custOut) {
+		out.inputMatrix = this.mInverse(this.csIn[this.custIn].getMatrix()).buffer;
+	} else {
+		out.inputMatrix = this.csOut[i.gamut].getMatrix().buffer.slice(0);
+	}
+//	out.to = ['o','inputMatrix'];
+	out.to = ['inputMatrix'];
 	return out;
 };
 LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
@@ -3468,7 +3609,27 @@ LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
 LUTColourSpace.prototype.loadDefaultLUTs = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver};
 	var lut = this.csOut[this.defLUTs[i.fileName]];
-	lut.loadLUT(i.s,[i.C0,i.C1,i.C2],this.lutMaker);
+	var idx = -1;
+	if (typeof i.inputCS !== 'undefined' && i.inputCS !== '') {
+		var list = this.laList;
+		var m = list.length;
+		var idx = -1
+		if (i.inputCS !== 'Custom In') {
+			for (var j=0; j<m; j++) {
+				if (list.name === i.inputCS) {
+					idx = list.idx;
+					break;
+				}
+			}
+		}
+	}
+	if (idx < 0) { // custom / unknown gamut - use the matrix supplied with the LA LUT
+		lut.loadLUT(i.s,[i.C0,i.C1,i.C2],this.lutMaker,i.inputMatrix);
+	} else if (idx < 1) { // 0 is S-log3.cine, the system default so no input matrix needed
+		lut.loadLUT(i.s,[i.C0,i.C1,i.C2],this.lutMaker);
+	} else {
+		lut.loadLUT(i.s,[i.C0,i.C1,i.C2],this.lutMaker,this.csOut[idx].getMatrix());
+	}
 	return out;
 };
 LUTColourSpace.prototype.getLists = function(p,t) {
@@ -3490,7 +3651,27 @@ LUTColourSpace.prototype.getLists = function(p,t) {
 	};
 };
 LUTColourSpace.prototype.setLA = function(p,t,i) {
-	this.csOut[this.LA].setLUT(i);
+	var idx = -1;
+	if (typeof i.inputCS !== 'undefined' && i.inputCS !== '') {
+		var list = this.laList;
+		var m = list.length;
+		var idx = -1
+		if (i.inputCS !== 'Custom In') {
+			for (var j=0; j<m; j++) {
+				if (list[j].name === i.inputCS) {
+					idx = list[j].idx;
+					break;
+				}
+			}
+		}
+	}
+	if (idx < 0) { // custom / unknown gamut - use the matrix supplied with the LA LUT
+		this.csOut[this.LA].setLUT(i,i.inputMatrix);
+	} else if (idx < 1) { // 0 is S-Gamut3.cine - the system default for now
+		this.csOut[this.LA].setLUT(i);
+	} else {
+		this.csOut[this.LA].setLUT(i,this.csOut[idx].getMatrix());
+	}
 	return { p: p, t:t+20, v: this.ver, i: i.title };
 };
 LUTColourSpace.prototype.setLATitle = function(p,t,i) {

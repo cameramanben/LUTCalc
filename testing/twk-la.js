@@ -83,11 +83,40 @@ TWKLA.prototype.io = function() {
 	}
 	this.inputs.addInput('laGamutSelect',this.gamutSelect);
 
+	this.dim33 = this.createRadioElement('lutAnalystDim',false);
+	this.dim65 = this.createRadioElement('lutAnalystDim',true);
+	this.inputs.addInput('laDim',[this.dim33,this.dim65]);
+	
+	this.oldMethod = 2;
+	this.intCub = this.createRadioElement('intMethod',false);
+	this.intTet = this.createRadioElement('intMethod',false);
+	this.intLin = this.createRadioElement('intMethod',false);
+	this.inputs.addInput('laIntMethod',[this.intCub,this.intTet,this.intLin]);
+	this.inputs.laIntMethod[this.oldMethod].checked = true;
+
 	this.dlOpt = this.createRadioElement('range',true);
 	this.ddOpt = this.createRadioElement('range',false);
 	this.llOpt = this.createRadioElement('range',false);
 	this.ldOpt = this.createRadioElement('range',false);
 	this.inputs.addInput('laRange',[this.dlOpt,this.ddOpt,this.llOpt,this.ldOpt]);
+
+	this.advancedCheck = document.createElement('input');
+	this.advancedCheck.setAttribute('type','checkbox');
+	this.advancedCheck.className = 'twk-checkbox';
+	this.advancedCheck.checked = false;
+
+	this.intGenCub = this.createRadioElement('intGenMethod',false);
+	this.intGenTet = this.createRadioElement('intGenMethod',false);
+	this.intGenLin = this.createRadioElement('intGenMethod',false);
+	this.inputs.addInput('laIntGenMethod',[this.intGenCub,this.intGenTet,this.intGenLin]);
+	this.inputs.laIntGenMethod[this.oldMethod].checked = true;
+
+	this.oldPreMethod = this.oldMethod;
+	this.intPreCub = this.createRadioElement('intPreMethod',false);
+	this.intPreTet = this.createRadioElement('intPreMethod',false);
+	this.intPreLin = this.createRadioElement('intPreMethod',false);
+	this.inputs.addInput('laIntPreMethod',[this.intPreCub,this.intPreTet,this.intPreLin]);
+	this.inputs.laIntPreMethod[this.oldMethod].checked = true;
 
 	this.doButton = document.createElement('input');
 	this.doButton.setAttribute('type','button');
@@ -98,10 +127,6 @@ TWKLA.prototype.io = function() {
 	this.declampButton.setAttribute('type','button');
 	this.declampButton.setAttribute('class','twk-button-hide');
 	this.declampButton.value = 'Declip';
-
-	this.dim33 = this.createRadioElement('lutAnalystDim',false);
-	this.dim65 = this.createRadioElement('lutAnalystDim',true);
-	this.inputs.addInput('laDim',[this.dim33,this.dim65]);
 
 	this.storeButton = document.createElement('input');
 	this.storeButton.setAttribute('type','button');
@@ -117,7 +142,7 @@ TWKLA.prototype.io = function() {
 	this.backButton.setAttribute('type','button');
 	this.backButton.setAttribute('class','twk-button-hide');
 	this.backButton.value = 'New LUT';
-
+	
 	this.showGt = true;
 	// LUTAnalyst Object
 	lutInputs.addInput('lutAnalyst',new LUTAnalyst(this.inputs, this.messages));
@@ -168,6 +193,14 @@ TWKLA.prototype.ui = function() {
 	this.analysisBox.appendChild(this.dim65);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('65x65x65')));
 	this.analysisBox.appendChild(document.createElement('br'));
+	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Analysis Method:')));
+	this.analysisBox.appendChild(this.intCub);
+	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tricubic')));
+	this.analysisBox.appendChild(this.intTet);
+	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tetrahedral')));
+	this.analysisBox.appendChild(this.intLin);
+	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Trilinear')));
+	this.analysisBox.appendChild(document.createElement('br'));
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Range  ')));
 	this.analysisBox.appendChild(this.dlOpt);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('D→L')));
@@ -177,14 +210,42 @@ TWKLA.prototype.ui = function() {
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('L→L')));
 	this.analysisBox.appendChild(this.ldOpt);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('L→D')));
+	// Add the analysis box to the main box
 	this.analysisBox.className = 'twk-tab-hide';
 	this.box.appendChild(this.analysisBox);
+	// Advanced settings Checkbox
+	this.advancedCheckBox = document.createElement('div');
+	this.advancedCheckBox.className = 'twk-tab-hide';
+	this.advancedCheckBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Advanced Settings')));
+	this.advancedCheckBox.appendChild(this.advancedCheck);
+	// Advanced Box - Holds Advanced Or Experimental Inputs
+	this.advancedBox = document.createElement('div');
+	this.advancedBox.className = 'twk-advanced-hide';
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Generation Method:')));
+	this.advancedBox.appendChild(this.intGenCub);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tricubic')));
+	this.advancedBox.appendChild(this.intGenTet);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tetrahedral')));
+	this.advancedBox.appendChild(this.intGenLin);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Trilinear')));
+	this.advancedBox.appendChild(document.createElement('br'));
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Preview Method:')));
+	this.advancedBox.appendChild(this.intPreCub);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tricubic')));
+	this.advancedBox.appendChild(this.intPreTet);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Tetrahedral')));
+	this.advancedBox.appendChild(this.intPreLin);
+	this.advancedBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Trilinear')));
+	this.advancedBox.appendChild(document.createElement('br'));
+	this.advancedBox.appendChild(this.declampButton);
+	this.advancedCheckBox.appendChild(this.advancedBox);
 	// Buttons
 	this.box.appendChild(this.doButton);
 	this.box.appendChild(this.storeButton);
 	this.box.appendChild(this.storeBinButton);
-	this.box.appendChild(this.declampButton);
 	this.box.appendChild(this.backButton);
+	this.box.appendChild(this.advancedCheckBox);
+
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -263,7 +324,22 @@ TWKLA.prototype.getTFParams = function(params) {
 	// No Relevant Parameters For This Tweak
 };
 TWKLA.prototype.getCSParams = function(params) {
-	// No Relevant Parameters For This Tweak
+	var out = {};
+	if (this.intGenCub.checked) {
+		out.genInt = 0;
+	} else if (this.intGenTet.checked) {
+		out.genInt = 1;
+	} else {
+		out.genInt = 2;
+	}
+	if (this.intPreCub.checked) {
+		out.preInt = 0;
+	} else if (this.intPreTet.checked) {
+		out.preInt = 1;
+	} else {
+		out.preInt = 2;
+	}
+	params.twkLA = out;
 };
 TWKLA.prototype.setParams = function(params) {
 	if (typeof params.twkLA !== 'undefined') {
@@ -304,6 +380,27 @@ TWKLA.prototype.events = function() {
 	};}(this);
 	this.title.onchange = function(here){ return function(){
 		here.cleanTitle();
+	};}(this);
+	this.advancedCheck.onclick = function(here){ return function(){
+		here.toggleAdvanced();
+	};}(this);
+	this.intCub.onclick = function(here){ return function(){
+		here.updateLAMethod(0);
+	};}(this);
+	this.intTet.onclick = function(here){ return function(){
+		here.updateLAMethod(1);
+	};}(this);
+	this.intLin.onclick = function(here){ return function(){
+		here.updateLAMethod(2);
+	};}(this);
+	this.intPreCub.onclick = function(here){ return function(){
+		here.updatePreMethod(0);
+	};}(this);
+	this.intPreTet.onclick = function(here){ return function(){
+		here.updatePreMethod(1);
+	};}(this);
+	this.intPreLin.onclick = function(here){ return function(){
+		here.updatePreMethod(2);
 	};}(this);
 	this.doButton.onclick = function(here){ return function(){
 		here.doStuff();
@@ -367,7 +464,6 @@ TWKLA.prototype.followUp = function(input) {
 TWKLA.prototype.gotFile = function() {
 	this.startBox.className = 'twk-tab-hide';
 	this.backButton.className = 'twk-button';
-
 	if (this.newOpt.checked) {
 		this.analysisBox.className = 'twk-tab';
 		this.inputs.lutAnalyst.reset();
@@ -380,6 +476,7 @@ TWKLA.prototype.gotFile = function() {
 		if (parsed) {
 			this.title.value = this.inputs.lutAnalyst.getTitle('in');
 			this.doButton.className = 'twk-button';
+			this.advancedCheckBox.className = 'twk-tab';
 			if (this.inputs.lutAnalyst.is3D()) {
 				this.showGt = true;
 				this.gamutBox.className = 'twk-tab';
@@ -411,12 +508,17 @@ TWKLA.prototype.gotFile = function() {
 						  break;
 		}
 		if (parsed) {
+//console.log(this.inputs.lutAnalyst.tf.getInputDetails());
+//if (this.inputs.lutAnalyst.cs) {
+//console.log(this.inputs.lutAnalyst.cs.getInputDetails());
+//}
 			if (this.inputs.lutAnalyst.cs) {
 				this.showGt = true;
 			} else {
 				this.showGt = false;
 			}
 			this.title.value = this.inputs.lutAnalyst.getTitle('tf');
+			this.advancedCheckBox.className = 'twk-tab';
 			this.inputs.lutAnalyst.updateLATF(true);
 			if (this.showGt) {
 				this.inputs.lutAnalyst.updateLACS();
@@ -483,6 +585,7 @@ TWKLA.prototype.reset = function() {
 	this.startBox.className = 'twk-tab';
 	this.analysisBox.className = 'twk-tab-hide';
 	this.linGammaBox.className = 'twk-tab-hide';
+	this.advancedCheckBox.className = 'twk-tab-hide';
 
 	this.backButton.className = 'twk-button-hide';
 	this.storeButton.className = 'twk-button-hide';
@@ -491,12 +594,21 @@ TWKLA.prototype.reset = function() {
 	this.doButton.className = 'twk-button-hide';
 };
 TWKLA.prototype.store = function(cube) {
+	var params = {};
+	var inputGamma;
+	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
+		params.inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
+	} else {
+		params.inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
+	}
+	params.inputCS = this.gamutSelect.options[this.gamutSelect.selectedIndex].text.trim();
 	if (cube) {
 		this.files.save(
 			this.inputs.laCube.build(
 				this.title.value,
 				this.inputs.lutAnalyst.getL(),
-				this.inputs.lutAnalyst.getRGB()
+				this.inputs.lutAnalyst.getRGB(),
+				params
 			),
 			this.title.value,
 			'lacube',
@@ -507,7 +619,8 @@ TWKLA.prototype.store = function(cube) {
 			this.inputs.laBin.build(
 				this.title.value,
 				this.inputs.lutAnalyst.getL(),
-				this.inputs.lutAnalyst.getRGB()
+				this.inputs.lutAnalyst.getRGB(),
+				params
 			),
 			this.title.value,
 			'labin',
@@ -540,6 +653,36 @@ TWKLA.prototype.deClamp = function() {
 			0
 		);
 */
+};
+TWKLA.prototype.toggleAdvanced = function() {
+	if (this.advancedCheck.checked) {
+		this.advancedBox.className = 'twk-advanced';
+	} else {
+		this.advancedBox.className = 'twk-advanced-hide';
+	}
+};
+TWKLA.prototype.updatePreMethod = function(newPreMethod) {
+	if (newPreMethod !== this.oldPreMethod) {
+		this.oldPreMethod = newPreMethod;
+		this.messages.gtSetParams();
+	}
+};
+TWKLA.prototype.updateLAMethod = function(newMethod) {
+	if (newMethod !== this.oldMethod) {
+		switch (newMethod) {
+			case 0:  this.intGenCub.checked = true;
+					 this.intPreCub.checked = true;
+					 break;
+			case 1:  this.intGenTet.checked = true;
+					 this.intPreTet.checked = true;
+					 break;
+			case 2:
+			default: this.intGenLin.checked = true;
+					 this.intPreLin.checked = true;
+					 break;
+		}
+		this.oldMethod = newMethod;
+	}
 };
 TWKLA.prototype.cleanTitle = function() {
 	this.title.value = this.title.value.replace(/[/"/']/gi, '');

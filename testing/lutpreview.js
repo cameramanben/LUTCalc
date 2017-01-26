@@ -1230,7 +1230,7 @@ LUTPreview.prototype.rgbSamples = function(gridX,gridY) {
 //		stop[j] = ((0.21507582011558746*r) + (0.8850685017437284*g) + (-0.10014432185931582*b))/7.8;
 	}
 	return {
-		title:this.defSelect.options[this.defSelect.selectedIndex].innerHTML,
+		title:this.defSelect.options[this.defSelect.selectedIndex].text,
 		samples: out
 //		stops: stop
 	};

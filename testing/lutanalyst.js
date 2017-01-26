@@ -101,21 +101,31 @@ LUTAnalyst.prototype.getCS = function() {
 		gamut: this.gamutIn
 	});
 };
+LUTAnalyst.prototype.setCSInputData = function(buff) {
+	this.inputData = new Float64Array(buff);
+};
 LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
+	var inputTF;
+	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
+		inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
+	} else {
+		inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
+	}
 	if (this.pass === 0) { // Transfer function pass
 		var C = new Float64Array(buff);
-		var max = C.length;
+		var m = C.length;
 		this.inLUT.FCub(buff);
 		if (this.legOut) {
-			for (var j=0; j<max; j++) {
+			for (var j=0; j<m; j++) {
 				C[j] = ((C[j]*876)+64)/1023;
 			}
 		}
 		this.tf = this.lutMaker.newLUT({
 			title: 'Transfer Function',
 			format: 'cube',
+			inputTF: inputTF,
 			dims: 1,
-			s: max,
+			s: m,
 			min: [0,0,0],
 			max: [1,1,1],
 			C: [buff]
@@ -124,13 +134,31 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		this.pass = 1;
 		this.getCS();
 	} else if (this.inLUT.is3D()) { // Colour Space Pass
-		var max = dim*dim*dim;
-		var R = new Float64Array(max);
-		var G = new Float64Array(max);
-		var B = new Float64Array(max);
-		var rgb = new Float64Array(buff);
-		this.inLUT.RGBCub(buff);
-		for (var j=0; j<max; j++) {
+		var m = dim*dim*dim;
+		var R = new Float64Array(m);
+		var G = new Float64Array(m);
+		var B = new Float64Array(m);
+//		var rgb = new Float64Array(buff);
+		var rgb = this.inputData;
+		var inputMatrix = new Float64Array(buff);
+		var method;
+		if (this.inputs.laIntMethod[0].checked) {
+			method = 0;
+			this.inLUT.RGBCub(rgb.buffer);
+		} else if (this.inputs.laIntMethod[1].checked) {
+			method = 1;
+			this.inLUT.RGBTet(rgb.buffer);
+		} else {
+			method = 2;
+			this.inLUT.RGBLin(rgb.buffer);
+		}
+		var tfMethod = this.tfSpline.getMethod();
+		var putBack = false;
+		if (tfMethod !== method) {
+			this.tfSpline.setMethod(method);
+			putBack = true;
+		}
+		for (var j=0; j<m; j++) {
 			k = j*3;
 			if (this.legOut) {
 				R[j] = this.tfSpline.r(((rgb[ k ]*876)+64)/1023);
@@ -148,30 +176,43 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 				minMax[j] = ((minMax[j]*876)+64)/1023;
 			}
 		}
-// console.log(this.tfSpline.r(0));
-		var	a = Math.min(0,					this.tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // min value of 0 or lower if the analysed grayscale or any of the original mesh points get there
-		var b = Math.max(1.1740560044504333,this.tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // max value of 10 stops above mid gray (S-Log3) or higher if the analysed grayscale or any of the original mesh points get there
-// console.log(a+' - '+b);
-		for (var j=0; j<max; j++) {
-			if (R[j] < a) {
-				R[j] = a;
-			} else if (R[j] > b) {
-				R[j] = b;
+		var lo = 64/1023;
+		var hi = 1;
+		var	min = Math.min(0,					this.tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // min value of 0 or lower if the analysed grayscale or any of the original mesh points get there
+		var max = Math.max(1.1740560044504333,	this.tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // max value of 10 stops above mid gray (S-Log3) or higher if the analysed grayscale or any of the original mesh points get there
+		var dcLo = this.tfSpline.df(lo);
+		var dcHi = this.tfSpline.df(hi);
+		var numLo = Math.pow(min-lo,2);
+		var denLo = min-lo;
+		var numHi = Math.pow(max-hi,2);
+		var denHi = max-hi;
+		for (var j=0; j<m; j++) {
+			if (R[j] < lo) {
+				R[j] = min - (numLo/((dcLo*(R[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				R[j] = max - (numHi/((dcHi*(R[j]-hi))+denHi));
 			}
-			if (G[j] < a) {
-				G[j] = a;
-			} else if (G[j] > b) {
-				G[j] = b;
+			if (G[j] < lo) {
+				G[j] = min - (numLo/((dcLo*(G[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				G[j] = max - (numHi/((dcHi*(G[j]-hi))+denHi));
 			}
-			if (B[j] < a) {
-				B[j] = a;
-			} else if (B[j] > b) {
-				B[j] = b;
+			if (B[j] < lo) {
+				B[j] = min - (numLo/((dcLo*(B[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				B[j] = max - (numHi/((dcHi*(B[j]-hi))+denHi));
 			}
 		}
+		if (putBack) {
+			this.tfSpline.setMethod(tfMethod);
+		}
+		var inputCS = this.inputs.laGamutSelect.options[this.inputs.laGamutSelect.selectedIndex].text.trim();
 		this.cs = this.lutMaker.newLUT({
 			title: 'Colour Space',
 			format: 'cube',
+			inputTF: inputTF,
+			inputCS: inputCS,
+			inputMatrix: inputMatrix,
 			dims: 3,
 			s: dim,
 			min: [0,0,0],
@@ -192,6 +233,9 @@ LUTAnalyst.prototype.updateLACS = function() {
 	var details = {
 		title: d.title,
 		format: d.format,
+		inputTF: d.inputTF,
+		inputCS: d.inputCS,
+		inputMatrix: d.inputMatrix,
 		dims: d.dims,
 		s: d.s,
 		min: d.min.slice(0),
@@ -206,6 +250,7 @@ LUTAnalyst.prototype.updateLACS = function() {
 	} else {
 		details.C = [d.C[0].slice(0)];
 	}
+//set LUT here
 	this.messages.gtTxAll(this.p,6,details);
 };
 LUTAnalyst.prototype.getRGB = function() {

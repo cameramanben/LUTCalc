@@ -98,7 +98,7 @@ TWKGamutLim.prototype.setParams = function(params) {
 TWKGamutLim.prototype.getSettings = function(data) {
 	data.gamutLim = {
 		doGamutLim: this.tweakCheck.checked,
-		display: this.gamSelect.options[this.gamSelect.selectedIndex].innerHTML
+		display: this.gamSelect.options[this.gamSelect.selectedIndex].text.trim()
 	};
 };
 TWKGamutLim.prototype.setSettings = function(settings) {

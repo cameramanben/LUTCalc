@@ -241,7 +241,15 @@ LUTMessage.prototype.gaRx = function(d) {
 					this.ui[5].got1D(d);
 					break;
 			case 22: // LUTAnalyst SL3 input to linear
-					this.gtTx(d.p,2,d);
+					this.ui[d.p].setCSInputData(d.o);
+					this.gtTx(d.p,2,{
+						p:d.p,
+						t:d.t,
+						v:d.v,
+						dim:d.dim,
+						gamma:d.gamma,
+						gamut:d.gamut
+					});
 					break;
 			case 23: // RGB input to linear
 					this.gtTx(d.p,1,d);
@@ -530,7 +538,9 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gaTx(5,4,d);
 					break;
 			case 22: // RGB S-Gamut3.cine to LA input gamut
-					this.gaTx(d.p,9,d);
+					// console.log(new Float64Array(d.inputMatrix));
+					// this.gaTx(d.p,9,d);
+					this.ui[d.p].gotInputVals(d.inputMatrix,d.dim);
 					break;
 			case 23: // Recalculated custom matrix for changed colourspace
 					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
@@ -797,9 +807,9 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		xhr.onload = (function(here) {
 			return function(e) {
 				var buff = this.response;
+	  			var lutArr = new Uint8Array(buff);
 	  			if (!here.isLE) { // files are little endian, swap if system is big endian
 					// console.log('Gamut LUTs: Big Endian System');
-	  				var lutArr = new Uint8Array(buff);
 	  				var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
 	  				var i,b0,b1,b2,b3;
 	  				for (var j=0; j<max; j++) {
@@ -827,12 +837,49 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 	 				C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
 	 				C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
 	 			}
+				var dataEnd = 2+tfS+(3*csS);
+				// get input matrix details (all zeros means no matrix defined)
+				var inputMatrix = new Float64Array(9);
+				var imM = false;
+				if (dataEnd < in32.length) {
+					for (var j=0; j<9; j++) {
+						if (in32[dataEnd+j] !== 0) {
+							imM = true;
+							inputMatrix[j] = parseFloat(in32[dataEnd+j])/107374182.4;
+						}
+					}
+					dataEnd += 9;
+				}
+				if (!imM) {
+					inputMatrix = false;
+				}
+				// look for input matrix, colourspace and transfer function info at the end of the file if present
+				var inputTF = '';
+				var inputCS = '';
+				if (dataEnd < in32.length) {
+					dataEnd *= 4;
+					var fileEnd = lutArr.length;
+					var csDets = '';
+					for (var j=dataEnd; j<fileEnd; j++) {
+						csDets += String.fromCharCode(lutArr[j]).replace('^','γ');
+					}
+					if (csDets.search('|') >= 0) {
+						var tfcsArray = csDets.split('|');
+						inputTF = tfcsArray[0].trim();
+						inputCS = tfcsArray[1].trim();
+					} else {
+						inputCS = csDets;
+					}
+				}
 	  			here.messages.gtTxAll(0, 4, {
 					fileName: here.fileName,
 					s: dim,
 					C0: C[0].buffer,
 	 				C1: C[1].buffer,
-	 				C2: C[2].buffer
+	 				C2: C[2].buffer,
+	 				inputTF: inputTF,
+	 				inputCS: inputCS,
+	 				inputMatrix: inputMatrix
 				});
 			};
 		})({

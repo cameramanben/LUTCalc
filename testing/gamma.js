@@ -3684,6 +3684,13 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 		}
 	}
 	this.gammas[this.SL3].linFromD(buff);
+// New Code going straight to the output
+	if (i.legIn) {
+		this.gammas[i.gamma].linToL(buff);
+	} else {
+		this.gammas[i.gamma].linToD(buff);
+	}
+// End of new code
 	var out = { p: p, t: t+20, v: this.ver };
 	out.dim = i.dim;
 	out.legIn = i.legIn;
@@ -3884,6 +3891,7 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
+// Hopefully won't be needd if all goes well
 LUTGamma.prototype.laCalcInput = function(p,t,i) {
 	var max = i.dim;
 	var o = new Float64Array(i.o);
@@ -3905,6 +3913,7 @@ LUTGamma.prototype.laCalcInput = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
+// End of Hopefully won't be needed
 LUTGamma.prototype.ioNames = function(p,t) {
 	var out = {};
 	out.inName = this.gammas[this.curIn].name;

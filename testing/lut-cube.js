@@ -88,6 +88,10 @@ cubeLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var size = false;
 	var minimum = [0,0,0];
 	var maximum = [1,1,1];
+	var cs = '';
+	var tf = '';
+	var inputMatrix = false;
+	var imLines = 0;
 	var max = text.length;
 	if (max === 0) {
 		return false;
@@ -147,6 +151,43 @@ cubeLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 				maximum[1] = maximum[0];
 				maximum[2] = maximum[0];
 			}
+		} else if (lower.search('# la_input_colourspace') >= 0) {
+			cs = line.substr(parseInt(lower.search('# la_input_colourspace')) + 22).trim();
+		} else if (lower.search('# la_input_transfer_function') >= 0) {
+			tf = line.substr(parseInt(lower.search('# la_input_transfer_function')) + 28).trim();
+		} else if (lower.search('# la_input_matrix_r') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_r')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (!inputMatrix) {
+					inputMatrix = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				inputMatrix[0] = mat[0];
+				inputMatrix[1] = mat[1];
+				inputMatrix[2] = mat[2];
+				imLines++;
+			}
+		} else if (lower.search('# la_input_matrix_g') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_g')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (!inputMatrix) {
+					inputMatrix = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				inputMatrix[3] = mat[0];
+				inputMatrix[4] = mat[1];
+				inputMatrix[5] = mat[2];
+				imLines++;
+			}
+		} else if (lower.search('# la_input_matrix_b') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_b')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (!inputMatrix) {
+					inputMatrix = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				inputMatrix[6] = mat[0];
+				inputMatrix[7] = mat[1];
+				inputMatrix[8] = mat[2];
+				imLines++;
+			}
 		}
 	}
 	if (dimensions && size) {
@@ -171,11 +212,17 @@ cubeLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 				}
 			}
 		}
+		if (imLines !== 3) {
+			inputMatrix = false;
+		}
 		return lutMaker.setLUT(
 			lutDest,
 			{
 				title: title,
 				format: 'cube',
+				inputTF: tf,
+				inputCS: cs,
+				inputMatrix: inputMatrix,
 				dims: dimensions,
 				s: size,
 				min: minimum,
