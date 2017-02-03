@@ -595,13 +595,17 @@ TWKLA.prototype.reset = function() {
 };
 TWKLA.prototype.store = function(cube) {
 	var params = {};
-	var inputGamma;
-	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
-		params.inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
-	} else {
-		params.inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
-	}
-	params.inputCS = this.gamutSelect.options[this.gamutSelect.selectedIndex].text.trim();
+//	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
+//		params.inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
+//	} else {
+//		params.inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
+//	}
+	params.in1DTF = 'S-Log3';
+	params.in3DTF = 'S-Log3';
+	params.in3DCS = this.gamutSelect.options[this.gamutSelect.selectedIndex].text.trim();
+	params.in1DEX = true;
+	params.in3DEX = true;
+	params.inputMatrix = this.inputs.lutAnalyst.getCSInputMatrix();
 	if (cube) {
 		this.files.save(
 			this.inputs.laCube.build(

@@ -3669,8 +3669,8 @@ LUTGamma.prototype.oneDCalc = function(p,t,i) {
 LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 	var dim = i.dim;
 	var d = dim -1;
-	var max = dim*dim*dim*3;
-	var c = new Float64Array(max);
+	var m = dim*dim*dim*3;
+	var c = new Float64Array(m);
 	var buff = c.buffer;
 	var j=0;
 	for (var B=0; B<dim; B++) {
@@ -3684,13 +3684,11 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 		}
 	}
 	this.gammas[this.SL3].linFromD(buff);
-// New Code going straight to the output
 	if (i.legIn) {
 		this.gammas[i.gamma].linToL(buff);
 	} else {
 		this.gammas[i.gamma].linToD(buff);
 	}
-// End of new code
 	var out = { p: p, t: t+20, v: this.ver };
 	out.dim = i.dim;
 	out.legIn = i.legIn;
@@ -3892,6 +3890,7 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	return out;
 };
 // Hopefully won't be needd if all goes well
+/*
 LUTGamma.prototype.laCalcInput = function(p,t,i) {
 	var max = i.dim;
 	var o = new Float64Array(i.o);
@@ -3913,6 +3912,7 @@ LUTGamma.prototype.laCalcInput = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
+*/
 // End of Hopefully won't be needed
 LUTGamma.prototype.ioNames = function(p,t) {
 	var out = {};
@@ -4539,8 +4539,8 @@ function LUTGammaWorker() {
 						break;
 				case 8: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.SL3Val(d.p,d.t,d.d)); 
 						break;
-				case 9: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.laCalcInput(d.p,d.t,d.d)); 
-						break;
+//				case 9: lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.laCalcInput(d.p,d.t,d.d)); 
+//						break;
 				case 10:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.ioNames(d.p,d.t));
 						break;
 				case 11:lutGammaWorker.sendGammaMessage(lutGammaWorker.gammas.chartVals(d.p,d.t));

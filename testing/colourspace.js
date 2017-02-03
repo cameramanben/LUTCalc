@@ -18,14 +18,17 @@ function LUTColourSpace() {
 	this.csOut = [];
 	this.csM = [];
 	this.CATs = new CSCAT();
+	// CIECAT02
+	// CIECAT97s
+	// Bradford Chromatic Adaptation
+	// Von Kries
+	// Sharp
+	// CMCCAT2000
+	// Bianco BS
+	// Bianco BS-PC
+	// XYZ Scaling
 	this.sysCAT = 'CIECAT02';
-	this.sysCATIdx = this.CATs.modelIdx(this.sysCAT);
-	this.cat02 = new Float64Array([
-		 0.7328, 0.4296,-0.1624,
-		-0.7036, 1.6975, 0.0061,
-		 0.0030, 0.0136, 0.9834
-	]);
-	this.invCat02 = this.mInverse(this.cat02);
+	this.sysCATIdx = this.CATs.setDefault(this.sysCAT);
 	this.matList = [];
 	this.xyzMatrices();
 	this.system = this.g[this.sysIdx];
@@ -253,8 +256,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				min: [0,0,0],
 				max: [1,1,1],
 				wp: this.illuminant('d65'),
-				genInt: 0,
-				preInt: 0
+				genInt: 2,
+				preInt: 2
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
 			this.illuminant('d65')
@@ -285,7 +288,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				min: [0,0,0],
 				max: [1,1,1],
 				wp: this.illuminant('d65'),
-				genInt: 0,
+				genInt: 1,
 				preInt: 1
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
@@ -301,7 +304,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				min: [0,0,0],
 				max: [1,1,1],
 				wp: this.illuminant('d65'),
-				genInt: 0,
+				genInt: 1,
 				preInt: 1
 			},
 			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
@@ -396,32 +399,49 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 
 	var max = this.csIn.length;
+	this.inCATs = [];
+	this.outCATs = [];
 	for (var j=0; j<max; j++) {
 		this.inList.push({name: this.csIn[j].name,idx: j});
+		this.inCATs.push(this.getCSCat(this.csIn[j].name));
 	}
 	var max2 = this.csOut.length;
 	for (var j=0; j<max2; j++) {
-		if (j != this.LA) {
+		if (j !== this.LA) {
 			this.outList.push({name: this.csOut[j].name,idx: j});
 		}
+		this.outCATs.push(this.getCSCat(this.csOut[j].name));
 	}
-//	max = this.inList.length;
 	max2 = this.outList.length;
 	var k=0;
 	for (var i=0; i<max; i++) {
 		if (this.csIn[i].isMatrix() && this.csIn[i].name !== 'Passthrough') {
 			this.laList.push({name: this.csIn[i].name});
 			this.csLASub.push(this.csInSub[i].slice(0));
-			for (var j=0; j<max2; j++) {
-				if (this.laList[k].name === this.outList[j].name) {
-					this.laList[k].idx = this.outList[j].idx;
-					this.csLASub[k] = this.csOutSub[j].slice(0);
-					break;
+			if (this.laList[k].name === 'Custom In') {
+				this.laList[k].idx = this.custOut;
+				this.csLASub[k] = this.csOutSub[this.custOut].slice(0);
+			} else {
+				for (var j=0; j<max2; j++) {
+					if (this.laList[k].name === this.outList[j].name) {
+						this.laList[k].idx = this.outList[j].idx;
+						this.csLASub[k] = this.csOutSub[j].slice(0);
+						break;
+					}
 				}
 			}
 			k++;
 		}
 	}
+};
+LUTColourSpace.prototype.getCSCat = function(name) {
+	var m = this.g.length;
+	for (var j=0; j<m; j++) {
+		if (name === this.g[j].name) {
+			return this.g[j].cat;
+		}
+	}
+	return this.sysCATIdx; // fall back to default
 };
 // Colour calculations
 LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
@@ -429,13 +449,16 @@ LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 //			xg, yg,
 //			xb, yb ]
 //	white = [ xw, yw, zw ];
+	if (typeof white === 'undefined' || !white) {
+		return false;
+	}
 	var XYZ = new Float64Array([
 		xy[0]/xy[1],			xy[2]/xy[3],			xy[4]/xy[5],
 		1,						1,						1,
 		(1-xy[0]-xy[1])/xy[1],	(1-xy[2]-xy[3])/xy[3],	(1-xy[4]-xy[5])/xy[5]
 	]);
 	var invXYZ = this.mInverse(XYZ);
-	if (!invXYZ || !white) {
+	if (!invXYZ) {
 		return false;
 	}
 	var S = this.mMult(invXYZ, new Float64Array([white[0]/white[1],1,white[2]/white[1]]));
@@ -445,18 +468,7 @@ LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 		S[0]*XYZ[6], S[1]*XYZ[7], S[2]*XYZ[8]
 	]);
 };
-LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
-	var s = this.mMult(this.cat02, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
-	var d = this.mMult(this.cat02, new Float64Array([wd[0]/wd[1],1,wd[2]/wd[1]]));
-	var CAT = new Float64Array([
-		d[0]/s[0], 0, 0,
-		0, d[1]/s[1], 0,
-		0, 0, d[2]/s[2]
-	]);
-	var cat02 = this.mMult(this.invCat02,this.mMult(CAT,this.cat02));
-	return this.mMult(cat02,m);
-};
-LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
+LUTColourSpace.prototype.calcCAT = function(m, ws, wd, model) {
 	var cat = this.CATs.getModel(model);
 	var inv = this.mInverse(cat);
 	var s = this.mMult(cat, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
@@ -470,8 +482,8 @@ LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
 	return this.mMult(n,m);
 };
 LUTColourSpace.prototype.toSys = function(name) {
-	var max = this.g.length;
-	for (var j=0; j<max; j++) {
+	var m = this.g.length;
+	for (var j=0; j<m; j++) {
 		if (name === this.g[j].name) {
 			return new CSMatrix(name, this.g[j].toSys, this.g[j].white.buffer.slice(0));
 		}
@@ -527,21 +539,16 @@ LUTColourSpace.prototype.fromSysLUT = function(name,params,xy,white) {
 			0.2,0.2,0.2
 		]);
 	this.csIn[this.rec709In].lc(colours.buffer);
-//	var toXYZ = this.RGBtoXYZ(xy,white);
-//	this.csM.push(new CSMatrix(
-//		name,
-//		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
-//		white
-//	));
 	var csLUT = new CSLUT(name, params, colours);
 	this.csM.push(csLUT);	
 	return csLUT;
 };
-LUTColourSpace.prototype.fromSysTC = function(name,params,xy,white) {
+LUTColourSpace.prototype.fromSysTC = function(name,params,xy,white,model) {
+	var cat = this.CATs.getModel(model);
 	var toXYZ = this.RGBtoXYZ(xy,white);
 	this.csM.push(new CSMatrix(
 		name,
-		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
+		this.mInverse(this.mMult(this.system.inv, this.calcCAT(toXYZ,white,this.system.white,cat))),
 		white
 	));
 	return new CSToneCurve(name, params);
@@ -759,6 +766,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	sgamut3.xy = new Float64Array([0.730,0.280, 0.140,0.855, 0.100,-0.05]);
 	sgamut3.white = this.illuminant('d65');
 	sgamut3.toXYZ = this.RGBtoXYZ(sgamut3.xy,sgamut3.white);
+//console.log(sgamut3.toXYZ);
 	this.g.push(sgamut3);
 // S-Gamut
 	var sgamut = {};
@@ -767,6 +775,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	sgamut.xy = new Float64Array([0.730,0.280, 0.140,0.855, 0.100,-0.05]);
 	sgamut.white = this.illuminant('d65');
 	sgamut.toXYZ = this.RGBtoXYZ(sgamut.xy,sgamut.white);
+//console.log(sgamut.toXYZ);
 	this.g.push(sgamut);
 // ALEXA Wide Gamut RGB
 	var alexawgrgb = {};
@@ -1005,7 +1014,7 @@ LUTColourSpace.prototype.systemMatrices = function() {
 		} else if (this.g[j].name === 'XYZ') {
 			this.g[j].toSys = this.system.inv;
 		} else if (this.g[j].white[0] !== this.system.white[0] && this.g[j].white[1] !== this.system.white[1] && this.g[j].white[2] !== this.system.white[2]) {
-			this.g[j].toSys = this.mMult(this.system.inv, this.ciecat02(this.g[j].toXYZ,this.g[j].white,this.system.white));
+			this.g[j].toSys = this.mMult(this.system.inv, this.calcCAT(this.g[j].toXYZ,this.g[j].white,this.system.white,this.g[j].cat));
 		} else {
 			this.g[j].toSys = this.mMult(this.system.inv, this.g[j].toXYZ);
 		}
@@ -1266,7 +1275,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
 			]);
 			edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
-			out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(modelEdit,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
+			out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(edit.toXYZ,edit.white,this.g[p.edit.wcs].white,modelEdit));
 			out.wcs = p.edit.wcs;
 		} else if (p.edit.isMatrix) {
 			var ill = ['a','b','c','d40','d45','d50','d55','d60','d65','d70','d75','e', 'p3'];
@@ -1274,7 +1283,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 			var edW;
 			var edXYZ = this.mMult(this.g[p.edit.wcs].toXYZ,p.edit.matrix);
 			edW = new Float64Array([ p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy ]);
-			edXYZ = this.calcCAT(modelEdit,edXYZ,this.g[p.edit.wcs].white,edW);
+			edXYZ = this.calcCAT(edXYZ,this.g[p.edit.wcs].white,edW,modelEdit);
 			var edDr = edXYZ[0] + edXYZ[3] + edXYZ[6];
 			var edDg = edXYZ[1] + edXYZ[4] + edXYZ[7];
 			var edDb = edXYZ[2] + edXYZ[5] + edXYZ[8];
@@ -1285,7 +1294,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 			]);
 		}
 		if (p.input.isMatrix) {
-			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
+			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white,modelIn));
 			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inWCSToSys,p.input.matrix), this.g[p.input.wcs].white.buffer.slice(0));
 		} else {
 			var customIn = {};
@@ -1298,11 +1307,11 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
 			]);
 			customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
-			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(modelIn,customIn.toXYZ,customIn.white,this.system.white));
+			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(customIn.toXYZ,customIn.white,this.system.white,modelIn));
 			this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
 		}
 		if (p.output.isMatrix) {
-			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
+			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white,modelOut));
 			var outWCSFromSys = this.mInverse(outWCSToSys);
 			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
 			this.csM[this.custOut] = this.csOut[this.custOut];
@@ -1317,7 +1326,7 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
 			]);
 			customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
-			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(modelOut,customOut.toXYZ,customOut.white,this.system.white));
+			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(customOut.toXYZ,customOut.white,this.system.white,modelOut));
 			this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
 			this.csM[this.custOut] = this.csOut[this.custOut];
 		}
@@ -2078,7 +2087,9 @@ Planck.prototype.Duv = function(T) {
 	return new Float64Array([norm,tang]);
 };
 function CSCAT() {
+	this.def = 0;
 	this.names = [];
+	this.lower = [];
 	this.M = [];
 	this.models();
 }
@@ -2095,21 +2106,47 @@ CSCAT.prototype.models = function() {
 };
 CSCAT.prototype.addModel = function(name,M) {
 	this.names.push(name);
+	this.lower.push(name.toLowerCase())
 	this.M.push(M);
 };
 CSCAT.prototype.getModel = function(idx) {
+	if (typeof model === 'string' && isNaN(idx)) {
+		idx = this.modelIdx(idx); // if it gets sent a title rather than index
+	} else if (typeof model !== 'number' || isNaN(model)) {
+		idx = this.def; // the default fallback
+	}
 	return new Float64Array(this.M[idx]);
 };
 CSCAT.prototype.getModels = function() {
 	return this.names.slice(0);
 };
 CSCAT.prototype.modelIdx = function(model) {
-	var m = this.names.length;
+	if (typeof model === 'number' && !isNaN(model)) {
+		return model; // if accidentally sent a number, assume the index has already been found
+	} else if (typeof model === 'undefined' || model === '') {
+		return this.def; // the default option
+	}
+	var m = this.lower.length;
 	for (var j=0; j<m; j++) {
-		if (model.toLowerCase() === this.names[j].toLowerCase()) {
+		if (model.toLowerCase() === this.lower[j]) {
 			return j;
 		}
 	}
+	return this.def;
+};
+CSCAT.prototype.setDefault = function(model) {
+	if (typeof model !== 'string' || model === '') {
+		this.def = 0;
+		return 0; // the default option
+	}
+	var m = this.lower.length;
+	for (var j=0; j<m; j++) {
+		if (model.toLowerCase() === this.lower[j]) {
+			this.def = j;
+			return j;
+		}
+	}
+	this.def = 0;
 	return 0;
 };
 // Adjustment objects
@@ -3583,15 +3620,12 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 	return out;
 };
 LUTColourSpace.prototype.laCalc = function(p,t,i) {
-//	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
 	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut };
-//	this.csOut[i.gamut].lc(i.o);
 	if (i.gamut === this.custOut) {
 		out.inputMatrix = this.mInverse(this.csIn[this.custIn].getMatrix()).buffer;
 	} else {
 		out.inputMatrix = this.csOut[i.gamut].getMatrix().buffer.slice(0);
 	}
-//	out.to = ['o','inputMatrix'];
 	out.to = ['inputMatrix'];
 	return out;
 };
@@ -3600,7 +3634,7 @@ LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
 	var oMat = new Float64Array(i.matrix);
 	var oToXYZ = this.g[i.oldWCS].toXYZ;
 	var nFromXYZ = this.mInverse(this.g[i.newWCS].toXYZ);
-	var oToN = this.mMult(nFromXYZ, this.calcCAT(i.cat,oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white));
+	var oToN = this.mMult(nFromXYZ, this.calcCAT(oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white,i.cat));
 	var matrix = this.mMult(oToN,oMat);
 	out.matrix = matrix.buffer;
 	out.to = ['matrix'];
@@ -4080,7 +4114,7 @@ LUTColourSpace.prototype.calcPrimaries = function(p,t) {
 	for (var j=0; j<4; j++) {
 		k = j*3;
 		l = j*2;
-		XYZ = this.ciecat02(new Float64Array([gIn[k],gIn[k+1],gIn[k+2]]),ws,wd);
+		XYZ = this.calcCAT(new Float64Array([gIn[k],gIn[k+1],gIn[k+2]]),ws,wd,this.inCATs[this.curIn]);
 		den = XYZ[0] + XYZ[1] + XYZ[2];
 		xy[ l ] = (XYZ[0]/den);
 		xy[l+1] = (XYZ[1]/den);
@@ -4093,7 +4127,7 @@ LUTColourSpace.prototype.calcPrimaries = function(p,t) {
 	for (var j=0; j<4; j++) {
 		k = j*3;
 		l = j*2;
-		XYZ = this.ciecat02(new Float64Array([gOut[k],gOut[k+1],gOut[k+2]]),ws,wd);
+		XYZ = this.calcCAT(new Float64Array([gOut[k],gOut[k+1],gOut[k+2]]),ws,wd,this.outCATs[this.curOut]);
 		den = XYZ[0] + XYZ[1] + XYZ[2];
 		xy[l+8] = (XYZ[0]/den);
 		xy[l+9] = (XYZ[1]/den);

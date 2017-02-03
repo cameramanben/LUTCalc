@@ -121,25 +121,25 @@ function LUTSpline(params) {
 	for (var j=0; j<fm; j++) {
 		if (j === 0) {
 			FP1[0] = this.FD[1];
-			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
-			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
 				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
 				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
 					this.FC[0] = 0.0075 * mono / (fm-1);
 				}
-			}
+//			}
 			FD1[0] = (this.FD[2] - this.FD[0])/2;
 		} else if (j < fm-1) {
 			FP1[j] = this.FD[j+1];
 			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
 			if (j === fm-2) {
-				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
-				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
 					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
 					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 						FD1[j] = 0.0075 * mono / (fm-1);
 					}
-				}
+//				}
 			} else {
 				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
 			}
@@ -598,25 +598,25 @@ function LUTRSpline(params) {
 	for (var j=0; j<fm; j++) {
 		if (j === 0) {
 			FP1[0] = this.FD[1];
-			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
-			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
 				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
 				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
 					this.FC[0] = 0.0075 * mono / (fm-1);
 				}
-			}
+//			}
 			FD1[0] = (this.FD[2] - this.FD[0])/2;
 		} else if (j < fm-1) {
 			FP1[j] = this.FD[j+1];
 			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
 			if (j === fm-2) {
-				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
-				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
 					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
 					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 						FD1[j] = 0.0075 * mono / (fm-1);
 					}
-				}
+//				}
 			} else {
 				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
 			}
@@ -1114,25 +1114,25 @@ LUTRSpline.prototype.buildReverse = function() {
 	for (var j=0; j<rm; j++) {
 		if (j === 0) {
 			RP1[0] = this.RD[1];
-			this.RC[0] = (0.1*this.RD[3]) - (0.8*this.RD[2]) + (2.3*this.RD[1]) - (1.6*this.RD[0]);
-			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
+//			this.RC[0] = (0.1*this.RD[3]) - (0.8*this.RD[2]) + (2.3*this.RD[1]) - (1.6*this.RD[0]);
+//			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
 				this.RC[0] = -(0.5*this.RD[2]) + (2*this.RD[1]) - (1.5*this.RD[0]);
 				if (this.RC[0]*mono <= 0) { // still opposite slope to monotonic
 					this.RC[0] = 0.0075 * mono / (fm-1);
 				}
-			}
+//			}
 			RD1[0] = (this.RD[2] - this.RD[0])/2;
 		} else if (j < rm-1) {
 			RP1[j] = this.RD[j+1];
 			this.RC[j] = (this.RD[j+1] - this.RD[j-1])/2
 			if (j === rm-2) {
-				RD1[j] = (-0.1*this.RD[j-2]) + (0.8*this.RD[j-1]) - (2.3*this.RD[j]) + (1.6*this.RD[j+1]);
-				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
+//				RD1[j] = (-0.1*this.RD[j-2]) + (0.8*this.RD[j-1]) - (2.3*this.RD[j]) + (1.6*this.RD[j+1]);
+//				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
 					RD1[j] = (0.5*this.RD[j-1]) - (2*this.RD[j]) + (1.5*this.RD[j+1]);
 					if (RD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 						RD1[j] = 0.0075 * mono / (fm-1);
 					}
-				}
+//				}
 			} else {
 				RD1[j] = (this.RD[j+2] - this.RD[j])/2;
 			}
@@ -1201,25 +1201,25 @@ function LUTQSpline(buff) {
 	for (var j=0; j<fm; j++) {
 		if (j === 0) {
 			FP1[0] = this.FD[1];
-			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
-			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
 				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
 				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
 					this.FC[0] = 0.0075 * mono / (fm-1);
 				}
-			}
+//			}
 			FD1[0] = (this.FD[2] - this.FD[0])/2;
 		} else if (j < fm-1) {
 			FP1[j] = this.FD[j+1];
 			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
 			if (j === fm-2) {
-				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
-				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
 					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
 					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 						FD1[j] = 0.0075 * mono / (fm-1);
 					}
-				}
+//				}
 			} else {
 				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
 			}
@@ -1652,25 +1652,25 @@ LUTRGBSpline.prototype.buildMesh = function() {
 		for (var j=0; j<fm; j++) {
 			if (j === 0) {
 				FP1[0] = this.FD[i][1];
-				this.FC[i][0] = (0.1*this.FD[i][3]) - (0.8*this.FD[i][2]) + (2.3*this.FD[i][1]) - (1.6*this.FD[i][0]);
-				if (this.FC[i][0]*mono <= 0) { // opposite slope to monotonic
+//				this.FC[i][0] = (0.1*this.FD[i][3]) - (0.8*this.FD[i][2]) + (2.3*this.FD[i][1]) - (1.6*this.FD[i][0]);
+//				if (this.FC[i][0]*mono <= 0) { // opposite slope to monotonic
 					this.FC[i][0] = -(0.5*this.FD[i][2]) + (2*this.FD[i][1]) - (1.5*this.FD[i][0]);
 					if (this.FC[i][0]*mono <= 0) { // still opposite slope to monotonic
 						this.FC[i][0] = 0.0075 * mono / (fm-1);
 					}
-				}
+//				}
 				FD1[0] = (this.FD[i][2] - this.FD[i][0])/2;
 			} else if (j < fm-1) {
 				FP1[j] = this.FD[i][j+1];
 				this.FC[i][j] = (this.FD[i][j+1] - this.FD[i][j-1])/2;
 				if (j === fm-2) {
-					FD1[j] = (-0.1*this.FD[i][j-2]) + (0.8*this.FD[i][j-1]) - (2.3*this.FD[i][j]) + (1.6*this.FD[i][j+1]);
-					if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+//					FD1[j] = (-0.1*this.FD[i][j-2]) + (0.8*this.FD[i][j-1]) - (2.3*this.FD[i][j]) + (1.6*this.FD[i][j+1]);
+//					if (FD1[j]*mono <= 0) { // opposite slope to monotonic
 						FD1[j] = (0.5*this.FD[i][j-1]) - (2*this.FD[i][j]) + (1.5*this.FD[i][j+1]);
 						if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 							FD1[j] = 0.0075 * mono / (fm-1);
 						}
-					}
+//					}
 				} else {
 					FD1[j] = (this.FD[i][j+2] - this.FD[i][j])/2;
 				}
@@ -1732,25 +1732,25 @@ LUTRGBSpline.prototype.buildL = function() {
 	for (var j=0; j<m; j++) {
 		if (j === 0) {
 			FP1[0] = this.FD[3][1];
-			this.FC[3][0] = (0.1*this.FD[3][3]) - (0.8*this.FD[3][2]) + (2.3*this.FD[3][1]) - (1.6*this.FD[3][0]);
-			if (this.FC[3][0]*mono <= 0) { // opposite slope to monotonic
+//			this.FC[3][0] = (0.1*this.FD[3][3]) - (0.8*this.FD[3][2]) + (2.3*this.FD[3][1]) - (1.6*this.FD[3][0]);
+//			if (this.FC[3][0]*mono <= 0) { // opposite slope to monotonic
 				this.FC[3][0] = -(0.5*this.FD[3][2]) + (2*this.FD[3][1]) - (1.5*this.FD[3][0]);
 				if (this.FC[3][0]*mono <= 0) { // still opposite slope to monotonic
 					this.FC[3][0] = 0.0075 * mono / (m-1);
 				}
-			}
+//			}
 			FD1[0] = (this.FD[3][2] - this.FD[3][0])/2;
 		} else if (j < m-1) {
 			FP1[j] = this.FD[3][j+1];
 			this.FC[3][j] = (this.FD[3][j+1] - this.FD[3][j-1])/2;
 			if (j === m-2) {
-				FD1[j] = (-0.1*this.FD[3][j-2]) + (0.8*this.FD[3][j-1]) - (2.3*this.FD[3][j]) + (1.6*this.FD[3][j+1]);
-				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+//				FD1[j] = (-0.1*this.FD[3][j-2]) + (0.8*this.FD[3][j-1]) - (2.3*this.FD[3][j]) + (1.6*this.FD[3][j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
 					FD1[j] = (0.5*this.FD[3][j-1]) - (2*this.FD[3][j]) + (1.5*this.FD[3][j+1]);
 					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
 						FD1[j] = 0.0075 * mono / (m-1);
 					}
-				}
+//				}
 			} else {
 				FD1[j] = (this.FD[3][j+2] - this.FD[3][j])/2;
 			}
@@ -2291,6 +2291,8 @@ LUTRGBSpline.prototype.getInputDetails = function() {
 	}
 	if (typeof this.inputMatrix !== 'undefined') {
 		out.inputMatrix = this.inputMatrix;
+	} else {
+		out.inputMatrix = false;
 	}
 	return out;
 };
@@ -3841,6 +3843,8 @@ LUTVolume.prototype.getInputDetails = function() {
 	}
 	if (typeof this.inputMatrix !== 'undefined') {
 		out.inputMatrix = this.inputMatrix;
+	} else {
+		out.inputMatrix = false;
 	}
 	return out;
 };
@@ -4051,13 +4055,14 @@ LUTVolume.prototype.deClamp3D = function() {
 	var rL,gL,bL;
 	var rH,gH,bH;
 	var low;
-	var lo = 0;
-	var hi = 1;
-	var min = -64/876;
-	var max = 959/876;
+	var minMax = this.minMax();
+	var lo = Math.min(0, Math.min(minMax[0],minMax[1],minMax[2])); // 0, or the lowest value in the mesh, whichever the lesser
+	var hi = Math.max(1, Math.max(minMax[3],minMax[4],minMax[5])); // 1.0, or the highest value in the mesh, whichever the greater
+	var min = lo - 0.1; // 10% below the 'lo' value
+	var max = hi + 0.175; // 17.5% above 'hi' value
 	var limits = new Float64Array([lo,hi,min,max]);
 	// First sort out inner splines
-	for (var x=0; x<d; x++) { // change to d for final version
+	for (var x=0; x<d; x++) {
 		for (var y=0; y<d; y++) {
 			rL = 0;
 			gL = 0;

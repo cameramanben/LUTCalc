@@ -16,27 +16,39 @@ function lacubeLUT(messages, isLE) {
 lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 	var tf = new Float64Array(tfBuff);
 	var cs;
+	// Metadata defaults
+	var in1DTF = 'S-Log3'; // system default
+	var in1DRG = 'DATA'; // system default
+	var in3DTF = 'S-Log3'; // system default
+	var in3DCS = 'Sony S-Gamut3.cine'; // system default
+	var in3DRG = 'DATA'; // system default
 	// 1D Transfer function
-	var inputTF = 'S-Log3';
-	if (typeof params.inputTF !== 'undefined') {
-		inputTF = params.inputTF;
+	if (typeof params.in1DTF !== 'undefined') {
+		in1DTF = params.in1DTF;
+	}
+	if (typeof params.in1DEX === 'boolean' && !params.in1DEX) {
+		in1DRG = 'LEGAL';
 	}
 	var out =	'# LUT Analyst LA LUT File -------------------------------------------------------' + "\n";
 	out +=		'TITLE "' + title + '"' + "\n" +
 				'LUT_1D_SIZE ' + tf.length.toString() + "\n" +
-				'# LUT Analyst - 1D Transfer Function Shaper - ' + inputTF + '->' + title + ' Gamma' + "\n";
-	if (typeof params.inputTF !== 'undefined') {
-		out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + params.inputTF + "\n";
-	}
+				'# LUT Analyst - 1D Transfer Function Shaper - ' + in1DTF + '->' + title + ' Gamma' + "\n";
+	out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + params.in1DTF + "\n";
+	out +=  '# LA_INPUT_RANGE ' + in1DRG + "\n";
 	var m = tf.length;
 	for (var j=0; j<m; j++) {
 		out += tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\n";
 	}
 	// 3D Colourspace if present
 	if (typeof csBuff !== 'undefined' && csBuff) {
-		var inputCS = 'S-Gamut3.cine';
-		if (typeof params.inputCS !== 'undefined') {
-			inputCS = params.inputCS;
+		if (typeof params.in3DTF !== 'undefined') {
+			in3DTF = params.in3DTF;
+		}
+		if (typeof params.in3DCS !== 'undefined') {
+			in3DCS = params.in3DCS;
+		}
+		if (typeof params.in3DEX === 'boolean' && !params.in3DEX) {
+			in3DRG = 'LEGAL';
 		}
 		cs = [	new Float64Array(csBuff[0]),
 				new Float64Array(csBuff[1]),
@@ -44,13 +56,10 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		out +=		'# -------------------------------------------------------------------------------' + "\n";
 		out +=  	'TITLE "' + title + '"' + "\n" +
 					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
-					'# LUT Analyst - 3D Colour Space Transform - ' + inputCS + '->' + title + ' Colour' + "\n";
-		if (typeof params.inputTF !== 'undefined') {
-			out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + params.inputTF + "\n";
-		}
-		if (typeof params.inputCS !== 'undefined') {
-			out +=  '# LA_INPUT_COLOURSPACE ' + params.inputCS + "\n";
-		}
+					'# LUT Analyst - 3D Colour Space Transform - ' + in3DCS + '->' + title + ' Colour' + "\n";
+		out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + in3DTF + "\n";
+		out +=  '# LA_INPUT_COLOURSPACE ' + in3DCS + "\n";
+		out +=  '# LA_INPUT_RANGE ' + in3DRG + "\n";
 		if (typeof params.inputMatrix !== 'undefined') {
 			out +=  '# LA_INPUT_MATRIX_R ' + params.inputMatrix[0] + "\t" + params.inputMatrix[1] + "\t" + params.inputMatrix[2] + "\n";
 			out +=  '# LA_INPUT_MATRIX_G ' + params.inputMatrix[3] + "\t" + params.inputMatrix[4] + "\t" + params.inputMatrix[5] + "\n";
@@ -130,48 +139,48 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		}
 	}
 // Prep input transfer function and colourspace info to add to the end of the file as required
-	if (typeof params.inputCS !== 'undefined') {
-		var inputCS = params.inputCS;
-		var curChar;
-		var csArray = [];
-		var tfArray = [];
-		var m = inputCS.length;
-		for (var j=0; j<m; j++) { // convert colourspace title string to ASCII code values (ie remove all above code 127);
-			curChar = inputCS.charCodeAt(j);
-			if (curChar < 128) {
-				csArray.push(curChar);
-			}
-		}
-		if (typeof params.inputTF !== 'undefined') {
-			var inputTF = params.inputTF.replace(/γ/gi,'^');
-			m = inputTF.length;
-			for (var j=0; j<m; j++) { // convert transfer function title string to ASCII code values (ie remove all above code 127);
-				curChar = inputTF.charCodeAt(j);
-				if (curChar < 128) {
-					tfArray.push(curChar);
-				}
-			}
-		}
-		if (csArray.length > 0) {
-			if (tfArray.length > 0) {
-				var pipe = '|';
-				tfArray.push(pipe.charCodeAt(0));
-			}
-			csArray = tfArray.concat(csArray);
-			var pad = csArray.length%4;
-			if (pad !== 0) {
-				pad = 4-pad;
-				var space = ' ';
-				for (var j=0; j<pad; j++) {
-					csArray.push(space.charCodeAt(0));
-				}
-			}
-		}
-		var tfcs = new Uint8Array(csArray);
-		var tfcsLength = tfcs.length;
+	var in1DTF = 'S-Log3'; // system default
+	var in1DRG = 'data';
+	var in3DTF = 'S-Log3'; // system default
+	var in3DCS = 'Sony S-Gamut3.cine'; // system default
+	var in3DRG = 'data';
+	if (typeof params.in1DTF !== 'undefined') {
+		in1DTF = params.in1DTF.replace(/γ/gi,'^');
 	}
+	if (typeof params.in1DEX === 'boolean' && !params.in1DEX) {
+		in1DRG = 'legal';
+	}
+	if (typeof params.in3DTF !== 'undefined') {
+		in3DTF = params.in3DTF.replace(/γ/gi,'^');
+	}
+	if (typeof params.in3DCS !== 'undefined') {
+		in3DCS = params.in3DCS;
+	}
+	if (typeof params.in3DEX === 'boolean' && !params.in3DEX) {
+		in3DRG = 'legal';
+	}
+	var inMeta = in1DTF + '|' + in3DTF + '|' + in3DCS + '|' + in1DRG + '|' + in3DRG;
+	var curChar;
+	var m = inMeta.length;
+	var metaArray =	[];
+	for (var j=0; j<m; j++) { // convert colourspace title string to ASCII code values (ie remove all above code 127);
+		curChar = inMeta.charCodeAt(j);
+		if (curChar < 128) {
+			metaArray.push(curChar);
+		}
+	}
+	var pad = metaArray.length%4;
+	if (pad !== 0) {
+		pad = 4-pad;
+		var space = ' ';
+		for (var j=0; j<pad; j++) {
+			metaArray.push(space.charCodeAt(0));
+		}
+	}
+	var meta = new Uint8Array(metaArray);
+	var metaLength = meta.length;
 //
-	var out = new Int32Array(dim + 9 + Math.round(tfcsLength/4)); // internal processing is done on Float64s, files are scaled Int32s for same precision / smaller size
+	var out = new Int32Array(dim + 9 + Math.round(metaLength/4)); // internal processing is done on Float64s, files are scaled Int32s for same precision / smaller size
 	out64.set(tf,2);
 	out[0] = tfSize;
 	if (csBuff) {
@@ -216,9 +225,9 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff, params) {
   		}
   	}
 // Append TF / CS titles to the end of the file
-	i = byteOut.length - tfcs.length;
-	for (var j=0; j<tfcsLength; j++) {
-		byteOut[i+j] = tfcs[j];
+	i = byteOut.length - metaLength;
+	for (var j=0; j<metaLength; j++) {
+		byteOut[i+j] = meta[j];
 	}
 // Send back the complete byte array
   	return byteOut;
@@ -281,29 +290,45 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 	if (!imM) {
 		inputMatrix = false;
 	}
-	// look for input matrix, colourspace and transfer function info at the end of the file if present
-	var inputTF = '';
-	var inputCS = '';
+	// look for input colourspace and transfer function info at the end of the file if present
+	var in1DTF = 'S-Log3'; // system default
+	var in3DTF = 'S-Log3'; // system default
+	var in3DCS = 'Sony S-Gamut3.cine'; // system default
+	var in1DEX = true; // system default
+	var in3DEX = true; // system default
 	if (dataEnd < in32.length) {
 		dataEnd *= 4;
 		var fileEnd = lutArr.length;
-		var csDets = '';
+		var metaString = '';
 		for (var j=dataEnd; j<fileEnd; j++) {
-			csDets += String.fromCharCode(lutArr[j]).replace('^','γ');
+			metaString += String.fromCharCode(lutArr[j]).replace('^','γ');
 		}
-		if (csDets.search('|') >= 0) {
-			var tfcsArray = csDets.split('|');
-			inputTF = tfcsArray[0].trim();
-			inputCS = tfcsArray[1].trim();
+		if (metaString.search('|') >= 0) {
+			var meta = metaString.split('|');
+			if (meta.length === 5) {
+				in1DTF = meta[0].trim();
+				in3DTF = meta[1].trim();
+				in3DCS = meta[2].trim();
+				if (meta[3].toLowerCase() === 'legal') {
+					in1DEX = false;
+				}
+				if (meta[4].toLowerCase() === 'legal') {
+					in3DEX = false;
+				}
+			} else {
+				in1DTF = meta[0].trim();
+				in3DCS = meta[2].trim();
+			}
 		} else {
-			inputCS = csDets;
+			in3DCS = metaString;
 		}
 	}
 	// generate the LUT(s)
 	var tfOut = {
 		title: title,
 		format: 'cube',
-		inputTF: inputTF,
+		inputTF: in1DTF,
+		inputEX: in1DEX,
 		dims: 1,
 		s: tfS,
 		min: [0,0,0],
@@ -317,8 +342,9 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 		var csOut = {
 			title: 'cs',
 			format: 'cube',
-			inputTF: inputTF,
-			inputCS: inputCS,
+			inputTF: in3DTF,
+			inputCS: in3DCS,
+			inputEX: in3DEX,
 			inputMatrix: inputMatrix,
 			dims: 3,
 			s: dim,

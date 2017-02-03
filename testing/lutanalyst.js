@@ -104,6 +104,14 @@ LUTAnalyst.prototype.getCS = function() {
 LUTAnalyst.prototype.setCSInputData = function(buff) {
 	this.inputData = new Float64Array(buff);
 };
+LUTAnalyst.prototype.getCSInputMatrix = function() {
+	var dets = this.cs.getInputDetails();
+	if (typeof dets.inputMatrix !== 'undefined') {
+		return dets.inputMatrix;
+	} else {
+		return false;
+	}
+};
 LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 	var inputTF;
 	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
@@ -120,6 +128,24 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 				C[j] = ((C[j]*876)+64)/1023;
 			}
 		}
+		var mono = C[m-1] - C[0];
+		if (mono >= 0) {
+			mono = 1;
+		} else if (mono < 0) {
+			mono = -1;
+		}
+		if ((C[1]-C[0])*mono <= 0) {
+			C[0] = (2*C[1]) - C[2];
+			if ((C[1]-C[0])*mono <= 0) { // still opposite slope to monotonic
+				C[0] = C[1] - (0.0075 * mono / (C.length-1));
+			}
+		}
+		if ((C[m-1]-C[m-2])*mono <= 0) {
+			C[m-1] = (2*C[m-2]) - C[m-3];
+			if ((C[1]-C[0])*mono <= 0) { // still opposite slope to monotonic
+				C[m-1] = C[m-2] + (0.0075 * mono / (C.length-1));
+			}
+		}
 		this.tf = this.lutMaker.newLUT({
 			title: 'Transfer Function',
 			format: 'cube',
@@ -128,7 +154,7 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 			s: m,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [buff]
+			C: [buff.slice(0)]
 		});
 		this.tfSpline = new LUTRSpline({buff:buff, fL:0, fH:1});
 		this.pass = 1;
@@ -138,7 +164,6 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		var R = new Float64Array(m);
 		var G = new Float64Array(m);
 		var B = new Float64Array(m);
-//		var rgb = new Float64Array(buff);
 		var rgb = this.inputData;
 		var inputMatrix = new Float64Array(buff);
 		var method;
@@ -161,25 +186,28 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		for (var j=0; j<m; j++) {
 			k = j*3;
 			if (this.legOut) {
-				R[j] = this.tfSpline.r(((rgb[ k ]*876)+64)/1023);
-				G[j] = this.tfSpline.r(((rgb[k+1]*876)+64)/1023);
-				B[j] = this.tfSpline.r(((rgb[k+2]*876)+64)/1023);
+				R[j] = ((rgb[ k ]*876)+64)/1023;
+				G[j] = ((rgb[k+1]*876)+64)/1023;
+				B[j] = ((rgb[k+2]*876)+64)/1023;
 			} else {
-				R[j] = this.tfSpline.r(rgb[ k ]);
-				G[j] = this.tfSpline.r(rgb[k+1]);
-				B[j] = this.tfSpline.r(rgb[k+2]);
+				R[j] = rgb[ k ];
+				G[j] = rgb[k+1];
+				B[j] = rgb[k+2];
 			}
 		}
+		this.tfSpline.R(R.buffer);
+		this.tfSpline.R(G.buffer);
+		this.tfSpline.R(B.buffer);
 		var minMax = this.inLUT.minMax();
 		if (this.legOut) {
 			for (var j=0; j<6; j++) {
 				minMax[j] = ((minMax[j]*876)+64)/1023;
 			}
 		}
-		var lo = 64/1023;
-		var hi = 1;
-		var	min = Math.min(0,					this.tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // min value of 0 or lower if the analysed grayscale or any of the original mesh points get there
-		var max = Math.max(1.1740560044504333,	this.tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // max value of 10 stops above mid gray (S-Log3) or higher if the analysed grayscale or any of the original mesh points get there
+		var lo = Math.min( 0, this.tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // 0, or the lowest value in the mesh, whichever the greater
+		var hi = Math.max( 1, this.tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // 1.0, or the highest value in the mesh, whichever the lesser
+		var min = lo - (87.6/1023); // 10% IRE below the 'lo' value
+		var max = hi + (175.2/1023); // 20% IRE above 'hi' value
 		var dcLo = this.tfSpline.df(lo);
 		var dcHi = this.tfSpline.df(hi);
 		var numLo = Math.pow(min-lo,2);

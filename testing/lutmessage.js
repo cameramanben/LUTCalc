@@ -15,6 +15,7 @@ function LUTMessage(inputs) {
 	this.p = 0;
 	this.ui[0] = this;
 	this.go = false;
+	// 0 - LUTMessage
 	// 1 - camerabox
 	// 2 - gammabox
 	// 3 - tweaksbox
@@ -35,6 +36,7 @@ function LUTMessage(inputs) {
 	} else {
 		this.blobWorkers = false;
 	}
+this.blobWorkers = false;
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
