@@ -243,7 +243,7 @@ LUTMessage.prototype.gaRx = function(d) {
 					this.ui[5].got1D(d);
 					break;
 			case 22: // LUTAnalyst SL3 input to linear
-					this.ui[d.p].setCSInputData(d.o);
+					this.ui[d.p].setCSInputData(d.o,d.natTF,d.legIn);
 					this.gtTx(d.p,2,{
 						p:d.p,
 						t:d.t,
@@ -793,7 +793,8 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		'cpoutdaylight',
 		'Amira709',
 		'AlexaX2',
-		'V709'
+		'V709',
+		'Cine709'
 	];
 	var m = fileNames.length;
 	var isLE;
@@ -856,32 +857,131 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 					inputMatrix = false;
 				}
 				// look for input matrix, colourspace and transfer function info at the end of the file if present
-				var inputTF = '';
-				var inputCS = '';
+				var in1DTF = 'S-Log3'; // system default
+				var in3DTF = 'S-Log3'; // system default
+				var sysCS = 'Sony S-Gamut3.cine'; // system default
+				var in3DCS = 'Sony S-Gamut3.cine'; // system default
+				var in1DEX = true; // system default
+				var in3DEX = true; // system default
+				var in1DMin = [0,0,0];
+				var in1DMax = [1,1,1];
+				var in3DMin = [0,0,0];
+				var in3DMax = [1,1,1];
+				var interpolation = false;
+				var baseISO = false;
 				if (dataEnd < in32.length) {
 					dataEnd *= 4;
 					var fileEnd = lutArr.length;
-					var csDets = '';
+					var metaString = '';
 					for (var j=dataEnd; j<fileEnd; j++) {
-						csDets += String.fromCharCode(lutArr[j]).replace('^','γ');
+						metaString += String.fromCharCode(lutArr[j]).replace('^','γ');
 					}
-					if (csDets.search('|') >= 0) {
-						var tfcsArray = csDets.split('|');
-						inputTF = tfcsArray[0].trim();
-						inputCS = tfcsArray[1].trim();
+					if (metaString.search('|') >= 0) {
+						var meta = metaString.split('|');
+						var m = meta.length;
+						if (m > 2) {
+							for (var j=0; j<m; j +=2) {
+								switch (meta[j]) {
+									case '1DTF':
+										in1DTF = meta[j+1].trim();
+										break;
+							 		case '1DRG':
+							 			if (meta[j+1].toLowerCase() === '100') {
+											in1DEX = false;
+										}
+										break;
+							 		case '1DMIN':
+										in1DMin[0] = parseFloat(meta[j+1]);
+										if (isNaN(in1DMin[0])) {
+											in1DMin[0] = 0;
+										} else {
+											in1DMin[1] = in1DMin[0];
+											in1DMin[2] = in1DMin[0];
+										}
+										break;
+							 		case '1DMAX':
+										in1DMax[0] = parseFloat(meta[j+1]);
+										if (isNaN(in1DMax[0])) {
+											in1DMax[0] = 1;
+										} else {
+											in1DMax[1] = in1DMax[0];
+											in1DMax[2] = in1DMax[0];
+										}
+										break;
+							 		case 'SYSCS':
+										sysCS = meta[j+1].trim();
+										break;
+							 		case '3DTF':
+							 			in3DTF = meta[j+1].trim();
+										break;
+							 		case '3DCS':
+							 			in3DCS = meta[j+1].trim();
+										break;
+							 		case '3DRG':
+							 			if (meta[j+1].toLowerCase() === '100') {
+											in3DEX = false;
+										}
+										break;
+							 		case '3DMIN':
+										in3DMin[0] = parseFloat(meta[j+1]);
+										if (isNaN(in3DMin[0])) {
+											in3DMin[0] = 0;
+										} else {
+											in3DMin[1] = in3DMin[0];
+											in3DMin[2] = in3DMin[0];
+										}
+										break;
+							 		case '3DMAX':
+										in3DMax[0] = parseFloat(meta[j+1]);
+										if (isNaN(in3DMax[0])) {
+											in3DMax[0] = 1;
+										} else {
+											in3DMax[1] = in3DMax[0];
+											in3DMax[2] = in3DMax[0];
+										}
+										break;
+							 		case 'INTERPOLATION':
+										switch (meta[j+1].trim().toLowerCase()) {
+											case 'tricubic': interpolation = 0;
+												break;
+											case 'tetrahedral': interpolation = 1;
+												break;
+											case 'trilinear': interpolation = 2;
+												break;
+										}
+										break;
+				 					case 'BASEISO':
+				 						if (meta[j+1].trim().toLowerCase() !== 'unknown') {
+					 						baseISO = parseInt(meta[j+1].trim());
+					 					}
+				 						break;
+								}
+							}			
+						} else {
+							in1DTF = meta[0].trim();
+							in3DCS = meta[1].trim();
+						}
 					} else {
-						inputCS = csDets;
+						in3DCS = metaString;
 					}
 				}
 	  			here.messages.gtTxAll(0, 4, {
 					fileName: here.fileName,
+					format: 'cube',
+					dims: 3,
 					s: dim,
-					C0: C[0].buffer,
-	 				C1: C[1].buffer,
-	 				C2: C[2].buffer,
-	 				inputTF: inputTF,
-	 				inputCS: inputCS,
-	 				inputMatrix: inputMatrix
+					min: in3DMin,
+					max: in3DMax,
+					C: [ C[0].buffer, C[1].buffer, C[2].buffer ],
+					meta: {
+						systemCS: sysCS,
+						inputTF: in3DTF,
+						inputCS: in3DCS,
+						inputEX: in3DEX,
+						interpolation: interpolation,
+						baseISO: baseISO,
+						inputMatrix: inputMatrix
+					}
 				});
 			};
 		})({

@@ -123,13 +123,11 @@ LUTGamma.prototype.gammaList = function() {
 						'Linear / γ',
 						'All'
 	];						
-	this.SL3 = 0;
+	this.SL3Idx = 0;
 	this.gammas.push(new LUTGammaLog(
-		'S-Log3',
-		[ 0.1677922920,-0.0155818840, 0.2556207230, 4.7368421060,10.0000000000, 0.4105571850, 0.0526315790, 0.1673609920, 0.0125000000 ]));
+		'S-Log3', [ 0.1677922920,-0.0155818840, 0.2556207230, 4.7368421060,10.0000000000, 0.4105571850, 0.0526315790, 0.1673609920, 0.0125000000 ]));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Log')]);
 	this.gammaDat.push(true);
-// console.log(this.gammas[0].linToData(Math.pow(2,10)*0.2));
 	this.gammas.push(new LUTGammaLog(
 		'S-Log2', [ 0.330000000129966,-0.0291229262672453,0.3705223107287920,0.7077625570776260,10,0.6162444730868150,0.0375840001141552,0.0879765396,0 ]));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Log')]);
@@ -278,6 +276,21 @@ LUTGamma.prototype.gammaList = function() {
 				  0.8678819918256108,0.8768748757833822,0.8846331515440858,0.8912549486405668,0.8968412437341152,0.9014929560172531,0.9053083874291300,0.9083859090127075,
 				  0.9108262326490713,0.9127307504679862,0.9141957927663734,0.9153135383675464,0.9161978338220919,0.9170093433528834,0.9176997927663735,0.9182731424731183,
 				  0.9187333528836756 ]
+		)
+	));
+	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaLUTSL3(
+		'Sony Cine+709',
+		new Float64Array(
+				[ 0.09536,0.095478,0.095477,0.095487,0.096065,0.098802,0.100993,0.103192,
+				  0.105328,0.107778,0.110405,0.113748,0.118809,0.125443,0.134203,0.14799,
+				  0.163574,0.182266,0.204615,0.230647,0.259499,0.291063,0.326191,0.363425,
+				  0.402596,0.443342,0.484945,0.526625,0.566841,0.604381,0.640827,0.67481,
+				  0.707318,0.737661,0.766663,0.792151,0.814736,0.836382,0.85493,0.870464,
+				  0.883507,0.895957,0.90574,0.913164,0.920182,0.927134,0.933985,0.940772,
+				  0.94755,0.954329,0.961108,0.967887,0.974666,0.981445,0.988224,0.995003,
+				  1.001782,1.008561,1.01534,1.022119,1.028898,1.035677,1.042456,1.049235 ]
 		)
 	));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
@@ -773,23 +786,6 @@ LUTGamma.prototype.gammaList = function() {
 		'BBC WHP283 (800%)', {m: 0.097401889128}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaLUTSL3(
-		'Cine+709',
-		new Float64Array(
-				[ 0.0954769032273705,0.0954769032273705,0.0954769032273705,0.0954769032273705,0.0959562285059629,0.0986129722666667,0.1007855288203324,0.1029588361822092,
-				  0.1050407417212121,0.1074285380684262,0.1099629372543499,0.1130464363605083,0.1177288390959922,0.1240367851088954,0.1317128550772239,0.1446664451886608,
-				  0.1593985946267840,0.1769490133200391,0.1979285524238514,0.2225798091347019,0.2503051930361682,0.2801856689798631,0.3139098335757576,0.3497721297235581,
-				  0.3877613456508310,0.4271625989083088,0.4681812744179862,0.5088015816062559,0.5499994622256109,0.5872390699675464,0.6241285479593353,0.6586195764848485,
-				  0.6911271021012708,0.7225135523745846,0.7510633629106550,0.7792410185047898,0.8018812229200390,0.8241061586361680,0.8444257556473117,0.8612752989857283,
-				  0.8756776019698924,0.8878454024414468,0.8998906007616814,0.9083085358631475,0.9159943303734116,0.9179524270561095,0.9184450504086021,0.9188426483980449,
-				  0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,
-				  0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,0.9188660801564027,
-				  0.9188660801564027 ]
-		)
-	));
-	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
-	this.gammaDat.push(false);
-
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG3250G36 (HG1)',
 		{
@@ -3683,17 +3679,55 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 			}
 		}
 	}
-	this.gammas[this.SL3].linFromD(buff);
-	if (i.legIn) {
-		this.gammas[i.gamma].linToL(buff);
-	} else {
-		this.gammas[i.gamma].linToD(buff);
+	var natTF;
+	switch (this.gammas[i.gamma].name) {
+		case 'S-Log3':
+			natTF = 0;
+			break;
+		case 'S-Log2':
+			natTF = 1;
+			break;
+		case 'S-Log':
+			natTF = 2;
+			break;
+		case 'C-Log':
+			natTF = 3;
+			break;
+		case 'Canon C-Log2':
+			natTF = 4;
+			break;
+		case 'Panasonic V-Log':
+			natTF = 5;
+			break;
+		case 'REDLogFilm':
+			natTF = 6;
+			break;
+		case 'Cineon':
+			natTF = 7;
+			break;
+		case 'LogC (Sup 3.x & 4.x)':
+			natTF = 8;
+			break;
+		case 'LogC (Sup 2.x)':
+			natTF = 9;
+			break;
+		default:
+			if (i.legIn) {
+				this.gammas[this.SL3Idx].linFromL(buff);
+				this.gammas[i.gamma].linToL(buff);
+			} else {
+				this.gammas[this.SL3Idx].linFromD(buff);
+				this.gammas[i.gamma].linToD(buff);
+			}
+			natTF = 0;
+			break;		
 	}
 	var out = { p: p, t: t+20, v: this.ver };
 	out.dim = i.dim;
 	out.legIn = i.legIn;
 	out.gamma = i.gamma;
 	out.gamut = i.gamut;
+	out.natTF = natTF;
 	out.o = buff;
 	out.to = ['o'];
 	return out;
@@ -3876,7 +3910,7 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	for (var j=0; j<m; j++) {
 		c[j] = j/d;
 	}
-	this.gammas[this.SL3].linFromD(buff);
+	this.gammas[this.SL3Idx].linFromD(buff);
 	if (i.legIn) {
 		this.gammas[i.gamma].linToL(buff);
 	} else {
@@ -3889,31 +3923,6 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	out.to = ['o'];
 	return out;
 };
-// Hopefully won't be needd if all goes well
-/*
-LUTGamma.prototype.laCalcInput = function(p,t,i) {
-	var max = i.dim;
-	var o = new Float64Array(i.o);
-	var max = o.length;
-	if (i.legIn) {
-		for (var j=0; j<max; j++) {
-			o[j] = this.gammas[i.gamma].linToLegal(o[j]);
-		}
-	} else {
-		for (var j=0; j<max; j++) {
-			o[j] = this.gammas[i.gamma].linToData(o[j]);
-		}
-	}
-	var out = { p: p, t: t+20, v: this.ver};
-	out.dim = i.dim;
-	out.legIn = i.legIn;
-	out.gamma = i.gamma;
-	out.o = o.buffer;
-	out.to = ['o'];
-	return out;
-};
-*/
-// End of Hopefully won't be needed
 LUTGamma.prototype.ioNames = function(p,t) {
 	var out = {};
 	out.inName = this.gammas[this.curIn].name;
@@ -4168,9 +4177,9 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	}
 	if (this.nul) {
 		for (var j=0; j<max; j++) {
-			f[ l ] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[ l ])));
-			f[l+1] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+1])));
-			f[l+2] = Math.min(mx,Math.max(mn,this.gammas[this.SL3].linToLegal(f[l+2])));
+			f[ l ] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[ l ])));
+			f[l+1] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[l+1])));
+			f[l+2] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[l+2])));
 			o[ k ] = Math.min(255,Math.max(0,Math.round(f[ l ]*255)));
 			o[k+1] = Math.min(255,Math.max(0,Math.round(f[l+1]*255)));
 			o[k+2] = Math.min(255,Math.max(0,Math.round(f[l+2]*255)));

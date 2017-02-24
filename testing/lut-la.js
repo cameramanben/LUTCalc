@@ -18,23 +18,33 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 	var cs;
 	// Metadata defaults
 	var in1DTF = 'S-Log3'; // system default
-	var in1DRG = 'DATA'; // system default
+	var in1DRG = '109'; // system default
 	var in3DTF = 'S-Log3'; // system default
 	var in3DCS = 'Sony S-Gamut3.cine'; // system default
-	var in3DRG = 'DATA'; // system default
+	var sysCS = 'Sony S-Gamut3.cine'; // system default
+	var in3DRG = '109'; // system default
 	// 1D Transfer function
 	if (typeof params.in1DTF !== 'undefined') {
 		in1DTF = params.in1DTF;
 	}
 	if (typeof params.in1DEX === 'boolean' && !params.in1DEX) {
-		in1DRG = 'LEGAL';
+		in1DRG = '100';
 	}
 	var out =	'# LUT Analyst LA LUT File -------------------------------------------------------' + "\n";
 	out +=		'TITLE "' + title + '"' + "\n" +
 				'LUT_1D_SIZE ' + tf.length.toString() + "\n" +
 				'# LUT Analyst - 1D Transfer Function Shaper - ' + in1DTF + '->' + title + ' Gamma' + "\n";
+	if (typeof params.baseISO === 'number') {
+		out +=	'# LA_BASE_ISO ' + params.baseISO + "\n";
+	}
 	out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + params.in1DTF + "\n";
 	out +=  '# LA_INPUT_RANGE ' + in1DRG + "\n";
+	if (typeof params.in1DMin === 'number') {
+		out +=	'# LA_INPUT_MIN ' + params.in1DMin + "\n";
+	}
+	if (typeof params.in1DMax === 'number') {
+		out +=	'# LA_INPUT_MAX ' + params.in1DMax + "\n";
+	}
 	var m = tf.length;
 	for (var j=0; j<m; j++) {
 		out += tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\n";
@@ -47,8 +57,11 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		if (typeof params.in3DCS !== 'undefined') {
 			in3DCS = params.in3DCS;
 		}
+		if (typeof params.sysCS !== 'undefined') {
+			in3DCS = params.sysCS;
+		}
 		if (typeof params.in3DEX === 'boolean' && !params.in3DEX) {
-			in3DRG = 'LEGAL';
+			in3DRG = '100';
 		}
 		cs = [	new Float64Array(csBuff[0]),
 				new Float64Array(csBuff[1]),
@@ -57,9 +70,29 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		out +=  	'TITLE "' + title + '"' + "\n" +
 					'LUT_3D_SIZE ' + Math.round(Math.pow(cs[0].length,1/3)).toString() + "\n" +
 					'# LUT Analyst - 3D Colour Space Transform - ' + in3DCS + '->' + title + ' Colour' + "\n";
+		if (typeof params.interpolation === 'number') {
+			switch (params.interpolation) {
+				case 0: out +=	'# LA_INTERPOLATION TRICUBIC' + "\n";
+					break;
+				case 1: out +=	'# LA_INTERPOLATION TETRAHEDRAL' + "\n";
+					break;
+				case 2: out +=	'# LA_INTERPOLATION TRILINEAR' + "\n";
+					break;
+			}
+		}
+		if (typeof params.baseISO === 'number') {
+			out +=	'# LA_BASE_ISO ' + params.baseISO + "\n";
+		}
 		out +=  '# LA_INPUT_TRANSFER_FUNCTION ' + in3DTF + "\n";
+		out +=  '# LA_SYSTEM_COLOURSPACE ' + sysCS + "\n";
 		out +=  '# LA_INPUT_COLOURSPACE ' + in3DCS + "\n";
 		out +=  '# LA_INPUT_RANGE ' + in3DRG + "\n";
+		if (typeof params.in3DMin === 'number') {
+			out +=	'# LA_INPUT_MIN ' + params.in3DMin + "\n";
+		}
+		if (typeof params.in3DMax === 'number') {
+			out +=	'# LA_INPUT_MAX ' + params.in3DMax + "\n";
+		}
 		if (typeof params.inputMatrix !== 'undefined') {
 			out +=  '# LA_INPUT_MATRIX_R ' + params.inputMatrix[0] + "\t" + params.inputMatrix[1] + "\t" + params.inputMatrix[2] + "\n";
 			out +=  '# LA_INPUT_MATRIX_G ' + params.inputMatrix[3] + "\t" + params.inputMatrix[4] + "\t" + params.inputMatrix[5] + "\n";
@@ -140,15 +173,31 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 	}
 // Prep input transfer function and colourspace info to add to the end of the file as required
 	var in1DTF = 'S-Log3'; // system default
-	var in1DRG = 'data';
+	var in1DRG = '109';
+	var in1DMin = '0';
+	var in1DMax = '1';
 	var in3DTF = 'S-Log3'; // system default
+	var sysCS = 'Sony S-Gamut3.cine'; // system default
 	var in3DCS = 'Sony S-Gamut3.cine'; // system default
-	var in3DRG = 'data';
+	var in3DRG = '109';
+	var in3DMin = '0';
+	var in3DMax = '1';
+	var interpolation = 'unknown';
+	var baseISO = 'unknown';
 	if (typeof params.in1DTF !== 'undefined') {
 		in1DTF = params.in1DTF.replace(/γ/gi,'^');
 	}
 	if (typeof params.in1DEX === 'boolean' && !params.in1DEX) {
-		in1DRG = 'legal';
+		in1DRG = '100';
+	}
+	if (typeof params.in1DMin === 'number') {
+		in1DMin = params.in1DMin.toFixed(10).toString();
+	}
+	if (typeof params.in1DMax === 'number') {
+		in1DMax = params.in1DMax.toFixed(10).toString();
+	}
+	if (typeof params.sysCS !== 'undefined') {
+		sysCS = params.sysCS;
 	}
 	if (typeof params.in3DTF !== 'undefined') {
 		in3DTF = params.in3DTF.replace(/γ/gi,'^');
@@ -157,9 +206,39 @@ labinLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		in3DCS = params.in3DCS;
 	}
 	if (typeof params.in3DEX === 'boolean' && !params.in3DEX) {
-		in3DRG = 'legal';
+		in3DRG = '100';
 	}
-	var inMeta = in1DTF + '|' + in3DTF + '|' + in3DCS + '|' + in1DRG + '|' + in3DRG;
+	if (typeof params.in3DMin === 'number') {
+		in3DMin = params.in3DMin.toFixed(10).toString();
+	}
+	if (typeof params.in3DMax === 'number') {
+		in3DMax = params.in3DMax.toFixed(10).toString();
+	}
+	if (typeof params.interpolation === 'number') {
+		switch (params.interpolation) {
+			case 0: interpolation = 'tricubic';
+				break;
+			case 1: interpolation = 'tetrahedral';
+				break;
+			case 2: interpolation = 'trilinear';
+				break;
+		}
+	}
+	if (typeof params.baseISO === 'number') {
+		baseISO = params.baseISO.toString();
+	}
+	var inMeta = '1DTF|' + in1DTF +
+				 '|1DRG|' + in1DRG +
+				 '|1DMIN|' + in1DMin +
+				 '|1DMAX|' + in1DMax +
+				 '|SYSCS|' + sysCS +
+				 '|3DTF|' + in3DTF +
+				 '|3DCS|' + in3DCS +
+				 '|3DRG|' + in3DRG +
+				 '|3DMIN|' + in3DMin +
+				 '|3DMAX|' + in3DMax +
+				 '|INTERPOLATION|' + interpolation +
+				 '|BASEISO|' + baseISO;
 	var curChar;
 	var m = inMeta.length;
 	var metaArray =	[];
@@ -276,26 +355,33 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 		dataEnd = 2+tfS+(3*csS);
 	}
 	// get input matrix details (all zeros means no matrix defined)
-	var inputMatrix = new Float64Array(9);
+	var inMX = new Float64Array(9);
 	var imM = false;
 	if (dataEnd < in32.length) {
 		for (var j=0; j<9; j++) {
 			if (in32[dataEnd+j] !== 0) {
 				imM = true;
-				inputMatrix[j] = parseFloat(in32[dataEnd+j])/107374182.4;
+				inMX[j] = parseFloat(in32[dataEnd+j])/107374182.4;
 			}
 		}
 		dataEnd += 9;
 	}
 	if (!imM) {
-		inputMatrix = false;
+		inMX = false;
 	}
-	// look for input colourspace and transfer function info at the end of the file if present
+	// look for metadata info at the end of the file if present
 	var in1DTF = 'S-Log3'; // system default
 	var in3DTF = 'S-Log3'; // system default
+	var sysCS = 'Sony S-Gamut3.cine'; // system default
 	var in3DCS = 'Sony S-Gamut3.cine'; // system default
 	var in1DEX = true; // system default
 	var in3DEX = true; // system default
+	var in1DMin = [0,0,0];
+	var in1DMax = [1,1,1];
+	var in3DMin = [0,0,0];
+	var in3DMax = [1,1,1];
+	var interpolation = false;
+	var baseISO = false;
 	if (dataEnd < in32.length) {
 		dataEnd *= 4;
 		var fileEnd = lutArr.length;
@@ -305,19 +391,88 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 		}
 		if (metaString.search('|') >= 0) {
 			var meta = metaString.split('|');
-			if (meta.length === 5) {
-				in1DTF = meta[0].trim();
-				in3DTF = meta[1].trim();
-				in3DCS = meta[2].trim();
-				if (meta[3].toLowerCase() === 'legal') {
-					in1DEX = false;
-				}
-				if (meta[4].toLowerCase() === 'legal') {
-					in3DEX = false;
+			var m = meta.length;
+			if (m > 2) {
+				for (var j=0; j<m; j +=2) {
+					switch (meta[j]) {
+						case '1DTF':
+							in1DTF = meta[j+1].trim();
+							break;
+				 		case '1DRG':
+				 			if (meta[j+1].toLowerCase() === '100') {
+								in1DEX = false;
+							}
+							break;
+				 		case '1DMIN':
+							in1DMin[0] = parseFloat(meta[j+1]);
+							if (isNaN(in1DMin[0])) {
+								in1DMin[0] = 0;
+							} else {
+								in1DMin[1] = in1DMin[0];
+								in1DMin[2] = in1DMin[0];
+							}
+							break;
+				 		case '1DMAX':
+							in1DMax[0] = parseFloat(meta[j+1]);
+							if (isNaN(in1DMax[0])) {
+								in1DMax[0] = 1;
+							} else {
+								in1DMax[1] = in1DMax[0];
+								in1DMax[2] = in1DMax[0];
+							}
+							break;
+				 		case 'SYSCS':
+							sysCS = meta[j+1].trim();
+							break;
+				 		case '3DTF':
+				 			in3DTF = meta[j+1].trim();
+							break;
+				 		case '3DCS':
+				 			in3DCS = meta[j+1].trim();
+							break;
+				 		case '3DRG':
+				 			if (meta[j+1].toLowerCase() === '100') {
+								in3DEX = false;
+							}
+							break;
+				 		case '3DMIN':
+							in3DMin[0] = parseFloat(meta[j+1]);
+							if (isNaN(in3DMin[0])) {
+								in3DMin[0] = 0;
+							} else {
+								in3DMin[1] = in3DMin[0];
+								in3DMin[2] = in3DMin[0];
+							}
+							break;
+				 		case '3DMAX':
+							in3DMax[0] = parseFloat(meta[j+1]);
+							if (isNaN(in3DMax[0])) {
+								in3DMax[0] = 1;
+							} else {
+								in3DMax[1] = in3DMax[0];
+								in3DMax[2] = in3DMax[0];
+							}
+							break;
+				 		case 'INTERPOLATION':
+							switch (meta[j+1].trim().toLowerCase()) {
+								case 'tricubic': interpolation = 0;
+									break;
+								case 'tetrahedral': interpolation = 1;
+									break;
+								case 'trilinear': interpolation = 2;
+									break;
+							}
+							break;
+				 		case 'BASEISO':
+				 			if (meta[j+1].trim().toLowerCase() !== 'unknown') {
+					 			baseISO = parseInt(meta[j+1].trim());
+					 		}
+				 			break;
+					}
 				}
 			} else {
 				in1DTF = meta[0].trim();
-				in3DCS = meta[2].trim();
+				in3DCS = meta[1].trim();
 			}
 		} else {
 			in3DCS = metaString;
@@ -327,13 +482,16 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 	var tfOut = {
 		title: title,
 		format: 'cube',
-		inputTF: in1DTF,
-		inputEX: in1DEX,
 		dims: 1,
 		s: tfS,
-		min: [0,0,0],
-		max: [1,1,1],
-		C: [T.buffer]
+		min: in1DMin,
+		max: in1DMax,
+		C: [T.buffer],
+		meta: {
+			inputTF: in1DTF,
+			inputEX: in1DEX,
+			baseISO: baseISO
+		}
 	};
 	if (!lutMaker.setLUT(gammaDest,tfOut)) {
 		return false;
@@ -342,17 +500,22 @@ labinLUT.prototype.parse = function(title, buff, lutMaker, gammaDest, gamutDest)
 		var csOut = {
 			title: 'cs',
 			format: 'cube',
-			inputTF: in3DTF,
-			inputCS: in3DCS,
-			inputEX: in3DEX,
-			inputMatrix: inputMatrix,
 			dims: 3,
 			s: dim,
-			min: [0,0,0],
-			max: [1,1,1],
+			min: in3DMin,
+			max: in3DMax,
 			C: [	C[0].buffer,
 					C[1].buffer,
-					C[2].buffer]
+					C[2].buffer],
+			meta: {
+				inputTF: in3DTF,
+				systemCS: sysCS,
+				inputCS: in3DCS,
+				inputEX: in3DEX,
+				interpolation: interpolation,
+				baseISO: baseISO,
+				inputMatrix: inMX
+			}
 		};
 		if (!lutMaker.setLUT(gamutDest,csOut)) {
 			return false;

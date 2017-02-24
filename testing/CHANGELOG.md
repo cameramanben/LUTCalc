@@ -3,12 +3,13 @@ LUTCalc Changelog
 
 v3 Beta
 ----------
+* New Feature - Choice of tricubic, tetrahedral and trilinear interpolation for analysis and use in LUTAnalyst.
+* New Feature - P3 Colourspace now available with DCI, D60 and D65 white points.
 * New Feature - Sony Standard Gammas STD 1-6.
 * New Feature - 'Declip' button on the LUTAnalyst tool. Where LUTs appear to have been clamped (ie the maximum output value is exactly 1.0 and or the minimum exactly 0.0), the declip process will attempt to extrapolate the clipped values, then limit them within a sensible range without hard clipping.
 * New Feature - 'DaVinci Resolve 12+ auto' preset option, to reflect that Resolve 12's default 'auto' clip range setting.
-* New Feature - Choice of tricubic, tetrahedral and trilinear interpolation for analysis and use in LUTAnalyst.
-* New Feature - LUT-based models approximating Arri's Rec709 colourspaces.
 * Feature Change - Complete rewrite of 3D interpolation / extrapolation code for efficiency, accuracy, clarity and maintainability.
+* Feature Change - Extensive rewrite of LUTAnalyst code for improved accuracy.
 * Feature Change - Reworked 1D interpolation code for speed and efficiency.
 * Feature Change - New code for estimating the gamut triangle on the 'xy / uv chromacity' preview. Much more robust and efficient.
 * Feature Change - Improved interpretation of Canon EOS Standard and Normal gammas.

@@ -30,11 +30,6 @@ TWKLA.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox-hide';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-//	this.inLUT = new LUTs();
-//	this.inputs.addInput('laInLUT',this.inLUT);
-//	this.inputs.addInput('laGammaLUT',{text:[]});
-//	this.inputs.addInput('laGamutLUT',{text:[]});
-
 	this.analysed = document.createElement('input');
 	this.analysed.setAttribute('type','hidden');
 	this.analysed.value = '0';
@@ -87,7 +82,7 @@ TWKLA.prototype.io = function() {
 	this.dim65 = this.createRadioElement('lutAnalystDim',true);
 	this.inputs.addInput('laDim',[this.dim33,this.dim65]);
 	
-	this.oldMethod = 2;
+	this.oldMethod = 1;
 	this.intCub = this.createRadioElement('intMethod',false);
 	this.intTet = this.createRadioElement('intMethod',false);
 	this.intLin = this.createRadioElement('intMethod',false);
@@ -201,15 +196,20 @@ TWKLA.prototype.ui = function() {
 	this.analysisBox.appendChild(this.intLin);
 	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Trilinear')));
 	this.analysisBox.appendChild(document.createElement('br'));
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Range  ')));
-	this.analysisBox.appendChild(this.dlOpt);
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('D→L')));
-	this.analysisBox.appendChild(this.ddOpt);
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('D→D')));
-	this.analysisBox.appendChild(this.llOpt);
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('L→L')));
-	this.analysisBox.appendChild(this.ldOpt);
-	this.analysisBox.appendChild(document.createElement('label').appendChild(document.createTextNode('L→D')));
+	var rangeBox = document.createElement('div');
+	rangeBox.className = 'twk-narrow-sub-box';
+	rangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Range  ')));
+	rangeBox.appendChild(document.createElement('br'));
+	rangeBox.appendChild(this.dlOpt);
+	rangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('109%→100%')));
+	rangeBox.appendChild(this.ddOpt);
+	rangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('109%→109%')));
+	rangeBox.appendChild(document.createElement('br'));
+	rangeBox.appendChild(this.llOpt);
+	rangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('100%→100%')));
+	rangeBox.appendChild(this.ldOpt);
+	rangeBox.appendChild(document.createElement('label').appendChild(document.createTextNode('100%→109%')));
+	this.analysisBox.appendChild(rangeBox);
 	// Add the analysis box to the main box
 	this.analysisBox.className = 'twk-tab-hide';
 	this.box.appendChild(this.analysisBox);
@@ -508,10 +508,6 @@ TWKLA.prototype.gotFile = function() {
 						  break;
 		}
 		if (parsed) {
-//console.log(this.inputs.lutAnalyst.tf.getInputDetails());
-//if (this.inputs.lutAnalyst.cs) {
-//console.log(this.inputs.lutAnalyst.cs.getInputDetails());
-//}
 			if (this.inputs.lutAnalyst.cs) {
 				this.showGt = true;
 			} else {
@@ -577,8 +573,6 @@ TWKLA.prototype.reset = function() {
 	this.inputs.laFileData = {};
 	this.fileInput.value = '';
 	this.dlOpt.checked = true;
-	this.gammaSelect.options[0].selected = true;
-	this.linGammaSelect.options[0].selected = true;
 
 	this.doButton.value = 'Analyse';
 
@@ -594,18 +588,21 @@ TWKLA.prototype.reset = function() {
 	this.doButton.className = 'twk-button-hide';
 };
 TWKLA.prototype.store = function(cube) {
-	var params = {};
-//	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
-//		params.inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
-//	} else {
-//		params.inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
-//	}
-	params.in1DTF = 'S-Log3';
-	params.in3DTF = 'S-Log3';
-	params.in3DCS = this.gamutSelect.options[this.gamutSelect.selectedIndex].text.trim();
-	params.in1DEX = true;
-	params.in3DEX = true;
-	params.inputMatrix = this.inputs.lutAnalyst.getCSInputMatrix();
+	var meta = this.inputs.lutAnalyst.cs.getMetadata();
+	params = {
+		in1DTF: 'S-Log3',
+		in1DEX: true,
+		in3DTF: 'S-Log3',
+		in3DCS: meta.inputCS,
+		sysCS: meta.sysCS,
+		in3DEX: meta.inputEX,
+		interpolation: meta.interpolation,
+		baseISO: meta.baseISO,
+		inputMatrix: meta.inputMatrix
+	}
+	if (meta.nativeTF !== 0) {
+		params.in3DTF = meta.inputTF;
+	}
 	if (cube) {
 		this.files.save(
 			this.inputs.laCube.build(

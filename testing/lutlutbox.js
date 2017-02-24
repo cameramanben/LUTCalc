@@ -165,15 +165,15 @@ LUTLutBox.prototype.ui = function() {
 	this.lutRange.setAttribute('class','graybox');
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Range:')));
 	this.lutRange.appendChild(this.lutInLegal);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
 	this.lutRange.appendChild(this.lutInData);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('109%')));
 	this.lutRange.appendChild(document.createElement('br'));
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Range:')));
 	this.lutRange.appendChild(this.lutOutLegal);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
 	this.lutRange.appendChild(this.lutOutData);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('109%')));
 	this.box.appendChild(this.lutRange);
 	this.box.appendChild(document.createElement('br'));
 	// Grading LUT / MLUT radio boxes
@@ -265,7 +265,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutClip.setAttribute('class','emptybox');
 	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip')));
 	this.lutClip.appendChild(this.lutClipSelect);
-	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('0%-100%')));
 	this.lutClipLegalCheck.setAttribute('type','checkbox');
 	this.lutClipLegalCheck.checked = true;
 	this.clipLegalBox.appendChild(this.lutClipLegalCheck);

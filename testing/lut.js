@@ -19,15 +19,6 @@ LUTs.prototype.newLUT = function(d) {
 	if (typeof d.format === 'string') {
 		params.format = d.format;
 	}
-	if (typeof d.inputCS === 'string') {
-		params.inputCS = d.inputCS;
-	}
-	if (typeof d.inputTF === 'string') {
-		params.inputTF = d.inputTF;
-	}
-	if (typeof d.inputMatrix !== 'undefined' && d.inputMatrix.length === 9) {
-		params.inputMatrix = d.inputMatrix;
-	}
 	if (typeof d.dims === 'number') {
 		this.dims = d.dims;
 	} else {
@@ -72,6 +63,9 @@ LUTs.prototype.newLUT = function(d) {
 	if (typeof d.spline !== 'undefined') {
 		params.inSpline = d.spline;
 	}
+	if (typeof d.meta !== 'undefined') {
+		params.meta = d.meta;
+	}
 	if (d.C.length === 3) {
 		params.buffR = d.C[0].slice(0);
 		params.buffG = d.C[1].slice(0);
@@ -99,10 +93,10 @@ function LUTSpline(params) {
 	} else {
 		this.format = '';
 	}
-	if (typeof params.inputTF === 'string') {
-		this.inputTF = params.inputTF;
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
 	} else {
-		this.inputTF = '';
+		this.meta = {};
 	}
 	// Precalculate forward parameters
 	this.FD = new Float64Array(params.buff);
@@ -530,11 +524,9 @@ LUTSpline.prototype.getDetails = function() {
 		s: this.FM+1,
 		min: new Float64Array([this.fL,this.fL,this.fL]),
 		max: new Float64Array([this.fH,this.fH,this.fH]),
-		C: [this.FD.buffer]
+		C: [this.FD.buffer],
+		meta: this.meta
 	};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
 	return out;
 };
 LUTSpline.prototype.getL = function() {
@@ -555,12 +547,8 @@ LUTSpline.prototype.is3D = function() {
 LUTSpline.prototype.getTitle = function() {
 	return this.title;
 };
-LUTSpline.prototype.getInputDetails = function() {
-	var out = {};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	return out;
+LUTSpline.prototype.getMetadata = function() {
+	return this.meta;
 };
 // LUTRSpline - spline object with arbitrary input range and inverse automatically calculated
 function LUTRSpline(params) {
@@ -576,10 +564,10 @@ function LUTRSpline(params) {
 	} else {
 		this.format = '';
 	}
-	if (typeof params.inputTF === 'string') {
-		this.inputTF = params.inputTF;
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
 	} else {
-		this.inputTF = '';
+		this.meta = {};
 	}
 	// Precalculate forward parameters
 	this.FD = new Float64Array(params.buff);
@@ -993,11 +981,9 @@ LUTRSpline.prototype.getDetails = function() {
 		s: this.FM+1,
 		min: new Float64Array([this.fL,this.fL,this.fL]),
 		max: new Float64Array([this.fH,this.fH,this.fH]),
-		C: [this.FD.buffer]
+		C: [this.FD.buffer],
+		meta: this.meta
 	};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
 	return out;
 };
 LUTRSpline.prototype.getL = function() {
@@ -1018,12 +1004,8 @@ LUTRSpline.prototype.is3D = function() {
 LUTRSpline.prototype.getTitle = function() {
 	return this.title;
 };
-LUTRSpline.prototype.getInputDetails = function() {
-	var out = {};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	return out;
+LUTRSpline.prototype.getMetadata = function() {
+	return this.meta;
 };
 //
 LUTRSpline.prototype.r = function(L) {
@@ -1184,6 +1166,7 @@ LUTRSpline.prototype.getR = function() {
 };
 // LUTQSpline - spline object paired down to forward only and mesh over 0-1.0
 function LUTQSpline(buff) {
+	this.meta = {};
 	// Precalculate forward parameters
 	this.FD = new Float64Array(buff);
 	var fm = this.FD.length;
@@ -1459,7 +1442,8 @@ LUTQSpline.prototype.getDetails = function() {
 		s: this.FM+1,
 		min: new Float64Array([0,0,0]),
 		max: new Float64Array([1,1,1]),
-		C: [this.FD.buffer]
+		C: [this.FD.buffer],
+		meta: this.meta
 	};
 };
 LUTQSpline.prototype.getL = function() {
@@ -1480,8 +1464,8 @@ LUTQSpline.prototype.is3D = function() {
 LUTQSpline.prototype.getTitle = function() {
 	return '';
 };
-LUTQSpline.prototype.getInputDetails = function() {
-	return {};
+LUTQSpline.prototype.getMetadata = function() {
+	return this.meta;
 };
 //
 LUTQSpline.prototype.dRGB = function(rgbIn) {
@@ -1542,18 +1526,10 @@ function LUTRGBSpline(params) {
 	} else {
 		this.format = '';
 	}
-	if (typeof params.inputCS === 'string') {
-		this.inputCS = params.inputCS;
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
 	} else {
-		this.inputCS = '';
-	}
-	if (typeof params.inputTF === 'string') {
-		this.inputTF = params.inputTF;
-	} else {
-		this.inputTF = '';
-	}
-	if (typeof params.inputMatrix !== 'undefined') {
-		this.inputMatrix = params.inputMatrix;
+		this.meta = {};
 	}
 	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
 	// Set forward range
@@ -2239,7 +2215,8 @@ LUTRGBSpline.prototype.getDetails = function(L) {
 			s: this.FM[3]+1,
 			min: new Float64Array([this.fL[3],this.fL[3],this.fL[3]]),
 			max: new Float64Array([this.fH[3],this.fH[3],this.fH[3]]),
-			C: [this.FD[3].buffer]
+			C: [this.FD[3].buffer],
+			meta: this.meta
 		};
 	} else {
 		out = {
@@ -2249,17 +2226,9 @@ LUTRGBSpline.prototype.getDetails = function(L) {
 			s: this.FM[3]+1,
 			min: new Float64Array([this.fL[0],this.fL[1],this.fL[2]]),
 			max: new Float64Array([this.fH[0],this.fH[1],this.fH[2]]),
-			C: [this.FD[0].buffer,this.FD[1].buffer,this.FD[2].buffer]
+			C: [this.FD[0].buffer,this.FD[1].buffer,this.FD[2].buffer],
+			meta: this.meta
 		};
-	}
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	if (this.inputCS !== '') {
-		out.inputCS = this.inputCS;
-	}
-	if (typeof this.inputMatrix !== 'undefined') {
-		out.inputMatrix = this.inputMatrix;
 	}
 	return out;
 };
@@ -2281,20 +2250,8 @@ LUTRGBSpline.prototype.is3D = function() {
 LUTRGBSpline.prototype.getTitle = function() {
 	return this.title;
 };
-LUTRGBSpline.prototype.getInputDetails = function() {
-	var out = {};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	if (this.inputCS !== '') {
-		out.inputCS = this.inputCS;
-	}
-	if (typeof this.inputMatrix !== 'undefined') {
-		out.inputMatrix = this.inputMatrix;
-	} else {
-		out.inputMatrix = false;
-	}
-	return out;
+LUTRGBSpline.prototype.getMetadata = function() {
+	return this.meta;
 };
 LUTRGBSpline.prototype.isClamped = function() {
 	if (typeof this.clamped === 'undefined') {
@@ -2449,20 +2406,10 @@ function LUTVolume(params) {
 	} else {
 		this.format = '';
 	}
-	if (typeof params.inputCS === 'string') {
-		this.inputCS = params.inputCS;
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
 	} else {
-		this.inputCS = '';
-	}
-	if (typeof params.inputTF === 'string') {
-		this.inputTF = params.inputTF;
-	} else {
-		this.inputTF = '';
-	}
-	if (typeof params.inputMatrix !== 'undefined') {
-		this.inputMatrix = params.inputMatrix;
-	} else {
-		this.inputMatrix = false;
+		this.meta = {};
 	}
 	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
 	// Set forward range
@@ -3147,6 +3094,62 @@ LUTVolume.prototype.RGBTet = function(buff) {
 						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
 		}
 		// find slopes and perform extrapolation as needed
+		// Actually use Trilinear for EXTRAPOLATION, as tends to be smoother than tetrahedral
+		if (E) {
+			R[0] = 1-rgb[0];
+			R[1] = rgb[0];
+			G[0] = 1-rgb[1];
+			G[1] = rgb[1];
+			B[0] = 1-rgb[2];
+			B[1] = rgb[2];
+			if (rE) {
+				k = b;
+				rgb[15] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				k = b;
+				rgb[15] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				k = b;
+				rgb[15] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+/* Tetrahedral EXTRAPOLATION is not great - LUTCalc currently uses Trilinear. The following is tetrahedral code
 		if (E) {
 			// check for and perform extrapolation
 			if (rE) {
@@ -3352,6 +3355,7 @@ LUTVolume.prototype.RGBTet = function(buff) {
 			gE = false;
 			bE = false;
 		}
+*/
 	}
 };
 LUTVolume.prototype.RGBLin = function(buff) {
@@ -3780,17 +3784,9 @@ LUTVolume.prototype.getDetails = function() {
 		s: this.d,
 		min: new Float64Array([this.fL[0],this.fL[1],this.fL[2]]),
 		max: new Float64Array([this.fH[0],this.fH[1],this.fH[2]]),
-		C: this.getRGB()
+		C: this.getRGB(),
+		meta: this.meta
 	};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	if (this.inputCS !== '') {
-		out.inputCS = this.inputCS;
-	}
-	if (typeof this.inputMatrix !== 'undefined') {
-		out.inputMatrix = this.inputMatrix;
-	}
 	return out;
 };
 LUTVolume.prototype.getL = function() {
@@ -3833,20 +3829,8 @@ LUTVolume.prototype.is3D = function() {
 LUTVolume.prototype.getTitle = function() {
 	return this.title;
 };
-LUTVolume.prototype.getInputDetails = function() {
-	var out = {};
-	if (this.inputTF !== '') {
-		out.inputTF = this.inputTF;
-	}
-	if (this.inputCS !== '') {
-		out.inputCS = this.inputCS;
-	}
-	if (typeof this.inputMatrix !== 'undefined') {
-		out.inputMatrix = this.inputMatrix;
-	} else {
-		out.inputMatrix = false;
-	}
-	return out;
+LUTVolume.prototype.getMetadata = function() {
+	return this.meta;
 };
 LUTVolume.prototype.isClamped = function() {
 	if (typeof this.clamped === 'undefined') {
