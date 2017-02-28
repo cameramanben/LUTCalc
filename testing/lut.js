@@ -1100,7 +1100,7 @@ LUTRSpline.prototype.buildReverse = function() {
 //			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
 				this.RC[0] = -(0.5*this.RD[2]) + (2*this.RD[1]) - (1.5*this.RD[0]);
 				if (this.RC[0]*mono <= 0) { // still opposite slope to monotonic
-					this.RC[0] = 0.0075 * mono / (fm-1);
+					this.RC[0] = 0.0075 * mono / (rm-1);
 				}
 //			}
 			RD1[0] = (this.RD[2] - this.RD[0])/2;
@@ -1112,7 +1112,7 @@ LUTRSpline.prototype.buildReverse = function() {
 //				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
 					RD1[j] = (0.5*this.RD[j-1]) - (2*this.RD[j]) + (1.5*this.RD[j+1]);
 					if (RD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
-						RD1[j] = 0.0075 * mono / (fm-1);
+						RD1[j] = 0.0075 * mono / (rm-1);
 					}
 //				}
 			} else {

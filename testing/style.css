@@ -62,6 +62,7 @@
 .ref-table {margin-bottom: 0.5em;}
 .ire-table {table-layout: fixed; margin-bottom: 0.4em;}
 .ire-table td {width:3.25em;}
+.spacer { display:block; height: 0.5em; }
 /* LUT options */
 .lut-opt { display: inline; }
 .lut-opt-hide { display: none; }
