@@ -24,7 +24,38 @@ TWKGamutLim.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-	this.gamSelect = document.createElement('select');
+	// Max Start Value
+	// Pre / Post option radios
+	this.linear = true;
+	this.prePost = [];
+	this.prePost[0] = this.createRadioElement('prePostRadio',true);
+	this.prePost[1] = this.createRadioElement('prePostRadio',false);
+	// Linear Space Level Slider
+	this.preSlider = document.createElement('input');
+	this.preSlider.setAttribute('type','range');
+	this.preSlider.setAttribute('min',-6);
+	this.preSlider.setAttribute('max',6);
+	this.preSlider.setAttribute('step',0.1);
+	this.preSlider.setAttribute('value',0);
+	// Linear Space Level Input
+	this.preInput = document.createElement('input');
+	this.preInput.setAttribute('type','number');
+	this.preInput.setAttribute('step',0.1);
+	this.preInput.value = 0;
+	this.preInput.className = 'smallinput';
+	// Post Tone Map Level Slider
+	this.pstSlider = document.createElement('input');
+	this.pstSlider.setAttribute('type','range');
+	this.pstSlider.setAttribute('min',1);
+	this.pstSlider.setAttribute('max',109);
+	this.pstSlider.setAttribute('step',1);
+	this.pstSlider.setAttribute('value',100);
+	// Post Tone Map Level Input
+	this.pstInput = document.createElement('input');
+	this.pstInput.setAttribute('type','number');
+	this.pstInput.setAttribute('step',1);
+	this.pstInput.value = 100;
+	this.pstInput.className = 'smallinput';
 };
 TWKGamutLim.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -37,18 +68,28 @@ TWKGamutLim.prototype.ui = function() {
 	this.box = document.createElement('div');
 	this.box.className = 'tweak-hide';
 	// Tweak - Specific UI Elements
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Display Gamut')));
-	var rec709Opt = document.createElement('option');
-	rec709Opt.value = 0;
-	rec709Opt.innerHTML = 'Rec709 / sRGB';
-	this.gamSelect.appendChild(rec709Opt);
-	var rec2020Opt = document.createElement('option');
-	rec2020Opt.value = 0;
-	rec2020Opt.innerHTML = 'Rec2020 / Rec2100';
-	this.gamSelect.appendChild(rec2020Opt);
-	this.box.appendChild(this.gamSelect);
-	
-
+	// Pre / Post radio choice
+	this.box.appendChild(this.prePost[0]);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Linear Space')));
+	this.box.appendChild(this.prePost[1]);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Post Gamma')));
+	// Linear Space Level Value
+	this.preBox = document.createElement('div');
+	this.preBox.className = 'twk-tab';
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
+	this.preBox.appendChild(this.preSlider);
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Ref White +')));
+	this.preBox.appendChild(this.preInput);
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
+	this.box.appendChild(this.preBox);
+	// Post Tonemap Level Value
+	this.pstBox = document.createElement('div');
+	this.pstBox.className = 'twk-tab-hide';
+	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
+	this.pstBox.appendChild(this.pstSlider);
+	this.pstBox.appendChild(this.pstInput);
+	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.box.appendChild(this.pstBox);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -75,6 +116,9 @@ TWKGamutLim.prototype.toggleTweak = function() {
 	}
 };
 TWKGamutLim.prototype.getTFParams = function(params) {
+	// No Relevant Parameters For This Tweak
+};
+TWKGamutLim.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -83,11 +127,14 @@ TWKGamutLim.prototype.getTFParams = function(params) {
 	} else {
 		out.doGamutLim = false;
 	}
-	out.display = this.gamSelect.selectedIndex;
+	if (this.linear) {
+		out.lin = true;
+		out.level = Math.pow(2,parseFloat(this.preSlider.value)); // Effect start level in stops around 18% gray
+	} else {
+		out.lin = false;
+		out.level = parseFloat(this.pstSlider.value)/100; // Effect start level in % IRE
+	}
 	params.twkGamutLim = out;
-};
-TWKGamutLim.prototype.getCSParams = function(params) {
-	// No Relevant Parameters For This Tweak
 };
 TWKGamutLim.prototype.setParams = function(params) {
 	if (typeof params.twkGamutLim !== 'undefined') {
@@ -98,7 +145,6 @@ TWKGamutLim.prototype.setParams = function(params) {
 TWKGamutLim.prototype.getSettings = function(data) {
 	data.gamutLim = {
 		doGamutLim: this.tweakCheck.checked,
-		display: this.gamSelect.options[this.gamSelect.selectedIndex].text.trim()
 	};
 };
 TWKGamutLim.prototype.setSettings = function(settings) {
@@ -107,15 +153,6 @@ TWKGamutLim.prototype.setSettings = function(settings) {
 		if (typeof data.doGamutLim === 'boolean') {
 			this.tweakCheck.checked = data.doGamutLim;
 			this.toggleTweak();
-		}
-		if (typeof data.display === 'string') {
-			switch (data.display) {
-				case 'Rec2020 / Rec2100': this.gamSelect.options[1].selected = true;
-					break;
-				case 'Rec709 / sRGB':
-				default: this.gamSelect.options[0].selected = true;
-					break;
-			}
 		}
 	}
 };
@@ -145,11 +182,91 @@ TWKGamutLim.prototype.isCustomGamut = function() {
 TWKGamutLim.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
-		here.messages.gaSetParams();
+		here.messages.gtSetParams();
 	};}(this);
-	this.gamSelect.onchange = function(here){ return function(){
-		here.toggleTweak();
-		here.messages.gaSetParams();
+	this.prePost[0].onchange = function(here){ return function(){
+		here.togglePrePost();
+	};}(this);
+	this.prePost[1].onchange = function(here){ return function(){
+		here.togglePrePost();
+	};}(this);
+	this.preSlider.oninput = function(here){ return function(){
+		here.testPre(true);
+		here.messages.gtSetParams();
+	};}(this);
+	this.preInput.onchange = function(here){ return function(){
+		here.testPre(false);
+		here.messages.gtSetParams();
+	};}(this);
+	this.pstSlider.oninput = function(here){ return function(){
+		here.testPst(true);
+		here.messages.gtSetParams();
+	};}(this);
+	this.pstInput.onchange = function(here){ return function(){
+		here.testPst(false);
+		here.messages.gtSetParams();
 	};}(this);
 };
 // Tweak-Specific Code
+TWKGamutLim.prototype.togglePrePost = function() {
+	if (this.prePost[0].checked) {
+		this.linear = true;
+		this.preBox.className = 'twk-tab';
+		this.pstBox.className = 'twk-tab-hide';
+	} else {
+		this.linear = false;
+		this.preBox.className = 'twk-tab-hide';
+		this.pstBox.className = 'twk-tab';
+	}
+	this.messages.gtSetParams();
+};
+TWKGamutLim.prototype.testPre = function(slider) {
+	var val;
+	if (slider) {
+		val = parseFloat(this.preSlider.value);
+	} else {
+		val = parseFloat(this.preInput.value);
+	}
+	if (val > 6) {
+		val = 6;
+	} else if (val < -6) {
+		val = -6;
+	}
+	this.preSlider.value = val;
+	this.preInput.value = val;
+};
+TWKGamutLim.prototype.testPst = function(slider) {
+	var val;
+	if (slider) {
+		val = parseFloat(this.pstSlider.value);
+	} else {
+		val = parseFloat(this.pstInput.value);
+	}
+	if (val > 109) {
+		val = 109;
+	} else if (val < 1) {
+		val = 1;
+	}
+	this.pstSlider.value = val;
+	this.pstInput.value = val;
+};
+TWKGamutLim.prototype.createRadioElement = function(name, checked) {
+    var radioInput;
+    try {
+        var radioHtml = '<input type="radio" name="' + name + '"';
+        if ( checked ) {
+            radioHtml += ' checked="checked"';
+        }
+        radioHtml += '/>';
+        radioInput = document.createElement(radioHtml);
+    } catch( err ) {
+        radioInput = document.createElement('input');
+        radioInput.setAttribute('type', 'radio');
+        radioInput.setAttribute('name', name);
+        if ( checked ) {
+            radioInput.setAttribute('checked', 'checked');
+        }
+    }
+    return radioInput;
+};
+

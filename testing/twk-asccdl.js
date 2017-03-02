@@ -294,6 +294,7 @@ TWKASCCDL.prototype.getInfo = function(info) {
 	var tweak = this.tweakCheck.checked;
 	if (tweaks && tweak) {
 		info.doASCCDL = true;
+		info.ASCSat = this.satInput.value.toString();
 	} else {
 		info.doASCCDL = false;
 	}

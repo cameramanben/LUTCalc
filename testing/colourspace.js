@@ -87,17 +87,21 @@ function LUTColourSpace() {
 		10.39683067,// Yellow - White Clip (Sony F55,F5,FS7)-0.3 Stop
 		12.36398501 // Red - White Clip (Sony F55,F5,FS7) 18%+6 stops
 	]);
+	this.gLimLin = false;
+	this.gLimL = 1;
+	this.gLimY = new Float64Array(this.y.buffer.slice(0));
 
 	this.doHG = false;
 	this.doWB = false;
 	this.doASCCDL = false;
 	this.doPSSTCDL = false;
+	this.doGamutLim = false;
 	this.doFC = false;
 
 	this.loadColourSpaces();
 	this.buildColourSquare();
 	this.buildMultiColours();
-	
+
 	this.ready++;
 	
 }
@@ -1145,16 +1149,63 @@ LUTColourSpace.prototype.initPSSTCDL = function() {
 		p: false
 	});
 };
+LUTColourSpace.prototype.calcYCoeffs = function(cs) {
+	var cur = this.curOut;
+	if (typeof cs !== 'undefined') {
+		var m = this.csOut.length;
+		for (var j=0; j<m; j++) {
+			if (this.csOut[j].name === cs) {
+				cur = j;
+			}
+		}
+	}
+	var g = new Float64Array([ // The output gamut - these values to be converted to XYZ then xy
+		1,0,0,
+		0,1,0,
+		0,0,1
+	]);
+	var xy = new Float64Array(9);
+	var l,den;
+	var wd,ws;
+	var XYZ;
+//	this.rx(g.buffer);
+	this.csM[cur].rc(g.buffer);
+	this.csOut[this.XYZOut].lc(g.buffer);
+	wd = this.csOut[cur].getWP();
+	ws = this.system.white;
+	for (var j=0; j<3; j++) {
+		k = j*3;
+		XYZ = this.calcCAT(new Float64Array([g[k],g[k+1],g[k+2]]),ws,wd,this.outCATs[cur]);
+		den = XYZ[0] + XYZ[1] + XYZ[2];
+		xy[ k ] = (XYZ[0]/den);
+		xy[k+1] = (XYZ[1]/den);
+		xy[k+2] = (XYZ[2]/den);
+	}
+	var C = new Float64Array([
+		xy[0],xy[3],xy[6],
+		xy[1],xy[4],xy[7],
+		xy[2],xy[5],xy[8]
+	]);
+	var invC = this.mInverse(C);
+	var W = new Float64Array([wd[0]/wd[1],1,(1-wd[0]-wd[1])/wd[1]]);
+	var J = this.mMult(invC,W);
+	return new Float64Array([J[0]*C[3],J[1]*C[4],J[2]*C[5]]);
+};
 LUTColourSpace.prototype.setYCoeffs = function() {
 	this.y = this.getYCoeffs(this.system.name);
 };
 LUTColourSpace.prototype.getYCoeffs = function(cs) {
-	var m = this.g.length;
 	var xy,w;
-	for (var j=0; j<m; j++) {
-		if (this.g[j].name === cs) {
-			xy = this.g[j].xy;
-			w = this.g[j].white;
+	if (typeof cs === 'number') {
+		xy = this.g[cs].xy;
+		w = this.g[cs].white;
+	} else {
+		var m = this.g.length;
+		for (var j=0; j<m; j++) {
+			if (this.g[j].name === cs) {
+				xy = this.g[j].xy;
+				w = this.g[j].white;
+			}
 		}
 	}
 	var C = new Float64Array([
@@ -1560,6 +1611,30 @@ LUTColourSpace.prototype.setMulti = function(params) {
 		}
 	}
 	out.doMulti = this.doMulti;
+	return out;
+};
+LUTColourSpace.prototype.setGamutLim = function(params) {
+	var out = {};
+	this.doGamutLim = false;
+	if (this.tweaks && typeof params.twkGamutLim !== 'undefined') {
+		var p = params.twkGamutLim;
+		if (typeof p.doGamutLim === 'boolean' && p.doGamutLim) {
+			this.doGamutLim = true;
+			if (typeof p.gamut !== 'undefined') {
+				this.gLimY = this.calcYCoeffs(p.gamut);
+			} else {
+				this.gLimY = this.calcYCoeffs();
+			}
+			if (typeof p.lin === 'boolean') {
+				this.gLimLin = p.lin;
+			} else {
+				this.gLimLin = false;
+			}
+			if (typeof p.level === 'number') {
+				this.gLimL = parseFloat(p.level);
+			}
+		}
+	}
 	return out;
 };
 LUTColourSpace.prototype.setFC = function(params) {
@@ -3778,6 +3853,7 @@ LUTColourSpace.prototype.setParams = function(params) {
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
 	out.twkMulti = this.setMulti(params);
+	out.twkGamutLim = this.setGamutLim(params);
 	out.twkFC = this.setFC(params);
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -3821,7 +3897,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}
 // False Colour
 		if (this.doFC) {
-			var fc = new Uint8Array(max);
+			var fc = new Uint8Array(max/3);
 			out.fc = fc.buffer;
 			out.to.push('fc');
 			var k;
@@ -3970,6 +4046,40 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 			}
 		}
 	}
+// Gamut Limiter
+		if (this.doGamutLim) {
+			if (this.gLimLin) {
+				out.doGamutLim = false;
+				var gMX, gMN;
+				var gSat;
+				var gY = this.gLimY;
+				var gL = this.gLimL;
+				for (var j=0; j<max; j += 3) {
+					k = parseInt(j/3);
+					o[ j ] = Math.max(0, o[ j ]);
+					o[j+1] = Math.max(0, o[j+1]);
+					o[j+2] = Math.max(0, o[j+2]);
+					Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+					gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+					if (gMX > gL) {
+						gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+						gSat = (gMX - gMN)/gL;
+						if (gSat > 1) {
+							o[ j ] = Y + ((o[ j ]-Y)/gSat);
+							o[j+1] = Y + ((o[j+1]-Y)/gSat);
+							o[j+2] = Y + ((o[j+2]-Y)/gSat);
+						}
+					}
+				}
+			} else {
+				out.doGamutLim = true;
+				out.gLimY = this.gLimY;
+				out.gLimL = this.gLimL;
+			}
+		} else {
+			out.doGamutLim = false;
+		}
+// Done
 	return out;
 };
 LUTColourSpace.prototype.laCalc = function(p,t,i) {
