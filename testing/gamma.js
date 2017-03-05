@@ -1614,12 +1614,86 @@ LUTGamma.prototype.blkGamOut = function(buff) {
 		}
 	}
 };
+LUTGamma.prototype.gamutLimOut = function(buff, gY, gL, ogb, gLimB) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var gMX, gMN, gSat, og;
+	if (typeof ogb !== 'undefined') { // Protect Secondary
+		// Knee
+		if (this.doKnee) {
+			this.kneeOut(ogb);
+		} else {
+			this.gammas[this.curOut].linToL(ogb);
+		}
+		// Black Level / Highlight Level
+		if (this.doBlkHi) {
+			this.blkHiOut(ogb);
+		}
+		// Black Gamma
+		if (this.doBlkGam) {
+			this.blkGamOut(ogb);
+		}
+		og = new Float64Array(ogb);
+		if (gLimB) { // Protect Both
+			for (var j=0; j<m; j += 3) {
+				o[ j ] = Math.max(0, o[ j ]);
+				o[j+1] = Math.max(0, o[j+1]);
+				o[j+2] = Math.max(0, o[j+2]);
+				var gMX2, gMN2;
+				gMX = Math.max(og[ j ], og[j+1], og[j+2]);
+				gMN = Math.min(og[ j ], og[j+1], og[j+2]);
+				gMX2 = Math.max(o[ j ], o[j+1], o[j+2]);
+				gMN2 = Math.min(o[ j ], o[j+1], o[j+2]);
+				gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL;
+				if (gSat > 1) {
+					Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+					o[ j ] = Y + ((o[ j ]-Y)/gSat);
+					o[j+1] = Y + ((o[j+1]-Y)/gSat);
+					o[j+2] = Y + ((o[j+2]-Y)/gSat);
+				}
+			}
+		} else { // Protect Secondary
+			for (var j=0; j<m; j += 3) {
+				o[ j ] = Math.max(0, o[ j ]);
+				o[j+1] = Math.max(0, o[j+1]);
+				o[j+2] = Math.max(0, o[j+2]);
+				gMX = Math.max(og[ j ], og[j+1], og[j+2]);
+				gMN = Math.min(og[ j ], og[j+1], og[j+2]);
+				gSat = (gMX - gMN)/gL;
+				if (gSat > 1) {
+					Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+					o[ j ] = Y + ((o[ j ]-Y)/gSat);
+					o[j+1] = Y + ((o[j+1]-Y)/gSat);
+					o[j+2] = Y + ((o[j+2]-Y)/gSat);
+				}
+			}
+		}
+	} else { // Protect Primary
+		for (var j=0; j<m; j += 3) {
+			o[ j ] = Math.max(0, o[ j ]);
+			o[j+1] = Math.max(0, o[j+1]);
+			o[j+2] = Math.max(0, o[j+2]);
+			gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+			if (gMX > gL) {
+				gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+				gSat = (gMX - gMN)/gL;
+				if (gSat > 1) {
+					Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+					o[ j ] = Y + ((o[ j ]-Y)/gSat);
+					o[j+1] = Y + ((o[j+1]-Y)/gSat);
+					o[j+2] = Y + ((o[j+2]-Y)/gSat);
+				}
+			}
+		}
+	}
+};
 LUTGamma.prototype.fcOut = function(fcBuff,outBuff) {
 	var fc = new Uint8Array(fcBuff);
 	var o = new Float64Array(outBuff);
 	var m = o.length;
+	var l = 0;
 	for (var j=0; j<m; j+= 3) {
-		switch(fc[Math.round(j/3)]) {
+		switch(fc[l]) {
 			case 0: o[ j ] = 0.75;	o[j+1] = 0;		o[j+2] = 0.75;	// Purple
 				break;
 			case 1: o[ j ] = 0;		o[j+1] = 0;		o[j+2] = 0.75;	// Blue
@@ -1635,29 +1709,7 @@ LUTGamma.prototype.fcOut = function(fcBuff,outBuff) {
 			case 10: o[ j ] = 0.75;	o[j+1] = 0;		o[j+2] = 0;		// Red
 				break;
 		}
-	}
-};
-LUTGamma.prototype.gamutLimOut = function(buff, gY, gL) {
-	var o = new Float64Array(buff);
-	var m = o.length;
-	var gMX, gMN;
-	var gSat;
-	for (var j=0; j<m; j += 3) {
-		k = parseInt(j/3);
-		o[ j ] = Math.max(0, o[ j ]);
-		o[j+1] = Math.max(0, o[j+1]);
-		o[j+2] = Math.max(0, o[j+2]);
-		Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
-		gMX = Math.max(o[ j ], o[j+1], o[j+2]);
-		if (gMX > gL) {
-			gMN = Math.min(o[ j ], o[j+1], o[j+2]);
-			gSat = (gMX - gMN)/gL;
-			if (gSat > 1) {
-				o[ j ] = Y + ((o[ j ]-Y)/gSat);
-				o[j+1] = Y + ((o[j+1]-Y)/gSat);
-				o[j+2] = Y + ((o[j+2]-Y)/gSat);
-			}
-		}
+		l++;
 	}
 };
 LUTGamma.prototype.finalOut = function(buff,cb) {
@@ -3755,7 +3807,7 @@ LUTGamma.prototype.outCalcRGB = function(p,t,i) {
 			this.blkGamOut(i.o);
 		}
 		if (i.doGamutLim) {
-			this.gamutLimOut(i.o, i.gLimY, i.gLimL);
+			this.gamutLimOut(i.o, i.gLimY, i.gLimL, i.og, i.gLimB);
 		}
 		if (i.doFC) {
 			this.fcOut(i.fc,i.o);
@@ -4036,6 +4088,157 @@ LUTGamma.prototype.preview = function(p,t,i) {
 		eiMult = i.eiMult;
 	}
 	var f = new Float64Array(i.o);
+	var m = f.length;
+	var o = new Uint8Array(Math.round(m*4/3));
+	var l;
+	// Establish Clipping Levels
+	var mn,mx,mx2;
+	if (typeof i.cb === 'boolean' && i.cb) {
+		mn = 0;
+	} else {
+		mn = (this.bClip - 64)/876;
+	}
+	mn = Math.max(mn,-0.073);
+	mx = (this.wClip - 64)/876;
+	mx = Math.min(mx,1.095);
+	if (this.clip) {
+		if (this.outL || this.clipL) {
+			if (this.clipB && mn<0) {
+				mn = 0;
+			}
+			if (this.clipW && mx>1) {
+				mx = 1;
+			}
+		}
+	}
+	if (i.leg) {
+		mx2 = 255;
+	} else {
+		mx2 = mx*255/1.095;
+	}
+	// Calculate Output
+	if (this.nul) {
+		l = 0;
+		var mul = 239;
+		if (i.leg) {
+			mul = 255;
+		}
+		for (var j=0; j<m; j += 3) {
+			f[ j ] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[ j ])));
+			f[j+1] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[j+1])));
+			f[j+2] = Math.min(mx,Math.max(mn,this.gammas[this.SL3Idx].linToLegal(f[j+2])));
+			o[ l ] = Math.min(255,Math.max(0,Math.round(f[ j ]*mul)));
+			o[l+1] = Math.min(255,Math.max(0,Math.round(f[j+1]*mul)));
+			o[l+2] = Math.min(255,Math.max(0,Math.round(f[j+2]*mul)));
+			o[l+3] = 255;
+			l += 4;
+		}
+	} else {
+		var m = f.length;
+		// Exposure Correction
+		for (var j=0; j<m; j += 3) {
+			f[ j ] *= eiMult;
+			f[j+1] *= eiMult;
+			f[j+2] *= eiMult;
+		}
+		// ASC-CDL
+		if (this.doASCCDL && !i.threeD) {
+			for (var j=0; j<m; j += 3) {
+				// Red
+				f[ j ] = (f[ j ]*this.asc[0])+this.asc[3];
+				f[ j ] = ((f[ j ]<0)?f[ j ]:Math.pow(f[ j ],this.asc[6]));
+				f[ j ] = (isNaN(f[ j ])?0:f[ j ]);
+				// Green
+				f[j+1] = (f[j+1]*this.asc[1])+this.asc[4];
+				f[j+1] = ((f[j+1]<0)?f[j+1]:Math.pow(f[j+1],this.asc[7]));
+				f[j+1] = (isNaN(f[j+1])?0:f[j+1]);
+				// Blue
+				f[j+2] = (f[j+2]*this.asc[2])+this.asc[5];
+				f[j+2] = ((f[j+2]<0)?f[j+2]:Math.pow(f[j+2],this.asc[8]));
+				f[j+2] = (isNaN(f[j+2])?0:f[j+2]);
+			}
+			if (doOG) {
+				for (var j=0; j<m; j += 3) {
+					// Red
+					og[ j ] = (og[ j ]*this.asc[0])+this.asc[3];
+					og[ j ] = ((og[ j ]<0)?og[ j ]:Math.pow(og[ j ],this.asc[6]));
+					og[ j ] = (isNaN(og[ j ])?0:og[ j ]);
+					// Green
+					og[j+1] = (og[j+1]*this.asc[1])+this.asc[4];
+					og[j+1] = ((og[j+1]<0)?og[j+1]:Math.pow(og[j+1],this.asc[7]));
+					og[j+1] = (isNaN(og[j+1])?0:og[j+1]);
+					// Blue
+					og[j+2] = (og[j+2]*this.asc[2])+this.asc[5];
+					og[j+2] = ((og[j+2]<0)?og[j+2]:Math.pow(og[j+2],this.asc[8]));
+					og[j+2] = (isNaN(og[j+2])?0:og[j+2]);
+				}
+			}
+		}
+		// Knee
+		if (this.doKnee) {
+			this.kneeOut(i.o);
+		} else {
+			this.gammas[this.curOut].linToL(i.o);
+		}
+		// Black Level / Highlight Level
+		if (this.doBlkHi) {
+			this.blkHiOut(i.o);
+		}
+		// Black Gamma
+		if (this.doBlkGam) {
+			this.blkGamOut(i.o);
+		}
+		// Gamut Limiter
+		if (i.doGamutLim) {
+			if (typeof i.og !== 'undefined') {
+				var og = new Float64Array(i.og);
+				for (var j=0; j<m; j++) {
+					og[ j ] *= eiMult;
+				}
+			}
+			this.gamutLimOut(i.o, i.gLimY, i.gLimL, i.og, i.gLimB);
+		}
+		// Hard Clipping
+		for (var j=0; j<m; j++) {
+			f[ j ] = Math.min(mx,Math.max(mn,(f[ j ])));
+		}
+		// False Colour
+		if (i.doFC) {
+			this.fcOut(i.fc, i.o);
+		}
+		// Legal / Extended
+		l = 0;
+		if (i.leg) {
+			for (var j=0; j<m; j += 3) {
+				o[ l ] = Math.min(mx2,Math.max(0,Math.round(f[ j ]*255)));
+				o[l+1] = Math.min(mx2,Math.max(0,Math.round(f[j+1]*255)));
+				o[l+2] = Math.min(mx2,Math.max(0,Math.round(f[j+2]*255)));
+				o[l+3] = 255;
+				l += 4;
+			}
+		} else {
+			for (var j=0; j<m; j += 3) {
+				o[ l ] = Math.min(mx2,Math.max(0,Math.round(f[ j ]*239)));
+				o[l+1] = Math.min(mx2,Math.max(0,Math.round(f[j+1]*239)));
+				o[l+2] = Math.min(mx2,Math.max(0,Math.round(f[j+2]*239)));
+				o[l+3] = 255;
+				l += 4;
+			}
+		}
+	}
+	out.o = o.buffer;
+	out.f = f.buffer;
+	out.to = ['o','f'];
+	return out;
+};
+/*
+LUTGamma.prototype.preview = function(p,t,i) {
+	var out = { p: p, t: t+20, v: this.ver, leg:i.leg, line:i.line, upd: i.upd };
+	var eiMult = 1;
+	if (typeof i.eiMult === 'number') {
+		eiMult = i.eiMult;
+	}
+	var f = new Float64Array(i.o);
 	var max = Math.round(f.length/3);
 	var o = new Uint8Array(max*4);
 	var ycc = new Float64Array(6);
@@ -4081,6 +4284,30 @@ LUTGamma.prototype.preview = function(p,t,i) {
 			l += 3;
 		}
 	} else {
+		var og;
+		var doOG = false
+		if (typeof i.og !== 'undefined') {
+			og = new Float64Array(i.og);
+			var mog = og.length;
+			for (var j=0; j<mog; j++) {
+				og[j] *=eiMult;
+			}
+			if (this.doKnee) {
+				this.kneeOut(i.og);
+			} else {
+				this.gammas[this.curOut].linToL(i.og);
+			}
+			if (this.doBlkHi) {
+				this.blkHiOut(i.og);
+			}
+			if (this.doBlkGam) {
+				this.blkGamOut(i.og);
+			}		
+			for (var j=0; j<mog; j++) {
+				og[j] = Math.max(0,og[j]);
+			}
+			doOG = true;
+		}
 		var fc;
 		var doASCCDL = false;
 		if (!i.threeD && this.doASCCDL) {
@@ -4166,21 +4393,54 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				}
 			}
 			if (i.doGamutLim) {
-				var gMX, gMN, gSat;
-				var gY = i.gLimY;
-				var gL = i.gLimL;
-				f[ l ] = Math.max(0, f[ l ]);
-				f[l+1] = Math.max(0, f[l+1]);
-				f[l+2] = Math.max(0, f[l+2]);
-				Y = (gY[0]*f[l])+(gY[1]*f[l+1])+(gY[2]*f[l+2]);
-				gMX = Math.max(f[ l ], f[l+1], f[l+2]);
-				if (gMX > gL) {
-					gMN = Math.min(f[ l ], f[l+1], f[l+2]);
-					gSat = (gMX - gMN)/gL;
-					if (gSat > 1) {
-						f[ l ] = Y + ((f[ l ]-Y)/gSat);
-						f[l+1] = Y + ((f[l+1]-Y)/gSat);
-						f[l+2] = Y + ((f[l+2]-Y)/gSat);
+				if (doOG) { // Protect Secondary
+					var gMX, gMN, gSat;
+					var gY = i.gLimY;
+					var gL = i.gLimL;
+					f[ l ] = Math.max(0, f[ l ]);
+					f[l+1] = Math.max(0, f[l+1]);
+					f[l+2] = Math.max(0, f[l+2]);
+					if (i.gLimB) { // Protect Both
+						var gMX2, gMN2;
+						gMX = Math.max(og[ l ], og[l+1], og[l+2]);
+						gMN = Math.min(og[ l ], og[l+1], og[l+2]);
+						gMX2 = Math.max(f[ l ], f[l+1], f[l+2]);
+						gMN2 = Math.min(f[ l ], f[l+1], f[l+2]);
+						gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL;
+						if (gSat > 1) {
+							Y = (gY[0]*f[l])+(gY[1]*f[l+1])+(gY[2]*f[l+2]);
+							f[ l ] = Y + ((f[ l ]-Y)/gSat);
+							f[l+1] = Y + ((f[l+1]-Y)/gSat);
+							f[l+2] = Y + ((f[l+2]-Y)/gSat);
+						}
+					} else {
+						gMX = Math.max(og[ l ], og[l+1], og[l+2]);
+						gMN = Math.min(og[ l ], og[l+1], og[l+2]);
+						gSat = (gMX - gMN)/gL;
+						if (gSat > 1) {
+							Y = (gY[0]*f[l])+(gY[1]*f[l+1])+(gY[2]*f[l+2]);
+							f[ l ] = Y + ((f[ l ]-Y)/gSat);
+							f[l+1] = Y + ((f[l+1]-Y)/gSat);
+							f[l+2] = Y + ((f[l+2]-Y)/gSat);
+						}
+					}
+				} else { // Protect Primary
+					var gMX, gMN, gSat;
+					var gY = i.gLimY;
+					var gL = i.gLimL;
+					f[ l ] = Math.max(0, f[ l ]);
+					f[l+1] = Math.max(0, f[l+1]);
+					f[l+2] = Math.max(0, f[l+2]);
+					gMX = Math.max(f[ l ], f[l+1], f[l+2]);
+						if (gMX > gL) {
+						gMN = Math.min(f[ l ], f[l+1], f[l+2]);
+						gSat = (gMX - gMN)/gL;
+						if (gSat > 1) {
+							Y = (gY[0]*f[l])+(gY[1]*f[l+1])+(gY[2]*f[l+2]);
+							f[ l ] = Y + ((f[ l ]-Y)/gSat);
+							f[l+1] = Y + ((f[l+1]-Y)/gSat);
+							f[l+2] = Y + ((f[l+2]-Y)/gSat);
+						}
 					}
 				}
 			}
@@ -4225,6 +4485,7 @@ LUTGamma.prototype.preview = function(p,t,i) {
 	out.to = ['o','f'];
 	return out;
 };
+*/
 LUTGamma.prototype.previewLin = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, gamma: i.gamma, gamut: i.gamut, legal: i.legal, i: i.i };
 	var input = new Float64Array(i.i);

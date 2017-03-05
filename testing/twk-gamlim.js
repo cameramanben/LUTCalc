@@ -26,10 +26,10 @@ TWKGamutLim.prototype.io = function() {
 	// Tweak - Specific Inputs
 	// Max Start Value
 	// Pre / Post option radios
-	this.linear = true;
+	this.linear = false;
 	this.prePost = [];
-	this.prePost[0] = this.createRadioElement('prePostRadio',true);
-	this.prePost[1] = this.createRadioElement('prePostRadio',false);
+	this.prePost[0] = this.createRadioElement('prePostRadio',false);
+	this.prePost[1] = this.createRadioElement('prePostRadio',true);
 	// Linear Space Level Slider
 	this.preSlider = document.createElement('input');
 	this.preSlider.setAttribute('type','range');
@@ -56,6 +56,25 @@ TWKGamutLim.prototype.io = function() {
 	this.pstInput.setAttribute('step',1);
 	this.pstInput.value = 100;
 	this.pstInput.className = 'smallinput';
+	// Gamut List
+	this.gtSelect = document.createElement('select');
+	this.gamutList = this.inputs.gamutMatrixList;
+	m = this.gamutList.length;
+	var opt = document.createElement('option');
+	opt.value = 9999;
+	opt.appendChild(document.createTextNode('Match Output Gamut'));
+	this.gtSelect.appendChild(opt);
+	for (var j=0; j<m; j++) {
+		var option = document.createElement('option');
+		option.value = this.gamutList[j].idx;
+		option.appendChild(document.createTextNode(this.gamutList[j].name));
+		this.gtSelect.appendChild(option);
+	}
+	this.diffGam = false;
+	this.bothCheck = document.createElement('input');
+	this.bothCheck.setAttribute('type','checkbox');
+	this.bothCheck.className = 'twk-checkbox';
+	this.bothCheck.checked = true;
 };
 TWKGamutLim.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -75,7 +94,7 @@ TWKGamutLim.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Post Gamma')));
 	// Linear Space Level Value
 	this.preBox = document.createElement('div');
-	this.preBox.className = 'twk-tab';
+	this.preBox.className = 'twk-tab-hide';
 	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
 	this.preBox.appendChild(this.preSlider);
 	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Ref White +')));
@@ -84,12 +103,23 @@ TWKGamutLim.prototype.ui = function() {
 	this.box.appendChild(this.preBox);
 	// Post Tonemap Level Value
 	this.pstBox = document.createElement('div');
-	this.pstBox.className = 'twk-tab-hide';
+	this.pstBox.className = 'twk-tab';
 	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
 	this.pstBox.appendChild(this.pstSlider);
 	this.pstBox.appendChild(this.pstInput);
 	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
 	this.box.appendChild(this.pstBox);
+	// Limit to other colourspaces
+	this.gtBox = document.createElement('div');
+	this.gtBox.className = 'twk-tab';
+	this.gtBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Gamut To Limit To')));
+	this.gtBox.appendChild(this.gtSelect);
+	this.bothBox = document.createElement('div');
+	this.bothBox.className = 'twk-tab-hide';
+	this.bothBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Protect Both')));
+	this.bothBox.appendChild(this.bothCheck);
+	this.gtBox.appendChild(this.bothBox);
+	this.box.appendChild(this.gtBox);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -133,6 +163,10 @@ TWKGamutLim.prototype.getCSParams = function(params) {
 	} else {
 		out.lin = false;
 		out.level = parseFloat(this.pstSlider.value)/100; // Effect start level in % IRE
+	}
+	if (this.diffGam) {
+		out.gamut = this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue;
+		out.both = this.bothCheck.checked;
 	}
 	params.twkGamutLim = out;
 };
@@ -206,6 +240,13 @@ TWKGamutLim.prototype.events = function() {
 		here.testPst(false);
 		here.messages.gtSetParams();
 	};}(this);
+	this.gtSelect.onchange = function(here){ return function(){
+		here.diffGamut();
+		here.messages.gtSetParams();
+	};}(this);
+	this.bothCheck.onclick = function(here){ return function(){
+		here.messages.gtSetParams();
+	};}(this);
 };
 // Tweak-Specific Code
 TWKGamutLim.prototype.togglePrePost = function() {
@@ -250,6 +291,33 @@ TWKGamutLim.prototype.testPst = function(slider) {
 	this.pstSlider.value = val;
 	this.pstInput.value = val;
 };
+TWKGamutLim.prototype.diffGamut = function() {
+	if (this.gtSelect.selectedIndex > 0 && this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue !== this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue) {
+		this.bothBox.className = 'twk-tab';
+		this.diffGam = true;
+	} else {
+		this.bothBox.className = 'twk-tab-hide';
+		this.diffGam = false;
+	}
+};
+TWKGamutLim.prototype.changeGamut = function() {
+	var gtList = this.inputs.outGamut;
+	var m = this.gtSelect.length;
+	var matrix = false;
+	for (var j=1; j<m; j++) {
+		if (gtList.options[gtList.selectedIndex].lastChild.nodeValue === this.gtSelect.options[j].lastChild.nodeValue) {
+			matrix = true;
+			break;
+		}
+	}
+	if (matrix) {
+		this.gtBox.className = 'twk-tab';
+		this.diffGamut();
+	} else {
+		this.gtBox.className = 'twk-tab-hide';
+		this.diffGam = false;
+	}
+}
 TWKGamutLim.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {

@@ -90,6 +90,10 @@ function LUTColourSpace() {
 	this.gLimLin = false;
 	this.gLimL = 1;
 	this.gLimY = new Float64Array(this.y.buffer.slice(0));
+	this.gLimGIn = 0;
+	this.gLimGOut = 0;
+	this.gLimC = false;
+	this.gLimB = true;
 
 	this.doHG = false;
 	this.doWB = false;
@@ -1620,10 +1624,34 @@ LUTColourSpace.prototype.setGamutLim = function(params) {
 		var p = params.twkGamutLim;
 		if (typeof p.doGamutLim === 'boolean' && p.doGamutLim) {
 			this.doGamutLim = true;
-			if (typeof p.gamut !== 'undefined') {
-				this.gLimY = this.calcYCoeffs(p.gamut);
+			this.gLimY = this.calcYCoeffs();
+			if (typeof p.gamut === 'string') {
+				this.gLimC = false;
+				this.gLimB = true;
+				var m = this.csOut.length;
+				for (var j=0; j<m; j++) {
+					if (this.csOut[j].name === p.gamut) {
+						if (j === this.curOut) {
+							this.gLimGIn = 0;
+							this.gLimGOut = this.curOut;
+							break;
+						} else {
+							this.gLimGOut = j;
+							var m2 = this.csIn.length;
+							for (var k=0; k<m2; k++) {
+								if (this.csIn[k].name === this.csOut[this.curOut].name) {
+									this.gLimGIn = k;
+									this.gLimC = true;
+									this.gLimB = p.both;
+									break;
+								}
+							}
+						}
+						break;
+					}
+				}
 			} else {
-				this.gLimY = this.calcYCoeffs();
+				this.gLimC = false;
 			}
 			if (typeof p.lin === 'boolean') {
 				this.gLimLin = p.lin;
@@ -4048,34 +4076,84 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 	}
 // Gamut Limiter
 		if (this.doGamutLim) {
-			if (this.gLimLin) {
+			if (this.gLimLin) { // Linear Space
 				out.doGamutLim = false;
-				var gMX, gMN;
-				var gSat;
-				var gY = this.gLimY;
-				var gL = this.gLimL;
-				for (var j=0; j<max; j += 3) {
-					k = parseInt(j/3);
-					o[ j ] = Math.max(0, o[ j ]);
-					o[j+1] = Math.max(0, o[j+1]);
-					o[j+2] = Math.max(0, o[j+2]);
-					Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
-					gMX = Math.max(o[ j ], o[j+1], o[j+2]);
-					if (gMX > gL) {
-						gMN = Math.min(o[ j ], o[j+1], o[j+2]);
-						gSat = (gMX - gMN)/gL;
-						if (gSat > 1) {
-							o[ j ] = Y + ((o[ j ]-Y)/gSat);
-							o[j+1] = Y + ((o[j+1]-Y)/gSat);
+				if (this.gLimC) { // Secondary colourspace to protect 
+					for (var j=0; j<max; j++) {
+						o[ j ] = Math.max(0, o[ j ]);
+					}
+					var og = new Float64Array(o.buffer.slice(0));
+					this.csIn[this.gLimGIn].lc(og.buffer);
+					this.csOut[this.gLimGOut].lc(og.buffer);
+					var gMX, gMN, gSat;
+					var gY = this.gLimY;
+					var gL = this.gLimL;
+					if (this.gLimB) { // Protect both Primary and Secondary
+						var gMX2, gMN2;
+						for (var j=0; j<max; j += 3) {
+							k = parseInt(j/3);
+							gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+							gMX2 = Math.max(og[ j ], og[j+1], og[j+2]);
+							gMN2 = Math.min(og[ j ], og[j+1], og[j+2]);
+							gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL ;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
 							o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
+						}
+					} else { // Protect Secondary only
+						for (var j=0; j<max; j += 3) {
+							k = parseInt(j/3);
+							gMX = Math.max(og[ j ], og[j+1], og[j+2]);
+							gMN = Math.min(og[ j ], og[j+1], og[j+2]);
+							gSat = (gMX - gMN)/gL;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
+							o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
+						}
+					}
+				} else { // Protect Primary
+					var gMX, gMN;
+					var gSat;
+					var gY = this.gLimY;
+					var gL = this.gLimL;
+					for (var j=0; j<max; j += 3) {
+						k = parseInt(j/3);
+						o[ j ] = Math.max(0, o[ j ]);
+						o[j+1] = Math.max(0, o[j+1]);
+						o[j+2] = Math.max(0, o[j+2]);
+						gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+						if (gMX > gL) {
+							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+							gSat = (gMX - gMN)/gL;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
+								o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
 						}
 					}
 				}
-			} else {
+			} else { // Post Gamma
 				out.doGamutLim = true;
 				out.gLimY = this.gLimY;
 				out.gLimL = this.gLimL;
-			}
+				if (this.gLimC) { // Secondary colourspace to protect
+					var og = new Float64Array(o.buffer.slice(0));
+					this.csIn[this.gLimGIn].lc(og.buffer);
+					this.csOut[this.gLimGOut].lc(og.buffer);
+					out.og = og.buffer;
+					out.to.push('og');
+					out.gLimB = this.gLimB;
+				}
+			} // Default protects Primary
 		} else {
 			out.doGamutLim = false;
 		}
