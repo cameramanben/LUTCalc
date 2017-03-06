@@ -70,24 +70,34 @@ cubeLUT.prototype.header = function() {
 		out += ', CineEI Shift ' + info.cineEI.toFixed(2).toString();
 		out += ', Black Level ' + info.blackLevel + '% IRE';
 		if (info.legalIn) {
-			out += ', Legal Input -> ';
+			out += ', Input 100% -> ';
 		} else {
-			out += ', Data Input -> ';
+			out += ', Input 109% -> ';
 		}
 		if (info.legalOut) {
-			out += 'Legal Output';
+			out += 'Output 100%';
 		} else {
-			out += 'Data Output';
+			out += 'Output 109%';
 		}
 	}
 	out += ' - ' + 'Created with LUTCalc ' + info.version + ' by Ben Turley ' + info.date + "\n";
 	return out;
 };
-cubeLUT.prototype.parse = function(title, text, lut) {
+cubeLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
 	var maximum = [1,1,1];
+	var sysCS = '';
+	var laCS = '';
+	var laTF = '';
+	var laRG = '';
+	var laEX = true;
+	var laMin,laMax;
+	var baseISO = false;
+	var interpolation = false;
+	var laMX = false;
+	var laMLines = 0;
 	var max = text.length;
 	if (max === 0) {
 		return false;
@@ -147,6 +157,80 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 				maximum[1] = maximum[0];
 				maximum[2] = maximum[0];
 			}
+		} else if (lower.search('# la_system_colourspace') >= 0) {
+			sysCS = line.substr(parseInt(lower.search('# la_system_colourspace')) + 23).trim();
+		} else if (lower.search('# la_input_colourspace') >= 0) {
+			laCS = line.substr(parseInt(lower.search('# la_input_colourspace')) + 22).trim();
+		} else if (lower.search('# la_input_transfer_function') >= 0) {
+			laTF = line.substr(parseInt(lower.search('# la_input_transfer_function')) + 28).trim();
+		} else if (lower.search('# la_base_iso') >= 0) {
+			baseISO = parseInt(line.substr(parseInt(lower.search('# la_base_iso')) + 13).trim());
+			if (isNaN(baseISO)) {
+				baseISO = false;
+			}
+		}  else if (lower.search('# la_interpolation') >= 0) {
+			switch (line.substr(parseInt(lower.search('# la_interpolation')) + 18).trim().toLowerCase()) {
+				case 'tricubic': interpolation = 0;
+					break;
+				case 'tetrahedral': interpolation = 1;
+					break;
+				case 'trilinear': interpolation = 2;
+					break;
+			}
+		} else if (lower.search('# la_input_range') >= 0) {
+			laRG = line.substr(parseInt(lower.search('# la_input_range')) + 16).trim();
+			if (laRG === '100') {
+				laEX = false;
+			}
+		} else if (lower.search('# la_input_min') >= 0) {
+			minimum[0] = parseFloat(line.substr(parseInt(lower.search('# la_input_min')) + 14).trim());
+			if (isNaN(minimum[0])) {
+				minimum[0] = 0;
+			} else {
+				minimum[1] = minimum[0];
+				minimum[2] = minimum[0];
+			}
+		} else if (lower.search('# la_input_max') >= 0) {
+			maximum[0] = parseFloat(line.substr(parseInt(lower.search('# la_input_max')) + 14).trim());
+			if (isNaN(maximum[0])) {
+				minimum[0] = 1;
+			} else {
+				maximum[1] = maximum[0];
+				maximum[2] = maximum[0];
+			}
+		} else if (lower.search('# la_input_matrix_r') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_r')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (laMLines === 0) {
+					laMX = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				laMX[0] = mat[0];
+				laMX[1] = mat[1];
+				laMX[2] = mat[2];
+				laMLines++;
+			}
+		} else if (lower.search('# la_input_matrix_g') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_g')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (laMLines === 0) {
+					laMX = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				laMX[3] = mat[0];
+				laMX[4] = mat[1];
+				laMX[5] = mat[2];
+				laMLines++;
+			}
+		} else if (lower.search('# la_input_matrix_b') >= 0) {
+			var mat = line.substr(parseInt(lower.search('# la_input_matrix_b')) + 19).trim().split(/\s+/g);
+			if (!isNaN(mat[0]) && !isNaN(mat[1]) && !isNaN(mat[2])) {
+				if (laMLines === 0) {
+					laMX = new Float64Array([1,0,0,0,1,0,0,0,1]);
+				}
+				laMX[6] = mat[0];
+				laMX[7] = mat[1];
+				laMX[8] = mat[2];
+				laMLines++;
+			}
 		}
 	}
 	if (dimensions && size) {
@@ -171,16 +255,42 @@ cubeLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 		}
-		lut.setDetails({
-			title: title,
-			format: 'cube',
-			dims: dimensions,
-			s: size,
-			min: minimum,
-			max: maximum,
-			C: [R.buffer,G.buffer,B.buffer]
-		});
-		return true;
+		var meta = {};
+		if (laTF !== '') {
+			meta.inputTF = laTF;
+		}
+		if (sysCS !== '') {
+			meta.systemCS = sysCS;
+		}
+		if (laCS !== '') {
+			meta.inputCS = laCS;
+		}
+		if (laRG !== '') {
+			meta.inputEX = laEX;
+		}
+		if (laMLines === 3) {
+			meta.inputMatrix = laMX;
+		}
+		if (interpolation) {
+			meta.interpolation = interpolation;
+		}
+		if (baseISO) {
+			meta.baseISO = baseISO;
+		}
+		var params = {
+				title: title,
+				format: 'cube',
+				dims: dimensions,
+				s: size,
+				min: minimum,
+				max: maximum,
+				C: [R.buffer,G.buffer,B.buffer],
+				meta: meta
+		};
+		return lutMaker.setLUT(
+			lutDest,
+			params
+		);
 	} else {
 		return false;
 	}

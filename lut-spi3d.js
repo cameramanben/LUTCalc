@@ -43,7 +43,7 @@ spi3dLUT.prototype.header = function(info) {
 	out += info.dimension.toString() + ' ' + info.dimension.toString() + ' ' + info.dimension.toString() + "\n";
 	return out;
 };
-spi3dLUT.prototype.parse = function(title, text, lut) {
+spi3dLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = false;
 	var size = false;
 	var minimum = [0,0,0];
@@ -105,6 +105,19 @@ spi3dLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 			if (t === arraySize) {
+				return lutMaker.setLUT(
+					lutDest,
+					{
+						title: title,
+						format: 'spi3d',
+						dims: dimensions,
+						s: size[0],
+						min: minimum,
+						max: maximum,
+						C: [R.buffer,G.buffer,B.buffer]
+					}
+				);
+/*
 				lut.setDetails({
 					title: title,
 					format: 'spi3d',
@@ -115,6 +128,7 @@ spi3dLUT.prototype.parse = function(title, text, lut) {
 					C: [R.buffer,G.buffer,B.buffer]
 				});
 				return true;
+*/
 			} else {
 				return false;
 			}

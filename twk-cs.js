@@ -27,6 +27,11 @@ TWKCS.prototype.io = function() {
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
 	// Gamuts
+	this.xyVals = new Float64Array([
+		0.64, 0.33,
+		0.30, 0.60,
+		0.15, 0.06
+	]);
 	this.count = 1;
 	this.gamuts = [];
 	this.gamuts.push({
@@ -34,9 +39,9 @@ TWKCS.prototype.io = function() {
 		matrix: false, lock: false,
 		std: 'D65',
 		wx: 0.31270,wy: 0.32900,
-		rx: 0.64,	ry: 0.33,
-		gx: 0.30,	gy: 0.60,
-		bx: 0.15,	by: 0.06,
+		rx: this.xyVals[0],	ry: this.xyVals[1],
+		gx: this.xyVals[2],	gy: this.xyVals[3],
+		bx: this.xyVals[4],	by: this.xyVals[5],
 		wcs: 'Rec709',
 		inMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1]),
 		outMatrix: new Float64Array([1,0,0, 0,1,0, 0,0,1])
@@ -140,6 +145,10 @@ TWKCS.prototype.io = function() {
 	this.matCalcCheck.setAttribute('type','checkbox');
 	this.matCalcCheck.className = 'twk-checkbox';
 	this.matCalcCheck.checked = true;
+	this.xyButton = document.createElement('input');
+	this.xyButton.setAttribute('type','button');
+	this.xyButton.disabled = true;
+	this.xyButton.value = 'Set Primaries';
 	// CAT Selection
 	this.CATSelect = document.createElement('select');
 	m = this.inputs.gamutCATList.length;
@@ -188,17 +197,18 @@ TWKCS.prototype.ui = function() {
 	editBox.appendChild(this.title);
 	this.wppBox = document.createElement('div');
 	this.wppBox.className = 'twk-tab';
-	this.wppBox.appendChild(this.stdWP);
-	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Standard Illuminant')));
-	this.wppBox.appendChild(this.stdIll);
-	this.wppBox.appendChild(this.cstWP);
-	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('White Point')));
-	this.wppBox.appendChild(document.createElement('br'));
-	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('x')));
-	this.wppBox.appendChild(this.xWP);
-	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
-	this.wppBox.appendChild(this.yWP);
-	this.wppBox.appendChild(document.createElement('br'));
+	editBox.appendChild(document.createElement('br'));
+	editBox.appendChild(this.stdWP);
+	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Standard Illuminant')));
+	editBox.appendChild(this.stdIll);
+	editBox.appendChild(this.cstWP);
+	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('White Point')));
+	editBox.appendChild(document.createElement('br'));
+	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('x')));
+	editBox.appendChild(this.xWP);
+	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
+	editBox.appendChild(this.yWP);
+//	this.wppBox.appendChild(document.createElement('br'));
 	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Red Primary:   x')));
 	this.wppBox.appendChild(this.xR);
 	this.wppBox.appendChild(document.createElement('label').appendChild(document.createTextNode('y')));
@@ -216,12 +226,6 @@ TWKCS.prototype.ui = function() {
 	editBox.appendChild(this.wppBox);
 	this.matxBox = document.createElement('div');
 	this.matxBox.className = 'twk-tab-hide';
-	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Working Colourspace')));
-	this.matxBox.appendChild(this.wrkspcSelect);
-	this.matxBox.appendChild(document.createElement('br'));
-	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Update With Colourspace')));
-	this.matxBox.appendChild(this.matCalcCheck);
-	this.matxBox.appendChild(document.createElement('br'));
 	this.matxBox.appendChild(this.matInOpt);
 	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('To Working Colourspace')));
 	this.matxBox.appendChild(document.createElement('br'));
@@ -240,6 +244,16 @@ TWKCS.prototype.ui = function() {
 			this.matxBox.appendChild(document.createElement('br'));
 		}
 	}
+	var spacer = document.createElement('div');
+	spacer.className = 'spacer';
+	this.matxBox.appendChild(spacer);
+	this.matxBox.appendChild(this.xyButton);
+	this.matxBox.appendChild(document.createElement('br'));
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Working Colourspace')));
+	this.matxBox.appendChild(this.wrkspcSelect);
+	this.matxBox.appendChild(document.createElement('br'));
+	this.matxBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Update With Colourspace')));
+	this.matxBox.appendChild(this.matCalcCheck);
 	editBox.appendChild(this.matxBox);
 	editBox.appendChild(document.createElement('label').appendChild(document.createTextNode('CAT Model')));
 	editBox.appendChild(this.CATSelect);
@@ -324,6 +338,23 @@ TWKCS.prototype.setParams = function(params) {
 				for (var j=0; j<9; j++) {
 					this.matIn[j].value = parseFloat(this.gamuts[p.editIdx].inMatrix[j].toFixed(8)).toString();
 					this.matOut[j].value = parseFloat(this.gamuts[p.editIdx].outMatrix[j].toFixed(8)).toString();
+				}
+			}
+		}
+		this.xyButton.disabled = true;
+		if (typeof p.xyVals !== 'undefined') {
+			var xy = p.xyVals;
+			if (!isNaN(xy[0])&&!isNaN(xy[1])&&!isNaN(xy[2])&&!isNaN(xy[3])&&!isNaN(xy[4])&&!isNaN(xy[5])) {
+				this.xyVals = p.xyVals;
+				if (
+					xy[0] !== this.gamuts[p.editIdx].rx ||
+					xy[1] !== this.gamuts[p.editIdx].ry ||
+					xy[2] !== this.gamuts[p.editIdx].gx ||
+					xy[3] !== this.gamuts[p.editIdx].gy ||
+					xy[4] !== this.gamuts[p.editIdx].bx ||
+					xy[5] !== this.gamuts[p.editIdx].by
+				) {
+					this.xyButton.disabled = false;
 				}
 			}
 		}
@@ -541,6 +572,9 @@ TWKCS.prototype.events = function() {
 			here.messages.gtSetParams();
 		};}(this);
 	}
+	this.xyButton.onclick = function(here){ return function(){
+		here.setPrimaries();
+	};}(this);
 	this.CATSelect.onchange = function(here){ return function(){
 		here.changeCAT();
 		here.messages.gtSetParams();
@@ -670,17 +704,17 @@ TWKCS.prototype.getWCS = function(wcs) {
 	}
 };
 TWKCS.prototype.changeWCS = function(wcs) {
-	var i = this.gamList.selectedIndex;
+	var edIdx = this.gamList.selectedIndex;
 	if (this.matCalcCheck.checked) {
 		this.messages.gtTx(this.p,3,{
-			idx: i,
-			oldWCS: this.getWCS(this.gamuts[i].wcs),
+			idx: edIdx,
+			oldWCS: this.getWCS(this.gamuts[edIdx].wcs),
 			newWCS: this.getWCS(this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue),
-			matrix: this.gamuts[i].inMatrix.buffer.slice(0),
-			cat: this.gamuts[i].cat
+			matrix: this.gamuts[edIdx].inMatrix.buffer.slice(0),
+			cat: this.gamuts[edIdx].cat
 		});
 	}
-	this.gamuts[i].wcs = this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue;
+	this.gamuts[edIdx].wcs = this.wrkspcSelect.options[this.wrkspcSelect.selectedIndex].lastChild.nodeValue;
 };
 TWKCS.prototype.recalcMatrix = function(idx,wcs,buff) {
 	this.wrkspcSelect.selectedIndex = wcs;
@@ -688,10 +722,14 @@ TWKCS.prototype.recalcMatrix = function(idx,wcs,buff) {
 	var matrix = new Float64Array(buff);
 	var inv = this.mInverse(matrix);
 	var matStore = this.gamuts[idx].outMatrix;
+	var r;
 	if (inv) {
 		for (var j=0; j<9; j++) {
-			inv[j] = parseFloat(inv[j].toFixed(8));
-			matStore[j] = inv[j];
+			if (Math.abs(inv[j]-Math.round(inv[j])) > 0.000001) {
+				matStore[j] = Math.round(inv[j]*10000000)/10000000;
+			} else {
+				matStore[j] = Math.round(inv[j]);
+			}
 		}
 	} else {
 		for (var j=0; j<9; j++) {
@@ -703,7 +741,11 @@ TWKCS.prototype.recalcMatrix = function(idx,wcs,buff) {
 		}
 	}
 	for (var j=0; j<9; j++) {
-		this.gamuts[idx].inMatrix[j] = parseFloat(matrix[j].toFixed(8));
+		if (Math.abs(matrix[j]-Math.round(matrix[j])) > 0.000001) {
+			this.gamuts[idx].inMatrix[j] = Math.round(matrix[j]*10000000)/10000000;
+		} else {
+			this.gamuts[idx].inMatrix[j] = Math.round(matrix[j]);
+		}
 	}
 	if (idx === this.gamList.selectedIndex) {
 		for (var j=0; j<9; j++) {
@@ -824,27 +866,17 @@ TWKCS.prototype.updateOutMatrix = function() {
 		}
 	}
 };
-TWKCS.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+TWKCS.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 TWKCS.prototype.changeCS = function() {
@@ -980,6 +1012,26 @@ TWKCS.prototype.testBy = function() {
 		this.gamuts[i].by = y;
 	}
 	this.gamuts[i].lock = true;
+};
+TWKCS.prototype.setPrimaries = function() {
+	var xy = this.xyVals;
+	if (!isNaN(xy[0])&&!isNaN(xy[1])&&!isNaN(xy[2])&&!isNaN(xy[3])&&!isNaN(xy[4])&&!isNaN(xy[5])) {
+		var i = this.gamList.selectedIndex;
+		this.gamuts[i].rx = xy[0];
+		this.gamuts[i].ry = xy[1];
+		this.gamuts[i].gx = xy[2];
+		this.gamuts[i].gy = xy[3];
+		this.gamuts[i].bx = xy[4];
+		this.gamuts[i].by = xy[5];
+		this.xR.value = xy[0];
+		this.yR.value = xy[1];
+		this.xG.value = xy[2];
+		this.yG.value = xy[3];
+		this.xB.value = xy[4];
+		this.yB.value = xy[5];
+		this.clspOpt.checked = true;
+		this.clspMatx();
+	}
 };
 TWKCS.prototype.changeInput = function() {
 	var i = this.inSelect.options[this.inSelect.selectedIndex].lastChild.nodeValue;

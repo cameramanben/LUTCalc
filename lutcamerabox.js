@@ -93,6 +93,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS5",iso:3200,type:2,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"NEX-FS700",iso:2000,type:2,defgamma:"S-Log2",defgamut:"Sony S-Gamut",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"a7s mkII",iso:1600,type:2,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"a7s",iso:3200,type:2,defgamma:"S-Log2",defgamut:"Sony S-Gamut",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"F65",iso:800,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3",bclip:-8,wclip:6});

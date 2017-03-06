@@ -98,14 +98,14 @@ Ring.prototype.f = function(L) {
 	L -= f;
 	return (((((a * L) + b) * L) + c) * L) + d;
 };
-Ring.prototype.lLCub = function(L) {
+Ring.prototype.fCub = function(L) {
 	if (this.mod) {
 		return this.cubMod(L);
 	} else {
 		return this.cub(L);
 	}
 };
-Ring.prototype.lLLin = function(L) {
+Ring.prototype.fLin = function(L) {
 	if (this.mod) {
 		return this.linMod(L);
 	} else {

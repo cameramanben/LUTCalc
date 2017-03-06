@@ -6,6 +6,7 @@ function LUTTests(inputs) {
 LUTTests.prototype.runTests = function() {
 	this.isAppTest();
 	this.isChromeAppTest();
+	this.blobWorkersTest();
 	this.canNotifyTest();
 	this.isLETest();
 };
@@ -22,6 +23,27 @@ LUTTests.prototype.isChromeAppTest = function() { // Test for Google Chrome app
 	} else {
     	lutInputs.addInput('isChromeApp',false);
 	}
+};
+LUTTests.prototype.blobWorkersTest = function() {
+    lutInputs.addInput('blobWorkers',false);
+	var windowURL = window.URL || window.webkitURL;
+	var workerString = "addEventListener('message', function(e) { postMessage({blobWorkers:e.data.test}); }, false);"
+	workerString = workerString.replace('"use strict";', '');
+	try {
+		var _this = this;
+		var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+		var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
+		this.testWorker = new Worker(blobURL);
+		URL.revokeObjectURL(blobURL);
+		this.testWorker.onmessage = function(e) {
+  			_this.inputs.blobWorkers = e.data.blobWorkers;
+  			_this.testWorker.terminate();
+		}
+		this.testWorker.postMessage({test:true});
+	} catch (e) {
+		this.inputs.blobWorkers = false;
+	}
+
 };
 LUTTests.prototype.canNotifyTest = function() { // Test for HTML5 / Chrome Notifications
 	if (typeof chrome !== 'undefined' && typeof chrome.notifications !== 'undefined') {

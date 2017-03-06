@@ -126,6 +126,21 @@ LUTFormats.prototype.gradesList = function() {
 	});
 */
 	this.grades.push({
+		title: 'DaVinci Resolve 12+ auto (.cube)', type: 'cube2',
+		oneD: true, threeD: true, defThree: true,
+		oneDim: [1024,4096,16384], threeDim: [17,33,65],
+		defDim: 65,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: true,
+		legOut: true, datOut: true, defLegOut: true,
+		defLegDat: true,
+		scaling: true,
+		setBits: false,
+		resSDI: false,
+		defMin: 0, defMax: 1.095,
+		bClip: -1023, wClip: 67025937, hard: false
+	});
+	this.grades.push({
 		title: 'DaVinci Resolve (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096,16384], threeDim: [17,33,65],
@@ -716,6 +731,16 @@ LUTFormats.prototype.updateOptions = function() {
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
 		if (cur.scaling) {
 			this.inputs.scaleBox.className = 'emptybox';
+			if (typeof cur.defMin !== 'undefined') {
+				this.inputs.scaleMin.value = cur.defMin.toString();
+			} else {
+				this.inputs.scaleMin.value = '0';
+			}
+			if (typeof cur.defMax !== 'undefined') {
+				this.inputs.scaleMax.value = cur.defMax.toString();
+			} else {
+				this.inputs.scaleMax.value = '1.0';
+			}
 		} else {
 			this.inputs.scaleBox.className = 'emptybox-hide';
 			this.inputs.scaleMin.value = '0';
@@ -936,11 +961,11 @@ LUTFormats.prototype.build = function(type,buff) {
 	}
 	return false;
 };
-LUTFormats.prototype.parse = function(ext, title, data, lut) {
+LUTFormats.prototype.parse = function(ext, title, data, lutMaker, lutDest) {
 	var max = this.types.length;
 	for (var j=0; j<max; j++) {
 		if (this.exts[j] === ext) {
-			return this.formats[j].parse(title, data, lut);
+			return this.formats[j].parse(title, data, lutMaker, lutDest);
 		}
 	}
 	return false;

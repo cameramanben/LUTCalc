@@ -69,7 +69,7 @@ lutLUT.prototype.header = function() {
 	out += 'LUT: 3 ' + info.dimension.toString() + "\n";
 	return out;
 };
-lutLUT.prototype.parse = function(title, text, lut) {
+lutLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = 1;
 	var channels = false;
 	var size = false;
@@ -105,6 +105,19 @@ lutLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 			if (s === size) {
+				return lutMaker.setLUT(
+					lutDest,
+					{
+						title: title,
+						format: 'lut',
+						dims: 1,
+						s: size,
+						min: [0,0,0],
+						max: [1,1,1],
+						C: [L.buffer]
+					}
+				);
+/*
 				lut.setDetails({
 					title: title,
 					format: 'lut',
@@ -115,6 +128,7 @@ lutLUT.prototype.parse = function(title, text, lut) {
 					C: [L.buffer]
 				});
 				return true;
+*/
 			} else {
 				return false;
 			}
@@ -136,6 +150,19 @@ lutLUT.prototype.parse = function(title, text, lut) {
 				}
 			}
 			if (s === size) {
+				return lutMaker.setLUT(
+					lutDest,
+					{
+						title: title,
+						format: 'lut',
+						dims: 1,
+						s: size,
+						min: [0,0,0],
+						max: [1,1,1],
+						C: [R.buffer,G.buffer,B.buffer]
+					}
+				);
+/*
 				lut.setDetails({
 					title: title,
 					format: 'lut',
@@ -146,6 +173,7 @@ lutLUT.prototype.parse = function(title, text, lut) {
 					C: [R.buffer,G.buffer,B.buffer]
 				});
 				return true;
+*/
 			} else {
 				return false;
 			}

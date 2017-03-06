@@ -1,6 +1,25 @@
 LUTCalc Changelog
 =================
 
+v3 Beta
+----------
+* New Feature - Choice of tricubic, tetrahedral and trilinear interpolation for analysis and use in LUTAnalyst.
+* New Feature - Completely new gamut limiter algorithm and code. Legalises colours and fixes potential LUT overshoots when going from a wide Gamut such as S-Gamut3 to a narrow one such as Rec709.
+* New Feature - P3 Colourspace now available with DCI, D60 and D65 white points.
+* New Feature - Sony Standard Gammas STD 1-6.
+* New Feature - 'Auto Title' button. Clicking it creates a LUT title containing input and output gamma and gamut details, plus basic info of customisation (currently black level and saturation).
+* New Feature - 'Declip' button on the LUTAnalyst tool. Where LUTs appear to have been clamped (ie the maximum output value is exactly 1.0 and or the minimum exactly 0.0), the declip process will attempt to extrapolate the clipped values, then limit them within a sensible range without hard clipping.
+* New Feature - 'DaVinci Resolve 12+ auto' preset option, to reflect that Resolve 12's default 'auto' clip range setting.
+* New Feature - Custom Colour Space can now set primaries from a matrix and white point / illuminant.
+* Feature Change - Complete rewrite of 3D interpolation / extrapolation code for efficiency, accuracy, clarity and maintainability.
+* Feature Change - Extensive rewrite of LUTAnalyst code for improved accuracy.
+* Feature Change - Reworked 1D interpolation code for speed and efficiency.
+* Feature Change - New code for estimating the gamut triangle on the 'xy / uv chromacity' preview. Much more robust and efficient.
+* Feature Change / Bugfix - Extensive rewrite of 'Custom Colour Space' code.
+* Feature Change - Improved interpretation of Canon EOS Standard and Normal gammas.
+* Bugfix - Fixed Javascript policies which stopped LUTCalc working on Internet Explorer / Edge browser.
+* Bugfix - Gamut Limiter tool was blocking LUT generation.
+
 v2.91
 -----
 * New Feature - RED Gamma 1 and RED Gamma 2 using data from https://github.com/videovillage/RED-Conversion-LUTs.
