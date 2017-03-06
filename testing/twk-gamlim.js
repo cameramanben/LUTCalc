@@ -37,7 +37,16 @@ TWKGamutLim.prototype.io = function() {
 	this.preSlider.setAttribute('max',6);
 	this.preSlider.setAttribute('step',0.1);
 	this.preSlider.setAttribute('value',0);
-	// Linear Space Level Input
+	// Linear Space Level Input 18% Gray
+	this.gOff = 23;
+	this.gMin = this.gOff - 60;
+	this.gMax = 60 - this.gOff;
+	this.preInputG = document.createElement('input');
+	this.preInputG.setAttribute('type','number');
+	this.preInputG.setAttribute('step',0.1);
+	this.preInputG.value = 2.3;
+	this.preInputG.className = 'smallinput';
+	// Linear Space Level Input 90% White
 	this.preInput = document.createElement('input');
 	this.preInput.setAttribute('type','number');
 	this.preInput.setAttribute('step',0.1);
@@ -97,7 +106,10 @@ TWKGamutLim.prototype.ui = function() {
 	this.preBox.className = 'twk-tab-hide';
 	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
 	this.preBox.appendChild(this.preSlider);
-	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Ref White +')));
+	this.preBox.appendChild(document.createElement('br'));
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('18% Gray +')));
+	this.preBox.appendChild(this.preInputG);
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops / Ref White +')));
 	this.preBox.appendChild(this.preInput);
 	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
 	this.box.appendChild(this.preBox);
@@ -232,6 +244,10 @@ TWKGamutLim.prototype.events = function() {
 		here.testPre(false);
 		here.messages.gtSetParams();
 	};}(this);
+	this.preInputG.onchange = function(here){ return function(){
+		here.testPreG();
+		here.messages.gtSetParams();
+	};}(this);
 	this.pstSlider.oninput = function(here){ return function(){
 		here.testPst(true);
 		here.messages.gtSetParams();
@@ -275,6 +291,18 @@ TWKGamutLim.prototype.testPre = function(slider) {
 	}
 	this.preSlider.value = val;
 	this.preInput.value = val;
+	this.preInputG.value = Math.round((val*10) + this.gOff)/10;
+};
+TWKGamutLim.prototype.testPreG = function() {
+	var val = Math.round(parseFloat(this.preInputG.value)*10);
+	if (val > this.gMax) {
+		val = this.gMax;
+	} else if (val < this.gMin) {
+		val = this.gMin;
+	}
+	this.preSlider.value = (val - this.gOff)/10;
+	this.preInput.value = (val - this.gOff)/10;
+	this.preInputG.value = val/10;
 };
 TWKGamutLim.prototype.testPst = function(slider) {
 	var val;
