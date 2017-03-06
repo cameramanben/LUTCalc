@@ -8,7 +8,9 @@
 		"background": {
 			"scripts": [
 				"colourspace.js",
+				"colourspaceworker.js",
 				"gamma.js",
+				"gammaworker.js",
 				"background.js",
 				"lutinputs.js",
 				"splash.js",
