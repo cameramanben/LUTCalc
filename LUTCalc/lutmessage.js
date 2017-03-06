@@ -15,6 +15,7 @@ function LUTMessage(inputs) {
 	this.p = 0;
 	this.ui[0] = this;
 	this.go = false;
+	// 0 - LUTMessage
 	// 1 - camerabox
 	// 2 - gammabox
 	// 3 - tweaksbox
@@ -30,7 +31,12 @@ function LUTMessage(inputs) {
 	// 13 - twkCS
 	// 14 - twkMulti
 	// 15 - twkSampler
-	this.blobWorkers = true;
+	if (typeof this.inputs.blobWorkers !== 'undefined') {
+		this.blobWorkers = this.inputs.blobWorkers;
+	} else {
+		this.blobWorkers = false;
+	}
+this.blobWorkers = false;
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -65,9 +71,12 @@ LUTMessage.prototype.setReady = function() {
 // Gamma Message Handling
 LUTMessage.prototype.startGaThreads = function() {
 	var max = this.gaT;
-	var windowURL = window.URL || window.webkitURL;
-	var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
-	var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	var windowURL,workerString,gammaWorkerBlob;
+	if (this.blobWorkers) {
+		windowURL = window.URL || window.webkitURL;
+		workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+		gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	}
 	for (var i=0; i<max; i++) {
 		var _this = this;
 		if (this.blobWorkers) {
@@ -76,6 +85,7 @@ LUTMessage.prototype.startGaThreads = function() {
 				this.gas[i] = new Worker(blobURL);
 				URL.revokeObjectURL(blobURL);
 			} catch (e) { // Fallback for - IE10 and 11
+console.log('No Inline Web Workers');
 				this.blobWorkers = false;
 				this.gas[i] = new Worker('gammaworker.js');
 			}
@@ -99,9 +109,12 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 		this.gaT = T;
 		var max = this.gas.length;
 		if (T > max) {
-			var windowURL = window.URL || window.webkitURL;
-			var workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
-			var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			var windowURL,workerString,gammaWorkerBlob;
+			if (this.blobWorkers) {
+				windowURL = window.URL || window.webkitURL;
+				workerString = (workerLUTString + workerGammaString).replace('"use strict";', '');
+				gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			}
 			for (var i=max; i<T; i++) {
 				var _this = this;
 				if (this.blobWorkers) {
@@ -230,7 +243,15 @@ LUTMessage.prototype.gaRx = function(d) {
 					this.ui[5].got1D(d);
 					break;
 			case 22: // LUTAnalyst SL3 input to linear
-					this.gtTx(d.p,2,d);
+					this.ui[d.p].setCSInputData(d.o,d.natTF,d.legIn);
+					this.gtTx(d.p,2,{
+						p:d.p,
+						t:d.t,
+						v:d.v,
+						dim:d.dim,
+						gamma:d.gamma,
+						gamut:d.gamut
+					});
 					break;
 			case 23: // RGB input to linear
 					this.gtTx(d.p,1,d);
@@ -374,9 +395,12 @@ LUTMessage.prototype.gotHighLevelDefault = function(d) {
 // Gamut Message Handling
 LUTMessage.prototype.startGtThreads = function() {
 	var max = this.gtT;
-	var windowURL = window.URL || window.webkitURL;
-	var workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
-	var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	var windowURL,workerString,csWorkerBlob;
+	if (this.blobWorkers) {
+		windowURL = window.URL || window.webkitURL;
+		workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
+		csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+	}
 	for (var i=0; i<max; i++) {
 		var _this = this;
 		if (this.blobWorkers) {
@@ -409,9 +433,12 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 		this.gtT = T;
 		var max = this.gts.length;
 		if (T > max) {
-			var windowURL = window.URL || window.webkitURL;
-			var workerString = (workerLUTString + workerRingString + workerBrentString + workerGammaString).replace('"use strict";', '');
-			var csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			var windowURL,workerString,csWorkerBlob;
+			if (this.blobWorkers) {
+				windowURL = window.URL || window.webkitURL;
+				workerString = (workerLUTString + workerRingString + workerBrentString + workerCSString).replace('"use strict";', '');
+				csWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			}
 			for (var i=max; i<T; i++) {
 				var _this = this;
 				if (this.blobWorkers) {
@@ -513,7 +540,9 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.gaTx(5,4,d);
 					break;
 			case 22: // RGB S-Gamut3.cine to LA input gamut
-					this.gaTx(d.p,9,d);
+					// console.log(new Float64Array(d.inputMatrix));
+					// this.gaTx(d.p,9,d);
+					this.ui[d.p].gotInputVals(d.inputMatrix,d.dim);
 					break;
 			case 23: // Recalculated custom matrix for changed colourspace
 					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
@@ -762,7 +791,10 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		'LC709A',
 		'cpouttungsten',
 		'cpoutdaylight',
-		'V709'
+		'Amira709',
+		'AlexaX2',
+		'V709',
+		'Cine709'
 	];
 	var m = fileNames.length;
 	var isLE;
@@ -778,9 +810,9 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 		xhr.onload = (function(here) {
 			return function(e) {
 				var buff = this.response;
+	  			var lutArr = new Uint8Array(buff);
 	  			if (!here.isLE) { // files are little endian, swap if system is big endian
 					// console.log('Gamut LUTs: Big Endian System');
-	  				var lutArr = new Uint8Array(buff);
 	  				var max = Math.round(lutArr.length / 4); // Float32s === 4 bytes
 	  				var i,b0,b1,b2,b3;
 	  				for (var j=0; j<max; j++) {
@@ -808,12 +840,148 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 	 				C[1][j] = parseFloat(in32[((2+tfS+csS)) + j])/1073741824;
 	 				C[2][j] = parseFloat(in32[((2+tfS+(2*csS))) + j])/1073741824;
 	 			}
+				var dataEnd = 2+tfS+(3*csS);
+				// get input matrix details (all zeros means no matrix defined)
+				var inputMatrix = new Float64Array(9);
+				var imM = false;
+				if (dataEnd < in32.length) {
+					for (var j=0; j<9; j++) {
+						if (in32[dataEnd+j] !== 0) {
+							imM = true;
+							inputMatrix[j] = parseFloat(in32[dataEnd+j])/107374182.4;
+						}
+					}
+					dataEnd += 9;
+				}
+				if (!imM) {
+					inputMatrix = false;
+				}
+				// look for input matrix, colourspace and transfer function info at the end of the file if present
+				var in1DTF = 'S-Log3'; // system default
+				var in3DTF = 'S-Log3'; // system default
+				var sysCS = 'Sony S-Gamut3.cine'; // system default
+				var in3DCS = 'Sony S-Gamut3.cine'; // system default
+				var in1DEX = true; // system default
+				var in3DEX = true; // system default
+				var in1DMin = [0,0,0];
+				var in1DMax = [1,1,1];
+				var in3DMin = [0,0,0];
+				var in3DMax = [1,1,1];
+				var interpolation = false;
+				var baseISO = false;
+				if (dataEnd < in32.length) {
+					dataEnd *= 4;
+					var fileEnd = lutArr.length;
+					var metaString = '';
+					for (var j=dataEnd; j<fileEnd; j++) {
+						metaString += String.fromCharCode(lutArr[j]).replace('^','γ');
+					}
+					if (metaString.search('|') >= 0) {
+						var meta = metaString.split('|');
+						var m = meta.length;
+						if (m > 2) {
+							for (var j=0; j<m; j +=2) {
+								switch (meta[j]) {
+									case '1DTF':
+										in1DTF = meta[j+1].trim();
+										break;
+							 		case '1DRG':
+							 			if (meta[j+1].toLowerCase() === '100') {
+											in1DEX = false;
+										}
+										break;
+							 		case '1DMIN':
+										in1DMin[0] = parseFloat(meta[j+1]);
+										if (isNaN(in1DMin[0])) {
+											in1DMin[0] = 0;
+										} else {
+											in1DMin[1] = in1DMin[0];
+											in1DMin[2] = in1DMin[0];
+										}
+										break;
+							 		case '1DMAX':
+										in1DMax[0] = parseFloat(meta[j+1]);
+										if (isNaN(in1DMax[0])) {
+											in1DMax[0] = 1;
+										} else {
+											in1DMax[1] = in1DMax[0];
+											in1DMax[2] = in1DMax[0];
+										}
+										break;
+							 		case 'SYSCS':
+										sysCS = meta[j+1].trim();
+										break;
+							 		case '3DTF':
+							 			in3DTF = meta[j+1].trim();
+										break;
+							 		case '3DCS':
+							 			in3DCS = meta[j+1].trim();
+										break;
+							 		case '3DRG':
+							 			if (meta[j+1].toLowerCase() === '100') {
+											in3DEX = false;
+										}
+										break;
+							 		case '3DMIN':
+										in3DMin[0] = parseFloat(meta[j+1]);
+										if (isNaN(in3DMin[0])) {
+											in3DMin[0] = 0;
+										} else {
+											in3DMin[1] = in3DMin[0];
+											in3DMin[2] = in3DMin[0];
+										}
+										break;
+							 		case '3DMAX':
+										in3DMax[0] = parseFloat(meta[j+1]);
+										if (isNaN(in3DMax[0])) {
+											in3DMax[0] = 1;
+										} else {
+											in3DMax[1] = in3DMax[0];
+											in3DMax[2] = in3DMax[0];
+										}
+										break;
+							 		case 'INTERPOLATION':
+										switch (meta[j+1].trim().toLowerCase()) {
+											case 'tricubic': interpolation = 0;
+												break;
+											case 'tetrahedral': interpolation = 1;
+												break;
+											case 'trilinear': interpolation = 2;
+												break;
+										}
+										break;
+				 					case 'BASEISO':
+				 						if (meta[j+1].trim().toLowerCase() !== 'unknown') {
+					 						baseISO = parseInt(meta[j+1].trim());
+					 					}
+				 						break;
+								}
+							}			
+						} else {
+							in1DTF = meta[0].trim();
+							in3DCS = meta[1].trim();
+						}
+					} else {
+						in3DCS = metaString;
+					}
+				}
 	  			here.messages.gtTxAll(0, 4, {
 					fileName: here.fileName,
+					format: 'cube',
+					dims: 3,
 					s: dim,
-					C0: C[0].buffer,
-	 				C1: C[1].buffer,
-	 				C2: C[2].buffer
+					min: in3DMin,
+					max: in3DMax,
+					C: [ C[0].buffer, C[1].buffer, C[2].buffer ],
+					meta: {
+						systemCS: sysCS,
+						inputTF: in3DTF,
+						inputCS: in3DCS,
+						inputEX: in3DEX,
+						interpolation: interpolation,
+						baseISO: baseISO,
+						inputMatrix: inputMatrix
+					}
 				});
 			};
 		})({

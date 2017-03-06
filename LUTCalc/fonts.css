@@ -15,7 +15,9 @@ i { font-weight: bold; }
 th {font-weight: bold;}
 small {font-size: 0.7em;}
 strong { font-weight: bold; font-size: 1.1em; }
-select, input, textarea {font: 99% sans-serif;}
+select {font: 90% sans-serif;}
+label {font: 90%;}
+input, textarea {font: 99% sans-serif;}
 sup { vertical-align: top; font-size: 0.7em; }
 table { font-size: 0.8em; }
 .smaller {font-size: 0.8em;}

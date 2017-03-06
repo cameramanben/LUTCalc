@@ -24,7 +24,66 @@ TWKGamutLim.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-	this.gamSelect = document.createElement('select');
+	// Max Start Value
+	// Pre / Post option radios
+	this.linear = false;
+	this.prePost = [];
+	this.prePost[0] = this.createRadioElement('prePostRadio',false);
+	this.prePost[1] = this.createRadioElement('prePostRadio',true);
+	// Linear Space Level Slider
+	this.preSlider = document.createElement('input');
+	this.preSlider.setAttribute('type','range');
+	this.preSlider.setAttribute('min',-6);
+	this.preSlider.setAttribute('max',6);
+	this.preSlider.setAttribute('step',0.1);
+	this.preSlider.setAttribute('value',0);
+	// Linear Space Level Input 18% Gray
+	this.gOff = 23;
+	this.gMin = this.gOff - 60;
+	this.gMax = 60 - this.gOff;
+	this.preInputG = document.createElement('input');
+	this.preInputG.setAttribute('type','number');
+	this.preInputG.setAttribute('step',0.1);
+	this.preInputG.value = 2.3;
+	this.preInputG.className = 'smallinput';
+	// Linear Space Level Input 90% White
+	this.preInput = document.createElement('input');
+	this.preInput.setAttribute('type','number');
+	this.preInput.setAttribute('step',0.1);
+	this.preInput.value = 0;
+	this.preInput.className = 'smallinput';
+	// Post Tone Map Level Slider
+	this.pstSlider = document.createElement('input');
+	this.pstSlider.setAttribute('type','range');
+	this.pstSlider.setAttribute('min',1);
+	this.pstSlider.setAttribute('max',109);
+	this.pstSlider.setAttribute('step',1);
+	this.pstSlider.setAttribute('value',100);
+	// Post Tone Map Level Input
+	this.pstInput = document.createElement('input');
+	this.pstInput.setAttribute('type','number');
+	this.pstInput.setAttribute('step',1);
+	this.pstInput.value = 100;
+	this.pstInput.className = 'smallinput';
+	// Gamut List
+	this.gtSelect = document.createElement('select');
+	this.gamutList = this.inputs.gamutMatrixList;
+	m = this.gamutList.length;
+	var opt = document.createElement('option');
+	opt.value = 9999;
+	opt.appendChild(document.createTextNode('Match Output Gamut'));
+	this.gtSelect.appendChild(opt);
+	for (var j=0; j<m; j++) {
+		var option = document.createElement('option');
+		option.value = this.gamutList[j].idx;
+		option.appendChild(document.createTextNode(this.gamutList[j].name));
+		this.gtSelect.appendChild(option);
+	}
+	this.diffGam = false;
+	this.bothCheck = document.createElement('input');
+	this.bothCheck.setAttribute('type','checkbox');
+	this.bothCheck.className = 'twk-checkbox';
+	this.bothCheck.checked = true;
 };
 TWKGamutLim.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -37,18 +96,42 @@ TWKGamutLim.prototype.ui = function() {
 	this.box = document.createElement('div');
 	this.box.className = 'tweak-hide';
 	// Tweak - Specific UI Elements
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Display Gamut')));
-	var rec709Opt = document.createElement('option');
-	rec709Opt.value = 0;
-	rec709Opt.innerHTML = 'Rec709 / sRGB';
-	this.gamSelect.appendChild(rec709Opt);
-	var rec2020Opt = document.createElement('option');
-	rec2020Opt.value = 0;
-	rec2020Opt.innerHTML = 'Rec2020 / Rec2100';
-	this.gamSelect.appendChild(rec2020Opt);
-	this.box.appendChild(this.gamSelect);
-	
-
+	// Pre / Post radio choice
+	this.box.appendChild(this.prePost[0]);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Linear Space')));
+	this.box.appendChild(this.prePost[1]);
+	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Post Gamma')));
+	// Linear Space Level Value
+	this.preBox = document.createElement('div');
+	this.preBox.className = 'twk-tab-hide';
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
+	this.preBox.appendChild(this.preSlider);
+	this.preBox.appendChild(document.createElement('br'));
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('18% Gray +')));
+	this.preBox.appendChild(this.preInputG);
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops / Ref White +')));
+	this.preBox.appendChild(this.preInput);
+	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
+	this.box.appendChild(this.preBox);
+	// Post Tonemap Level Value
+	this.pstBox = document.createElement('div');
+	this.pstBox.className = 'twk-tab';
+	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
+	this.pstBox.appendChild(this.pstSlider);
+	this.pstBox.appendChild(this.pstInput);
+	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.box.appendChild(this.pstBox);
+	// Limit to other colourspaces
+	this.gtBox = document.createElement('div');
+	this.gtBox.className = 'twk-tab';
+	this.gtBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Gamut To Limit To')));
+	this.gtBox.appendChild(this.gtSelect);
+	this.bothBox = document.createElement('div');
+	this.bothBox.className = 'twk-tab-hide';
+	this.bothBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Protect Both')));
+	this.bothBox.appendChild(this.bothCheck);
+	this.gtBox.appendChild(this.bothBox);
+	this.box.appendChild(this.gtBox);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -75,6 +158,9 @@ TWKGamutLim.prototype.toggleTweak = function() {
 	}
 };
 TWKGamutLim.prototype.getTFParams = function(params) {
+	// No Relevant Parameters For This Tweak
+};
+TWKGamutLim.prototype.getCSParams = function(params) {
 	var out = {};
 	var tweaks = this.inputs.tweaks.checked;
 	var tweak = this.tweakCheck.checked;
@@ -83,11 +169,18 @@ TWKGamutLim.prototype.getTFParams = function(params) {
 	} else {
 		out.doGamutLim = false;
 	}
-	out.display = this.gamSelect.selectedIndex;
+	if (this.linear) {
+		out.lin = true;
+		out.level = Math.pow(2,parseFloat(this.preSlider.value)); // Effect start level in stops around 18% gray
+	} else {
+		out.lin = false;
+		out.level = parseFloat(this.pstSlider.value)/100; // Effect start level in % IRE
+	}
+	if (this.diffGam) {
+		out.gamut = this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue;
+		out.both = this.bothCheck.checked;
+	}
 	params.twkGamutLim = out;
-};
-TWKGamutLim.prototype.getCSParams = function(params) {
-	// No Relevant Parameters For This Tweak
 };
 TWKGamutLim.prototype.setParams = function(params) {
 	if (typeof params.twkGamutLim !== 'undefined') {
@@ -98,7 +191,6 @@ TWKGamutLim.prototype.setParams = function(params) {
 TWKGamutLim.prototype.getSettings = function(data) {
 	data.gamutLim = {
 		doGamutLim: this.tweakCheck.checked,
-		display: this.gamSelect.options[this.gamSelect.selectedIndex].innerHTML
 	};
 };
 TWKGamutLim.prototype.setSettings = function(settings) {
@@ -107,15 +199,6 @@ TWKGamutLim.prototype.setSettings = function(settings) {
 		if (typeof data.doGamutLim === 'boolean') {
 			this.tweakCheck.checked = data.doGamutLim;
 			this.toggleTweak();
-		}
-		if (typeof data.display === 'string') {
-			switch (data.display) {
-				case 'Rec2020 / Rec2100': this.gamSelect.options[1].selected = true;
-					break;
-				case 'Rec709 / sRGB':
-				default: this.gamSelect.options[0].selected = true;
-					break;
-			}
 		}
 	}
 };
@@ -145,11 +228,141 @@ TWKGamutLim.prototype.isCustomGamut = function() {
 TWKGamutLim.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
-		here.messages.gaSetParams();
+		here.messages.gtSetParams();
 	};}(this);
-	this.gamSelect.onchange = function(here){ return function(){
-		here.toggleTweak();
-		here.messages.gaSetParams();
+	this.prePost[0].onchange = function(here){ return function(){
+		here.togglePrePost();
+	};}(this);
+	this.prePost[1].onchange = function(here){ return function(){
+		here.togglePrePost();
+	};}(this);
+	this.preSlider.oninput = function(here){ return function(){
+		here.testPre(true);
+		here.messages.gtSetParams();
+	};}(this);
+	this.preInput.onchange = function(here){ return function(){
+		here.testPre(false);
+		here.messages.gtSetParams();
+	};}(this);
+	this.preInputG.onchange = function(here){ return function(){
+		here.testPreG();
+		here.messages.gtSetParams();
+	};}(this);
+	this.pstSlider.oninput = function(here){ return function(){
+		here.testPst(true);
+		here.messages.gtSetParams();
+	};}(this);
+	this.pstInput.onchange = function(here){ return function(){
+		here.testPst(false);
+		here.messages.gtSetParams();
+	};}(this);
+	this.gtSelect.onchange = function(here){ return function(){
+		here.diffGamut();
+		here.messages.gtSetParams();
+	};}(this);
+	this.bothCheck.onclick = function(here){ return function(){
+		here.messages.gtSetParams();
 	};}(this);
 };
 // Tweak-Specific Code
+TWKGamutLim.prototype.togglePrePost = function() {
+	if (this.prePost[0].checked) {
+		this.linear = true;
+		this.preBox.className = 'twk-tab';
+		this.pstBox.className = 'twk-tab-hide';
+	} else {
+		this.linear = false;
+		this.preBox.className = 'twk-tab-hide';
+		this.pstBox.className = 'twk-tab';
+	}
+	this.messages.gtSetParams();
+};
+TWKGamutLim.prototype.testPre = function(slider) {
+	var val;
+	if (slider) {
+		val = parseFloat(this.preSlider.value);
+	} else {
+		val = parseFloat(this.preInput.value);
+	}
+	if (val > 6) {
+		val = 6;
+	} else if (val < -6) {
+		val = -6;
+	}
+	this.preSlider.value = val;
+	this.preInput.value = val;
+	this.preInputG.value = Math.round((val*10) + this.gOff)/10;
+};
+TWKGamutLim.prototype.testPreG = function() {
+	var val = Math.round(parseFloat(this.preInputG.value)*10);
+	if (val > this.gMax) {
+		val = this.gMax;
+	} else if (val < this.gMin) {
+		val = this.gMin;
+	}
+	this.preSlider.value = (val - this.gOff)/10;
+	this.preInput.value = (val - this.gOff)/10;
+	this.preInputG.value = val/10;
+};
+TWKGamutLim.prototype.testPst = function(slider) {
+	var val;
+	if (slider) {
+		val = parseFloat(this.pstSlider.value);
+	} else {
+		val = parseFloat(this.pstInput.value);
+	}
+	if (val > 109) {
+		val = 109;
+	} else if (val < 1) {
+		val = 1;
+	}
+	this.pstSlider.value = val;
+	this.pstInput.value = val;
+};
+TWKGamutLim.prototype.diffGamut = function() {
+	if (this.gtSelect.selectedIndex > 0 && this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue !== this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue) {
+		this.bothBox.className = 'twk-tab';
+		this.diffGam = true;
+	} else {
+		this.bothBox.className = 'twk-tab-hide';
+		this.diffGam = false;
+	}
+};
+TWKGamutLim.prototype.changeGamut = function() {
+	var gtList = this.inputs.outGamut;
+	var m = this.gtSelect.length;
+	var matrix = false;
+	for (var j=1; j<m; j++) {
+		if (gtList.options[gtList.selectedIndex].lastChild.nodeValue === this.gtSelect.options[j].lastChild.nodeValue) {
+			matrix = true;
+			break;
+		}
+	}
+	if (matrix) {
+		this.gtBox.className = 'twk-tab';
+		this.diffGamut();
+	} else {
+		this.gtBox.className = 'twk-tab-hide';
+		this.diffGam = false;
+	}
+}
+TWKGamutLim.prototype.createRadioElement = function(name, checked) {
+    var radioInput;
+    try {
+        var radioHtml = '<input type="radio" name="' + name + '"';
+        if ( checked ) {
+            radioHtml += ' checked="checked"';
+        }
+        radioHtml += '/>';
+        radioInput = document.createElement(radioHtml);
+    } catch( err ) {
+        radioInput = document.createElement('input');
+        radioInput.setAttribute('type', 'radio');
+        radioInput.setAttribute('name', name);
+        if ( checked ) {
+            radioInput.setAttribute('checked', 'checked');
+        }
+    }
+    return radioInput;
+};
+

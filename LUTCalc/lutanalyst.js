@@ -14,11 +14,12 @@ function LUTAnalyst(inputs, messages) {
 	this.messages = messages;
 	this.p = 7;
 	this.messages.addUI(this.p,this);
+	this.lutMaker = new LUTs();
+	this.natTF = false;
+	this.inputEX = true;
+	this.showGt = true;
 	this.lutRange();
-	this.title = 'LUT Analyst';
-	this.inLUT = new LUTs();
-	this.tf = new LUTs();
-	this.cs = new LUTs();
+	this.reset();
 	lutcalcReady(this.p);
 }
 LUTAnalyst.prototype.getTitle = function(lut) {
@@ -32,9 +33,9 @@ LUTAnalyst.prototype.getTitle = function(lut) {
 };
 LUTAnalyst.prototype.reset = function() {
 	this.title = 'LUT Analyst';
-	this.inLUT = new LUTs();
-	this.tf = new LUTs();
-	this.cs = new LUTs();
+	this.inLUT = false;
+	this.tf = false;
+	this.cs = false;
 };
 LUTAnalyst.prototype.lutRange = function() {
 	if (this.inputs.laRange[3].checked || this.inputs.laRange[2].checked) {
@@ -71,14 +72,17 @@ LUTAnalyst.prototype.getTF = function() {
 		gamma: this.gammaIn
 	});
 };
-LUTAnalyst.prototype.updateLATF = function() {
+LUTAnalyst.prototype.updateLATF = function(laFile) {
 	this.gaT = this.messages.getGammaThreads();
-	var dets = this.tf.getDetails();
+	var dets = this.tf.getDetails(true);
+	if (typeof laFile !== 'undefined' && laFile) {
+		this.tfSpline = new LUTRSpline({buff:dets.C[0], fL:0, fH:1});
+	}
 	var HL = this.tfSpline.getHighLow();
 	dets.R = [this.tfSpline.getReverse()];
-	dets.sr = this.tfSpline.getSR();
-	dets.minR = [HL.revL,HL.revL,HL.revL];
-	dets.maxR = [HL.revH,HL.revH,HL.revH];
+	dets.sr = this.tfSpline.getRM();
+	dets.minR = new Float64Array([HL.revL,HL.revL,HL.revL]);
+	dets.maxR = new Float64Array([HL.revH,HL.revH,HL.revH]);
 	this.messages.gaTxAll(this.p,6,dets);
 };
 LUTAnalyst.prototype.getL = function() {
@@ -99,92 +103,213 @@ LUTAnalyst.prototype.getCS = function() {
 		gamut: this.gamutIn
 	});
 };
+LUTAnalyst.prototype.setCSInputData = function(buff,natTF,legIn) {
+	this.natTF = natTF;
+	this.inputEX = !legIn;
+	this.inputData = new Float64Array(buff);
+};
+LUTAnalyst.prototype.getCSInputMatrix = function() {
+	var dets = this.cs.getMetadata();
+	if (typeof dets.inputMatrix !== 'undefined') {
+		return dets.inputMatrix;
+	} else {
+		return false;
+	}
+};
 LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
+	var inputTF;
+	if (parseInt(this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].value) === 9999) {
+		inputTF = this.inputs.laLinGammaSelect.options[this.inputs.laLinGammaSelect.selectedIndex].text.trim();
+	} else {
+		inputTF = this.inputs.laGammaSelect.options[this.inputs.laGammaSelect.selectedIndex].text.trim();
+	}
 	if (this.pass === 0) { // Transfer function pass
 		var C = new Float64Array(buff);
-		var max = C.length;
-		this.inLUT.lLsCub(buff);
-		for (var j=0; j<max; j++) {
-			if (this.legOut) {
+		var m = C.length;
+		this.inLUT.FCub(buff);
+		if (this.legOut) {
+			for (var j=0; j<m; j++) {
 				C[j] = ((C[j]*876)+64)/1023;
 			}
 		}
-		this.tf.setDetails({
+		var mono = C[m-1] - C[0];
+		if (mono >= 0) {
+			mono = 1;
+		} else if (mono < 0) {
+			mono = -1;
+		}
+		if ((C[1]-C[0])*mono <= 0) {
+			C[0] = (2*C[1]) - C[2];
+			if ((C[1]-C[0])*mono <= 0) { // still opposite slope to monotonic
+				C[0] = C[1] - (0.0075 * mono / (m-1));
+			}
+		}
+		if ((C[m-1]-C[m-2])*mono <= 0) {
+			C[m-1] = (2*C[m-2]) - C[m-3];
+			if ((C[m-1]-C[m-2])*mono <= 0) { // still opposite slope to monotonic
+				C[m-1] = C[m-2] + (0.0075 * mono / (m-1));
+			}
+		}
+		this.tf = this.lutMaker.newLUT({
 			title: 'Transfer Function',
 			format: 'cube',
 			dims: 1,
-			s: max,
+			s: m,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [buff]
+			C: [buff.slice(0)],
+			meta: {
+				inputTF: inputTF
+			}
 		});
-		this.tfSpline = new LUTSpline(buff,1,0);
+		this.tfSpline = new LUTRSpline({buff:buff, fL:0, fH:1});
 		this.pass = 1;
 		this.getCS();
-	} else { // Colour Space Pass
-		this.brent = new Brent(this.tf,0,1);
-		var max = dim*dim*dim;
-		var R = new Float64Array(max);
-		var G = new Float64Array(max);
-		var B = new Float64Array(max);
-		var rgb = new Float64Array(buff);
-		this.inLUT.rRsCub(buff);
-		for (var j=0; j<max; j++) {
+	} else if (this.inLUT.is3D()) { // Colour Space Pass
+		var m = dim*dim*dim;
+		var R = new Float64Array(m);
+		var G = new Float64Array(m);
+		var B = new Float64Array(m);
+		var rgb = this.inputData;
+		var inputMatrix = new Float64Array(buff);
+		// Run the test data through the input LUT
+		var method;
+		if (this.inputs.laIntMethod[0].checked) {
+			method = 0;
+			this.inLUT.RGBCub(rgb.buffer);
+		} else if (this.inputs.laIntMethod[1].checked) {
+			method = 1;
+			this.inLUT.RGBTet(rgb.buffer);
+		} else {
+			method = 2;
+			this.inLUT.RGBLin(rgb.buffer);
+		}
+		for (var j=0; j<m; j++) {
 			k = j*3;
-			if (this.legOut) {
-				R[j] = this.tfSpline.r(((rgb[ k ]*876)+64)/1023);
-				G[j] = this.tfSpline.r(((rgb[k+1]*876)+64)/1023);
-				B[j] = this.tfSpline.r(((rgb[k+2]*876)+64)/1023);
+			R[j] = rgb[ k ];
+			G[j] = rgb[k+1];
+			B[j] = rgb[k+2];
+		}
+		// Set the reversible spline
+		var Y = new Float64Array(dim);
+		if (this.natTF === 0) {
+			if (this.legIn) {
+				for (var j=0; j<dim; j++) {
+					Y[j] = ((j*876/(dim-1))+64)/1023;
+				}
 			} else {
-				R[j] = this.tfSpline.r(rgb[ k ]);
-				G[j] = this.tfSpline.r(rgb[k+1]);
-				B[j] = this.tfSpline.r(rgb[k+2]);
+				for (var j=0; j<dim; j++) {
+					Y[j] = j/(dim-1);
+				}
+			}
+			this.tfSpline.FCub(Y.buffer); // this.tfSpline is always data in to data out
+			if (this.legOut) {
+				for (var j=0; j<dim; j++) {
+					Y[j] = ((Y[j]*1023)-64)/876;
+				}
+			}
+		} else {
+			for (var j=0; j<dim; j++) {
+				Y[j] = j/(dim-1);
+			}
+			this.inLUT.FCub(Y.buffer);
+			var mono = Y[dim-1] - Y[0];
+			if (mono >= 0) {
+				mono = 1;
+			} else if (mono < 0) {
+				mono = -1;
+			}
+			if ((Y[1]-Y[0])*mono <= 0) {
+				Y[0] = (2*Y[1]) - Y[2];
+				if ((Y[1]-Y[0])*mono <= 0) { // still opposite slope to monotonic
+					Y[0] = Y[1] - (0.0075 * mono / (dim-1));
+				}
+			}
+			if ((Y[dim-1]-Y[dim-2])*mono <= 0) {
+				Y[dim-1] = (2*Y[dim-2]) - Y[dim-3];
+				if ((Y[dim-1]-Y[dim-2])*mono <= 0) { // still opposite slope to monotonic
+					Y[dim-1] = Y[dim-2] + (0.0075 * mono / (dim-1));
+				}
 			}
 		}
-		var minMax = this.tfSpline.getMinMax();
-		var a = minMax.a;
-		var b = minMax.b;
-		for (var j=0; j<max; j++) {
-			if (R[j] < -65535) {
-				R[j] = a;
-			} else if (R[j] > 65535) {
-				R[j] = b;
+		var tfSpline = new LUTRSpline({buff:Y.buffer, fL:0, fH:1});
+		tfSpline.setMethod(method);
+		// Find the reverse of the LUTTed data
+		tfSpline.R(R.buffer);
+		tfSpline.R(G.buffer);
+		tfSpline.R(B.buffer);
+		// Limit the results
+		var minMax = this.inLUT.minMax();
+		var lo = Math.min( 0, tfSpline.r(Math.min(minMax[0],minMax[1],minMax[2]))); // 0, or the lowest value in the mesh, whichever the greater
+		var hi = Math.max( 1, tfSpline.r(Math.max(minMax[3],minMax[4],minMax[5]))); // 1.0, or the highest value in the mesh, whichever the lesser
+		var min = lo - (87.6/1023); // 10% IRE below the 'lo' value
+		var max = hi + (175.2/1023); // 20% IRE above 'hi' value
+		var dcLo = tfSpline.df(lo);
+		var dcHi = tfSpline.df(hi);
+		var numLo = Math.pow(min-lo,2);
+		var denLo = min-lo;
+		var numHi = Math.pow(max-hi,2);
+		var denHi = max-hi;
+		for (var j=0; j<m; j++) {
+			if (R[j] < lo) {
+				R[j] = min - (numLo/((dcLo*(R[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				R[j] = max - (numHi/((dcHi*(R[j]-hi))+denHi));
 			}
-			if (G[j] < -65535) {
-				G[j] = a;
-			} else if (B[j] > 65535) {
-				G[j] = b;
+			if (G[j] < lo) {
+				G[j] = min - (numLo/((dcLo*(G[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				G[j] = max - (numHi/((dcHi*(G[j]-hi))+denHi));
 			}
-			if (B[j] < -65535) {
-				B[j] = a;
-			} else if (B[j] > 65535) {
-				B[j] = b;
+			if (B[j] < lo) {
+				B[j] = min - (numLo/((dcLo*(B[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				B[j] = max - (numHi/((dcHi*(B[j]-hi))+denHi));
 			}
-		}		
-		this.cs.setDetails({
+		}
+		var inputCS = this.inputs.laGamutSelect.options[this.inputs.laGamutSelect.selectedIndex].text.trim();
+		var meta =  {
+			inputTF: inputTF,
+			systemCS: 'Sony S-Gamut3.cine',
+			inputCS: inputCS,
+			inputEX: !this.legIn,
+			nativeTF: this.natTF,
+			interpolation: method,
+			inputMatrix: inputMatrix
+		};
+		if (inputTF.indexOf('LogC') !== -1) {
+			meta.baseISO = parseInt(this.inputs.cineEI.value);
+		}
+		this.cs = this.lutMaker.newLUT({
 			title: 'Colour Space',
 			format: 'cube',
 			dims: 3,
 			s: dim,
 			min: [0,0,0],
 			max: [1,1,1],
-			C: [R.buffer,G.buffer,B.buffer]
+			C: [R.buffer,G.buffer,B.buffer],
+			meta: meta
 		});
+		this.showGt = true;
 		this.updateLATF();
 		this.updateLACS();
+	} else {
+		this.showGt = false;
+		this.updateLATF();
 	}
 };
 LUTAnalyst.prototype.updateLACS = function() {
 	this.gtT = this.messages.getGamutThreads();
 	var d = this.cs.getDetails();
+	var meta = d.meta;
 	var details = {
 		title: d.title,
 		format: d.format,
-		dims: d.d,
+		dims: d.dims,
 		s: d.s,
 		min: d.min.slice(0),
 		max: d.max.slice(0),
-		rgbl: d.rgbl
+		meta: meta
 	};
 	if (d.d === 3 || d.C.length === 3) {
 		details.C = [
@@ -193,10 +318,30 @@ LUTAnalyst.prototype.updateLACS = function() {
 			d.C[2].slice(0)
 		];
 	} else {
-		details.C = [d.C[0].buffer.slice(0)];
+		details.C = [d.C[0].slice(0)];
 	}
+//set LUT here
 	this.messages.gtTxAll(this.p,6,details);
 };
 LUTAnalyst.prototype.getRGB = function() {
-	return this.cs.getRGB();
+	if (this.showGt) {
+		return this.cs.getRGB();
+	} else {
+		return false;
+	}
+};
+LUTAnalyst.prototype.setLUT = function(lut, data) {
+	this[lut] = this.lutMaker.newLUT(data);
+	if (typeof this[lut] !== 'undefined') {
+		this.showGt = true;
+		return true;
+	} else {
+		return false;
+	}
+};
+LUTAnalyst.prototype.noCS = function() {
+	this.showGt = false;
+};
+LUTAnalyst.prototype.showGamut = function() {
+	return this.showGt;
 };

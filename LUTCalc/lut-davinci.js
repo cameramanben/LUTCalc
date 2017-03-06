@@ -29,7 +29,7 @@ davinciiLUT.prototype.build = function(buff, fileName, ext) {
 		ext: ext
 	};
 };
-davinciiLUT.prototype.parse = function(title, text, lut) {
+davinciiLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = 1;
 	var size = 16384;
 	var max = text.length;
@@ -64,6 +64,19 @@ davinciiLUT.prototype.parse = function(title, text, lut) {
 		}
 	}
 	if (s === size) {
+		return lutMaker.setLUT(
+			lutDest,
+			{
+				title: title,
+				format: 'davinci',
+				dims: dimensions,
+				s: size,
+				min: [0,0,0],
+				max: [1,1,1],
+				C: [R.buffer,G.buffer,B.buffer]
+			}
+		);
+/*
 		lut.setDetails({
 			title: title,
 			format: 'davinci',
@@ -74,6 +87,7 @@ davinciiLUT.prototype.parse = function(title, text, lut) {
 			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
+*/
 	} else {
 		return false;
 	}
@@ -100,7 +114,7 @@ davincioLUT.prototype.build = function(buff, fileName, ext) {
 		ext: ext
 	};
 };
-davincioLUT.prototype.parse = function(title, text, lut) {
+davincioLUT.prototype.parse = function(title, text, lutMaker, lutDest) {
 	var dimensions = 1;
 	var size = 4096;
 	var max = text.length;
@@ -135,6 +149,19 @@ davincioLUT.prototype.parse = function(title, text, lut) {
 		}
 	}
 	if (s === size) {
+		return lutMaker.setLUT(
+			lutDest,
+			{
+				title: title,
+				format: 'davinci',
+				dims: dimensions,
+				s: size,
+				min: [0,0,0],
+				max: [1,1,1],
+				C: [R.buffer,G.buffer,B.buffer]
+			}
+		);
+/*
 		lut.setDetails({
 			title: title,
 			format: 'davinci',
@@ -145,6 +172,7 @@ davincioLUT.prototype.parse = function(title, text, lut) {
 			C: [R.buffer,G.buffer,B.buffer]
 		});
 		return true;
+*/
 	} else {
 		return false;
 	}

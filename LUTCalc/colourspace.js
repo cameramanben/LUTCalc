@@ -12,23 +12,27 @@
 function LUTColourSpace() {
 	this.ready = 0;
 	
+	this.lutMaker = new LUTs();
 	this.g = [];
 	this.csIn = [];
 	this.csOut = [];
 	this.csM = [];
 	this.CATs = new CSCAT();
+	// CIECAT02
+	// CIECAT97s
+	// Bradford Chromatic Adaptation
+	// Von Kries
+	// Sharp
+	// CMCCAT2000
+	// Bianco BS
+	// Bianco BS-PC
+	// XYZ Scaling
 	this.sysCAT = 'CIECAT02';
-	this.sysCATIdx = this.CATs.modelIdx(this.sysCAT);
-	this.cat02 = new Float64Array([
-		 0.7328, 0.4296,-0.1624,
-		-0.7036, 1.6975, 0.0061,
-		 0.0030, 0.0136, 0.9834
-	]);
-	this.invCat02 = this.mInverse(this.cat02);
+	this.sysCATIdx = this.CATs.setDefault(this.sysCAT);
 	this.matList = [];
 	this.xyzMatrices();
 	this.system = this.g[this.sysIdx];
-	this.system.inv = this.mInverse(this.system.toXYZ);
+	this.system.fromXYZ = this.mInverse(this.system.toXYZ);
 	this.y = new Float64Array([	0.2126, 0.7152, 0.0722 ]);
 	this.systemMatrices();
 	this.setSaturated();
@@ -41,7 +45,7 @@ function LUTColourSpace() {
 	this.ver = 0;
 	this.curIn = 0;
 	this.curOut = 0;
-	this.planck = new Planck();
+	this.planck = new Planck(this.lutMaker);
 	this.system.CCT = this.planck.getCCT(this.system.white);
 	this.system.Dxy = this.planck.getDxy(this.system.white,this.system.CCT);
 	this.wb = new CSWB(this.system.white,this.system.toXYZ, this.planck, this.CATs);
@@ -83,17 +87,25 @@ function LUTColourSpace() {
 		10.39683067,// Yellow - White Clip (Sony F55,F5,FS7)-0.3 Stop
 		12.36398501 // Red - White Clip (Sony F55,F5,FS7) 18%+6 stops
 	]);
+	this.gLimLin = false;
+	this.gLimL = 1;
+	this.gLimY = new Float64Array(this.y.buffer.slice(0));
+	this.gLimGIn = 0;
+	this.gLimGOut = 0;
+	this.gLimC = false;
+	this.gLimB = true;
 
 	this.doHG = false;
 	this.doWB = false;
 	this.doASCCDL = false;
 	this.doPSSTCDL = false;
+	this.doGamutLim = false;
 	this.doFC = false;
 
 	this.loadColourSpaces();
 	this.buildColourSquare();
 	this.buildMultiColours();
-	
+
 	this.ready++;
 	
 }
@@ -150,10 +162,6 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Arri'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Canon Cinema Gamut'));
 	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Wide Gamut')]);
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
-	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
-	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
-	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
 	this.csIn.push(this.toSys('Panasonic V-Gamut'));
 	this.csInSub.push([this.subIdx('Panasonic'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Fujifilm F-Log Gamut'));
@@ -191,10 +199,16 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('ACES'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('XYZ'));
 	this.csInSub.push([this.subIdx('Wide Gamut')]);
-	this.csIn.push(this.toSys('DCI-P3'));
+	this.csIn.push(this.toSys('P3 - DCI'));
 	this.csInSub.push([this.subIdx('P3')]);
-	this.csIn.push(this.toSys('DCI-P3D60'));
+	this.csIn.push(this.toSys('P3 - D60'));
 	this.csInSub.push([this.subIdx('P3')]);
+	this.csIn.push(this.toSys('P3 - D65'));
+	this.csInSub.push([this.subIdx('P3')]);
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Daylight)', true, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
+	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
+	this.csIn.push(new CSCanonIDT('Canon CP IDT (Tungsten)', false, this.toSys('ACES AP0').m, this.system.white.buffer.slice(0)));
+	this.csInSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
 	this.csIn.push(this.toSys('Canon DCI-P3+'));
 	this.csInSub.push([this.subIdx('Canon'),this.subIdx('P3')]);
 	this.csIn.push(this.toSys('Adobe RGB'));
@@ -244,42 +258,34 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
 	this.csOutSub.push([this.subIdx('Rec709')]);
-
-/*
+	this.defLUTs.Amira709 = this.csOut.length;
 	this.csOut.push(
-		this.fromSysTC('Alexa-X-2',
+		this.fromSysLUT('Amira709',
 			{
-				isOut: true,
-				linMatrix: this.matrixVals('Alexa Wide Gamut',false),
-				linY: this.getYCoeffs('Alexa Wide Gamut'),
-				logBase: new CSLogC(1600),
-				tc: new LUTSpline(new Float64Array([
-						-0.000242159,0.000242159,0.002966164,0.007787970,
-						 0.018057211,0.042774540,0.095615536,0.180395906,
-						 0.299169962,0.452321901,0.633391140,0.788816601,
-						 0.892986853,0.951081756,0.975328639,0.985494457,
-						 1
-//
-						0.000000000,0.000244609,0.002996164,0.007811365,0.018090643,0.042819458,0.095668875,0.180450053,
-						0.299217751,0.452358216,0.633413727,0.788828584,0.892992556,0.951084268,0.975329885,0.985495185,
-						1.000000000
-//
-					]).buffer,1,0),
-				tcMatrix: new Float64Array([
-						 1.485007,-0.401216,-0.083791,
-						-0.033732, 1.282887,-0.249155,
-						 0.010776,-0.122018, 1.111242
-					]),
-				cb: true,
-				sb: true,
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
-			this.illuminant('d65')			
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Arri'),this.subIdx('Rec709')]);
-*/
+	this.defLUTs.AlexaX2 = this.csOut.length;
+	this.csOut.push(
+		this.fromSysLUT('Alexa-X-2',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
+		)
+	);
+	this.csOutSub.push([this.subIdx('Arri'),this.subIdx('Rec709')]);
 	this.defLUTs.LC709 = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('LC709',
@@ -287,10 +293,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
-			this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
@@ -301,10 +307,24 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
-			this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
+		)
+	);
+	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
+	this.defLUTs.Cine709 = this.csOut.length;
+	this.csOut.push(
+		this.fromSysLUT('Sony Cine+709',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
@@ -315,10 +335,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.6509, 0.2827, 0.3177, 0.8953, 0.1289, -0.0468]),
-			this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
@@ -329,10 +349,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.6577, 0.2653, 0.3417, 1.0909, 0.1475, -0.0018]),
-			this.illuminant('d65')	
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('Rec709')]);
@@ -343,10 +363,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 				format: 'cube',
 				min: [0,0,0],
 				max: [1,1,1],
-				wp: this.illuminant('d65')
-			},
-			new Float64Array([0.64,0.33, 0.30,0.60, 0.15,0.06]),
-			this.illuminant('d65')
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
 		)
 	);
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Rec709')]);
@@ -365,9 +385,11 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.XYZOut = this.csOut.length;
 	this.csOut.push(this.fromSys('XYZ'));
 	this.csOutSub.push([this.subIdx('Wide Gamut')]);
-	this.csOut.push(this.fromSys('DCI-P3'));
+	this.csOut.push(this.fromSys('P3 - DCI'));
 	this.csOutSub.push([this.subIdx('P3')]);
-	this.csOut.push(this.fromSys('DCI-P3D60'));
+	this.csOut.push(this.fromSys('P3 - D60'));
+	this.csOutSub.push([this.subIdx('P3')]);
+	this.csOut.push(this.fromSys('P3 - D65'));
 	this.csOutSub.push([this.subIdx('P3')]);
 	this.csOut.push(this.fromSys('Canon DCI-P3+'));
 	this.csOutSub.push([this.subIdx('Canon'),this.subIdx('P3')]);
@@ -385,32 +407,53 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csM.push(this.csOut[this.csOut.length - 1]);
 	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.LA = this.csOut.length;
-	this.csOut.push(this.fromSysLA('LA', this.illuminant('d65')));
+	this.csOut.push(this.fromSysLA('LA', {wp: this.illuminant('d65')}));
 	this.csOutSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 
 	var max = this.csIn.length;
+	this.inCATs = [];
+	this.outCATs = [];
 	for (var j=0; j<max; j++) {
 		this.inList.push({name: this.csIn[j].name,idx: j});
+		this.inCATs.push(this.getCSCat(this.csIn[j].name));
 	}
 	var max2 = this.csOut.length;
 	for (var j=0; j<max2; j++) {
-		if (j != this.LA) {
+		if (j !== this.LA) {
 			this.outList.push({name: this.csOut[j].name,idx: j});
 		}
+		this.outCATs.push(this.getCSCat(this.csOut[j].name));
 	}
-	max = this.inList.length;
 	max2 = this.outList.length;
+	var k=0;
 	for (var i=0; i<max; i++) {
-		this.laList.push({name: this.inList[i].name});
-		this.csLASub.push(this.csInSub[i].slice(0));
-		for (var j=0; j<max2; j++) {
-			if (this.laList[i].name === this.outList[j].name) {
-				this.laList[i].idx = this.outList[j].idx;
-				this.csLASub[i] = this.csOutSub[j].slice(0);
-				break;
+		if (this.csIn[i].isMatrix() && this.csIn[i].name !== 'Passthrough') {
+			this.laList.push({name: this.csIn[i].name});
+			this.csLASub.push(this.csInSub[i].slice(0));
+			if (this.laList[k].name === 'Custom In') {
+				this.laList[k].idx = this.custOut;
+				this.csLASub[k] = this.csOutSub[this.custOut].slice(0);
+			} else {
+				for (var j=0; j<max2; j++) {
+					if (this.laList[k].name === this.outList[j].name) {
+						this.laList[k].idx = this.outList[j].idx;
+						this.csLASub[k] = this.csOutSub[j].slice(0);
+						break;
+					}
+				}
 			}
+			k++;
 		}
 	}
+};
+LUTColourSpace.prototype.getCSCat = function(name) {
+	var m = this.g.length;
+	for (var j=0; j<m; j++) {
+		if (name === this.g[j].name) {
+			return this.g[j].cat;
+		}
+	}
+	return this.sysCATIdx; // fall back to default
 };
 // Colour calculations
 LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
@@ -418,13 +461,16 @@ LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 //			xg, yg,
 //			xb, yb ]
 //	white = [ xw, yw, zw ];
+	if (typeof white === 'undefined' || !white) {
+		return false;
+	}
 	var XYZ = new Float64Array([
 		xy[0]/xy[1],			xy[2]/xy[3],			xy[4]/xy[5],
 		1,						1,						1,
 		(1-xy[0]-xy[1])/xy[1],	(1-xy[2]-xy[3])/xy[3],	(1-xy[4]-xy[5])/xy[5]
 	]);
 	var invXYZ = this.mInverse(XYZ);
-	if (!invXYZ || !white) {
+	if (!invXYZ) {
 		return false;
 	}
 	var S = this.mMult(invXYZ, new Float64Array([white[0]/white[1],1,white[2]/white[1]]));
@@ -434,18 +480,7 @@ LUTColourSpace.prototype.RGBtoXYZ = function(xy, white) {
 		S[0]*XYZ[6], S[1]*XYZ[7], S[2]*XYZ[8]
 	]);
 };
-LUTColourSpace.prototype.ciecat02 = function(m, ws,wd) {
-	var s = this.mMult(this.cat02, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
-	var d = this.mMult(this.cat02, new Float64Array([wd[0]/wd[1],1,wd[2]/wd[1]]));
-	var CAT = new Float64Array([
-		d[0]/s[0], 0, 0,
-		0, d[1]/s[1], 0,
-		0, 0, d[2]/s[2]
-	]);
-	var cat02 = this.mMult(this.invCat02,this.mMult(CAT,this.cat02));
-	return this.mMult(cat02,m);
-};
-LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
+LUTColourSpace.prototype.calcCAT = function(m, ws, wd, model) {
 	var cat = this.CATs.getModel(model);
 	var inv = this.mInverse(cat);
 	var s = this.mMult(cat, new Float64Array([ws[0]/ws[1],1,ws[2]/ws[1]]));
@@ -459,8 +494,8 @@ LUTColourSpace.prototype.calcCAT = function(model, m, ws, wd) {
 	return this.mMult(n,m);
 };
 LUTColourSpace.prototype.toSys = function(name) {
-	var max = this.g.length;
-	for (var j=0; j<max; j++) {
+	var m = this.g.length;
+	for (var j=0; j<m; j++) {
 		if (name === this.g[j].name) {
 			return new CSMatrix(name, this.g[j].toSys, this.g[j].white.buffer.slice(0));
 		}
@@ -496,30 +531,63 @@ LUTColourSpace.prototype.fromSysMatrix = function(name,matrix,white) {
 	this.csM.push(out);
 	return out;
 };
-LUTColourSpace.prototype.fromSysLUT = function(name,params,xy,white) {
-	var toXYZ = this.RGBtoXYZ(xy,white);
-	this.csM.push(new CSMatrix(
-		name,
-		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
-		white
-	));
-	return new CSLUT(name, params);
+LUTColourSpace.prototype.fromSysLUT = function(name,params) {
+	var colours = new Float64Array([
+			1,0,0,
+			0,1,0,
+			0,0,1,
+			1,1,1,
+			0.8,0,0,
+			0,0.8,0,
+			0,0,0.8,
+			0.4,0,0,
+			0,0.4,0,
+			0,0,0.4,
+			0.2,0,0,
+			0,0.2,0,
+			0,0,0.2,
+			0.8,0.8,0.8,
+			0.4,0.4,0.4,
+			0.2,0.2,0.2
+		]);
+	this.csIn[this.rec709In].lc(colours.buffer);
+	var csLUT = new CSLUT(name, params, this.lutMaker, colours);
+	this.csM.push(csLUT);	
+	return csLUT;
 };
-LUTColourSpace.prototype.fromSysTC = function(name,params,xy,white) {
+LUTColourSpace.prototype.fromSysTC = function(name,params,xy,white,model) {
+	var cat = this.CATs.getModel(model);
 	var toXYZ = this.RGBtoXYZ(xy,white);
 	this.csM.push(new CSMatrix(
 		name,
-		this.mInverse(this.mMult(this.system.inv, this.ciecat02(toXYZ,white,this.system.white))),
+		this.mInverse(this.mMult(this.system.fromXYZ, this.calcCAT(toXYZ,white,this.system.white,cat))),
 		white
 	));
 	return new CSToneCurve(name, params);
 };
-LUTColourSpace.prototype.fromSysLA = function(name,white) {
-	var csLA = new CSLA(name, white);
+LUTColourSpace.prototype.fromSysLA = function(name,params) {
+	var colours = new Float64Array([
+			1,0,0,
+			0,1,0,
+			0,0,1,
+			1,1,1,
+			0.8,0,0,
+			0,0.8,0,
+			0,0,0.8,
+			0.4,0,0,
+			0,0.4,0,
+			0,0,0.4,
+			0.2,0,0,
+			0,0.2,0,
+			0,0,0.2,
+			0.8,0.8,0.8,
+			0.4,0.4,0.4,
+			0.2,0.2,0.2
+		]);
+	this.csIn[this.rec709In].lc(colours.buffer);
+	var csLA = new CSLUT(name, params, this.lutMaker, colours);
 	this.csM.push(csLA);
 	return csLA;
-//	this.csM.push(this.csOut[this.rec709Out]);
-//	return new CSLA(name, white);
 };
 LUTColourSpace.prototype.fx = function(buff) {
 	var o = new Float64Array(buff);
@@ -542,13 +610,44 @@ LUTColourSpace.prototype.fx = function(buff) {
 			o[j+2] = (o[j+2]*this.asc[2])+this.asc[5];
 			o[j+2] = ((o[j+2]<0)?o[j+2]:Math.pow(o[j+2],this.asc[8]));
 			o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
-			Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
-			o[ j ] = Y + (this.asc[9]*(o[ j ]-Y));
-			o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
-			o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
+			Y = ((y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2])) * (1-this.asc[9]);
+			o[ j ] = Y + (this.asc[9]*o[ j ]);
+			o[j+1] = Y + (this.asc[9]*o[j+1]);
+			o[j+2] = Y + (this.asc[9]*o[j+2]);
 		}
 	}
 	this.csM[this.curOut].lc(buff);
+	return o;
+};
+LUTColourSpace.prototype.rx = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var y = this.y;
+	var Y;
+	this.csM[this.curOut].rc(buff);
+// Colour Temperature Shift
+	if (this.doWB) {
+		this.wb.rc(buff);
+	}
+// ASC-CDL
+	if (this.doASCCDL) {
+		var s = 1/Math.max(this.asc[9],0.00000001); // avoid division by zero
+		for (var j=0; j<m; j += 3) {
+			Y = ((y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2])) * (1-s);
+			o[ j ] = (o[ j ]*s) + Y;
+			o[j+1] = (o[j+1]*s) + Y;
+			o[j+2] = (o[j+2]*s) + Y;
+			o[ j ] = ((o[ j ]<0)?o[ j ]:Math.pow(o[ j ],1/this.asc[6]));
+			o[ j ] = (o[ j ] - this.asc[3])/this.asc[0];
+			o[ j ] = (isNaN(o[ j ])?0:o[ j ]);
+			o[j+1] = ((o[j+1]<0)?o[j+1]:Math.pow(o[j+1],1/this.asc[7]));
+			o[j+1] = (o[j+1] - this.asc[4])/this.asc[1];
+			o[j+1] = (isNaN(o[j+1])?0:o[j+1]);
+			o[j+2] = ((o[j+2]<0)?o[j+2]:Math.pow(o[j+2],1/this.asc[8]));
+			o[j+2] = (o[j+2] - this.asc[5])/this.asc[2];
+			o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
+		}
+	}
 	return o;
 };
 LUTColourSpace.prototype.firstGuess = function(goal, rgb, d) {
@@ -582,27 +681,17 @@ LUTColourSpace.prototype.roundOff = function(i) {
 	return parseFloat(i.toFixed(8));
 };
 // Matrix operations
-LUTColourSpace.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+LUTColourSpace.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 LUTColourSpace.prototype.mMult = function(m1,m2) {
@@ -702,7 +791,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 // Canon Cinema Gamut
 	var canoncg = {};
 	canoncg.name = 'Canon Cinema Gamut';
-	canoncg.cat = this.sysCATIdx;
+	canoncg.cat = this.CATs.modelIdx('CIECAT02');
 	canoncg.xy = new Float64Array([0.74,0.27, 0.17,1.14, 0.08,-0.10]);
 	canoncg.white = this.illuminant('d65');
 	canoncg.toXYZ = this.RGBtoXYZ(canoncg.xy,canoncg.white);
@@ -710,7 +799,7 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 // Panasonic V-Gamut
 	var vgamut = {};
 	vgamut.name = 'Panasonic V-Gamut';
-	vgamut.cat = this.sysCATIdx;
+	vgamut.cat = this.CATs.modelIdx('Bradford Chromatic Adaptation');
 	vgamut.xy = new Float64Array([0.730,0.280, 0.165,0.840, 0.100,-0.030]);
 	vgamut.white = this.illuminant('d65');
 	vgamut.toXYZ = this.RGBtoXYZ(vgamut.xy,vgamut.white);
@@ -851,23 +940,32 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	xyz.xy = false;
 	xyz.white = this.illuminant('d65');
 	xyz.toXYZ = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
+	this.xyzIdx = this.g.length;
 	this.g.push(xyz);
-// DCI-P3
+// P3 - DCI
 	var p3 = {};
-	p3.name = 'DCI-P3';
+	p3.name = 'P3 - DCI';
 	p3.cat = this.sysCATIdx;
 	p3.xy = new Float64Array([0.680,0.320, 0.265,0.690, 0.150,0.060]);
 	p3.white = this.illuminant('p3');
 	p3.toXYZ = this.RGBtoXYZ(p3.xy,p3.white);
 	this.g.push(p3);
-// DCI-P3D60
+// P3 - D60
 	var p3d60 = {};
-	p3d60.name = 'DCI-P3D60';
+	p3d60.name = 'P3 - D60';
 	p3d60.cat = this.sysCATIdx;
 	p3d60.xy = new Float64Array([0.680,0.320, 0.265,0.690, 0.150,0.060]);
 	p3d60.white = this.illuminant('d60');
 	p3d60.toXYZ = this.RGBtoXYZ(p3d60.xy,p3d60.white);
 	this.g.push(p3d60);
+// P3 - D65
+	var p3d65 = {};
+	p3d65.name = 'P3 - D65';
+	p3d65.cat = this.sysCATIdx;
+	p3d65.xy = new Float64Array([0.680,0.320, 0.265,0.690, 0.150,0.060]);
+	p3d65.white = this.illuminant('d65');
+	p3d65.toXYZ = this.RGBtoXYZ(p3d65.xy,p3d65.white);
+	this.g.push(p3d65);
 // Canon DCI-P3+
 	var canonp3p = {};
 	canonp3p.name = 'Canon DCI-P3+';
@@ -926,11 +1024,11 @@ LUTColourSpace.prototype.systemMatrices = function() {
 		if (j === this.sysIdx) {
 			this.g[j].toSys = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
 		} else if (this.g[j].name === 'XYZ') {
-			this.g[j].toSys = this.system.inv;
+			this.g[j].toSys = this.system.fromXYZ;
 		} else if (this.g[j].white[0] !== this.system.white[0] && this.g[j].white[1] !== this.system.white[1] && this.g[j].white[2] !== this.system.white[2]) {
-			this.g[j].toSys = this.mMult(this.system.inv, this.ciecat02(this.g[j].toXYZ,this.g[j].white,this.system.white));
+			this.g[j].toSys = this.mMult(this.system.fromXYZ, this.calcCAT(this.g[j].toXYZ,this.g[j].white,this.system.white,this.g[j].cat));
 		} else {
-			this.g[j].toSys = this.mMult(this.system.inv, this.g[j].toXYZ);
+			this.g[j].toSys = this.mMult(this.system.fromXYZ, this.g[j].toXYZ);
 		}
 	}
 };
@@ -1055,17 +1153,63 @@ LUTColourSpace.prototype.initPSSTCDL = function() {
 		p: false
 	});
 };
+LUTColourSpace.prototype.calcYCoeffs = function(cs) {
+	var cur = this.curOut;
+	if (typeof cs !== 'undefined') {
+		var m = this.csOut.length;
+		for (var j=0; j<m; j++) {
+			if (this.csOut[j].name === cs) {
+				cur = j;
+			}
+		}
+	}
+	var g = new Float64Array([ // The output gamut - these values to be converted to XYZ then xy
+		1,0,0,
+		0,1,0,
+		0,0,1
+	]);
+	var xy = new Float64Array(9);
+	var l,den;
+	var wd,ws;
+	var XYZ;
+//	this.rx(g.buffer);
+	this.csM[cur].rc(g.buffer);
+	this.csOut[this.XYZOut].lc(g.buffer);
+	wd = this.csOut[cur].getWP();
+	ws = this.system.white;
+	for (var j=0; j<3; j++) {
+		k = j*3;
+		XYZ = this.calcCAT(new Float64Array([g[k],g[k+1],g[k+2]]),ws,wd,this.outCATs[cur]);
+		den = XYZ[0] + XYZ[1] + XYZ[2];
+		xy[ k ] = (XYZ[0]/den);
+		xy[k+1] = (XYZ[1]/den);
+		xy[k+2] = (XYZ[2]/den);
+	}
+	var C = new Float64Array([
+		xy[0],xy[3],xy[6],
+		xy[1],xy[4],xy[7],
+		xy[2],xy[5],xy[8]
+	]);
+	var invC = this.mInverse(C);
+	var W = new Float64Array([wd[0]/wd[1],1,(1-wd[0]-wd[1])/wd[1]]);
+	var J = this.mMult(invC,W);
+	return new Float64Array([J[0]*C[3],J[1]*C[4],J[2]*C[5]]);
+};
 LUTColourSpace.prototype.setYCoeffs = function() {
 	this.y = this.getYCoeffs(this.system.name);
-//	console.log(this.y);
 };
 LUTColourSpace.prototype.getYCoeffs = function(cs) {
-	var m = this.g.length;
 	var xy,w;
-	for (var j=0; j<m; j++) {
-		if (this.g[j].name === cs) {
-			xy = this.g[j].xy;
-			w = this.g[j].white;
+	if (typeof cs === 'number') {
+		xy = this.g[cs].xy;
+		w = this.g[cs].white;
+	} else {
+		var m = this.g.length;
+		for (var j=0; j<m; j++) {
+			if (this.g[j].name === cs) {
+				xy = this.g[j].xy;
+				w = this.g[j].white;
+			}
 		}
 	}
 	var C = new Float64Array([
@@ -1179,8 +1323,12 @@ LUTColourSpace.prototype.setCS = function(params) {
 		if (typeof p.output.cat === 'number') {
 			modelOut = p.output.cat;
 		}
+
+		var edit = {};
+		var customIn = {};
+		var customOut = {};
+
 		if (!p.edit.isMatrix && p.lock) {
-			var edit = {};
 			edit.xy = new Float64Array([
 				p.edit.rx, p.edit.ry,
 				p.edit.gx, p.edit.gy,
@@ -1190,62 +1338,120 @@ LUTColourSpace.prototype.setCS = function(params) {
 				p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
 			]);
 			edit.toXYZ = this.RGBtoXYZ(edit.xy,edit.white);
-			out.editMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(modelEdit,edit.toXYZ,edit.white,this.g[p.edit.wcs].white));
+			if (p.edit.wcs === this.xyzIdx) {
+				this.edMatrix = this.RGBtoXYZ(edit.xy,edit.white);
+			} else {
+				this.edMatrix = this.mMult(this.mInverse(this.g[p.edit.wcs].toXYZ), this.calcCAT(edit.toXYZ,edit.white,this.g[p.edit.wcs].white,modelEdit));
+			}
+			out.editMatrix = new Float64Array(this.edMatrix.buffer.slice(0));
 			out.wcs = p.edit.wcs;
+			out.xyVals = edit.xy;
 		} else if (p.edit.isMatrix) {
-			var ill = ['a','b','c','d40','d45','d50','d55','d60','d65','d70','d75','e', 'p3'];
-			var edMax = ill.length;
-			var edW;
-			var edXYZ = this.mMult(this.g[p.edit.wcs].toXYZ,p.edit.matrix);
-			edW = new Float64Array([ p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy ]);
-			edXYZ = this.calcCAT(modelEdit,edXYZ,this.g[p.edit.wcs].white,edW);
-			var edDr = edXYZ[0] + edXYZ[3] + edXYZ[6];
-			var edDg = edXYZ[1] + edXYZ[4] + edXYZ[7];
-			var edDb = edXYZ[2] + edXYZ[5] + edXYZ[8];
-			var edP = new Float64Array([
-				this.roundOff(edXYZ[0]/edDr), this.roundOff(edXYZ[3]/edDr),
-				this.roundOff(edXYZ[1]/edDg), this.roundOff(edXYZ[4]/edDg),
-				this.roundOff(edXYZ[2]/edDb), this.roundOff(edXYZ[5]/edDb),
+// primaries from matrix and white point code would go here!
+			edit.white = new Float64Array([
+				p.edit.wx, p.edit.wy, 1 - p.edit.wx - p.edit.wy
 			]);
-//			console.log(edW[0] + ', ' + edP[0] + ',' + edP[1] + ', ' + edP[2] + ',' + edP[3] + ', ' + edP[4] + ',' + edP[5]);
+			var editToXYZ = this.calcCAT(
+				this.mMult(this.g[p.edit.wcs].toXYZ,p.edit.matrix),
+				this.g[p.edit.wcs].white,
+				edit.white,
+				modelIn
+			);
+			var mu = new Float64Array([
+				(editToXYZ[0]+editToXYZ[3]+editToXYZ[6]),
+				(editToXYZ[1]+editToXYZ[4]+editToXYZ[7]),
+				(editToXYZ[2]+editToXYZ[5]+editToXYZ[8])
+			]);
+			edit.xy = new Float64Array([
+				Math.round(editToXYZ[0]/mu[0]*10000000)/10000000, Math.round(editToXYZ[3]/mu[0]*10000000)/10000000,
+				Math.round(editToXYZ[1]/mu[1]*10000000)/10000000, Math.round(editToXYZ[4]/mu[1]*10000000)/10000000,
+				Math.round(editToXYZ[2]/mu[2]*10000000)/10000000, Math.round(editToXYZ[5]/mu[2]*10000000)/10000000
+			]);
+			out.xyVals = edit.xy;
 		}
+
 		if (p.input.isMatrix) {
-			var inWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelIn,this.g[p.input.wcs].toXYZ,this.g[p.input.wcs].white,this.system.white));
-			this.csIn[this.custIn] = new CSMatrix('Custom', this.mMult(inWCSToSys,p.input.matrix), this.g[p.input.wcs].white.buffer.slice(0));
+			customIn.white = new Float64Array([ p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy ]);
+			if (p.input.wcs === this.xyzIdx) {
+				var inWCSToSys = this.system.fromXYZ;
+			} else {
+				var inWCSToSys = this.mMult(
+					this.system.fromXYZ,
+					this.calcCAT(
+						this.g[p.input.wcs].toXYZ,
+						this.g[p.input.wcs].white,
+						this.system.white,
+						modelIn
+					)
+				);
+			}
+			customIn.toSys = this.mMult(inWCSToSys, p.input.matrix);
 		} else {
-			var customIn = {};
+			customIn.white = new Float64Array([ p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy ]);
 			customIn.xy = new Float64Array([
 				p.input.rx, p.input.ry,
 				p.input.gx, p.input.gy,
 				p.input.bx, p.input.by
 			]);
-			customIn.white = new Float64Array([
-				p.input.wx, p.input.wy, 1 - p.input.wx - p.input.wy
-			]);
 			customIn.toXYZ = this.RGBtoXYZ(customIn.xy,customIn.white);
-			customIn.toSys = this.mMult(this.system.inv, this.calcCAT(modelIn,customIn.toXYZ,customIn.white,this.system.white));
-			this.csIn[this.custIn] = new CSMatrix('Custom', customIn.toSys, customIn.white.buffer.slice(0));
+			customIn.toSys = this.mMult(
+				this.system.fromXYZ,
+				this.calcCAT(
+					customIn.toXYZ,
+					customIn.white,
+					this.system.white,
+					modelIn
+				)
+			);
 		}
+
 		if (p.output.isMatrix) {
-			var outWCSToSys = this.mMult(this.system.inv, this.calcCAT(modelOut,this.g[p.output.wcs].toXYZ,this.g[p.output.wcs].white,this.system.white));
-			var outWCSFromSys = this.mInverse(outWCSToSys);
-			this.csOut[this.custOut] = new CSMatrix('Custom', this.mMult(p.output.matrix,outWCSFromSys), this.g[p.output.wcs].white.buffer.slice(0));
-			this.csM[this.custOut] = this.csOut[this.custOut];
+			customOut.white = new Float64Array([ p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy ])
+			if (p.output.wcs === this.xyzIdx) {
+				var outWCSFromSys = this.system.toXYZ;
+			} else {
+				var outWCSFromSys = this.mInverse(this.mMult(
+					this.system.fromXYZ,
+					this.calcCAT(
+						this.g[p.output.wcs].toXYZ,
+						this.g[p.output.wcs].white,
+						this.system.white,
+						modelOut
+					)
+				));
+			}
+			customOut.fromSys = this.mMult(p.output.matrix, outWCSFromSys);
 		} else {
-			var customOut = {};
+			customOut.white = new Float64Array([ p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy ])
 			customOut.xy = new Float64Array([
 				p.output.rx, p.output.ry,
 				p.output.gx, p.output.gy,
 				p.output.bx, p.output.by
 			]);
-			customOut.white = new Float64Array([
-				p.output.wx, p.output.wy, 1 - p.output.wx - p.output.wy
-			]);
 			customOut.toXYZ = this.RGBtoXYZ(customOut.xy,customOut.white);
-			customOut.toSys = this.mMult(this.system.inv, this.calcCAT(modelOut,customOut.toXYZ,customOut.white,this.system.white));
-			this.csOut[this.custOut] = new CSMatrix('Custom', this.mInverse(customOut.toSys), customOut.white.buffer.slice(0));
-			this.csM[this.custOut] = this.csOut[this.custOut];
+			customOut.fromSys = this.mInverse(this.mMult(
+				this.system.fromXYZ,
+				this.calcCAT(
+					customOut.toXYZ,
+					customOut.white,
+					this.system.white,
+					modelOut
+				)
+			));
 		}
+
+		this.csIn[this.custIn] = new CSMatrix(
+			'Custom',
+			customIn.toSys,
+			customIn.white.buffer
+		);
+		this.csOut[this.custOut] = new CSMatrix(
+			'Custom',
+			customOut.fromSys,
+			customOut.white.buffer
+		);
+		this.csM[this.custOut] = this.csOut[this.custOut];
+
 		out.doCS = true;
 	} else {
 		out.doCS = false;
@@ -1409,6 +1615,54 @@ LUTColourSpace.prototype.setMulti = function(params) {
 		}
 	}
 	out.doMulti = this.doMulti;
+	return out;
+};
+LUTColourSpace.prototype.setGamutLim = function(params) {
+	var out = {};
+	this.doGamutLim = false;
+	if (this.tweaks && typeof params.twkGamutLim !== 'undefined') {
+		var p = params.twkGamutLim;
+		if (typeof p.doGamutLim === 'boolean' && p.doGamutLim) {
+			this.doGamutLim = true;
+			this.gLimY = this.calcYCoeffs();
+			if (typeof p.gamut === 'string') {
+				this.gLimC = false;
+				this.gLimB = true;
+				var m = this.csOut.length;
+				for (var j=0; j<m; j++) {
+					if (this.csOut[j].name === p.gamut) {
+						if (j === this.curOut) {
+							this.gLimGIn = 0;
+							this.gLimGOut = this.curOut;
+							break;
+						} else {
+							this.gLimGOut = j;
+							var m2 = this.csIn.length;
+							for (var k=0; k<m2; k++) {
+								if (this.csIn[k].name === this.csOut[this.curOut].name) {
+									this.gLimGIn = k;
+									this.gLimC = true;
+									this.gLimB = p.both;
+									break;
+								}
+							}
+						}
+						break;
+					}
+				}
+			} else {
+				this.gLimC = false;
+			}
+			if (typeof p.lin === 'boolean') {
+				this.gLimLin = p.lin;
+			} else {
+				this.gLimLin = false;
+			}
+			if (typeof p.level === 'number') {
+				this.gLimL = parseFloat(p.level);
+			}
+		}
+	}
 	return out;
 };
 LUTColourSpace.prototype.setFC = function(params) {
@@ -1606,12 +1860,12 @@ CCTxy.prototype.setuv = function(u,v) {
 CCTxy.prototype.f = function(T) {
 	var T0 = T - 0.05;
 	var T1 = T + 0.05;
-	var xy0 = this.lut.lRCub(T0);
+	var xy0 = this.lut.fRGBCub(T0);
 	var uv0 = new Float64Array([
 		4 * xy0[0] / ((-2*xy0[0]) + (12*xy0[1]) + 3),
 		6 * xy0[1] / ((-2*xy0[0]) + (12*xy0[1]) + 3)
 	]);
-	var xy1 = this.lut.lRCub(T1);
+	var xy1 = this.lut.fRGBCub(T1);
 	var uv1 = new Float64Array([
 		4 * xy1[0] / ((-2*xy1[0]) + (12*xy1[1]) + 3),
 		6 * xy1[1] / ((-2*xy1[0]) + (12*xy1[1]) + 3)
@@ -1620,15 +1874,14 @@ CCTxy.prototype.f = function(T) {
 	var d1 = Math.pow(Math.pow(this.u - uv1[0],2) + Math.pow(this.v - uv1[1],2),0.5);
 	return (d0-d1)*10;
 };
-function Planck() {
-	this.loci = new LUTs();
-	this.setLoci();
+function Planck(lutMaker) {
+	this.setLoci(lutMaker);
 	this.slope = new CCTxy(this.loci);
 	this.brent = new Brent(this.slope,0,50000);
 	this.brent.setDelta(1000);
 }
-Planck.prototype.setLoci = function() {
-	this.loci.setDetails({
+Planck.prototype.setLoci = function(lutMaker) {
+	this.loci = lutMaker.newLUT({
 		title: 'loci',
 		format: 'cube',
 		dims: 1,
@@ -1827,7 +2080,7 @@ Planck.prototype.getCCT = function(white) {
 		for (var j=0; j<m; j++) {
 			root = this.brent.findRoot((j*1000)+100,0);
 			if (root > 100) {
-				xy = this.loci.lRCub(root);
+				xy = this.loci.fRGBCub(root);
 				uv = this.xy2uv(xy);
 				dist = Math.pow(Math.pow(u - uv[0],2) + Math.pow(v - uv[1],2),0.5);
 				if (dist < bDist) {
@@ -1845,9 +2098,9 @@ Planck.prototype.getCCT = function(white) {
 	}
 };
 Planck.prototype.getDuvMag = function(white,T) {
-	var xy = this.loci.lRCub(T);
-	var xy1 = this.loci.lRCub(T + 0.1);
-	var xy2 = this.loci.lRCub(T - 0.1);
+	var xy = this.loci.fRGBCub(T);
+	var xy1 = this.loci.fRGBCub(T + 0.1);
+	var xy2 = this.loci.fRGBCub(T - 0.1);
 	var uv = this.xy2uv(xy);
 	var uv1 = this.xy2uv(xy1);
 	var uv2 = this.xy2uv(xy2);
@@ -1883,9 +2136,9 @@ Planck.prototype.getDuvMag = function(white,T) {
 	return out;
 };
 Planck.prototype.getDxy = function(white,T) {
-	var xyY = this.loci.lRCub(T);
-	var xyY1 = this.loci.lRCub(T + 0.1);
-	var xyY2 = this.loci.lRCub(T - 0.1);
+	var xyY = this.loci.fRGBCub(T);
+	var xyY1 = this.loci.fRGBCub(T + 0.1);
+	var xyY2 = this.loci.fRGBCub(T - 0.1);
 	var uv = new Float64Array([
 		(4*xyY[0])/((-2*xyY[0]) + (12*xyY[1]) + 3),
 		(6*xyY[1])/((-2*xyY[0]) + (12*xyY[1]) + 3)
@@ -1919,24 +2172,24 @@ Planck.prototype.getDxy = function(white,T) {
 	}
 };
 Planck.prototype.xyY = function(T) {
-	var out = this.loci.lRCub(T);
+	var out = this.loci.fRGBCub(T);
 	out[2] = 1;
 	return out;
 };
 Planck.prototype.xyz = function(T) {
-	var xyY = this.loci.lRCub(T);
+	var xyY = this.loci.fRGBCub(T);
 	return new Float64Array([
 		xyY[0],xyY[1],1-xyY[0]-xyY[1]
 	]);
 };
 Planck.prototype.XYZ = function(T) {
-	var xyY = this.loci.lRCub(T);
+	var xyY = this.loci.fRGBCub(T);
 	return new Float64Array([
 		xyY[0]/xyY[1],1,(1-xyY[0]-xyY[1])/xyY[1]
 	]);
 };
 Planck.prototype.uv = function(T) {
-	var xy = this.loci.lRCub(T);
+	var xy = this.loci.fRGBCub(T);
 	var den = (-2*xy[0]) + (12*xy[1]) + 3;
 	return new Float64Array([
 		4*xy[0] / den,
@@ -1967,9 +2220,9 @@ Planck.prototype.uv2XYZ = function(uv) {
 	]);
 };
 Planck.prototype.Dxy = function(T) {
-	var xyY = this.loci.lRCub(T);
-	var xyY1 = this.loci.lRCub(T + 0.1);
-	var xyY2 = this.loci.lRCub(T - 0.1);
+	var xyY = this.loci.fRGBCub(T);
+	var xyY1 = this.loci.fRGBCub(T + 0.1);
+	var xyY2 = this.loci.fRGBCub(T - 0.1);
 	var uv = new Float64Array([
 		(4*xyY[0])/((-2*xyY[0]) + (12*xyY[1]) + 3),
 		(6*xyY[1])/((-2*xyY[0]) + (12*xyY[1]) + 3)
@@ -2004,7 +2257,9 @@ Planck.prototype.Duv = function(T) {
 	return new Float64Array([norm,tang]);
 };
 function CSCAT() {
+	this.def = 0;
 	this.names = [];
+	this.lower = [];
 	this.M = [];
 	this.models();
 }
@@ -2021,21 +2276,47 @@ CSCAT.prototype.models = function() {
 };
 CSCAT.prototype.addModel = function(name,M) {
 	this.names.push(name);
+	this.lower.push(name.toLowerCase())
 	this.M.push(M);
 };
 CSCAT.prototype.getModel = function(idx) {
+	if (typeof idx === 'string' && isNaN(idx)) {
+		idx = this.modelIdx(idx); // if it gets sent a title rather than index
+	} else if (typeof idx !== 'number' || isNaN(idx)) {
+		idx = this.def; // the default fallback
+	}
 	return new Float64Array(this.M[idx]);
 };
 CSCAT.prototype.getModels = function() {
 	return this.names.slice(0);
 };
 CSCAT.prototype.modelIdx = function(model) {
-	var m = this.names.length;
+	if (typeof model === 'number' && !isNaN(model)) {
+		return model; // if accidentally sent a number, assume the index has already been found
+	} else if (typeof model === 'undefined' || model === '') {
+		return this.def; // the default option
+	}
+	var m = this.lower.length;
 	for (var j=0; j<m; j++) {
-		if (model.toLowerCase() === this.names[j].toLowerCase()) {
+		if (model.toLowerCase() === this.lower[j]) {
 			return j;
 		}
 	}
+	return this.def;
+};
+CSCAT.prototype.setDefault = function(model) {
+	if (typeof model !== 'string' || model === '') {
+		this.def = 0;
+		return 0; // the default option
+	}
+	var m = this.lower.length;
+	for (var j=0; j<m; j++) {
+		if (model.toLowerCase() === this.lower[j]) {
+			this.def = j;
+			return j;
+		}
+	}
+	this.def = 0;
 	return 0;
 };
 // Adjustment objects
@@ -2111,7 +2392,7 @@ CSWB.prototype.setCAT = function() {
 
 	var Mnet = this.mMult(this.mMult(this.mMult(Mduv,Mct), this.M),this.fromSys);
 	this.N = this.mMult(this.toSys,this.mMult(this.Minv,Mnet));
-	this.Ninv = this.mMult(this.toSys,this.mMult(this.Minv,Mnet));
+	this.NInv = this.mInverse(this.N);
 };
 CSWB.prototype.uvAdd = function(uv, du, dv) {
 	uv[0] += du;
@@ -2160,27 +2441,17 @@ CSWB.prototype.toLocus = function(XYZ) {
 		(this.Ntolocus[6]*XYZ[0])+(this.Ntolocus[7]*XYZ[1])+(this.Ntolocus[8]*XYZ[2])
 	]);
 };
-CSWB.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+CSWB.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 CSWB.prototype.mMult = function(m1,m2) {
@@ -2212,15 +2483,30 @@ CSWB.prototype.mMult = function(m1,m2) {
 };
 CSWB.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
-	var max = c.length;
+	var m = c.length;
 	var r,g,b;
-	for (var j=0; j<max; j+= 3) {
+	var M = this.N;
+	for (var j=0; j<m; j+= 3) {
 		r = c[ j ];
 		g = c[j+1];
 		b = c[j+2];
-		c[ j ] = (this.N[0]*r)+(this.N[1]*g)+(this.N[2]*b);
-		c[j+1] = (this.N[3]*r)+(this.N[4]*g)+(this.N[5]*b);
-		c[j+2] = (this.N[6]*r)+(this.N[7]*g)+(this.N[8]*b);
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+	}
+};
+CSWB.prototype.rc = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var r,g,b;
+	var M = this.NInv;
+	for (var j=0; j<m; j+= 3) {
+		r = c[ j ];
+		g = c[j+1];
+		b = c[j+2];
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
 	}
 };
 // Log Gamma calculation objects
@@ -2313,6 +2599,7 @@ CSVLog.prototype.r = function(i) {
 function CSMatrix(name,params,wp) {
 	this.name = name;
 	this.m = params;
+	this.mInv = this.mInverse(this.m);
 	this.wp = wp;
 }
 CSMatrix.prototype.getWP = function() {
@@ -2321,34 +2608,66 @@ CSMatrix.prototype.getWP = function() {
 CSMatrix.prototype.isMatrix = function() {
 	return true;
 };
+CSMatrix.prototype.getMatrix = function() {
+	return this.m;
+};
 CSMatrix.prototype.cb = function() {
 	return false;
 };
 CSMatrix.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
-	var max = c.length;
+	var m = c.length;
+	var M = this.m;
 	var r,g,b;
-	for (var j=0; j<max; j+= 3) {
+	for (var j=0; j<m; j+= 3) {
 		r = c[ j ];
 		g = c[j+1];
 		b = c[j+2];
-		c[ j ] = (this.m[0]*r)+(this.m[1]*g)+(this.m[2]*b);
-		c[j+1] = (this.m[3]*r)+(this.m[4]*g)+(this.m[5]*b);
-		c[j+2] = (this.m[6]*r)+(this.m[7]*g)+(this.m[8]*b);
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
 	}
 };
 CSMatrix.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
-	var max = c.length;
+	var m = c.length;
+	var M = this.m;
 	var r,g,b;
-	for (var j=0; j<max; j+= 3) {
+	for (var j=0; j<m; j+= 3) {
 		r = c[ j ];
 		g = c[j+1];
 		b = c[j+2];
-		c[ j ] = (this.m[0]*r)+(this.m[1]*g)+(this.m[2]*b);
-		c[j+1] = (this.m[3]*r)+(this.m[4]*g)+(this.m[5]*b);
-		c[j+2] = (this.m[6]*r)+(this.m[7]*g)+(this.m[8]*b);
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
 	}
+};
+CSMatrix.prototype.rc = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var M = this.mInv;
+	var r,g,b;
+	for (var j=0; j<m; j+= 3) {
+		r = c[ j ];
+		g = c[j+1];
+		b = c[j+2];
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+	}
+};
+CSMatrix.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
+	if (det === 0) {
+		return false;
+	}
+	return new Float64Array([
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
+	]);
 };
 function CSToneCurve(name,params) {
 	this.name = name;
@@ -2368,27 +2687,17 @@ function CSToneCurve(name,params) {
 	this.cB = false;
 	this.cB = params.cb;
 }
-CSToneCurve.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+CSToneCurve.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 CSToneCurve.prototype.getWP = function() {
@@ -2518,27 +2827,17 @@ function CSToneCurvePlus(name,params) {
 	this.cB = false;
 	this.cB = params.cb;
 }
-CSToneCurvePlus.prototype.mInverse = function(m) {
-	var det =	(m[0]*((m[4]*m[8]) - (m[5]*m[7]))) -
-				(m[1]*((m[3]*m[8]) - (m[5]*m[6]))) +
-				(m[2]*((m[3]*m[7]) - (m[4]*m[6])));
+CSToneCurvePlus.prototype.mInverse = function(M) {
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
 	if (det === 0) {
 		return false;
 	}
-	var mt = new Float64Array([
-		m[0], m[3], m[6],
-		m[1], m[4], m[7],
-		m[2], m[5], m[8]
-	]);
-	var mc = new Float64Array([
-		 (mt[4]*mt[8])-(mt[5]*mt[7]), -(mt[3]*mt[8])+(mt[5]*mt[6]),  (mt[3]*mt[7])-(mt[4]*mt[6]),
-		-(mt[1]*mt[8])+(mt[2]*mt[7]),  (mt[0]*mt[8])-(mt[2]*mt[6]), -(mt[0]*mt[7])+(mt[1]*mt[6]),
-		 (mt[1]*mt[5])-(mt[2]*mt[4]), -(mt[0]*mt[5])+(mt[2]*mt[3]),  (mt[0]*mt[4])-(mt[1]*mt[3])
-	]);
 	return new Float64Array([
-		mc[0]/det, mc[1]/det, mc[2]/det,
-		mc[3]/det, mc[4]/det, mc[5]/det,
-		mc[6]/det, mc[7]/det, mc[8]/det
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
 	]);
 };
 CSToneCurvePlus.prototype.getWP = function() {
@@ -2734,30 +3033,254 @@ CSToneCurvePlus.prototype.lf = function(buff) {
 		}
 	}
 };
-function CSLUT(name,params) {
+function CSLUT(name,params,lutMaker,colours) {
 	this.name = name;
 	this.wp = params.wp.buffer;
-	this.lut = new LUTs();
-	this.format = params.format;
-	this.min = params.min;
-	this.max = params.max;
+	if (typeof params.format !== 'undefined') {
+		this.format = params.format;
+	} else {
+		this.format = 'cube';
+	}
+	if (typeof params.min !== 'undefined') {
+		this.min = params.min;
+	} else {
+		this.min = [0,0,0];
+	}
+	if (typeof params.max !== 'undefined') {
+		this.max = params.max;
+	} else {
+		this.max = [1,1,1];
+	}
+	this.lutMaker = lutMaker;
+	this.colours = colours;
+	if (typeof params.genInt === 'number' && typeof params.preInt === 'number') {
+		this.genInt = params.genInt;
+		this.preInt = params.preInt;
+	} else {
+		this.genInt = 1;
+		this.preInt = 1;
+	}
+	this.im = false;
+	this.natTF = 0;
+	this.inL = false;
 }
-CSLUT.prototype.loadLUT = function(s,C) {
-	this.lut.setDetails({
+CSLUT.prototype.setLUT = function(params) {
+	var meta = params.meta;
+	if (typeof meta.inputMatrix !== 'undefined' && meta.inputMatrix) {
+		this.inM = meta.inputMatrix;
+		this.im = true;
+	} else {
+		this.im = false;
+	}
+	if (typeof meta.inputTF === 'string' && meta.inputTF !== '') {
+		switch (meta.inputTF) {
+			case 'S-Log3': this.natTF = 0;
+				break;
+			case 'S-Log2': this.natTF = 1;
+				break;
+			case 'S-Log': this.natTF = 2;
+				break;
+			case 'C-Log': this.natTF = 3;
+				break;
+			case 'Canon C-Log2': this.natTF = 4;
+				break;
+			case 'Panasonic V-Log': this.natTF = 5;
+				break;
+			case 'REDLogFilm': this.natTF = 6;
+				break;
+			case 'Cineon': this.natTF = 7;
+				break;
+			case 'LogC (Sup 3.x & 4.x)': this.natTF = 8;
+				if (typeof meta.baseISO === 'number') {
+					this.setISO(meta.baseISO);
+				} else {
+					this.setISO(800);
+				}
+				break;
+			case 'LogC (Sup 2.x)': this.natTF = 9;
+				if (typeof meta.baseISO === 'number') {
+					this.setISO(meta.baseISO);
+				} else {
+					this.setISO(800);
+				}
+				break;
+			default : this.natTF = 0;
+				break;
+		}
+	} else if (typeof meta.nativeTF === 'number') {
+		this.natTF = meta.nativeTF;
+		if (this.natTF === 8 || this.natTF === 9) { // LogC
+			if (typeof meta.baseISO === 'number') {
+				this.setISO(meta.baseISO);
+			} else {
+				this.setISO(800);
+			}
+		}
+	} else {
+		this.natTF = 0;
+	}
+	if (typeof meta.inputEX === 'boolean') {
+		this.inL = !meta.inputEX;
+	} else {
+		this.inL = false;
+	}
+	if (typeof params.format !== 'undefined') {
+		this.format = params.format;
+	} else {
+		this.format = 'cube';
+	}
+	if (typeof params.min !== 'undefined') {
+		this.min = params.min;
+	} else {
+		this.min = [0,0,0];
+	}
+	if (typeof params.max !== 'undefined') {
+		this.max = params.max;
+	} else {
+		this.max = [1,1,1];
+	}
+	this.lut = this.lutMaker.newLUT({
 		title: this.name,
 		format: this.format,
 		dims: 3,
-		s: s,
+		s: params.s,
 		min: this.min,
 		max: this.max,
-		C: C
+		C: params.C
 	});
+	this.setRC();
+};
+CSLUT.prototype.setISO = function(iso) {
+	if (this.natTF === 8) { //	LogC (Sup 3.x & 4.x)
+		this.arri = {};
+		var gain,encGain,encOffset,nz;
+		var slope, offset, gray, s, t;
+		this.arri.cut = 1/9;
+		slope = 1 / (this.arri.cut*Math.LN10);
+		offset = (Math.log(this.arri.cut)/Math.LN10) - slope * this.arri.cut;
+		gain = iso / 400;
+		gray = 0.01 / gain;
+		encGain = (Math.log(iso/400)/Math.log(2) * (0.89 - 1) / 3 + 1) * 0.256598;
+		encOffset = 0.391007;
+		for (var j=0; j<3; j++) {
+			nz = ((95.0 / 1023.0 - encOffset) / encGain - offset) / slope;
+			encOffset = 0.391007 - (Math.log(1 + nz)/Math.LN10) * encGain
+		}
+		this.arri.a = 1/gray;
+		this.arri.b = nz - 0.003907 / gray;
+		this.arri.e = slope * this.arri.a * encGain;
+		this.arri.ff = encGain * (slope*this.arri.b + offset) + encOffset;
+		s = 4 / (0.18*iso);
+		t = 0.003907;
+		this.arri.b = this.arri.b + this.arri.a * t;
+		this.arri.a = this.arri.a * s;
+		this.arri.ff = this.arri.ff + this.arri.e * t;
+		this.arri.e = this.arri.e * s;
+		this.arri.c = encGain;
+		this.arri.d = encOffset;
+		this.arri.cut = (this.arri.cut - this.arri.b) / this.arri.a;
+	} else if (this.natTF === 9) { // LogC (Sup 2.x)
+		this.arri = {};
+		var encGain, f16, f17;
+		encGain = (Math.log(iso/400)/Math.log(2) * -0.11 / 3 + 1) * 0.256598;
+		f16 = (Math.log(0.000977 / 0.010977) * encGain / Math.LN10) + 0.391007;
+		f17 = (Math.log((((0.003907 + 1.0 / 4095.0) - 0.003907) * (iso/400) + 0.000977) / 0.010977)/Math.LN10) * encGain + 0.391007;
+		this.arri.cut = 0.003907;
+		this.arri.d = 0.391007;
+		this.arri.c = encGain;
+		this.arri.b = 0.000977 / 0.010977;
+		this.arri.a = (iso / (400*0.010977))/(iso * (0.18/(400*0.01)));
+		this.arri.ff = f16;
+		this.arri.e = 4095 * (f17-f16)/(iso*(0.18/(400*0.01)));
+	}
 };
 CSLUT.prototype.getWP = function() {
 	return new Float64Array(this.wp.slice(0));
 };
+CSLUT.prototype.setRC = function() {
+	var MI = this.colours;
+	var MO = MI.slice(0);
+	this.lc(MO.buffer);
+	// MI = matrix of input values, MO = matrix of output values, M is the approximate matrix of the colourspace
+	// then M MI = MO
+	// M (MI MIT) = (MO MIT) 
+	// M (MI MIT)(MI MIT)-1 = (MO MIT)(MI MIT)-1
+	// M = (MO MIT)(MI MIT)-1
+	var m = MI.length;
+	var MIMIT = new Float64Array(9);
+	var MOMIT = new Float64Array(9);
+	for (var j=0; j<m; j+=3) {
+		// MIMIT
+		MIMIT[0] += MI[ j ]*MI[ j ];
+		MIMIT[1] += MI[ j ]*MI[j+1];
+		MIMIT[2] += MI[ j ]*MI[j+2];
+//		MIMIT[3] += MI[j+1]*MI[ j ];
+		MIMIT[4] += MI[j+1]*MI[j+1];
+		MIMIT[5] += MI[j+1]*MI[j+2];
+//		MIMIT[6] += MI[j+2]*MI[ j ];
+//		MIMIT[7] += MI[j+2]*MI[j+1];
+		MIMIT[8] += MI[j+2]*MI[j+2];
+		// MOMIT
+		MOMIT[0] += MO[ j ]*MI[ j ];
+		MOMIT[1] += MO[ j ]*MI[j+1];
+		MOMIT[2] += MO[ j ]*MI[j+2];
+		MOMIT[3] += MO[j+1]*MI[ j ];
+		MOMIT[4] += MO[j+1]*MI[j+1];
+		MOMIT[5] += MO[j+1]*MI[j+2];
+		MOMIT[6] += MO[j+2]*MI[ j ];
+		MOMIT[7] += MO[j+2]*MI[j+1];
+		MOMIT[8] += MO[j+2]*MI[j+2];
+	}
+	MIMIT[3] = MIMIT[1];
+	MIMIT[6] = MIMIT[2];
+	MIMIT[7] = MIMIT[5];
+	MI = MIMIT;
+	MO = MOMIT;
+	var det =	(MI[0]*((MI[4]*MI[8]) - (MI[5]*MI[7]))) -
+				(MI[1]*((MI[3]*MI[8]) - (MI[5]*MI[6]))) +
+				(MI[2]*((MI[3]*MI[7]) - (MI[4]*MI[6])));
+	var MIInv = new Float64Array([
+		((MI[4]*MI[8])-(MI[5]*MI[7]))/det, ((MI[2]*MI[7])-(MI[1]*MI[8]))/det, ((MI[1]*MI[5])-(MI[2]*MI[4]))/det,
+		((MI[5]*MI[6])-(MI[3]*MI[8]))/det, ((MI[0]*MI[8])-(MI[2]*MI[6]))/det, ((MI[2]*MI[3])-(MI[0]*MI[5]))/det,
+		((MI[3]*MI[7])-(MI[4]*MI[6]))/det, ((MI[1]*MI[6])-(MI[0]*MI[7]))/det, ((MI[0]*MI[4])-(MI[1]*MI[3]))/det
+	]);
+	var M = new Float64Array([
+		(MO[0]*MIInv[0])+(MO[1]*MIInv[3])+(MO[2]*MIInv[6]), (MO[0]*MIInv[1])+(MO[1]*MIInv[4])+(MO[2]*MIInv[7]), (MO[0]*MIInv[2])+(MO[1]*MIInv[5])+(MO[2]*MIInv[8]),
+		(MO[3]*MIInv[0])+(MO[4]*MIInv[3])+(MO[5]*MIInv[6]), (MO[3]*MIInv[1])+(MO[4]*MIInv[4])+(MO[5]*MIInv[7]), (MO[3]*MIInv[2])+(MO[4]*MIInv[5])+(MO[5]*MIInv[8]),
+		(MO[6]*MIInv[0])+(MO[7]*MIInv[3])+(MO[8]*MIInv[6]), (MO[6]*MIInv[1])+(MO[7]*MIInv[4])+(MO[8]*MIInv[7]), (MO[6]*MIInv[2])+(MO[7]*MIInv[5])+(MO[8]*MIInv[8])
+	]);
+	det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+			(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+			(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
+	this.mInv = new Float64Array([
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
+	]);
+};
 CSLUT.prototype.isMatrix = function() {
 	return false;
+};
+CSLUT.prototype.setInterpolation = function(genInt,preInt) {
+	this.genInt = genInt;
+	this.preInt = preInt;
+};
+CSLUT.prototype.setTitle = function(name) {
+	this.name = name;
+};
+CSLUT.prototype.rc = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var M = this.mInv;
+	var r,g,b;
+	for (var j=0; j<m; j+= 3) {
+		r = c[ j ];
+		g = c[j+1];
+		b = c[j+2];
+		c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+		c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+		c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
+	}
 };
 CSLUT.prototype.cb = function() {
 	return false;
@@ -2765,97 +3288,411 @@ CSLUT.prototype.cb = function() {
 CSLUT.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.0125) {
-			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
-		} else {
-			c[j] = (c[j] + 0.0155818840)/0.1677922920;
+	var p;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
 		}
 	}
-	this.lut.rRsCub(buff);
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.1673609920) {
-			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
-		} else {
-			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
+	switch (this.natTF) {
+		case 0: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0125) {
+					c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+				} else {
+					c[j] = (c[j] + 0.0155818840)/0.1677922920;
+				}
+			}
+			break;
+		case 1: // S-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0) {
+					c[j] = (0.3705223107287920 * Math.log((c[j] * 0.7077625570776260) + 0.0375840001141552)/Math.LN10) + 0.6162444730868150;
+				} else {
+					c[j] = (c[j] + 0.0291229262672453)/0.330000000129966;
+				}
+			}
+			break;
+		case 2: // S-log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.000000000000001) {
+					c[j] = (0.3705223110 * Math.log(c[j] + 0.0375840000)/Math.LN10) + 0.6162444740;
+				} else {
+					c[j] = (c[j] + 0.0286107171)/0.3241960136;
+				}
+			}
+			break;
+		case 3: // C-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= -0.0452664) {
+					c[j] = (0.45310179472141 * Math.log((c[j] * 10.1596) + 1)/Math.LN10) + 0.1251224801564;
+				} else {
+					c[j] = (c[j] + 0.0467265867)/0.3734467748;
+				}
+			}
+			break;
+		case 4: // C-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= -0.006747091156) {
+					c[j] = (0.241360772 * Math.log((c[j] * 87.09937546) + 1)/Math.LN10) + 0.092864125;
+				} else {
+					c[j] = (c[j] + 0.006747091156)/0.045164984;
+				}
+			}
+			break;
+		case 5: // V-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.009) {
+					c[j] = (0.241514 * Math.log((c[j] * 0.9) + 0.00873)/Math.LN10) + 0.598206;
+				} else {
+					c[j] = (c[j] + 0.024801587)/0.198412698;
+				}
+			}
+			break;
+		case 6: // Cineon
+		case 7: // RedLogFilm
+			for (var j=0; j<m; j++) {
+				if (c[j] < -0.006278688) {
+					c[j] = (c[j] + 0.006278688)/0.045949378;
+				} else {
+					c[j] = ((Math.log((c[j]*0.890282024)+0.010797752)/(Math.LN10*0.003333333))+685)/1023;
+				}
+			}
+			break;
+		case 8: // LogC (Sup 3.x & 4.x)
+		case 9: // LogC (Sup 2.x)
+			p = this.arri;
+			for (var j=0; j<m; j++) {
+				c[j] = c[j] * 0.9;
+				if (c[j] > p.cut) {
+					c[j] = ((p.c * Math.log((p.a * c[j]) + p.b)/Math.LN10) + p.d);
+				} else {
+					c[j] = ((p.e * c[j]) + p.ff);
+				}
+			}
+			break;
+		default: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0125) {
+					c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+				} else {
+					c[j] = (c[j] + 0.0155818840)/0.1677922920;
+				}
+			}
+	}
+	if (this.inL) {
+		for (var j=0; j<m; j++) {
+			c[j] = ((c[j]*1023)-64)/876;
 		}
+	}
+	if (this.genInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.genInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
+	if (this.inL) {
+		for (var j=0; j<m; j++) {
+			c[j] = ((c[j]*876)+64)/1023;
+		}
+	}
+	switch (this.natTF) {
+		case 0: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.1673609920) {
+					c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				} else {
+					c[j] = (0.1677922920*c[j]) - 0.0155818840;
+				}
+			}
+			break;
+		case 1: // S-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0375840001141552) {
+					c[j] = (Math.pow(10,(c[j] - 0.6162444730868150)/0.3705223107287920) - 0.0375840001141552)/0.7077625570776260;		
+				} else {
+					c[j] = (0.330000000129966*c[j]) - 0.0291229262672453;
+				}
+			}
+			break;
+		case 2: // S-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0882900450) {
+					c[j] = (Math.pow(10,(c[j] - 0.6162444740)/0.3705223110) - 0.0375840000);		
+				} else {
+					c[j] = (0.3241960136*c[j]) - 0.0286107171;
+				}
+			}
+			break;
+		case 3: // C-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.00391002619746) {
+					c[j] = (Math.pow(10,(c[j] - 0.1251224801564)/0.45310179472141) - 1)/10.1596;		
+				} else {
+					c[j] = (0.3734467748*c[j]) - 0.0467265867;
+				}
+			}
+			break;
+		case 4: // C-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0) {
+					c[j] = (Math.pow(10,(c[j] - 0.092864125)/0.241360772) - 1)/87.09937546;		
+				} else {
+					c[j] = (0.045164984*c[j]) - 0.006747091156;
+				}
+			}
+			break;
+		case 5: // V-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.181) {
+					c[j] = (Math.pow(10,(c[j] - 0.598206)/0.241514) - 0.00873)/0.9;		
+				} else {
+					c[j] = (0.198412698*c[j]) - 0.024801587;
+				}
+			}
+			break;
+		case 6: // Cineon
+		case 7: // RedLogFilm
+			for (var j=0; j<m; j++) {
+				if (c[j] < 0) {
+					c[j] = (c[j]*0.045949378) - 0.006278688;
+				} else {
+					c[j] = (Math.pow(10,((c[j]*1023)-685)*0.003333333) - 0.010797752)/0.890282024;
+				}
+			}
+			break;
+		case 8: // LogC (Sup 3.x & 4.x)
+		case 9: // LogC (Sup 2.x)
+			p = this.arri;
+			for (var j=0; j<m; j++) {
+				if (c[j] > ((p.e * p.cut) + p.ff)) {
+					c[j] = (Math.pow(10, (c[j] - p.d) / p.c) - p.b)/(p.a*0.9);
+				} else {
+					c[j] = ((c[j] - p.ff) / (p.e*0.9));
+				}
+			}
+			break;
+		default: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.1673609920) {
+					c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				} else {
+					c[j] = (0.1677922920 * c[j]) - 0.0155818840;
+				}
+			}
 	}
 };
 CSLUT.prototype.lf = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.0125) {
-			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
-		} else {
-			c[j] = (c[j] + 0.0155818840)/0.1677922920;
+	var p;
+	if (this.im) {
+		var M = this.inM;
+		var r,g,b;
+		for (var j=0; j<m; j += 3) {
+			r = c[ j ];
+			g = c[j+1];
+			b = c[j+2];
+			c[ j ] = (M[0]*r)+(M[1]*g)+(M[2]*b);
+			c[j+1] = (M[3]*r)+(M[4]*g)+(M[5]*b);
+			c[j+2] = (M[6]*r)+(M[7]*g)+(M[8]*b);
 		}
 	}
-	this.lut.rRsLin(buff);
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.1673609920) {
-			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
-		} else {
-			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
+	switch (this.natTF) {
+		case 0: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0125) {
+					c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+				} else {
+					c[j] = (c[j] + 0.0155818840)/0.1677922920;
+				}
+			}
+			break;
+		case 1: // S-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0) {
+					c[j] = (0.3705223107287920 * Math.log((c[j] * 0.7077625570776260) + 0.0375840001141552)/Math.LN10) + 0.6162444730868150;
+				} else {
+					c[j] = (c[j] + 0.0291229262672453)/0.330000000129966;
+				}
+			}
+			break;
+		case 2: // S-log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.000000000000001) {
+					c[j] = (0.3705223110 * Math.log(c[j] + 0.0375840000)/Math.LN10) + 0.6162444740;
+				} else {
+					c[j] = (c[j] + 0.0286107171)/0.3241960136;
+				}
+			}
+			break;
+		case 3: // C-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= -0.0452664) {
+					c[j] = (0.45310179472141 * Math.log((c[j] * 10.1596) + 1)/Math.LN10) + 0.1251224801564;
+				} else {
+					c[j] = (c[j] + 0.0467265867)/0.3734467748;
+				}
+			}
+			break;
+		case 4: // C-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= -0.006747091156) {
+					c[j] = (0.241360772 * Math.log((c[j] * 87.09937546) + 1)/Math.LN10) + 0.092864125;
+				} else {
+					c[j] = (c[j] + 0.006747091156)/0.045164984;
+				}
+			}
+			break;
+		case 5: // V-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.009) {
+					c[j] = (0.241514 * Math.log((c[j] * 0.9) + 0.00873)/Math.LN10) + 0.598206;
+				} else {
+					c[j] = (c[j] + 0.024801587)/0.198412698;
+				}
+			}
+			break;
+		case 6: // Cineon
+		case 7: // RedLogFilm
+			for (var j=0; j<m; j++) {
+				if (c[j] < -0.006278688) {
+					c[j] = (c[j] + 0.006278688)/0.045949378;
+				} else {
+					c[j] = ((Math.log((c[j]*0.890282024)+0.010797752)/(Math.LN10*0.003333333))+685)/1023;
+				}
+			}
+			break;
+		case 8: // LogC (Sup 3.x & 4.x)
+		case 9: // LogC (Sup 2.x)
+			p = this.arri;
+			for (var j=0; j<m; j++) {
+				c[j] = c[j] * 0.9;
+				if (c[j] > p.cut) {
+					c[j] = ((p.c * Math.log((p.a * c[j]) + p.b)/Math.LN10) + p.d);
+				} else {
+					c[j] = ((p.e * c[j]) + p.ff);
+				}
+			}
+			break;
+		default: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0125) {
+					c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
+				} else {
+					c[j] = (c[j] + 0.0155818840)/0.1677922920;
+				}
+			}
+	}
+	if (this.inL) {
+		for (var j=0; j<m; j++) {
+			c[j] = ((c[j]*1023)-64)/876;
 		}
 	}
-};
-function CSLA(name,wp) {
-	this.name = name;
-	this.wp = wp.buffer;
-}
-CSLA.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
-};
-CSLA.prototype.setLUT = function(lut) {
-	this.lut = new LUTs();
-	this.lut.setDetails(lut);
-};
-CSLA.prototype.setTitle = function(name) {
-	this.name = name;
-};
-CSLA.prototype.isMatrix = function() {
-	return false;
-};
-CSLA.prototype.cb = function() {
-	return false;
-};
-CSLA.prototype.lc = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.0125) {
-			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
-		} else {
-			c[j] = (c[j] + 0.0155818840)/0.1677922920;
+	if (this.preInt === 0) {
+		this.lut.RGBCub(buff);
+	} else if (this.preInt === 1) {
+		this.lut.RGBTet(buff);
+	} else {
+		this.lut.RGBLin(buff);
+	}
+	if (this.inL) {
+		for (var j=0; j<m; j++) {
+			c[j] = ((c[j]*876)+64)/1023;
 		}
 	}
-	this.lut.rRsCub(buff);
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.1673609920) {
-			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
-		} else {
-			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
-		}
-	}
-};
-CSLA.prototype.lf = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.0125) {
-			c[j] = (0.2556207230 * Math.log((c[j] * 4.7368421060) + 0.0526315790)/Math.LN10) + 0.4105571850;
-		} else {
-			c[j] = (c[j] + 0.0155818840)/0.1677922920;
-		}
-	}
-	this.lut.rRsLin(buff);
-	for (var j=0; j<m; j++) {
-		if (c[j] >= 0.1673609920) {
-			c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
-		} else {
-			c[j] = (0.1677922920 * c[j]) - 0.0155818840;
-		}
+	switch (this.natTF) {
+		case 0: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.1673609920) {
+					c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				} else {
+					c[j] = (0.1677922920*c[j]) - 0.0155818840;
+				}
+			}
+			break;
+		case 1: // S-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0375840001141552) {
+					c[j] = (Math.pow(10,(c[j] - 0.6162444730868150)/0.3705223107287920) - 0.0375840001141552)/0.7077625570776260;		
+				} else {
+					c[j] = (0.330000000129966*c[j]) - 0.0291229262672453;
+				}
+			}
+			break;
+		case 2: // S-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.0882900450) {
+					c[j] = (Math.pow(10,(c[j] - 0.6162444740)/0.3705223110) - 0.0375840000);		
+				} else {
+					c[j] = (0.3241960136*c[j]) - 0.0286107171;
+				}
+			}
+			break;
+		case 3: // C-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.00391002619746) {
+					c[j] = (Math.pow(10,(c[j] - 0.1251224801564)/0.45310179472141) - 1)/10.1596;		
+				} else {
+					c[j] = (0.3734467748*c[j]) - 0.0467265867;
+				}
+			}
+			break;
+		case 4: // C-Log2
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0) {
+					c[j] = (Math.pow(10,(c[j] - 0.092864125)/0.241360772) - 1)/87.09937546;		
+				} else {
+					c[j] = (0.045164984*c[j]) - 0.006747091156;
+				}
+			}
+			break;
+		case 5: // V-Log
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.181) {
+					c[j] = (Math.pow(10,(c[j] - 0.598206)/0.241514) - 0.00873)/0.9;		
+				} else {
+					c[j] = (0.198412698*c[j]) - 0.024801587;
+				}
+			}
+			break;
+		case 6: // Cineon
+		case 7: // RedLogFilm
+			for (var j=0; j<m; j++) {
+				if (c[j] < 0) {
+					c[j] = (c[j]*0.045949378) - 0.006278688;
+				} else {
+					c[j] = (Math.pow(10,((c[j]*1023)-685)*0.003333333) - 0.010797752)/0.890282024;
+				}
+			}
+			break;
+		case 8: // LogC (Sup 3.x & 4.x)
+		case 9: // LogC (Sup 2.x)
+			p = this.arri;
+			for (var j=0; j<m; j++) {
+				if (c[j] > ((p.e * p.cut) + p.ff)) {
+					c[j] = (Math.pow(10, (c[j] - p.d) / p.c) - p.b)/(p.a*0.9);
+				} else {
+					c[j] = ((c[j] - p.ff) / (p.e*0.9));
+				}
+			}
+			break;
+		default: // S-Log3
+			for (var j=0; j<m; j++) {
+				if (c[j] >= 0.1673609920) {
+					c[j] = (Math.pow(10,(c[j] - 0.4105571850)/0.2556207230) - 0.0526315790)/4.7368421060;		
+				} else {
+					c[j] = (0.1677922920 * c[j]) - 0.0155818840;
+				}
+			}
 	}
 };
 function CSCanonIDT(name, day, toSys, wp) {
@@ -3024,12 +3861,27 @@ LUTColourSpace.prototype.setParams = function(params) {
 	} else {
 		this.tweaks = false;
 	}
+	if (typeof params.twkLA !== 'undefined') {
+		var genInt,preInt;
+		if (typeof params.twkLA.genInt === 'number' ) {
+			genInt = params.twkLA.genInt;
+		} else {
+			genInt = 0; // tricubic
+		}
+		if (typeof params.twkLA.preInt === 'number' ) {
+			preInt = params.twkLA.preInt;
+		} else {
+			preInt = 1; // tetrahedral
+		}
+		this.csOut[this.LA].setInterpolation(genInt,preInt);
+	}
 	out.twkCS = this.setCS(params);
 	out.twkWB = this.setWB(params);
 	out.twkASCCDL = this.setASCCDL(params);
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
 	out.twkMulti = this.setMulti(params);
+	out.twkGamutLim = this.setGamutLim(params);
 	out.twkFC = this.setFC(params);
 	if (typeof params.isTrans === 'boolean') {
 		this.isTrans = params.isTrans;
@@ -3073,7 +3925,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}
 // False Colour
 		if (this.doFC) {
-			var fc = new Uint8Array(max);
+			var fc = new Uint8Array(max/3);
 			out.fc = fc.buffer;
 			out.to.push('fc');
 			var k;
@@ -3113,36 +3965,36 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				if (h < 0) {
 					h += 1;
 				}
-				f = this.psstF.lLCub(h);
-				y1 = this.psstY.lLLin(f);
-				m1 = this.psstM.lLLin(f);
-				col = this.psstC.lLCub(f);
-				sat = this.psstSat.lLCub(f);
+				f = this.psstF.fCub(h);
+				y1 = this.psstY.fLin(f);
+				m1 = this.psstM.fLin(f);
+				col = this.psstC.fCub(f);
+				sat = this.psstSat.fCub(f);
 				if (sat < 0) {
 					sat = 0;
 				}
-				S = this.psstS.lLCub(f);
+				S = this.psstS.fCub(f);
 				if (S < 0) {
 					S = 0;
 				}
-				O = this.psstO.lLCub(f);
-				P = this.psstP.lLCub(f);
+				O = this.psstO.fCub(f);
+				P = this.psstP.fCub(f);
 				if (P < 0) {
 					P = 0;
 				}
 				f = (f+col)%1;
 				if (this.psstYC) {
-					y2 = this.psstY.lLLin(f);
+					y2 = this.psstY.fLin(f);
 				} else {
 					y2 = y1;
 				}
 				if (this.psstMC) {
-					m2 = this.psstM.lLLin(f);
+					m2 = this.psstM.fLin(f);
 				} else {
 					m2 = m1;
 				}
 				M = m*sat*m2/m1;
-				a = this.psstB.lLCub(f);
+				a = this.psstB.fCub(f);
 				if (m > 0.005) {
 					Y = (Y*S/y1)+O;
 					Y = ((Y<0)?Y:Math.pow(Y,P));
@@ -3222,29 +4074,163 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 			}
 		}
 	}
+// Gamut Limiter
+		if (this.doGamutLim) {
+			if (this.gLimLin) { // Linear Space
+				out.doGamutLim = false;
+				if (this.gLimC) { // Secondary colourspace to protect 
+					for (var j=0; j<max; j++) {
+						o[ j ] = Math.max(0, o[ j ]);
+					}
+					var og = new Float64Array(o.buffer.slice(0));
+					this.csIn[this.gLimGIn].lc(og.buffer);
+					this.csOut[this.gLimGOut].lc(og.buffer);
+					var gMX, gMN, gSat;
+					var gY = this.gLimY;
+					var gL = this.gLimL;
+					if (this.gLimB) { // Protect both Primary and Secondary
+						var gMX2, gMN2;
+						for (var j=0; j<max; j += 3) {
+							k = parseInt(j/3);
+							gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+							gMX2 = Math.max(og[ j ], og[j+1], og[j+2]);
+							gMN2 = Math.min(og[ j ], og[j+1], og[j+2]);
+							gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL ;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
+							o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
+						}
+					} else { // Protect Secondary only
+						for (var j=0; j<max; j += 3) {
+							k = parseInt(j/3);
+							gMX = Math.max(og[ j ], og[j+1], og[j+2]);
+							gMN = Math.min(og[ j ], og[j+1], og[j+2]);
+							gSat = (gMX - gMN)/gL;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
+							o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
+						}
+					}
+				} else { // Protect Primary
+					var gMX, gMN;
+					var gSat;
+					var gY = this.gLimY;
+					var gL = this.gLimL;
+					for (var j=0; j<max; j += 3) {
+						k = parseInt(j/3);
+						o[ j ] = Math.max(0, o[ j ]);
+						o[j+1] = Math.max(0, o[j+1]);
+						o[j+2] = Math.max(0, o[j+2]);
+						gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+						if (gMX > gL) {
+							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+							gSat = (gMX - gMN)/gL;
+							if (gSat > 1) {
+								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+								o[ j ] = Y + ((o[ j ]-Y)/gSat);
+								o[j+1] = Y + ((o[j+1]-Y)/gSat);
+								o[j+2] = Y + ((o[j+2]-Y)/gSat);
+							}
+						}
+					}
+				}
+			} else { // Post Gamma
+				out.doGamutLim = true;
+				out.gLimY = this.gLimY;
+				out.gLimL = this.gLimL;
+				if (this.gLimC) { // Secondary colourspace to protect
+					var og = new Float64Array(o.buffer.slice(0));
+					this.csIn[this.gLimGIn].lc(og.buffer);
+					this.csOut[this.gLimGOut].lc(og.buffer);
+					out.og = og.buffer;
+					out.to.push('og');
+					out.gLimB = this.gLimB;
+				}
+			} // Default protects Primary
+		} else {
+			out.doGamutLim = false;
+		}
+// Done
 	return out;
 };
 LUTColourSpace.prototype.laCalc = function(p,t,i) {
-	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut, legIn: i.legIn, o: i.o };
-	this.csOut[i.gamut].lc(i.o);
-	out.to = ['o'];
+	var out = { p: p, t: t+20, v: this.ver, dim: i.dim, gamma: i.gamma, gamut: i.gamut };
+	if (i.gamut === this.custOut) {
+		out.inputMatrix = this.mInverse(this.csIn[this.custIn].getMatrix()).buffer;
+	} else {
+		out.inputMatrix = this.csOut[i.gamut].getMatrix().buffer.slice(0);
+	}
+	out.to = ['inputMatrix'];
 	return out;
 };
 LUTColourSpace.prototype.recalcMatrix = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, idx: i.idx, wcs: i.newWCS};
+	var matrix;
 	var oMat = new Float64Array(i.matrix);
-	var oToXYZ = this.g[i.oldWCS].toXYZ;
-	var nFromXYZ = this.mInverse(this.g[i.newWCS].toXYZ);
-	var oToN = this.mMult(nFromXYZ, this.calcCAT(i.cat,oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white));
-	var matrix = this.mMult(oToN,oMat);
+	if (i.newWCS === this.xyzIdx) {
+		matrix = this.mMult(this.g[i.oldWCS].toXYZ,oMat);
+	} else if (i.oldWCS === this.xyzIdx) {
+		matrix = this.mMult(this.mInverse(this.g[i.newWCS].toXYZ),oMat);
+	} else {
+		var oToXYZ = this.g[i.oldWCS].toXYZ;
+		var nFromXYZ = this.mInverse(this.g[i.newWCS].toXYZ);
+		var oToN = this.mMult(nFromXYZ, this.calcCAT(oToXYZ,this.g[i.oldWCS].white,this.g[i.newWCS].white,i.cat));
+		matrix = this.mMult(oToN,oMat);
+	}
 	out.matrix = matrix.buffer;
 	out.to = ['matrix'];
 	return out;
 };
 LUTColourSpace.prototype.loadDefaultLUTs = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver};
+	var meta;
+	if (typeof i.meta !== 'undefined') {
+		meta = i.meta;
+	} else {
+		meta = {};
+	}
+	if (typeof i.title !== 'undefined') {
+		out.title = i.title;
+	}
 	var lut = this.csOut[this.defLUTs[i.fileName]];
-	lut.loadLUT(i.s,[i.C0,i.C1,i.C2]);
+	var idx = -1;
+	if (typeof meta.inputCS !== 'undefined' && meta.inputCS !== '') {
+		var list = this.laList;
+		var m = list.length;
+		var idx = -1
+		if (meta.inputCS !== 'Custom In') {
+			for (var j=0; j<m; j++) {
+				if (list.name === meta.inputCS) {
+					idx = list.idx;
+					break;
+				}
+			}
+		}
+	}
+	if (idx < 0) { // custom / unknown gamut - use the matrix supplied with the LA LUT
+	} else if (idx !== this.sysIdx) {
+		meta.inputMatrix = this.csOut[idx].getMatrix();
+	} else { // The system default so no input matrix needed
+		meta.inputMatrix = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
+	}
+	var params = {
+		name: lut.name,
+		format: 'cube',
+		dims: i.dims,
+		s: i.s,
+		min: i.min,
+		max: i.max,
+		C: i.C,
+		meta: meta
+	};
+	lut.setLUT(params);
 	return out;
 };
 LUTColourSpace.prototype.getLists = function(p,t) {
@@ -3266,8 +4252,49 @@ LUTColourSpace.prototype.getLists = function(p,t) {
 	};
 };
 LUTColourSpace.prototype.setLA = function(p,t,i) {
-	this.csOut[this.LA].setLUT(i);
-	return { p: p, t:t+20, v: this.ver, i: i.title };
+	var out = { p: p, t: t+20, v: this.ver};
+	var meta;
+	if (typeof i.meta !== 'undefined') {
+		meta = i.meta;
+	} else {
+		meta = {};
+	}
+	if (typeof i.title !== 'undefined') {
+		out.title = i.title;
+	}
+	var lut = this.csOut[this.LA];
+	var idx = -1;
+	if (typeof meta.inputCS !== 'undefined' && meta.inputCS !== '') {
+		var list = this.laList;
+		var m = list.length;
+		var idx = -1
+		if (meta.inputCS !== 'Custom In') {
+			for (var j=0; j<m; j++) {
+				if (list.name === meta.inputCS) {
+					idx = list.idx;
+					break;
+				}
+			}
+		}
+	}
+	if (idx < 0) { // custom / unknown gamut - use the matrix supplied with the LA LUT
+	} else if (idx !== this.sysIdx) {
+		meta.inputMatrix = this.csOut[idx].getMatrix();
+	} else { // The system default so no input matrix needed
+		meta.inputMatrix = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
+	}
+	var params = {
+		name: lut.name,
+		format: 'cube',
+		dims: i.dims,
+		s: i.s,
+		min: i.min,
+		max: i.max,
+		C: i.C,
+		meta: meta
+	};
+	lut.setLUT(params);
+	return out;
 };
 LUTColourSpace.prototype.setLATitle = function(p,t,i) {
 	this.csOut[this.LA].setTitle(i);
@@ -3577,24 +4604,24 @@ LUTColourSpace.prototype.psstColours = function(p,t) {
 	for (var j=0; j<84; j += 3) {
 		f = i;
 		i += 1/28;
-		a = this.psstB.lLCub(f);
-		m1 = this.psstM.lLLin(f);
-		c = this.psstC.lLCub(f);
-		sat = this.psstSat.lLCub(f);
+		a = this.psstB.fCub(f);
+		m1 = this.psstM.fLin(f);
+		c = this.psstC.fCub(f);
+		sat = this.psstSat.fCub(f);
 		if (sat < 0) {
 			sat = 0;
 		}
-		S = this.psstS.lLCub(f);
+		S = this.psstS.fCub(f);
 		if (S < 0) {
 			S = 0;
 		}
-		O = this.psstO.lLCub(f);
-		P = this.psstP.lLCub(f);
+		O = this.psstO.fCub(f);
+		P = this.psstP.fCub(f);
 		if (P < 0) {
 			P = 0;
 		}
 		M = 0.5 * m1;
-		y1 = this.psstY.lLLin(f);
+		y1 = this.psstY.fLin(f);
 		Y = 0.7*y1;
 		Pb = M * Math.cos(a);
 		Pr = M * Math.sin(a);
@@ -3603,17 +4630,17 @@ LUTColourSpace.prototype.psstColours = function(p,t) {
 		bef64[j+1] = (Y - (y[0]*bef64[ j ]) -(y[2]*bef64[j+2]))/y[1];
 		f = (f+c%1);
 		if (this.psstYC) {
-			y2 = this.psstY.lLLin(f);
+			y2 = this.psstY.fLin(f);
 		} else {
 			y2 = y1;
 		}
 		if (this.psstMC) {
-			m2 = this.psstM.lLLin(f);
+			m2 = this.psstM.fLin(f);
 		} else {
 			m2 = m1;
 		}
 		M = M * m2 * sat / m1;
-		a = this.psstB.lLCub(f);
+		a = this.psstB.fCub(f);
 		Y = (Y*S/y1)+O;
 		Y = ((Y<0)?Y:Math.pow(Y,P));
 		Y = (isNaN(Y)?0:Y);
@@ -3649,140 +4676,51 @@ LUTColourSpace.prototype.getCCTDuv = function(p,t,i) {
 	return out;
 };
 LUTColourSpace.prototype.calcPrimaries = function(p,t) {
-	var d = 0.001;
-	var B = new Float64Array(9);
-	var g = new Float64Array([
-		0.2,0.2,0.2,
-		0.05,0,0,
-		0,0.05,0,
-		0,0,0.05
+	var gIn = new Float64Array([ // The input or recorded gamut - these values to be converted to XYZ then xy
+		1,1,1,
+		1,0,0,
+		0,1,0,
+		0,0,1
 	]);
-	var m = Math.round(g.length)/3;
-	var a = new Float64Array(m*3);
-	var xy = new Float64Array(m*2*2);
-	var goal;
-	var guess,g0;
-	
-	var x0,x1,dx0,dx1;
-	var den;
-	var f0,f1,df1;
-	var J0,iJ0,dJ1,diJ1,J1,iJdf;
-	var delta;
-	var k;
-	for (var i=0; i<m; i++) {
-		k = i*3;
-		goal = new Float64Array([g[k],g[k+1],g[k+2]]);
-		g0 = new Float64Array([ g[k],g[k+1],g[k+2] ]);
-		guess = this.firstGuess(
-			goal,
-			g0,
-			d
-		);
-		x0 = guess.x;
-		f0 = guess.f;
-		if (isNaN(f0[0]) || isNaN(f0[1]) || isNaN(f0[2])) {
-			a[ k ] = NaN;
-			a[k+1] = NaN;
-			a[k+2] = NaN;
-			break;
-		} else if (Math.pow(Math.pow(f0[0],2)+Math.pow(f0[1],2)+Math.pow(f0[2],2),0.5) < 0.00001) {
-			a[ k ] = x0[0];
-			a[k+1] = x0[1];
-			a[k+2] = x0[2];
-		} else {
-			J0 = guess.J;
-			iJ0 = this.mInverse(J0);
-			for (var j=0; j<15; j++) {
-				delta = this.mMult(iJ0,f0);
-				x1 = new Float64Array([x0[0]-delta[0],x0[1]-delta[1],x0[2]-delta[2]]);
-				f1 = this.fx(x1.buffer.slice(0));
-				f1[0] -= goal[0];
-				f1[1] -= goal[1];
-				f1[2] -= goal[2];
-				if (isNaN(f1[0]) || isNaN(f1[1]) || isNaN(f1[2])) {
-					a[ k ] = NaN;
-					a[k+1] = NaN;
-					a[k+2] = NaN;
-					break;
-				} else if (Math.pow(Math.pow(f1[0],2)+Math.pow(f1[1],2)+Math.pow(f1[2],2),0.5) < 0.00001) {
-					a[ k ] = x1[0];
-					a[k+1] = x1[1];
-					a[k+2] = x1[2];
-					break;
-				} else {
-// console.log(i + ' - ' + j + ' - ' + Math.pow(Math.pow(f1[0],2)+Math.pow(f1[1],2)+Math.pow(f1[2],2),0.5));
-					dx1 = new Float64Array([-delta[0],-delta[1],-delta[2]]);
-					df1 = new Float64Array([f1[0]-f0[0],f1[1]-f0[1],f1[2]-f0[2]]);
-					// Good Broyden's
-					dJ1 = this.mMult(J0,dx1);
-					den = Math.pow(dx1[0],2) + Math.pow(dx1[1],2) + Math.pow(dx1[2],2);
-					dJ1[0] = (df1[0] - dJ1[0])/den;
-					dJ1[1] = (df1[1] - dJ1[1])/den;
-					dJ1[2] = (df1[2] - dJ1[2])/den;
-					J0 = new Float64Array([
-						J0[0]+(dJ1[0]*dx1[0]), J0[1]+(dJ1[0]*dx1[1]), J0[2]+(dJ1[0]*dx1[2]),
-						J0[3]+(dJ1[1]*dx1[0]), J0[4]+(dJ1[1]*dx1[1]), J0[5]+(dJ1[1]*dx1[2]),
-						J0[6]+(dJ1[2]*dx1[0]), J0[7]+(dJ1[2]*dx1[1]), J0[8]+(dJ1[2]*dx1[2])
-					]);
-					iJ0 = this.mInverse(J0);
-					x0 = x1;
-					f0 = f1;
-/*
-					// Bad Broyden's
-					diJ1 = this.mMult(iJ0,df1);
-					den = Math.pow(df1[0],2) + Math.pow(df1[1],2) + Math.pow(df1[2],2);
-					diJ1[0] = (dx1[0] - diJ1[0])/den;
-					diJ1[1] = (dx1[1] - diJ1[1])/den;
-					diJ1[2] = (dx1[2] - diJ1[2])/den;
-					iJ0 = new Float64Array([
-						iJ0[0]+(diJ1[0]*df1[0]), iJ0[1]+(diJ1[0]*df1[1]), iJ0[2]+(diJ1[0]*df1[2]),
-						iJ0[3]+(diJ1[1]*df1[0]), iJ0[4]+(diJ1[1]*df1[1]), iJ0[5]+(diJ1[1]*df1[2]),
-						iJ0[6]+(diJ1[2]*df1[0]), iJ0[7]+(diJ1[2]*df1[1]), iJ0[8]+(diJ1[2]*df1[2])
-					]);
-					x0 = x1;
-					f0 = f1;
-*/
-				}
-			}
-		}
-	}
+	var gOut = new Float64Array([ // The output gamut - these values to be converted to XYZ then xy
+		1,1,1,
+		1,0,0,
+		0,1,0,
+		0,0,1
+	]);
+	var m = 4;
+	var xy = new Float64Array(16);
 	var k,l,den;
 	var wd,ws;
 	var XYZ;
 
-	this.csIn[this.curIn].lc(g.buffer);
-	this.csOut[this.XYZOut].lc(g.buffer);
+	// Input Gamut
+	this.csIn[this.curIn].lc(gIn.buffer);
+	this.csOut[this.XYZOut].lc(gIn.buffer);
 	wd = this.csIn[this.curIn].getWP();
 	ws = this.system.white;
-	for (var j=0; j<m; j++) {
+	for (var j=0; j<4; j++) {
 		k = j*3;
 		l = j*2;
-		XYZ = this.ciecat02(new Float64Array([g[k],g[k+1],g[k+2]]),ws,wd);
+		XYZ = this.calcCAT(new Float64Array([gIn[k],gIn[k+1],gIn[k+2]]),ws,wd,this.inCATs[this.curIn]);
 		den = XYZ[0] + XYZ[1] + XYZ[2];
 		xy[ l ] = (XYZ[0]/den);
 		xy[l+1] = (XYZ[1]/den);
 	}
-
-	var step = m*2;
-	this.csOut[this.XYZOut].lc(a.buffer);
+	// Output Gamut
+	this.rx(gOut.buffer);
+	this.csOut[this.XYZOut].lc(gOut.buffer);
 	wd = this.csOut[this.curOut].getWP();
 	ws = this.system.white;
-	for (var j=0; j<m; j++) {
+	for (var j=0; j<4; j++) {
 		k = j*3;
 		l = j*2;
-		XYZ = this.ciecat02(new Float64Array([a[k],a[k+1],a[k+2]]),ws,wd);
+		XYZ = this.calcCAT(new Float64Array([gOut[k],gOut[k+1],gOut[k+2]]),ws,wd,this.outCATs[this.curOut]);
 		den = XYZ[0] + XYZ[1] + XYZ[2];
-		xy[ l+step ] = (XYZ[0]/den);
-		xy[l+step+1] = (XYZ[1]/den);
+		xy[l+8] = (XYZ[0]/den);
+		xy[l+9] = (XYZ[1]/den);
 	}
-/*
-console.log(
-	'Output - WP: ' + parseFloat(xy[step].toFixed(4)) + ', ' + parseFloat(xy[step+1].toFixed(4)) +
-	' Rxy: ' + parseFloat(xy[step+2].toFixed(4)) + ', ' + parseFloat(xy[step+3].toFixed(4)) +
-	' Gxy: ' + parseFloat(xy[step+4].toFixed(4)) + ', ' + parseFloat(xy[step+5].toFixed(4)) +
-	' Bxy: ' + parseFloat(xy[step+6].toFixed(4)) + ', ' + parseFloat(xy[step+7].toFixed(4))
-);
-*/
+	// Return object
 	return {
 		p: p,
 		t: t+20,
@@ -3916,11 +4854,6 @@ function getCSString() {
 	out += CSLUT.toString() + "\n";
 	for (var j in CSLUT.prototype) {
 		out += 'CSLUT.prototype.' + j + '=' + CSLUT.prototype[j].toString() + "\n";
-	}
-	// CSLA
-	out += CSLA.toString() + "\n";
-	for (var j in CSLA.prototype) {
-		out += 'CSLA.prototype.' + j + '=' + CSLA.prototype[j].toString() + "\n";
 	}
 	// CSCanonIDT
 	out += CSCanonIDT.toString() + "\n";

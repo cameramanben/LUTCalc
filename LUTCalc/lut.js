@@ -10,1444 +10,154 @@
 * Github: https://github.com/cameramanben/LUTCalc
 */
 function LUTs() {
-	this.title = '';
-	this.format = ''; // Currently just 'cube'
-	this.d = 0; // 1D or 3D
-	this.s = 1024; // Dimension - eg 1024 or 4096 for 1D, 17, 33 or 65 for 3D
-	this.min = [0,0,0]; // Lowest input value
-	this.max = [1,1,1]; // Highest input value
-	this.minL = 0;
-	this.maxL = 1;
-	this.scale = false;
-	this.comp = false;
-	this.spln = false;
-	this.C = [];
-	this.rgbl = false;
 }
-LUTs.prototype.getSize = function() {
-	return this.s;
-};
-LUTs.prototype.is1D = function() {
-	if (this.d === 1) {
-		return true;
-	} else {
-		return false;
+LUTs.prototype.newLUT = function(d) {
+	var params = {};
+	if (typeof d.title === 'string') {
+		params.title = d.title;
 	}
-};
-LUTs.prototype.is3D = function() {
-	if (this.d === 3) {
-		return true;
-	} else {
-		return false;
+	if (typeof d.format === 'string') {
+		params.format = d.format;
 	}
-};
-LUTs.prototype.getTitle = function() {
-	return this.title;
-};
-LUTs.prototype.getDetails = function() {
-	var out = {
-			title: this.title,
-			format: this.format,
-			dims: this.d,
-			s: this.s,
-			min: this.min,
-			max: this.max,
-			rgbl: this.rgbl
-		};
-	if (this.d === 3 || this.C.length === 3) {
-		out.C = [this.C[0].buffer,this.C[1].buffer,this.C[2].buffer];
+	if (typeof d.dims === 'number') {
+		this.dims = d.dims;
 	} else {
-		out.C = [this.L.buffer];
+		dims = 1;
 	}
-	return out;
-};
-LUTs.prototype.setDetails = function(d) {
-	this.title = d.title;
-	this.format = d.format;
-	this.d = d.dims;
-	this.s = d.s;
-	this.min = d.min;
-	this.max = d.max;
-	this.scale = false;
-	this.comp = false;
-	if (this.min[0] !== 0 && this.min[1] !== 0 && this.min[2] !== 0) {
-		this.scale = true;
-		if (this.min[0] !== this.min[1] || this.min[1] !== this.min[2] || this.min[2] !== this.min[0]) {
-			this.comp = true;
-			var min = this.min.slice(0).sort(function(a,b){return a-b;});
-			this.minL = min[0];
-		} else {
-			this.minL = this.min[0];
-		}
-	} else {
-		this.minL = 0;
+	if (typeof d.min !== 'undefined' && (d.min[0] !== 0 || d.min[1] !== 0 || d.min[2] !== 0)) {
+		params.fL = d.min[0];
+		params.fLR = d.min[0];
+		params.fLG = d.min[1];
+		params.fLB = d.min[2];
 	}
-	if (this.max[0] !== 1 && this.max[1] !== 1 && this.max[2] !== 1) {
-		this.scale = true;
-		if (this.max[0] !== this.max[1] || this.max[1] !== this.max[2] || this.max[2] !== this.max[0]) {
-			this.comp = true;
-			var max = this.max.slice(0).sort(function(a,b){return b-a;});
-			this.maxL = max[0];
-		} else {
-			this.maxL = this.max[0];
-		}
-	} else {
-		this.maxL = 1;
+	if (typeof d.max !== 'undefined' && (d.max[0] !== 1 || d.max[1] !== 1 || d.max[2] !== 1)) {
+		params.fH = d.max[0];
+		params.fHR = d.max[0];
+		params.fHG = d.max[1];
+		params.fHB = d.max[2];
+	}
+	if (typeof d.fL === 'number') {
+		params.fL = d.fL;
+	}
+	if (typeof d.fH === 'number') {
+		params.fH = d.fH;
+	}
+	if (typeof d.fLR === 'number') {
+		params.fLR = d.fLR;
+	}
+	if (typeof d.fLG === 'number') {
+		params.fLG = d.fLG;
+	}
+	if (typeof d.fLB === 'number') {
+		params.fLB = d.fLB;
+	}
+	if (typeof d.fHR === 'number') {
+		params.fHR = d.fHR;
+	}
+	if (typeof d.fHG === 'number') {
+		params.fHG = d.fHG;
+	}
+	if (typeof d.fHB === 'number') {
+		params.fHB = d.fHB;
 	}
 	if (typeof d.spline !== 'undefined') {
-		this.spline = new LUTSpline(d.spline);
-		this.spln = true;
+		params.inSpline = d.spline;
+	}
+	if (typeof d.meta !== 'undefined') {
+		params.meta = d.meta;
 	}
 	if (d.C.length === 3) {
-		this.addLUT(d.C[0],d.C[1],d.C[2]);
-	} else {
-		if (!this.comp) {
-			this.addLUT(d.C[0]);
+		params.buffR = d.C[0].slice(0);
+		params.buffG = d.C[1].slice(0);
+		params.buffB = d.C[2].slice(0);
+		if (this.dims === 3) {
+			return new LUTVolume(params);
 		} else {
-			this.addLUT(d.C[0].slice(0),d.C[0].slice(0),d.C[0]);
-		}
-	}
-};
-LUTs.prototype.setSpline = function(buff) {
-	this.spline = new LUTSpline(buff);
-	this.spln = true;
-};
-LUTs.prototype.reset = function() {
-	this.title = '';
-	this.format = '';
-	this.d = 1;
-	this.s = 1024;
-	this.min = [0,0,0];
-	this.max = [1,1,1];
-	this.minL = 0;
-	this.maxL = 1;
-	this.scale = false;
-	this.comp = false;
-	this.spln = true;
-	this.C.length = 0;
-	this.rgbl = false;
-};
-LUTs.prototype.addLUT = function(bufR,bufG,bufB) {
-	if (this.d === 3 || ((typeof bufG !== 'undefined') && (typeof bufB !== 'undefined'))) {
-		this.C = [	new Float64Array(bufR),
-					new Float64Array(bufG),
-					new Float64Array(bufB)];
-		this.rgbl = true;
-		this.buildL();
-	} else {
-		this.rgbl = false;
-		this.L = new Float64Array(bufR);
-	}
-};
-LUTs.prototype.buildL = function() { // 1D LUTs tend to be the same for each channel, but don't need to be. one time luma calculation to speed things up later
-	this.L = new Float64Array(this.s);
-	if (this.d === 3) {
-		if (this.comp) {
-			var Y;
-			var rgbL = new Float64Array(3);
-			var L = [];
-			for (var j=0; j<this.s; j++) {
-				Y = (parseFloat(j)*(this.maxL-this.minL))+this.minL;
-				rgbL[0] = (Y-this.min[0])/(this.max[0]-this.min[0]);
-				if (this.spln) {
-					rgbL[0] = this.spline.f(rgbL[0]);
-				}
-				rgbL[1] = (Y-this.min[1])/(this.max[1]-this.min[1]);
-				if (this.spln) {
-					rgbL[1] = this.spline.f(rgbL[1]);
-				}
-				rgbL[2] = (Y-this.min[2])/(this.max[2]-this.min[2]);
-				if (this.spln) {
-					rgbL[2] = this.spline.f(rgbL[2]);
-				}
-				this.l3(rgbL);
-				this.L[j] = (0.2126 * rgbL[0]) + (0.7152 * rgbL[1]) + (0.0722 * rgbL[2]);
-			}
-		} else {
-			var k;
-			for (var j=0; j<this.s; j++) {
-				k = j + (this.s* (j + (this.s*j)));
-				this.L[j] = (0.2126 * this.C[0][k]) + (0.7152 * this.C[1][k]) + (0.0722 * this.C[2][k]);
-			}
+			return new LUTRGBSpline(params);
 		}
 	} else {
-		if (this.comp) { // different scaling for the different channels
-			var Y, L;
-			for (var j=0; j<this.s; j++) {
-				Y = (parseFloat(j)*(this.maxL-this.minL))+this.minL;
-				L = (Y-this.min[0])/(this.max[0]-this.min[0]);
-				if (this.spln) {
-					L = this.spline.f(L);
-				}
-				this.L[j] = 0.2126 * this.l(L,0);
-				L = (Y-this.min[1])/(this.max[1]-this.min[1]);
-				if (this.spln) {
-					L = this.spline.f(L);
-				}
-				this.L[j] += 0.7152 * this.l(L,1);
-				L = (Y-this.min[2])/(this.max[2]-this.min[2]);
-				if (this.spln) {
-					L = this.spline.f(L);
-				}
-				this.L[j] += 0.0722 * this.l(L,2);
-			}
-		} else {
-			for (var j=0; j<this.s; j++) {
-				this.L[j] = (0.2126 * this.C[0][j]) + (0.7152 * this.C[1][j]) + (0.0722 * this.C[2][j]);
-			}
-		}
+		params.buff = d.C[0].slice(0);
+		return new LUTSpline(params);
 	}
 };
-LUTs.prototype.l = function(L,C) {
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		var dy = ((4 * this.C[C][1]) - (3 * this.C[C][0]) - this.C[C][2])/2;
-		return this.C[C][0] + (L * dy);
-	} else if (L >= max) {
-		var dy = (0.5 * this.C[C][max - 2]) - (2 * this.C[C][max - 1]) + (1.5 * this.C[C][max]);
-		return this.C[C][max] + ((L - max) * dy);
+// LUTSpline - base spline object; forward only but with arbitrary input range
+function LUTSpline(params) {
+	// Metadata
+	if (typeof params.title === 'string') {
+		this.title = params.title;
 	} else {
-		var f = Math.floor(L);
-		var p0 = this.C[C][f];
-		var p1 = this.C[C][f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.C[C][1]) - (3 * this.C[C][0]) - this.C[C][2])/2;
-		} else {
-			d0 = (this.C[C][f + 1] - this.C[C][f - 1])/2;
-		}
-		if (f === max - 1) {
-			d1 = (2 * this.C[C][max - 2]) + ((this.C[C][max - 1] - this.C[C][max - 3])/2) - (4 * this.C[C][max - 1]) + (2 * this.C[C][max]);
-		} else {
-			d1 = (this.C[C][f + 2] - this.C[C][f])/2;
-		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
+		this.title = '';
 	}
-};
-LUTs.prototype.l3 = function(o) {
-	var max = this.s - 1;
-	var i = new Float64Array(3);
-	var clip = max * 0.999999999999;
-	var rL,gL,bL,rH,gH,bH;
-	var p0,p1,p2,dy;
-	i[0] = o[0]*max;
-	i[1] = o[1]*max;
-	i[2] = o[2]*max;
-	// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
-	rL = false;
-	gL = false;
-	bL = false;
-	rH = false;
-	gH = false;
-	bH = false;
-	if (i[0] < 0) {
-		i[0] = 0;
-		rL = true;
-	} else if (i [0] >= max) {
-		i[0] = clip;
-		rH = true;
-	}
-	if (i[1] < 0) {
-		i[1] = 0;
-		gL = true;
-	} else if (i [1] >= max) {
-		i[1] = clip;
-		gH = true;
-	}
-	if (i[2] < 0) {
-		i[2] = 0;
-		bL = true;
-	} else if (i [2] >= max) {
-		i[2] = clip;
-		bH = true;
-	}
-	// If any of the i channels were clipped, replace their output value with linear extrapolation from the edge point
-	if (rL) {
-		p0 = this.tC(this.C[0], max, [0,i[1],i[2]]);
-		p1 = this.tC(this.C[0], max, [1,i[1],i[2]]);
-		p2 = this.tC(this.C[0], max, [2,i[1],i[2]]);
-		dy = ((4 * p1) - (3 * p0) - p2)/2;
-		o[0] = p0 + (o[0] * max * dy);
-	} else if (rH) {
-		p0 = this.tC(this.C[0], max, [clip - 2,i[1],i[2]]);
-		p1 = this.tC(this.C[0], max, [clip - 1,i[1],i[2]]);
-		p2 = this.tC(this.C[0], max, [clip,i[1],i[2]]);
-		dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-		o[0] = p2 + ((o[0] - 1) * max * dy);
+	if (typeof params.format === 'string') {
+		this.format = params.format;
 	} else {
-		o[0] = this.tC(this.C[0], max, i);
+		this.format = '';
 	}
-	if (gL) {
-		p0 = this.tC(this.C[1], max, [i[0],0,i[2]]);
-		p1 = this.tC(this.C[1], max, [i[0],1,i[2]]);
-		p2 = this.tC(this.C[1], max, [i[0],2,i[2]]);
-		dy = ((4 * p1) - (3 * p0) - p2)/2;
-		o[1] = p0 + (o[1] * max * dy);
-	} else if (gH) {
-		p0 = this.tC(this.C[1], max, [i[0],clip - 2,i[2]]);
-		p1 = this.tC(this.C[1], max, [i[0],clip - 1,i[2]]);
-		p2 = this.tC(this.C[1], max, [i[0],clip,i[2]]);
-		dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-		o[1] = p2 + ((o[1] - 1) * max * dy);
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
 	} else {
-		o[1] = this.tC(this.C[1], max, i);
+		this.meta = {};
 	}
-	if (bL) {
-		p0 = this.tC(this.C[2], max, [i[0],i[1],0]);
-		p1 = this.tC(this.C[2], max, [i[0],i[1],1]);
-		p2 = this.tC(this.C[2], max, [i[0],i[1],2]);
-		dy = ((4 * p1) - (3 * p0) - p2)/2;
-		o[2] = p0 + (o[2] * max * dy);
-	} else if (bH) {
-		p0 = this.tC(this.C[2], max, [i[0],i[1],clip - 2]);
-		p1 = this.tC(this.C[2], max, [i[0],i[1],clip - 1]);
-		p2 = this.tC(this.C[2], max, [i[0],i[1],clip]);
-		dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-		o[2] = p2 + ((o[2] - 1) * max * dy);
-	} else {
-		o[2] = this.tC(this.C[2], max, i);
+	// Precalculate forward parameters
+	this.FD = new Float64Array(params.buff);
+	var fm = this.FD.length;
+	var mono = this.FD[fm-1]-this.FD[0];
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
 	}
-};
-LUTs.prototype.getL = function() {
-	return this.L.buffer;
-};
-LUTs.prototype.getRGB = function() {
-	return [this.C[0].buffer,
-			this.C[1].buffer,
-			this.C[2].buffer];
-};
-LUTs.prototype.setDYs = function() {
-	var max = this.s - 1;
-	var sign = this.L[max] - this.L[0];
-	if (sign === 0) {
-		this.dyMin = 0.000000001;
-		this.dyMax = 0.000000001;
-	} else if (sign > 0.000000001){
-		this.dyMin = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		if (this.dyMin < 0.000000001) {
-			this.dyMin = ((4 * this.L[2]) - (3 * this.L[0]) - this.L[4])/4;
-			if (this.dyMin < 0.000000001) {
-				this.dyMin = 0.000000001;
-			}
-		}
-		this.dyMax = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-		if (this.dyMax < 0.000000001) {
-			this.dyMax = (0.5 * this.L[max - 4]) - (2 * this.L[max - 2]) + (1.5 * this.L[max]);
-			if (this.dyMax < 0.000000001) {
-				this.dyMax = 0.000000001;
-			}
-		}
-	} else {
-		this.dyMin = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		if (this.dyMin > -0.000000001) {
-			this.dyMin = ((4 * this.L[2]) - (3 * this.L[0]) - this.L[4])/4;
-			if (this.dyMin > -0.000000001) {
-				this.dyMin > -0.000000001;
-			}
-		}
-		this.dyMax = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-		if (this.dyMax > -0.000000001) {
-			this.dyMax = (0.5 * this.L[max - 4]) - (2 * this.L[max - 2]) + (1.5 * this.L[max]);
-			if (this.dyMax > -0.000000001) {
-				this.dyMax = -0.000000001;
-			}
-		}
-	}
-};
-LUTs.prototype.f = function(L) {
-	if (this.scale) {
-		L =	(L-this.minL)/(this.maxL-this.minL);
-	}
-	if (this.spln) {
-		L = this.spline.f(L);
-	}
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		return this.L[0] + (L * dy);
-	} else if (L >= max) {
-		var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-		return this.L[max] + ((L - max) * dy);
-	} else {
-		var f = Math.floor(L);
-		var p0 = this.L[f];
-		var p1 = this.L[f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-		} else {
-			d0 = (this.L[f + 1] - this.L[f - 1])/2;
-		}
-		if (f === max - 1) {
-			d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
-		} else {
-			d1 = (this.L[f + 2] - this.L[f])/2;
-		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
-	}
-};
-LUTs.prototype.lLCub = function(L) {
-	if (this.rgbl && this.comp) {
-		var out = this.lRCub(L);
-		return (0.2126 * out[0]) + (0.7152 * out[1]) + (0.0722 * out[2]);
-	} else {
-		if (this.scale) {
-			L =	(L-this.minL)/(this.maxL-this.minL);
-		}
-		if (this.spln) {
-			L = this.spline.f(L);
-		}
-		var max = this.s - 1;
-		L = L * max;
-		if (L < 0) {
-			var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-			return this.L[0] + (L * dy);
-		} else if (L >= max) {
-			var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-			return this.L[max] + ((L - max) * dy);
-		} else {
-			var f = Math.floor(L);
-			var p0 = this.L[f];
-			var p1 = this.L[f + 1];
-			var d0,d1;
-			if (f === 0) {
-				d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-			} else {
-				d0 = (this.L[f + 1] - this.L[f - 1])/2;
-			}
-			if (f === max - 1) {
-				d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
-			} else {
-				d1 = (this.L[f + 2] - this.L[f])/2;
-			}
-			var a = (2 * p0) + d0 - (2 * p1) + d1;
-			var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-			var c = d0;
-			var d = p0;
-			L -= f;
-			return (((((a * L) + b) * L) + c) * L) + d;
-		}
-	}
-};
-LUTs.prototype.lRCub = function(Y) {
-	var max = this.s - 1;
-	var out = new Float64Array(3);
-	if (this.d === 1) {
-		if (!this.rgbl) {
-			var L = Y;
-			if (this.scale) {
-				L =	(L-this.minL)/(this.maxL-this.minL);
-			}
-			if (this.spln) {
-				L = this.spline.f(L);
-			}
-			L *= max;
-			if (L < 0) {
-				var dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				out[0] = this.L[0] + (L * dy);
-			} else if (L >= max) {
-				var dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-				out[0] = this.L[max] + ((L - max) * dy);
-			} else {
-				var base = Math.floor(L);
-				var p0 = this.L[base];
-				var p1 = this.L[base + 1];
-				var d0,d1;
-				if (base === 0) {
-					d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				} else {
-					d0 = (this.L[base + 1] - this.L[base - 1])/2;
+	this.FA = new Float64Array(fm);
+	this.FB = new Float64Array(fm);
+	this.FC = new Float64Array(fm);
+	var FP1 = new Float64Array(fm);
+	var FD1 = new Float64Array(fm);
+	for (var j=0; j<fm; j++) {
+		if (j === 0) {
+			FP1[0] = this.FD[1];
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
+				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.FC[0] = 0.0075 * mono / (fm-1);
 				}
-				if (base == max - 1) {
-					d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
-				} else {
-					d1 = (this.L[base + 2] - this.L[base])/2;
-				}
-				var a = (2 * p0) + d0 - (2 * p1) + d1;
-				var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-				var c = d0;
-				var d = p0;
-				var l = L - base;
-				out[0] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
-			}
-			out[1] = out[0];
-			out[2] = out[0];
-			return out;
-		} else {
-			var C;
-			for (var j = 0; j < 3; j++) {
-				var L = Y;
-				if (this.scale) {
-					L =	(L-this.min[j])/(this.max[j]-this.min[j]);
-				}
-				if (this.spln) {
-					L = this.spline.f(L);
-				}
-				L *= max;
-				C = this.C[j];
-				if (L < 0) {
-					var dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					out[j] = C[0] + (L * dy);
-				} else if (L >= max) {
-					var dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					out[j] = C[max] + ((L - max) * dy);
-				} else {
-					var base = Math.floor(L);
-					var p0 = C[base];
-					var p1 = C[base + 1];
-					var d0,d1;
-					if (base === 0) {
-						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					} else {
-						d0 = (C[base + 1] - C[base - 1])/2;
+//			}
+			FD1[0] = (this.FD[2] - this.FD[0])/2;
+		} else if (j < fm-1) {
+			FP1[j] = this.FD[j+1];
+			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
+			if (j === fm-2) {
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
+					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						FD1[j] = 0.0075 * mono / (fm-1);
 					}
-					if (base == max - 1) {
-						d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
-					} else {
-						d1 = (C[base + 2] - C[base])/2;
-					}
-					var a = (2 * p0) + d0 - (2 * p1) + d1;
-					var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-					var c = d0;
-					var d = p0;
-					var l = L - base;
-					out[j] = (a * (l * l * l)) + (b * (l * l)) + (c * l) + d;
-				}
-			}
-			return out;
-		}
-	} else {
-		out[0] = Y;
-		out[1] = Y;
-		out[2] = Y;
-		if (this.scale) {
-			out[0] = (Y-this.min[0])/(this.max[0]-this.min[0]);
-			out[1] = (Y-this.min[1])/(this.max[1]-this.min[1]);
-			out[2] = (Y-this.min[2])/(this.max[2]-this.min[2]);
-		}
-		if (this.spln) {
-			out[0] = this.spline.f(out[0]);
-			out[1] = this.spline.f(out[1]);
-			out[2] = this.spline.f(out[2]);
-		}
-		this.l3(out);
-		return out;
-	}
-};
-LUTs.prototype.lLsCub = function(buff) {
-	var o = new Float64Array(buff);
-	var m = o.length;
-	var max = this.s - 1;
-	var dy, f, d0, d1, Y, a, b, c, d;
-	if (this.rgbl && this.comp) {
-		var rgb = new Float64Array(3);
-		for (var j=0; j<m; j++) {
-			rgb = this.lRCub(o[j]);
-			o[j] = 	(0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]);
-		}
-	} else {
-		for (var j=0; j<m; j++) {
-			if (this.scale) {
-				o[j] = (o[j]-this.minL)/(this.maxL-this.minL);
-			}
-			if (this.spln) {
-				o[j] = this.spline.f(o[j]);
-			}
-			o[j] *= max;
-			if (o[j] < 0) {
-				dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				o[j] =  this.L[0] + (o[j] * dy);
-			} else if (o[j] >= max) {
-				dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-				o[j] = this.L[max] + ((o[j] - max) * dy);
+//				}
 			} else {
-				f = Math.floor(o[j]);
-				p0 = this.L[f];
-				p1 = this.L[f + 1];
-				if (f === 0) {
-					d0 = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				} else {
-					d0 = (this.L[f + 1] - this.L[f - 1])/2;
-				}
-				if (f === (max - 1)) {
-					d1 = (2 * this.L[max - 2]) + ((this.L[max - 1] - this.L[max - 3])/2) - (4 * this.L[max - 1]) + (2 * this.L[max]);
-				} else {
-					d1 = (this.L[f + 2] - this.L[f])/2;
-				}
-				a = (2 * p0) + d0 - (2 * p1) + d1;
-				b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-				c = d0;
-				d = p0;
-				Y = o[j] - f;
-				o[j] = (((((a * Y) + b) * Y) + c) * Y) + d;
+				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
 			}
+		} else {
+			FP1[j] = this.FD[j];
+			this.FC[j] = FD1[j-1];
+			FD1[j] = FD1[j-1];
 		}
+		this.FA[j] = (2*this.FD[j]) + this.FC[j] - (2*FP1[j]) + FD1[j];
+		this.FB[j] = (-3*this.FD[j]) - (2*this.FC[j]) + (3*FP1[j]) - FD1[j];
 	}
-};
-LUTs.prototype.lLsLin = function(buff) {
-	var o = new Float64Array(buff);
-	var m = o.length;
-	var max = this.s - 1;
-	var dy;
-	if (this.rgbl && this.comp) {
-		var rgb = new Float64Array(3);
-		for (var j=0; j<m; j++) {
-			rgb = this.lRCub(o[j]);
-			o[j] = 	(0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]);
-		}
-	} else {
-		for (var j=0; j<m; j++) {
-			if (this.scale) {
-				o[j] = (o[j]-this.minL)/(this.maxL-this.minL);
-			}
-			if (this.spln) {
-				o[j] = this.spline.f(o[j]);
-			}
-			o[j] *= max;
-			if (o[j] < 0) {
-				dy = ((4 * this.L[1]) - (3 * this.L[0]) - this.L[2])/2;
-				o[j] = this.L[0] + (o[j] * dy);
-			} else if (o[j] >= max) {
-				dy = (0.5 * this.L[max - 2]) - (2 * this.L[max - 1]) + (1.5 * this.L[max]);
-				o[j] = this.L[max] + ((o[j] - max) * dy);
-			} else {
-				f = Math.floor(o[j]);
-				dy = o[j] - f;
-				o[j] = (this.L[f] * (1 - dy)) + (this.L[f + 1] * dy);
-			}
-		}
+	this.FM = fm-1;
+	// Set forward range
+	this.fS = false;
+	if (typeof params.fL === 'undefined' && typeof params.min !== 'undefined' && params.min[0] !== 0) {
+		params.fL = params.min[0];
 	}
-};
-LUTs.prototype.rRsCub = function(buff) {
-	var o = new Float64Array(buff);
-	var m = o.length;
-	// 1D case where R,G & B have the same gammas
-	if (this.d === 1 && !this.rgbl) {
-		this.lLsCub(buff);
-	// Generalised 1D case (R, G & B can have differing gammas
-	} else if (this.d === 1) {
-		var max = this.s - 1;
-		// Loop through each ouput colour channel in turn
-		var C, Y, dy;
-		for (var k=0; k<3; k++) {
-			C = this.C[k];
-			for (var j=0; j<m; j += 3) {
-				// Scale basic luma (0-1.0) range to array dimension
-				Y = o[j+k];
-				if (this.scale) {
-					Y =	(Y-this.min[k])/(this.max[k]-this.min[k]);
-				}
-				if (this.spln) {
-					Y = this.spline.f(Y);
-				}
-				Y *= max;
-				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
-				// Then linearly scale from the array's 0 value
-				if (Y < 0) {
-					dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					o[j+k] = C[0] + (Y * dy);
-				// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
-				// Then linearly scale from the array's last value
-				} else if (Y >= max) {
-					dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					o[j+k] = C[max] + ((Y - max) * dy);
-				// Otherwise, cubic interpolate the output value from the LUT array
-				} else {
-					var base = Math.floor(Y);
-					var p0 = C[base];
-					var p1 = C[base + 1];
-					var d0,d1;
-					// First and last gradients calculated fitting three points to quadratics
-					if (base === 0) {
-						d0 = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					} else {
-						d0 = (C[base + 1] - C[base - 1])/2;
-					}
-					if (base === max - 1) {
-						d1 = (2 * C[max - 2]) + ((C[max - 1] - C[max - 3])/2) - (4 * C[max - 1]) + (2 * C[max]);
-					} else {
-						d1 = (C[base + 2] - C[base])/2;
-					}
-					// Cubic polynomial - f(x) - parameters from known f(0), f'(0), f(1), f'(1)
-					var a = (2 * p0) + d0 - (2 * p1) + d1;
-					var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-					var c = d0;
-					var d = p0;
-					Y = Y - base;
-					// Basic cubic polynomial calculation
-					o[j+k] = (((((a * Y) + b) * Y) + c) * Y) + d;
-				}
-			}
-		}
-	// 3D LUT Case
-	} else {
-		var max = this.s - 1;
-		var i = new Float64Array(3);
-		var clip = max * 0.999999999999;
-		var rL,gL,bL,rH,gH,bH;
-		var p0,p1,p2,dy;
-		for (var j=0; j<m; j += 3) {
-			// Scale basic RGB (0-1.0) range to array dimension
-			i[0] = o[ j ];
-			i[1] = o[j+1];
-			i[2] = o[j+2];
-			if (this.scale) {
-				i[0] =	(i[0]-this.min[0])/(this.max[0]-this.min[0]);
-				i[1] =	(i[1]-this.min[1])/(this.max[1]-this.min[1]);
-				i[2] =	(i[2]-this.min[2])/(this.max[2]-this.min[2]);
-			}
-			if (this.spln) {
-				i[0] = this.spline.f(i[0]);
-				i[1] = this.spline.f(i[1]);
-				i[2] = this.spline.f(i[2]);
-			}
-			i[0] *= max;
-			i[1] *= max;
-			i[2] *= max;
-			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
-			rL = false;
-			gL = false;
-			bL = false;
-			rH = false;
-			gH = false;
-			bH = false;
-			if (i[0] < 0) {
-				i[0] = 0;
-				rL = true;
-			} else if (i [0] >= max) {
-				i[0] = clip;
-				rH = true;
-			}
-			if (i[1] < 0) {
-				i[1] = 0;
-				gL = true;
-			} else if (i [1] >= max) {
-				i[1] = clip;
-				gH = true;
-			}
-			if (i[2] < 0) {
-				i[2] = 0;
-				bL = true;
-			} else if (i [2] >= max) {
-				i[2] = clip;
-				bH = true;
-			}
-// If any of the i channels were clipped, replace their output value with linear extrapolation from the edge point
-			if (rL) {
-				p0 = this.tC(this.C[0], max, [0,i[1],i[2]]);
-				p1 = this.tC(this.C[0], max, [1,i[1],i[2]]);
-				p2 = this.tC(this.C[0], max, [2,i[1],i[2]]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[ j ] = p0 + (o[ j ] * max * dy);
-			} else if (rH) {
-				p0 = this.tC(this.C[0], max, [clip - 2,i[1],i[2]]);
-				p1 = this.tC(this.C[0], max, [clip - 1,i[1],i[2]]);
-				p2 = this.tC(this.C[0], max, [clip,i[1],i[2]]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[ j ] = p2 + ((o[ j ] - 1) * max * dy);
-			} else {
-				o[ j ] = this.tC(this.C[0], max, i);
-			}
-			if (gL) {
-				p0 = this.tC(this.C[1], max, [i[0],0,i[2]]);
-				p1 = this.tC(this.C[1], max, [i[0],1,i[2]]);
-				p2 = this.tC(this.C[1], max, [i[0],2,i[2]]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[j+1] = p0 + (o[j+1] * max * dy);
-			} else if (gH) {
-				p0 = this.tC(this.C[1], max, [i[0],clip - 2,i[2]]);
-				p1 = this.tC(this.C[1], max, [i[0],clip - 1,i[2]]);
-				p2 = this.tC(this.C[1], max, [i[0],clip,i[2]]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[j+1] = p2 + ((o[j+1] - 1) * max * dy);
-			} else {
-				o[j+1] = this.tC(this.C[1], max, i);
-			}
-			if (bL) {
-				p0 = this.tC(this.C[2], max, [i[0],i[1],0]);
-				p1 = this.tC(this.C[2], max, [i[0],i[1],1]);
-				p2 = this.tC(this.C[2], max, [i[0],i[1],2]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[j+2] = p0 + (o[j+2] * max * dy);
-			} else if (bH) {
-				p0 = this.tC(this.C[2], max, [i[0],i[1],clip - 2]);
-				p1 = this.tC(this.C[2], max, [i[0],i[1],clip - 1]);
-				p2 = this.tC(this.C[2], max, [i[0],i[1],clip]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[j+2] = p2 + ((o[j+2] - 1) * max * dy);
-			} else {
-				o[j+2] = this.tC(this.C[2], max, i);
-			}
-		}
+	if (typeof params.fH === 'undefined' && typeof params.max !== 'undefined' && params.max[0] !== 1) {
+		params.fH = params.max[0];
 	}
-};
-LUTs.prototype.rRsLin = function(buff) {
-	var o = new Float64Array(buff);
-	var m = o.length;
-	// 1D case where R,G & B have the same gammas
-	if (this.d === 1 && !this.rgbl) {
-		this.lLsLin(buff);
-	// Generalised 1D case (R, G & B can have differing gammas
-	} else if (this.d === 1) {
-		var max = this.s - 1;
-		// Loop through each ouput colour channel in turn
-		var C, Y, dy;
-		for (var k=0; k<3; k++) {
-			C = this.C[k];
-			for (var j=0; j<m; j += 3) {
-				// Scale basic luma (0-1.0) range to array dimension
-				Y = o[j+k];
-				if (this.scale) {
-					Y =	(Y-this.min[k])/(this.max[k]-this.min[k]);
-				}
-				Y *= max;
-				// If current luma < 0, calculate gradient as the gradient at 0 of a quadratic fitting the bottom three points in the array
-				// Then linearly scale from the array's 0 value
-				if (Y < 0) {
-					dy = ((4 * C[1]) - (3 * C[0]) - C[2])/2;
-					o[j+k] = C[0] + (Y * dy);
-				// If current luma > 1, calculate gradient as the gradient at 1 of a quadratic fitting the top three points in the array
-				// Then linearly scale from the array's last value
-				} else if (Y >= max) {
-					dy = (0.5 * C[max - 2]) - (2 * C[max - 1]) + (1.5 * C[max]);
-					o[j+k] = C[max] + ((Y - max) * dy);
-				// Otherwise, cubic interpolate the output value from the LUT array
-				} else {
-					var base = Math.floor(Y);
-					dy = Y - base;
-					o[j+k] = (C[base] * (1 - dy)) + (C[base + 1] * dy);
-				}
-			}
-		}
-	// 3D LUT Case
-	} else {
-		var max = this.s - 1;
-		var i = [];
-		var clip = max * 0.999999999999;
-		var rL,gL,bL,rH,gH,bH;
-		var p0,p1,p2,dy;
-		for (var j=0; j<m; j += 3) {
-			// Scale basic RGB (0-1.0) range to array dimension
-			i[0] = o[ j ];
-			i[1] = o[j+1];
-			i[2] = o[j+2];
-			if (this.scale) {
-				i[0] =	(i[0]-this.min[0])/(this.max[0]-this.min[0]);
-				i[1] =	(i[1]-this.min[1])/(this.max[1]-this.min[1]);
-				i[2] =	(i[2]-this.min[2])/(this.max[2]-this.min[2]);
-			}
-			if (this.spln) {
-				i[0] = this.spline.f(i[0]);
-				i[1] = this.spline.f(i[1]);
-				i[2] = this.spline.f(i[2]);
-			}
-			i[0] *= max;
-			i[1] *= max;
-			i[2] *= max;
-			// If 0 > i >= 1 for a colour channel, clip it (to a tiny fraction below 1 in the case of the upper limit)
-			rL = false;
-			gL = false;
-			bL = false;
-			rH = false;
-			gH = false;
-			bH = false;
-			if (i[0] < 0) {
-				i[0] = 0;
-				rL = true;
-			} else if (i [0] >= max) {
-				i[0] = clip;
-				rH = true;
-			}
-			if (i[1] < 0) {
-				i[1] = 0;
-				gL = true;
-			} else if (i [1] >= max) {
-				i[1] = clip;
-				gH = true;
-			}
-			if (i[2] < 0) {
-				i[2] = 0;
-				bL = true;
-			} else if (i [2] >= max) {
-				i[2] = clip;
-				bH = true;
-			}
-// If any of the i channels were clipped, replace their output value with linear extrapolation from the edge point
-			if (rL) {
-				p0 = this.tL(this.C[0], max, [0,i[1],i[2]]);
-				p1 = this.tL(this.C[0], max, [1,i[1],i[2]]);
-				p2 = this.tL(this.C[0], max, [2,i[1],i[2]]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[ j ] = p0 + (o[ j ] * max * dy);
-			} else if (rH) {
-				p0 = this.tL(this.C[0], max, [clip - 2,i[1],i[2]]);
-				p1 = this.tL(this.C[0], max, [clip - 1,i[1],i[2]]);
-				p2 = this.tL(this.C[0], max, [clip,i[1],i[2]]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[ j ] = p2 + ((o[ j ] - 1) * max * dy);
-			} else {
-				o[ j ] = this.tL(this.C[0], max, i);
-			}
-			if (gL) {
-				p0 = this.tL(this.C[1], max, [i[0],0,i[2]]);
-				p1 = this.tL(this.C[1], max, [i[0],1,i[2]]);
-				p2 = this.tL(this.C[1], max, [i[0],2,i[2]]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[j+1] = p0 + (o[j+1] * max * dy);
-			} else if (gH) {
-				p0 = this.tL(this.C[1], max, [i[0],clip - 2,i[2]]);
-				p1 = this.tL(this.C[1], max, [i[0],clip - 1,i[2]]);
-				p2 = this.tL(this.C[1], max, [i[0],clip,i[2]]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[j+1] = p2 + ((o[j+1] - 1) * max * dy);
-			} else {
-				o[j+1] = this.tL(this.C[1], max, i);
-			}
-			if (bL) {
-				p0 = this.tL(this.C[2], max, [i[0],i[1],0]);
-				p1 = this.tL(this.C[2], max, [i[0],i[1],1]);
-				p2 = this.tL(this.C[2], max, [i[0],i[1],2]);
-				dy = ((4 * p1) - (3 * p0) - p2)/2;
-				o[j+2] = p0 + (o[j+2] * max * dy);
-			} else if (bH) {
-				p0 = this.tL(this.C[2], max, [i[0],i[1],clip - 2]);
-				p1 = this.tL(this.C[2], max, [i[0],i[1],clip - 1]);
-				p2 = this.tL(this.C[2], max, [i[0],i[1],clip]);
-				dy = (0.5 * p0) - (2 * p1) + (1.5 * p2);
-				o[j+2] = p2 + ((o[j+2] - 1) * max * dy);
-			} else {
-				o[j+2] = this.tL(this.C[2], max, i);
-			}
-		}
-	}
-};
-LUTs.prototype.tC = function(C, max, RGB) {
-	var rB = Math.floor(RGB[0]);
-	var r = RGB[0] - rB;
-	var gB = Math.floor(RGB[1]);
-	var g = RGB[1] - gB;
-	var bB = Math.floor(RGB[2]);
-	var bl = RGB[2] - bB;
-// Array shorthand
-	var s1 = this.s;
-	var s2 = s1*s1;
-	var o =  rB +(  gB  *s1)+(  bB  *s2);
-// Initial Control Points
-	var Pooo = C[o];
-	var Proo = C[o+1];
-	var Pogo = C[o+s1];
-	var Prgo = C[o+1+s1];
-	var Poob = C[o+s2];
-	var Prob = C[o+1+s2];
-	var Pogb = C[o+s1+s2];
-	var Prgb = C[o+1+s1+s2];
-// Slope along red axis at control points
-	var rDooo, rDogo, rDoob, rDogb;
-	var rDnoo, rDngo, rDnob, rDngb;
-	if (rB === 0) {
-		rDooo = ((4*C[o+1])			- (3*C[o])		- C[o+2])/2;
-		rDogo = ((4*C[o+1+s1])		- (3*C[o+s1])	- C[o+2+s1])/2;
-		rDoob = ((4*C[o+1+s2])		- (3*C[o+s2])	- C[o+2+s2])/2;
-		rDogb = ((4*C[o+1+s1+s2])	- (3*C[o+s1+s2])- C[o+2+s1+s2])/2;
-		rDnoo = rDooo;
-		rDngo = rDogo;
-		rDnob = rDoob;
-		rDngb = rDogb;
-	} else {
-		rDooo = (Proo - C[o-1])/2;		
-		rDogo = (Prgo - C[o-1+s1])/2;		
-		rDoob = (Prob - C[o-1+s2])/2;		
-		rDogb = (Prgb - C[o-1+s1+s2])/2;	
-		if (rB == 1) {
-			rDnoo = ((4*C[o])		- (3*C[o-1])		- C[o+1])/2;
-			rDngo = ((4*C[o+s1])	- (3*C[o-1+s1])		- C[o+1+s1])/2;
-			rDnob = ((4*C[o+s2])	- (3*C[o-1+s2])		- C[o+1+s2])/2;
-			rDngb = ((4*C[o+s1+s2])	- (3*C[o-1+s1+s2])	- C[o+1+s1+s2])/2;
-		} else {
-			rDnoo = (Pooo - C[o-2])/2;		
-			rDngo = (Pogo - C[o-2+s1])/2;		
-			rDnob = (Poob - C[o-2+s2])/2;		
-			rDngb = (Pogb - C[o-2+s1+s2])/2;	
-		}	
-	}
-	var rDroo, rDrgo, rDrob, rDrgb;
-	var rDpoo, rDpgo, rDpob, rDpgb;
-	if (rB === max - 1) {
-		rDroo = (2*C[o-1])			- (C[o-2]/2)		- (3.5*C[o])		+ (2*C[o+1]);
-		rDrgo = (2*C[o-1+s1])		- (C[o-2+s1]/2)	- (3.5*C[o+s1])		+ (2*C[o+1+s1]);
-		rDrob = (2*C[o-1+s2])		- (C[o-2+s2]/2)	- (3.5*C[o+s2])		+ (2*C[o+1+s2]);
-		rDrgb = (2*C[o-1+s1+s2])	- (C[o-2+s1+s2]/2)	- (3.5*C[o+s1+s2])	+(2*C[o+1+s1+s2]);
-		rDpoo = rDroo;
-		rDpgo = rDrgo;
-		rDpob = rDrob;
-		rDpgb = rDrgb;
-	} else {
-		rDroo = (C[o+2] - Pooo)/2;
-		rDrgo = (C[o+2+s1] - Pogo)/2;
-		rDrob = (C[o+2+s2] - Poob)/2;
-		rDrgb = (C[o+2+s1+s2] - Pogb)/2;
-		if (rB === max - 2) {
-			rDpoo = (2*C[o])		- (C[o-1]/2)		- (3.5*C[o+1])		+ (2*C[o+2]);
-			rDpgo = (2*C[o+s1])		- (C[o-1+s1]/2)	- (3.5*C[o+1+s1])	+ (2*C[o+2+s1]);
-			rDpob = (2*C[o+s2])		- (C[o-1+s2]/2)	- (3.5*C[o+1+s2])	+ (2*C[o+2+s2]);
-			rDpgb = (2*C[o+s1+s2])	- (C[o-1+s1+s2]/2)	- (3.5*C[o+1+s1+s2])+ (2*C[o+2+s1+s2]);
-		} else {
-			rDpoo = (C[o+2] - Proo)/2;
-			rDpgo = (C[o+2+s1] - Prgo)/2;
-			rDpob = (C[o+2+s2] - Prob)/2;
-			rDpgb = (C[o+2+s1+s2] - Prgb)/2;
-		}
-	}
-// Slope along green axis at control points
-	var gDooo, gDroo, gDoob, gDrob;
-	var gDono, gDrno, gDonb, gDrnb;
-	if (gB === 0) {
-		gDooo = ((4*C[o+s1])		- (3*C[o])		- C[o+(2*s1)])/2;
-		gDroo = ((4*C[o+1+s1])		- (3*C[o+1])	- C[o+1+(2*s1)])/2;
-		gDoob = ((4*C[o+s1+s2])		- (3*C[o+s2])	- C[o+(2*s1)+s2])/2;
-		gDrob = ((4*C[o+1+s1+s2])	- (3*C[o+1+s2])	- C[o+1+(2*s1)+s2])/2;
-	} else {
-		gDooo = (Pogo - C[o-s1])/2;
-		gDroo = (Prgo - C[o+1-s1])/2;
-		gDoob = (Pogb - C[o-s1+s2])/2;
-		gDrob = (Prgb - C[o+1-s1+s2])/2;
-		gDono = gDooo;
-		gDrno = gDroo;
-		gDonb = gDoob;
-		gDrnb = gDrob;
-		if (gB === 1) {
-			gDono = ((4*C[o])		- (3*C[o-s1])		- C[o+s1])/2;
-			gDrno = ((4*C[o+1])		- (3*C[o+1-s1])		- C[o+1+s1])/2;
-			gDonb = ((4*C[o+s2])	- (3*C[o-s1+s2])	- C[o+s1+s2])/2;
-			gDrnb = ((4*C[o+1+s2])	- (3*C[o+1-s1+s2])	- C[o+1+s1+s2])/2;
-		} else {
-			gDono = (Pooo - C[o-s1])/2;
-			gDrno = (Proo - C[o+1-s1])/2;
-			gDonb = (Poob - C[o-s1+s2])/2;
-			gDrnb = (Prob - C[o+1-s1+s2])/2;
-		}
-	}
-	var gDogo, gDrgo, gDogb, gDrgb;
-	var gDopo, gDrpo, gDopb, gDrpb;
-	if (gB === max - 1) {
-		gDogo = (2*C[o-s1])		- (C[o-(2*s1)]/2)		- (3.5*C[o])		+ (2*C[o+s1]);
-		gDrgo = (2*C[o+1-s1])	- (C[o+1-(2*s1)]/2)		- (3.5*C[o+1])		+ (2*C[o+1+s1]);
-		gDogb = (2*C[o-s1+s2])	- (C[o-(2*s1)+s2]/2)	- (3.5*C[o+s2])		+ (2*C[o+s1+s2]);
-		gDrgb = (2*C[o+1-s1+s2])- (C[o+1-(2*s1)+s2]/2)	- (3.5*C[o+1+s2])	+ (2*C[o+1+s1+s2]);
-	} else {
-		gDogo = (C[o+(2*s1)] - Pooo)/2;
-		gDrgo = (C[o+1+(2*s1)] - Proo)/2;
-		gDogb = (C[o+(2*s1)+s2] - Poob)/2;
-		gDrgb = (C[o+1+(2*s1)+s2] - Prob)/2;
-		gDopo = gDogo;
-		gDrpo = gDrgo;
-		gDopb = gDogb;
-		gDrpb = gDrgb;
-		if (gB === max - 2) {
-			gDopo = (2*C[o])		- (C[o-s1]/2)		- (3.5*C[o+s1])			+ (2*C[o+(2*s1)]);
-			gDrpo = (2*C[o+1])		- (C[o+1-s1]/2)		- (3.5*C[o+1+s1])		+ (2*C[o+1+(2*s1)]);
-			gDopb = (2*C[o+s2])		- (C[o-s1+s2]/2)	- (3.5*C[o+s1+s2])		+ (2*C[o+(2*s1)+s2]);
-			gDrpb = (2*C[o+1+s2])	- (C[o+1-s1+s2]/2)	- (3.5*C[o+1+s1+s2])	+ (2*C[o+1+(2*s1)+s2]);
-		} else {
-			gDopo = (C[o+(2*s1)] - Pogo)/2;
-			gDrpo = (C[o+1+(2*s1)] - Prgo)/2;
-			gDopb = (C[o+(2*s1)+s2] - Pogb)/2;
-			gDrpb = (C[o+1+(2*s1)+s2] - Prgb)/2;
-		}
-	}
-// Slope along blue axis at control points
-	var bDooo, bDroo, bDogo, bDrgo;
-	var bDoon, bDron, bDogn, bDrgn;
-	if (bB === 0) {
-		bDooo = ((4*C[o+s2])		- (3*C[o])		- C[o+(2*s2)])/2;
-		bDroo = ((4*C[o+1+s2])		- (3*C[o+1])	- C[o+1+(2*s2)])/2;
-		bDogo = ((4*C[o+s1+s2])		- (3*C[o+s1])	- C[o+s1+(2*s2)])/2;
-		bDrgo = ((4*C[o+1+s1+s2])	- (3*C[o+1+s1])	- C[o+1+s1+(2*s2)])/2;
-		bDoon = bDooo;
-		bDron = bDroo;
-		bDogn = bDogo;
-		bDrgn = bDrgo;
-	} else {
-		bDooo = (Poob - C[o-s2])/2;
-		bDroo = (Prob - C[o+1-s2])/2;
-		bDogo = (Pogb - C[o+s1-s2])/2;
-		bDrgo = (Prgb - C[o+1+s1-s2])/2;
-		if (bB === 1) {
-			bDoon = ((4*C[o])		- (3*C[o-s2])		- C[o+s2])/2;
-			bDron = ((4*C[o+1])		- (3*C[o+1-s2])		- C[o+1+s2])/2;
-			bDogn = ((4*C[o+s1])	- (3*C[o+s1-s2])	- C[o+s1+s2])/2;
-			bDrgn = ((4*C[o+1+s1])	- (3*C[o+1+s1-s2])	- C[o+1+s1+s2])/2;
-		} else {
-			bDoon = (Pooo - C[o-s2])/2;
-			bDron = (Proo - C[o+1-s2])/2;
-			bDogn = (Pogo - C[o+s1-s2])/2;
-			bDrgn = (Prgo - C[o+1+s1-s2])/2;
-		}
-	}
-	var bDoob, bDrob, bDogb, bDrgb;
-	var bDoop, bDrop, bDogp, bDrgp;
-	if (bB === max - 1) {
-		bDoob = (2*C[o-s2])		- (C[o-(2*s2)]/2)		- (3.5*C[o])		+ (2*C[o+s2]);
-		bDrob = (2*C[o+1-s2])	- (C[o+1-(2*s2)]/2)		- (3.5*C[o+1])		+ (2*C[o+1+s2]);
-		bDogb = (2*C[o+s1-s2])	- (C[o+s1-(2*s2)]/2)	- (3.5*C[o+s1])		+ (2*C[o+s1+s2]);
-		bDrgb = (2*C[o+1+s1-s2])- (C[o+1+s1-(2*s2)]/2)	- (3.5*C[o+1+s1])	+ (2*C[o+1+s1+s2]);
-		bDoop = bDoob;
-		bDrop = bDrob;
-		bDogp = bDogb;
-		bDrgp = bDrgb;
-	} else {
-		bDoob = (C[o+(2*s2)] - Pooo)/2;
-		bDrob = (C[o+1+(2*s2)] - Proo)/2;
-		bDogb = (C[o+s1+(2*s2)] - Pogo)/2;
-		bDrgb = (C[o+1+s1+(2*s2)] - Prgo)/2;
-		if (bB === max - 2) {
-			bDoop = (2*C[o])		- (C[o-s2]/2)		- (3.5*C[o+s2])		+ (2*C[o+(2*s2)]);
-			bDrop = (2*C[o+1])		- (C[o+1-s2]/2)		- (3.5*C[o+1+s2])	+ (2*C[o+1+(2*s2)]);
-			bDogp = (2*C[o+s1])		- (C[o+s1-s2]/2)	- (3.5*C[o+s1+s2])	+ (2*C[o+s1+(2*s2)]);
-			bDrgp = (2*C[o+1+s1])	- (C[o+1+s1-s2]/2)	- (3.5*C[o+1+s1+s2])+ (2*C[o+1+s1+(2*s2)]);
-		} else {
-			bDoop = (C[o+(2*s2)] - Poob)/2;
-			bDrop = (C[o+1+(2*s2)] - Prob)/2;
-			bDogp = (C[o+s1+(2*s2)] - Pogb)/2;
-			bDrgp = (C[o+1+s1+(2*s2)] - Prgb)/2;
-		}
-	}
-// Polynomial coefficiants
-	var a,b;
-// First calculate four control points along red axis.
-	a = (2 * Pooo) + rDooo - (2 * Proo) + rDroo;
-	b = - (3 * Pooo) - (2 * rDooo) + (3 * Proo) - rDroo;
-	var Poo = (a * r * r * r) + (b * r * r) + (rDooo * r) + Pooo; // Poo
-	a = (2 * Pogo) + rDogo - (2 * Prgo) + rDrgo;
-	b = - (3 * Pogo) - (2 * rDogo) + (3 * Prgo) - rDrgo;
-	var Pgo = (a * r * r * r) + (b * r * r) + (rDogo * r) + Pogo; // Pgo
-	a = (2 * Poob) + rDoob - (2 * Prob) + rDrob;
-	b = - (3 * Poob) - (2 * rDoob) + (3 * Prob) - rDrob;
-	var Pob = (a * r * r * r) + (b * r * r) + (rDoob * r) + Poob; // Pob
-	a = (2 * Pogb) + rDogb - (2 * Prgb) + rDrgb;
-	b = - (3 * Pogb) - (2 * rDogb) + (3 * Prgb) - rDrgb;
-	var Pgb = (a * r * r * r) + (b * r * r) + (rDogb * r) + Pogb; // Pgb
-// Now calculate slope along green axis at the new control points
-	var gDnoo, gDngo, gDnob, gDngb;
-	if (rB === 0) {
-		gDnoo = gDooo;
-		gDngo = gDogo;
-		gDnob = gDoob;
-		gDngb = gDogb;
-	} else {
-		if (gB === 0) {
-			gDnoo = ((4*C[o-1+s1])		- (3*C[o-1])	- C[o-1+(2*s1)])/2;
-			gDnob = ((4*C[o-1+s1+s2])	- (3*C[o-1+s2])	- C[o-1+(2*s1)+s2])/2;
-		} else {
-			gDnoo = (C[o-1+s1]		- C[o-1-s1])/2;
-			gDnob = (C[o-1+s1+s2]	- C[o-1-s1+s2])/2;
-		}
-		if (gB === max - 1) {
-			gDngo = (2*C[o-1-s1])	- (C[o-1-(2*s1)]/2)		- (3.5*C[o-1]) + (2*C[o-1+s1]);
-			gDngb = (2*C[o-1-s1+s2])- (C[o-1-(2*s1)+s2]/2)	- (3.5*C[o-1+s2]) + (2*C[o-1+s1+s2]);
-		} else {
-			gDngo = (C[o-1+(2*s1)]		- C[o-1])/2;
-			gDngb = (C[o-1+(2*s1)+s2]	- C[o-1+s2])/2;
-		}
-	}
-	var gDpoo, gDpgo, gDpob, gDpgb;
-	if (rB === max - 1) {
-		gDpoo = gDroo;
-		gDpgo = gDrgo;
-		gDpob = gDrob;
-		gDpgb = gDrgb;
-	} else {
-		if (gB === 0) {
-			gDpoo = ((4*C[o+2+s1])		- (3*C[o+2])	- C[o+2+(2*s1)])/2;
-			gDpob = ((4*C[o+2+s1+s2])	- (3*C[o+2+s2])	- C[o+2+(2*s1)+s2])/2;
-		} else {
-			gDpoo = (Prgo - C[o+2-s1])/2;
-			gDpob = (Prgb - C[o+2-s1+s2])/2;
-		}
-		if (gB === max - 1) {
-			gDpgo = (2*C[o+2-s1])	- (C[o+2-(2*s1)]/2)		- (3.5*C[o+2])		+ (2*C[o+2+s1]);
-			gDpgb = (2*C[o+2-s1+s2])- (C[o+2-(2*s1)+s2]/2)	- (3.5*C[o+2+s2])	+ (2*C[o+2+s1+s2]);
-		} else {
-			gDpgo = (C[o+2+(2*s1)]		- C[o+2])/2;
-			gDpgb = (C[o+2+(2*s1)+s2]	- C[o+2+s2])/2;
-		}
-	}
-	var gDrDooo = (gDroo - gDnoo)/2;
-	var gDrDroo = (gDpoo - gDooo)/2;
-	var gDrDogo = (gDrgo - gDngo)/2;
-	var gDrDrgo = (gDpgo - gDogo)/2;
-	var gDrDoob = (gDrob - gDnob)/2;
-	var gDrDrob = (gDpob - gDoob)/2;
-	var gDrDogb = (gDrgb - gDngb)/2;
-	var gDrDrgb = (gDpgb - gDogb)/2;
-	a = (2 * gDooo) + gDrDooo - (2 * gDroo) + gDrDroo;
-	b = - (3 * gDooo) - (2 * gDrDooo) + (3 * gDroo) - gDrDroo;
-	var gDoo = (a * r * r * r) + (b * r * r) + (gDrDooo * r) + gDooo; // gDoo
-	a = (2 * gDogo) + gDrDogo - (2 * gDrgo) + gDrDrgo;
-	b = - (3 * gDogo) - (2 * gDrDogo) + (3 * gDrgo) - gDrDrgo;
-	var gDgo = (a * r * r * r) + (b * r * r) + (gDrDogo * r) + gDogo; // gDgo
-	a = (2 * gDoob) + gDrDoob - (2 * gDrob) + gDrDrob;
-	b = - (3 * gDoob) - (2 * gDrDoob) + (3 * gDrob) - gDrDrob;
-	var gDob = (a * r * r * r) + (b * r * r) + (gDrDoob * r) + gDoob; // gDob
-	a = (2 * gDogb) + gDrDogb - (2 * gDrgb) + gDrDrgb;
-	b = - (3 * gDogb) - (2 * gDrDogb) + (3 * gDrgb) - gDrDrgb;
-	var gDgb = (a * r * r * r) + (b * r * r) + (gDrDogb * r) + gDogb; // gDgb
-// Now calculate two control points along the green axis
-	a = (2 * Poo) + gDoo - (2 * Pgo) + gDgo;
-	b = - (3 * Poo) - (2 * gDoo) + (3 * Pgo) - gDgo;
-	var Po = (a * g * g * g) + (b * g * g) + (gDoo * g) + Poo; // Po
-	a = (2 * Pob) + gDob - (2 * Pgb) + gDgb;
-	b = - (3 * Pob) - (2 * gDob) + (3 * Pgb) - gDgb;
-	var Pb = (a * g * g * g) + (b * g * g) + (gDob * g) + Pob; // Pb
-// Now find the slope along the blue axis at the four red axis calculated control points
-	var bDnoo, bDngo, bDnob, bDngb;
-	if (rB === 0) {
-		bDnoo = bDooo;
-		bDngo = bDogo;
-		bDnob = bDoob;
-		bDngb = bDogb;
-	} else {
-		if (bB === 0) {
-			bDnoo = ((4*C[o-1+s2])		- (3*C[o-1])	- C[o-1+(2*s2)])/2;
-			bDngo = ((4*C[o-1+s1+s2])	- (3*C[o-1+s1])	- C[o-1+s1+(2*s2)])/2;
-		} else {
-			bDnoo = (C[o-1+s2]		- C[o-1-s2])/2;
-			bDngo = (C[o-1+s1+s2]	- C[o-1+s1-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDnob = (2*C[o-1-s2])	- (C[o-1-(2*s2)]/2)		- (3.5*C[o-1])		+ (2*C[o-1+s2]);
-			bDngb = (2*C[o-1+s1-s2])- (C[o-1+s1-(2*s2)]/2)	- (3.5*C[o-1+s1])	+ (2*C[o-1+s1+s2]);
-		} else {
-			bDnob = (C[o-1+(2*s2)]		- C[o-1])/2;
-			bDngb = (C[o-1+s1+(2*s2)]	- C[o-1+s1])/2;
-		}
-	}
-	var bDpoo, bDpgo, bDpob, bDpgb;
-	if (rB === max - 1) {
-		bDpoo = bDroo;
-		bDpgo = bDrgo;
-		bDpob = bDrob;
-		bDpgb = bDrgb;
-	} else {
-		if (bB === 0) {
-			bDpoo = ((4*C[o+2+s2])		- (3*C[o+2])	- C[o+2+(2*s2)])/2;
-			bDpgo = ((4*C[o+2+s1+s2])	- (3*C[o+2+s1])	- C[o+2+s1+(2*s2)])/2;
-		} else {
-			bDpoo = (C[o+2+s2]		- C[o+2-s2])/2;
-			bDpgo = (C[o+2+s1+s2]	- C[o+2+s1-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDpob = (2*C[o+2-s2])	- (C[o+2-(2*s2)]/2)		- (3.5*C[o+2])		+ (2*C[o+2+s2]);
-			bDpgb = (2*C[o+2+s1-s2])- (C[o+2+s1-(2*s2)]/2)	- (3.5*C[o+2+s1])	+ (2*C[o+2+s1+s2]);
-		} else {
-			bDpob = (C[o+2+(2*s2)]		- C[o+2])/2;
-			bDpgb = (C[o+2+s1+(2*s2)]	- C[o+2+s1])/2;
-		}
-	}
-	var bDrDooo = (bDroo - bDnoo)/2;
-	var bDrDroo = (bDpoo - bDooo)/2;
-	var bDrDogo = (bDrgo - bDngo)/2;
-	var bDrDrgo = (bDpgo - bDogo)/2;
-	var bDrDoob = (bDrob - bDnob)/2;
-	var bDrDrob = (bDpob - bDoob)/2;
-	var bDrDogb = (bDrgb - bDngb)/2;
-	var bDrDrgb = (bDpgb - bDogb)/2;
-	a = (2 * bDooo) + bDrDooo - (2 * bDroo) + bDrDroo;
-	b = - (3 * bDooo) - (2 * bDrDooo) + (3 * bDroo) - bDrDroo;
-	var bDoo = (a * r * r * r) + (b * r * r) + (bDrDooo * r) + bDooo; // bDoo
-	a = (2 * bDogo) + bDrDogo - (2 * bDrgo) + bDrDrgo;
-	b = - (3 * bDogo) - (2 * bDrDogo) + (3 * bDrgo) - bDrDrgo;
-	var bDgo = (a * r * r * r) + (b * r * r) + (bDrDogo * r) + bDogo; // bDgo
-	a = (2 * bDoob) + bDrDoob - (2 * bDrob) + bDrDrob;
-	b = - (3 * bDoob) - (2 * bDrDoob) + (3 * bDrob) - bDrDrob;
-	var bDob = (a * r * r * r) + (b * r * r) + (bDrDoob * r) + bDoob; // bDob
-	a = (2 * bDogb) + bDrDogb - (2 * bDrgb) + bDrDrgb;
-	b = - (3 * bDogb) - (2 * bDrDogb) + (3 * bDrgb) - bDrDrgb;
-	var bDgb = (a * r * r * r) + (b * r * r) + (bDrDogb * r) + bDogb; // gDgb
-// Now find the slope along the blue axis at eight notional green points (green = -1, green = +2) as was done for red points
-	var bDono, bDrno, bDonb, bDrnb;
-	if (gB === 0) {
-		bDono = bDooo;
-		bDrno = bDroo;
-		bDonb = bDoob;
-		bDrnb = bDrob;
-	} else {
-		if (bB === 0) {
-			bDono = ((4*C[o-s1+s2])		- (3*C[o-s1]) - C[o-s1+(2*s2)])/2;
-			bDrno = ((4*C[o+1-s1+s2])	- (3*C[o+1-s1]) - C[o+1-s1+(2*s2)])/2;
-		} else {
-			bDono = (C[o-s1+s2]		- C[o-s1-s2])/2;
-			bDrno = (C[o+1-s1+s2]	- C[o+1-s1-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDonb = (2*C[o-s1-s2])	- (C[o-s1-(2*s2)]/2)	- (3.5*C[o-s1])		+ (2*C[o-s1+s2]);
-			bDrnb = (2*C[o+1-s1-s2])- (C[o+1-s1-(2*s2)]/2)	- (3.5*C[o+1-s1])	+ (2*C[o+1-s1+s2]);
-		} else {
-			bDonb = (C[o-s1+(2*s2)]		- C[o-s1])/2;
-			bDrnb = (C[o+1-s1+(2*s2)]	- C[o+1-s1])/2;
-		}
-	}
-	var bDopo, bDrpo, bDopb, bDrpb;
-	if (gB === max - 1) {
-		bDopo = bDogo;
-		bDrpo = bDrgo;
-		bDopb = bDogb;
-		bDrpb = bDrgb;
-	} else {
-		if (bB === 0) {
-			bDopo = ((4*C[o+(2*s1)+s2])		- (3*C[o+(2*s1)]) - C[o+(2*s1)+(2*s2)])/2;
-			bDrpo = ((4*C[o+1+(2*s1)+s2])	- (3*C[o+1+(2*s1)]) - C[o+1+(2*s1)+(2*s2)])/2;
-		} else {
-			bDopo = (C[o+(2*s1)+s2]		- C[o+(2*s1)-s2])/2;
-			bDrpo = (C[o+1+(2*s1)+s2]	- C[o+1+(2*s1)-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDopb = (2*C[o+(2*s1)-s2])	- (C[o+(2*s1)-(2*s2)]/2)	- (3.5*C[o+(2*s1)])		+ (2*C[o+(2*s1)+s2]);
-			bDrpb = (2*C[o+1+(2*s1)-s2])- (C[o+1+(2*s1)-(2*s2)]/2)	- (3.5*C[o+1+(2*s1)])	+ (2*C[o+1+(2*s1)+s2]);
-		} else {
-			bDopb = (C[o+(2*s1)+(2*s2)]		- C[o+(2*s1)])/2;
-			bDrpb = (C[o+1+(2*s1)+(2*s2)]	- C[o+1+(2*s1)])/2;
-		}
-	}
-// Now the blue axis slope at the eight notional corners
-	var bDnno, bDnnb;
-	if (rB === 0 || gB === 0) {
-		bDnno = bDooo;
-		bDnnb = bDoob;
-	} else {
-		if (bB === 0) {
-			bDnno = ((4*C[o-1-s1+s2]) - (3*C[o-1-s1]) - C[o-1-s1+(2*s2)])/2;
-		} else {
-			bDnno = (C[o-1-s1+s2] - C[o-1-s1-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDnnb = (2*C[o-1-s1-s2]) - (C[o-1-s1-(2*s2)]/2) - (3.5*C[o-1-s1]) + (2*C[o-1-s1+s2]);
-		} else {
-			bDnnb = (C[o-1-s1+(2*s2)] - C[o-1-s1])/2;
-		}
-	}
-	if (rB === 0 || gB === max - 1) {
-		bDnpo = bDogo;
-		bDnpb = bDogb;
-	} else {
-		if (bB === 0) {
-			bDnpo = ((4*C[o-1+(2*s1)+s2]) - (3*C[o-1+(2*s1)]) - C[o-1+(2*s1)+(2*s2)])/2;
-		} else {
-			bDnpo = (C[o-1+(2*s1)+s2] - C[o-1+(2*s1)-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDnpb = (2*C[o-1+(2*s1)-s2]) - (C[o-1+(2*s1)-(2*s2)]/2) - (3.5*C[o-1+(2*s1)]) + (2*C[o-1+(2*s1)+s2]);
-		} else {
-			bDnpb = (C[o-1+(2*s1)+(2*s2)] - C[o-1+(2*s1)])/2;
-		}
-	}
-	if (rB === max - 1 || gB === 0) {
-		bDpno = bDroo;
-		bDpnb = bDrob;
-	} else {
-		if (bB === 0) {
-			bDpno = ((4*C[o+2-s1+s2]) - (3*C[o+2-s1]) - C[o+2-s1+(2*s2)])/2;
-		} else {
-			bDpno = (C[o+2-s1+s2] - C[o+2-s1-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDpnb = (2*C[o+2-s1-s2]) - (C[o+2-s1-(2*s2)]/2) - (3.5*C[o+2-s1]) + (2*C[o+2-s1+s2]);
-		} else {
-			bDpnb = (C[o+2-s1+(2*s2)] - C[o+2-s1])/2;
-		}
-	}
-	if (rB === max - 1 || gB === max - 1) {
-		bDppo = bDrgo;
-		bDppb = bDrgb;
-	} else {
-		if (bB === 0) {
-			bDppo = ((4*C[o+2+(2*s1)+s2]) - (3*C[o+2+(2*s1)]) - C[o+2+(2*s1)+(2*s2)])/2;
-		} else {
-			bDppo = (C[o+2+(2*s1)+s2] - C[o+2+(2*s1)-s2])/2;
-		}
-		if (bB === max - 1) {
-			bDppb = (2*C[o+2+(2*s1)-s2]) - (C[o+2+(2*s1)-(2*s2)]/2) - (3.5*C[o+2+(2*s1)]) + (2*C[o+2+(2*s1)+s2]);
-		} else {
-			bDppb = (C[o+2+(2*s1)+(2*s2)] - C[o+2+(2*s1)])/2;
-		}
-	}
-// Now get the blue slope control points along the red axis for calculating blue slope at green control points 8)
-	var bDrDono = (bDrno - bDnno)/2;
-	var bDrDrno = (bDpno - bDono)/2;
-	var bDrDopo = (bDrpo - bDnpo)/2;
-	var bDrDrpo = (bDppo - bDopo)/2;
-	var bDrDonb = (bDrnb - bDnnb)/2;
-	var bDrDrnb = (bDpnb - bDonb)/2;
-	var bDrDopb = (bDrpb - bDnpb)/2;
-	var bDrDrpb = (bDppb - bDopb)/2;
-	a = (2 * bDono) + bDrDono - (2 * bDrno) + bDrDrno;
-	b = - (3 * bDono) - (2 * bDrDono) + (3 * bDrno) - bDrDrno;
-	var bDno = (a * r * r * r) + (b * r * r) + (bDrDono * r) + bDono; // bDno
-	a = (2 * bDopo) + bDrDopo - (2 * bDrpo) + bDrDrpo;
-	b = - (3 * bDopo) - (2 * bDrDopo) + (3 * bDrpo) - bDrDrpo;
-	var bDpo = (a * r * r * r) + (b * r * r) + (bDrDopo * r) + bDopo; // bDpo
-	a = (2 * bDonb) + bDrDonb - (2 * bDrnb) + bDrDrnb;
-	b = - (3 * bDonb) - (2 * bDrDonb) + (3 * bDrnb) - bDrDrnb;
-	var bDnb = (a * r * r * r) + (b * r * r) + (bDrDonb * r) + bDonb; // bDnb
-	a = (2 * bDopb) + bDrDopb - (2 * bDrpb) + bDrDrpb;
-	b = - (3 * bDopb) - (2 * bDrDopb) + (3 * bDrpb) - bDrDrpb;
-	var bDpb = (a * r * r * r) + (b * r * r) + (bDrDogb * r) + bDopb; // gDpb
-// Now calculate the blue slope at the two green control points
-	var bDgDoo = (bDgo - bDno)/2;
-	var bDgDgo = (bDpo - bDoo)/2;
-	var bDgDob = (bDgb - bDnb)/2;
-	var bDgDgb = (bDpb - bDob)/2;
-	a = (2 * bDoo) + bDgDoo - (2 * bDgo) + bDgDgo;
-	b = - (3 * bDoo) - (2 * bDgDoo) + (3 * bDgo) - bDgDgo;
-	var bDo = (a * g * g * g) + (b * g * g) + (bDgDoo * g) + bDoo; // bDo
-	a = (2 * bDob) + bDgDob - (2 * bDgb) + bDgDgb;
-	b = - (3 * bDob) - (2 * bDgDob) + (3 * bDgb) - bDgDgb;
-	var bDb = (a * g * g * g) + (b * g * g) + (bDgDob * g) + bDob; // bDb
-// Finally we get to the point - literally !
-	a = (2 * Po) + bDo - (2 * Pb) + bDb;
-	b = - (3 * Po) - (2 * bDo) + (3 * Pb) - bDb;
-	return ((a * bl * bl * bl) + (b * bl * bl) + (bDo * bl) + Po); // P
-};
-LUTs.prototype.tL = function(C, max, RGB) {
-	var rB = Math.floor(RGB[0]);
-	var r = RGB[0] - rB;
-	var gB = Math.floor(RGB[1]);
-	var g = RGB[1] - gB;
-	var bB = Math.floor(RGB[2]);
-	var bl = RGB[2] - bB;
-	var s1 = this.s;
-	var s2 = s1*s1;
-	var o =  rB +(  gB  *s1)+(  bB  *s2);
-	var Pooo = C[o];
-	var Proo = C[o+1];
-	var Pogo = C[o+s1];
-	var Prgo = C[o+1+s1];
-	var Poob = C[o+s2];
-	var Prob = C[o+1+s2];
-	var Pogb = C[o+s1+s2];
-	var Prgb = C[o+1+s1+s2];
-	return	(((((Pooo*(1-r))+(Proo*r))*(1-g))+(((Pogo*(1-r))+(Prgo*r))*g))*(1-bl))+
-			(((((Poob*(1-r))+(Prob*r))*(1-g))+(((Pogb*(1-r))+(Prgb*r))*g))*bl);
-};
-function LUTSpline(buff,fH,fL,rH,rL) {
-	this.fs = new Float64Array(buff);
-	var m = this.fs.length;
-	if (typeof fH === 'number') {
-		this.fH = fH;
-		if (typeof fL === 'number') {
-			this.fL = fL;
+	if (typeof params.fH === 'number') {
+		this.fH = params.fH;
+		if (typeof params.fL === 'number') {
+			this.fL = params.fL;
 		} else {
 			this.fL = 0;
 		}
@@ -1455,282 +165,4617 @@ function LUTSpline(buff,fH,fL,rH,rL) {
 		this.fH = 1;
 		this.fL = 0;
 	}
-	if (typeof rH === 'number') {
+	this.fLH = this.fH-this.fL;
+	if (this.fL !== 0 || this.fH !==1) {
+		this.fS = true;
+	}
+	// Allow for spline input (a bit nuts for 1D, but being robust)
+	if (typeof params.inSpline !== 'undefined') {
+		this.sin = true;
+		this.ins = new LUTQSpline(params.inSpline);
+	} else {
+		this.sin = false;
+	}
+}
+LUTSpline.prototype.f = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTSpline.prototype.df = function(L) {
+	var s = this.FM;
+	var o;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		o = s*this.FC[0];
+	} else if (L >= s) {
+		o = s*this.FC[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		o = s*((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+	}
+	// Allow for nonlinear inputs
+	if (this.sin) {
+		var dO = this.ins.df(L);
+		o *= dO;
+	}
+	if (this.fS) {
+		o /= this.fLH;
+	}
+	return o;
+};
+LUTSpline.prototype.fCub = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTSpline.prototype.fLin = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTSpline.prototype.FCub = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		}
+	}
+};
+LUTSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTSpline.prototype.FLin = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTSpline.prototype.fRGBCub = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		L = (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		L = ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		L = (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+	return new Float64Array([L,L,L]);
+};
+LUTSpline.prototype.fRGBTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		L = (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		L = ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		L = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+	return new Float64Array([L,L,L]);
+};
+LUTSpline.prototype.fRGBLin = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		L = (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		L = ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		L = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+	return new Float64Array([L,L,L]);
+};
+LUTSpline.prototype.rgbCub = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FCub(out.buffer);
+	return out;
+};
+LUTSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FTet(out.buffer);
+	return out;
+};
+LUTSpline.prototype.rgbLin = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
+LUTSpline.prototype.RGBCub = function(buff) {
+	this.FCub(out);
+};
+LUTSpline.prototype.RGBLin = function(buff) {
+	this.FTet(out);
+};
+LUTSpline.prototype.RGBLin = function(buff) {
+	this.FLin(out);
+};
+LUTSpline.prototype.J = function(rgbIn) {
+	// calculate the Jacobian matrix at rgbIn
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var J = new Float64Array(9);
+		var s = this.FM;
+		var r,l;
+		if (this.fS) {
+			c[0] = (c[0] - this.fL)/(this.fLH);
+			c[1] = (c[1] - this.fL)/(this.fLH);
+			c[2] = (c[2] - this.fL)/(this.fLH);
+		}
+		if (this.sin) {
+			c[0] = this.ins.f(c[0]);
+			c[1] = this.ins.f(c[1]);
+			c[2] = this.ins.f(c[2]);
+		}
+		c[0] *= s;
+		c[1] *= s;
+		c[2] *= s;
+		if (c[0] <= 0) {
+			J[0] = this.FC[0];
+		} else if (c[0] >= s) {
+			J[0] = this.FC[s];
+		} else {
+			l = Math.floor(c[0]);
+			r = c[0]-l;
+			J[0] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[1] <= 0) {
+			J[4] = this.FC[0];
+		} else if (c[1] >= s) {
+			J[4] = this.FC[s];
+		} else {
+			l = Math.floor(c[1]);
+			r = c[1]-l;
+			J[4] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[2] <= 0) {
+			J[8] = this.FC[0];
+		} else if (c[2] >= s) {
+			J[8] = this.FC[s];
+		} else {
+			l = Math.floor(c[2]);
+			r = c[2]-l;
+			J[8] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		return J;
+	} else {
+		return false;
+	}
+};
+LUTSpline.prototype.JInv = function(rgbIn) {
+	var M = this.J(rgbIn);
+	if (M[0] !== 0 && M[4] !== 0 && M[8] !== 0) {
+		return new Float64Array([
+			1/M[0],	0,		0,
+			0,		1/M[4],	0,
+			0,		0,		1/M[8]
+		]);
+	} else {
+		return false;
+	}
+};
+LUTSpline.prototype.getDetails = function() {
+	var out = {
+		title: this.title,
+		format: this.format,
+		dims: 1,
+		s: this.FM+1,
+		min: new Float64Array([this.fL,this.fL,this.fL]),
+		max: new Float64Array([this.fH,this.fH,this.fH]),
+		C: [this.FD.buffer],
+		meta: this.meta
+	};
+	return out;
+};
+LUTSpline.prototype.getL = function() {
+	return this.FD.buffer;
+};
+LUTSpline.prototype.getRGB = function() {
+	return [this.FD.buffer];
+};
+LUTSpline.prototype.getSize = function() {
+	return this.FM+1;
+};
+LUTSpline.prototype.is1D = function() {
+	return true;
+};
+LUTSpline.prototype.is3D = function() {
+	return false;
+};
+LUTSpline.prototype.getTitle = function() {
+	return this.title;
+};
+LUTSpline.prototype.getMetadata = function() {
+	return this.meta;
+};
+// LUTRSpline - spline object with arbitrary input range and inverse automatically calculated
+function LUTRSpline(params) {
+	this.method = 0; // choose which approach to use on 'f(x)', cubic, or linear - used by brent to calculate the reverse
+	// Metadata
+	if (typeof params.title === 'string') {
+		this.title = params.title;
+	} else {
+		this.title = '';
+	}
+	if (typeof params.format === 'string') {
+		this.format = params.format;
+	} else {
+		this.format = '';
+	}
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
+	} else {
+		this.meta = {};
+	}
+	// Precalculate forward parameters
+	this.FD = new Float64Array(params.buff);
+	var fm = this.FD.length;
+	var mono = this.FD[fm-1]-this.FD[0];
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
+	}
+	this.FA = new Float64Array(fm);
+	this.FB = new Float64Array(fm);
+	this.FC = new Float64Array(fm);
+	var FP1 = new Float64Array(fm);
+	var FD1 = new Float64Array(fm);
+	for (var j=0; j<fm; j++) {
+		if (j === 0) {
+			FP1[0] = this.FD[1];
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
+				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.FC[0] = 0.0075 * mono / (fm-1);
+				}
+//			}
+			FD1[0] = (this.FD[2] - this.FD[0])/2;
+		} else if (j < fm-1) {
+			FP1[j] = this.FD[j+1];
+			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
+			if (j === fm-2) {
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
+					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						FD1[j] = 0.0075 * mono / (fm-1);
+					}
+//				}
+			} else {
+				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
+			}
+		} else {
+			FP1[j] = this.FD[j];
+			this.FC[j] = FD1[j-1];
+			FD1[j] = FD1[j-1];
+		}
+		this.FA[j] = (2*this.FD[j]) + this.FC[j] - (2*FP1[j]) + FD1[j];
+		this.FB[j] = (-3*this.FD[j]) - (2*this.FC[j]) + (3*FP1[j]) - FD1[j];
+	}
+	this.FM = fm-1;
+	// Allow for spline input (a bit nuts for 1D, but being robust)
+	if (typeof params.inSpline !== 'undefined') {
+		this.sin = true;
+		this.ins = new LUTQSpline(params.inSpline);
+	} else {
+		this.sin = false;
+	}
+	// Set forward range
+	this.fS = false;
+	if (typeof params.fL === 'undefined' && typeof params.min !== 'undefined' && params.min[0] !== 0) {
+		params.fL = params.min[0];
+	}
+	if (typeof params.fH === 'undefined' && typeof params.max !== 'undefined' && params.max[0] !== 1) {
+		params.fH = params.max[0];
+	}
+	if (typeof params.fH === 'number') {
+		this.fH = params.fH;
+		if (typeof params.fL === 'number') {
+			this.fL = params.fL;
+		} else {
+			this.fL = 0;
+		}
+	} else {
+		this.fH = 1;
+		this.fL = 0;
+	}
+	this.fLH = this.fH-this.fL;
+	if (this.fL !== 0 || this.fH !==1) {
+		this.fS = true;
+	}
+	// Set reverse range
+	if (typeof params.rL === 'undefined' && typeof params.rmin !== 'undefined' && params.rmin[0] !== 0) {
+		params.rL = params.rmin[0];
+	}
+	if (typeof params.rH === 'undefined' && typeof params.rmax !== 'undefined' && params.rmax[0] !== 1) {
+		params.rH = params.rmax[0];
+	}
+	if (typeof params.rH === 'number') {
 		this.rH = rH;
-		if (typeof rL === 'number') {
+		if (typeof params.rL === 'number') {
 			this.rL = rL;
 		} else {
 			this.rL = this.fL;
 		}
 	} else {
-		this.rH = this.fs[this.fs.length - 1];
-		this.rL = this.fs[0];
+		this.rH = this.FD[fm - 1];
+		this.rL = this.FD[0];
 	}
-	this.s = m;
-	this.sr = m;
-	if (this.sr < 1024) {
-		this.sr = 1024;
+	this.rLH = this.rH-this.rL;
+	// Create reverse data points
+	var rm;
+	if (typeof params.minRM === 'number') {
+		rm = Math.max(fm, minRM);
+	} else {
+		rm = Math.max(fm, 1024);
 	}
-	this.setFdy();
-	this.rs = new Float64Array(this.sr);
-	var brent = new Brent(this);
-	var x;
-	for (var j=0; j<this.sr; j++) {
-		x = ((j/(this.sr-1))*(this.rH - this.rL)) + this.rL;
-		if (j === 0 || x <= 0 || this.rs[j-1] < -65534 || this.rs[j-1] > 65534) {
-			this.rs[j] = brent.findRoot(x,x);
+	this.RM = rm-1;
+	this.brent = new Brent(this);
+	this.buildReverse();
+}
+LUTRSpline.prototype.f = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		if (this.method === 0) { // cubic
+			return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		} else { // tetrahedral or linear
+			return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTRSpline.prototype.df = function(L) {
+	var s = this.FM;
+	var o;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		o = s*this.FC[0];
+	} else if (L >= s) {
+		o = s*this.FC[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		if (this.method === 0) { // cubic
+			o = s*((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		} else { // tetrahedral or linear
+			return s*(this.FD[l+1]-this.FD[l]);
+		}
+	}
+	// Allow for nonlinear inputs
+	if (this.sin) {
+		var dO = this.ins.df(L);
+		o *= dO;
+	}
+	if (this.fS) {
+		o /= this.fLH;
+	}
+	return o;
+};
+LUTRSpline.prototype.fCub = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTRSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTRSpline.prototype.fLin = function(L) {
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		L = (L - this.fL)/(this.fLH);
+	}
+	if (this.sin) {
+		L = this.ins.f(L);
+	}
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTRSpline.prototype.FCub = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
 		} else {
-			this.rs[j] = brent.findRoot(this.rs[j-1],parseFloat(x));
-		}
-		if (this.rs[j] < -65534) {
-			this.rs[j] = -65534;
-		} else if (this.rs[j] > 65534) {
-			this.rs[j] = 65534;
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
 		}
 	}
-	if (isNaN(this.rs[0])) {
-		for (var j=0; j<this.sr; j++) {
-			if (!isNaN(this.rs[j])) {
-				this.rs[0] = this.rs[j];
+};
+LUTRSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTRSpline.prototype.FLin = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - this.fL)/(this.fLH);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTRSpline.prototype.fRGBCub = function(L) {
+	L = this.f(L);
+	return new Float64Array([L,L,L]);
+};
+LUTRSpline.prototype.fRGBTet = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
+LUTRSpline.prototype.fRGBLin = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
+LUTRSpline.prototype.rgbCub = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FCub(out.buffer);
+	return out;
+};
+LUTRSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
+LUTRSpline.prototype.rgbLin = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
+LUTRSpline.prototype.RGBCub = function(buff) {
+	this.FCub(out);
+};
+LUTRSpline.prototype.RGBTet = function(buff) {
+	this.FLin(out);
+};
+LUTRSpline.prototype.RGBLin = function(buff) {
+	this.FLin(out);
+};
+LUTRSpline.prototype.J = function(rgbIn) {
+	// calculate the Jacobian matrix at rgbIn
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var J = new Float64Array(9);
+		var s = this.FM;
+		var r,l;
+		if (this.fS) {
+			c[0] = (c[0] - this.fL)/(this.fLH);
+			c[1] = (c[1] - this.fL)/(this.fLH);
+			c[2] = (c[2] - this.fL)/(this.fLH);
+		}
+		if (this.sin) {
+			c[0] = this.ins.f(c[0]);
+			c[1] = this.ins.f(c[1]);
+			c[2] = this.ins.f(c[2]);
+		}
+		c[0] *= s;
+		c[1] *= s;
+		c[2] *= s;
+		if (c[0] <= 0) {
+			J[0] = this.FC[0];
+		} else if (c[0] >= s) {
+			J[0] = this.FC[s];
+		} else {
+			l = Math.floor(c[0]);
+			r = c[0]-l;
+			J[0] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[1] <= 0) {
+			J[4] = this.FC[0];
+		} else if (c[1] >= s) {
+			J[4] = this.FC[s];
+		} else {
+			l = Math.floor(c[1]);
+			r = c[1]-l;
+			J[4] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[2] <= 0) {
+			J[8] = this.FC[0];
+		} else if (c[2] >= s) {
+			J[8] = this.FC[s];
+		} else {
+			l = Math.floor(c[2]);
+			r = c[2]-l;
+			J[8] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		return J;
+	} else {
+		return false;
+	}
+};
+LUTRSpline.prototype.JInv = function(rgbIn) {
+	var M = this.J(rgbIn);
+	if (M[0] !== 0 && M[4] !== 0 && M[8] !== 0) {
+		return new Float64Array([
+			1/M[0],	0,		0,
+			0,		1/M[4],	0,
+			0,		0,		1/M[8]
+		]);
+	} else {
+		return false;
+	}
+};
+LUTRSpline.prototype.getDetails = function() {
+	var out = {
+		title: this.title,
+		format: this.format,
+		dims: 1,
+		s: this.FM+1,
+		min: new Float64Array([this.fL,this.fL,this.fL]),
+		max: new Float64Array([this.fH,this.fH,this.fH]),
+		C: [this.FD.buffer],
+		meta: this.meta
+	};
+	return out;
+};
+LUTRSpline.prototype.getL = function() {
+	return this.FD.buffer;
+};
+LUTRSpline.prototype.getRGB = function() {
+	return [this.FD.buffer];
+};
+LUTRSpline.prototype.getSize = function() {
+	return this.FM+1;
+};
+LUTRSpline.prototype.is1D = function() {
+	return true;
+};
+LUTRSpline.prototype.is3D = function() {
+	return false;
+};
+LUTRSpline.prototype.getTitle = function() {
+	return this.title;
+};
+LUTRSpline.prototype.getMetadata = function() {
+	return this.meta;
+};
+//
+LUTRSpline.prototype.r = function(L) {
+	var s = this.RM;
+	var r,l;
+	L = s * (L - this.rL)/(this.rLH);
+	if (L <= 0) {
+		return (L * this.RC[0]) + this.RD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.RC[s]) + this.RD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		if (this.method === 0) { // cubic
+			return (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+		} else { // tetrahedral or linear
+			return ((1-r)*this.RD[l]) + (r*this.RD[l+1]);
+		}
+	}
+};
+LUTRSpline.prototype.R = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.RM;
+	var r,l;
+	for (var j=0; j<m; j++) {
+		c[j] = s * (c[j] - this.rL)/(this.rLH);
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.RC[0]) + this.RD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.RC[s]) + this.RD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			if (this.method === 0) { // cubic
+				c[j] = (((((this.RA[l] * r) + this.RB[l]) * r) + this.RC[l]) * r) + this.RD[l];
+			} else { // tetrahedral or linear
+				c[j] = ((1-r)*this.RD[l]) + (r*this.RD[l+1]);
+			}
+		}
+	}
+};
+LUTRSpline.prototype.buildReverse = function() {
+	var rm = this.RM + 1;
+	this.RD = new Float64Array(rm);
+	var x;
+	for (var j=0; j<rm; j++) {
+		x = ((j/(rm-1))*(this.rLH)) + this.rL;
+		if (j === 0 || x <= 0 || isNaN(this.RD[j-1]) || this.RD[j-1] <= -65534 || this.RD[j-1] >= 65534) {
+			this.RD[j] = this.brent.findRoot(x,x);
+		} else {
+			this.RD[j] = this.brent.findRoot(this.RD[j-1],x);
+		}
+		if (this.RD[j] < -65534) {
+			this.RD[j] = -65534;
+		} else if (this.RD[j] > 65534) {
+			this.RD[j] = 65534;
+		}
+	}
+	if (isNaN(this.RD[0])) {
+		for (var j=0; j<rm; j++) {
+			if (!isNaN(this.RD[j])) {
+				this.RD[0] = this.RD[j];
 				break;
 			}
 		}
 	}
-	for (var j=1; j<this.sr; j++) {
-		if (isNaN(this.rs[j])) {
-			this.rs[j] = this.rs[j-1];
+	for (var j=1; j<rm; j++) {
+		if (isNaN(this.RD[j])) {
+			this.RD[j] = this.RD[j-1];
 		}
 	}
-	this.setRdy();
-}
-LUTSpline.prototype.setFdy = function() {
-	var max = this.s - 1;
-	var sign = this.fs[max] - this.fs[0];
-	if (sign === 0) {
-		this.fdyMin = 0.000000001;
-		this.fdyMax = 0.000000001;
-	} else if (sign > 0.000000001){
-		this.fdyMin = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
-		if (this.fdyMin < 0.000000001) {
-			this.fdyMin = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
-			if (this.fdyMin < 0.000000001) {
-				this.fdyMin = 0.000000001;
-			}
-		}
-		this.fdyMax = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
-		if (this.fdyMax < 0.000000001) {
-			this.fdyMax = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
-			if (this.fdyMax < 0.000000001) {
-				this.fdyMax = 0.000000001;
-			}
-		}
-	} else {
-		this.fdyMin = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
-		if (this.fdyMin > -0.000000001) {
-			this.fdyMin = ((4 * this.fs[2]) - (3 * this.fs[0]) - this.fs[4])/4;
-			if (this.fdyMin > -0.000000001) {
-				this.fdyMin > -0.000000001;
-			}
-		}
-		this.fdyMax = (0.5 * this.fs[max - 2]) - (2 * this.fs[max - 1]) + (1.5 * this.fs[max]);
-		if (this.fdyMax > -0.000000001) {
-			this.fdyMax = (0.5 * this.fs[max - 4]) - (2 * this.fs[max - 2]) + (1.5 * this.fs[max]);
-			if (this.fdyMax > -0.000000001) {
-				this.fdyMax = -0.000000001;
-			}
-		}
+	for (var j=1; j<rm; j++) {
+		this.RD[j] = (this.RD[j] * this.fLH) + this.fL;
 	}
-};
-LUTSpline.prototype.setRdy = function() {
-	var max = this.sr - 1;
-	var sign = this.rs[max] - this.rs[0];
-	if (sign === 0) {
-		this.rdyMin = 0.000000001;
-		this.rdyMax = 0.000000001;
-	} else if (sign > 0.000000001){
-		this.rdyMin = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-		if (this.rdyMin < 0.000000001) {
-			this.rdyMin = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
-			if (this.rdyMin < 0.000000001) {
-				this.rdyMin = 0.000000001;
-			}
-		}
-		this.rdyMax = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
-		if (this.rdyMax < 0.000000001) {
-			this.rdyMax = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
-			if (this.rdyMax < 0.000000001) {
-				this.rdyMax = 0.000000001;
-			}
-		}
-	} else {
-		this.rdyMin = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-		if (this.rdyMin > -0.000000001) {
-			this.rdyMin = ((4 * this.rs[2]) - (3 * this.rs[0]) - this.rs[4])/4;
-			if (this.rdyMin > -0.000000001) {
-				this.rdyMin > -0.000000001;
-			}
-		}
-		this.rdyMax = (0.5 * this.rs[max - 2]) - (2 * this.rs[max - 1]) + (1.5 * this.rs[max]);
-		if (this.rdyMax > -0.000000001) {
-			this.rdyMax = (0.5 * this.rs[max - 4]) - (2 * this.rs[max - 2]) + (1.5 * this.rs[max]);
-			if (this.rdyMax > -0.000000001) {
-				this.rdyMax = -0.000000001;
-			}
-		}
+	mono = this.RD[rm-1]-this.RD[0]; // If things are working, should be unchanged, but belt and braces....
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
 	}
-};
-LUTSpline.prototype.f = function(L1) {
-	var L = (L1 - this.fL)/(this.fH-this.fL);
-	var max = this.s - 1;
-	L = L * max;
-	if (L < 0) {
-		return this.fs[0] + (L * this.fdyMin);
-	} else if (L >= max) {
-		return this.fs[max] + ((L - max) * this.fdyMax);
-	} else {
-		var f = Math.floor(L);
-		var p0 = this.fs[f];
-		var p1 = this.fs[f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
-		} else {
-			d0 = (this.fs[f + 1] - this.fs[f - 1])/2;
-		}
-		if (f === max - 1) {
-			d1 = (2 * this.fs[max - 2]) + ((this.fs[max - 1] - this.fs[max - 3])/2) - (4 * this.fs[max - 1]) + (2 * this.fs[max]);
-		} else {
-			d1 = (this.fs[f + 2] - this.fs[f])/2;
-		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
-	}
-};
-LUTSpline.prototype.F = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	var max = this.s - 1;
-	var L,f,p0,p1,d0,d1,a,b,c,d;
-	for (var j=0; j<m; j++) {
-		L = (c[j] - this.fL)/(this.fH-this.fL);
-		L = L * max;
-		if (L < 0) {
-			c[j] = this.fs[0] + (L * this.fdyMin);
-		} else if (L >= max) {
-			c[j] = this.fs[max] + ((L - max) * this.fdyMax);
-		} else {
-			f = Math.floor(L);
-			p0 = this.fs[f];
-			p1 = this.fs[f + 1];
-			if (f === 0) {
-				d0 = ((4 * this.fs[1]) - (3 * this.fs[0]) - this.fs[2])/2;
+	// Precalculate reverse parameters
+	this.RA = new Float64Array(rm);
+	this.RB = new Float64Array(rm);
+	this.RC = new Float64Array(rm);
+	var RP1 = new Float64Array(rm);
+	var RD1 = new Float64Array(rm);
+	for (var j=0; j<rm; j++) {
+		if (j === 0) {
+			RP1[0] = this.RD[1];
+//			this.RC[0] = (0.1*this.RD[3]) - (0.8*this.RD[2]) + (2.3*this.RD[1]) - (1.6*this.RD[0]);
+//			if (this.RC[0]*mono <= 0) { // opposite slope to monotonic
+				this.RC[0] = -(0.5*this.RD[2]) + (2*this.RD[1]) - (1.5*this.RD[0]);
+				if (this.RC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.RC[0] = 0.0075 * mono / (rm-1);
+				}
+//			}
+			RD1[0] = (this.RD[2] - this.RD[0])/2;
+		} else if (j < rm-1) {
+			RP1[j] = this.RD[j+1];
+			this.RC[j] = (this.RD[j+1] - this.RD[j-1])/2
+			if (j === rm-2) {
+//				RD1[j] = (-0.1*this.RD[j-2]) + (0.8*this.RD[j-1]) - (2.3*this.RD[j]) + (1.6*this.RD[j+1]);
+//				if (RD1[j]*mono <= 0) { // opposite slope to monotonic
+					RD1[j] = (0.5*this.RD[j-1]) - (2*this.RD[j]) + (1.5*this.RD[j+1]);
+					if (RD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						RD1[j] = 0.0075 * mono / (rm-1);
+					}
+//				}
 			} else {
-				d0 = (this.fs[f + 1] - this.fs[f - 1])/2;
+				RD1[j] = (this.RD[j+2] - this.RD[j])/2;
 			}
-			if (f === max - 1) {
-				d1 = (2 * this.fs[max - 2]) + ((this.fs[max - 1] - this.fs[max - 3])/2) - (4 * this.fs[max - 1]) + (2 * this.fs[max]);
-			} else {
-				d1 = (this.fs[f + 2] - this.fs[f])/2;
-			}
-			a = (2 * p0) + d0 - (2 * p1) + d1;
-			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-			c = d0;
-			d = p0;
-			L -= f;
-			c[j] = (((((a * L) + b) * L) + c) * L) + d;
+		} else {
+			RP1[j] = this.RD[j];
+			this.RC[j] = RD1[j-1];
+			RD1[j] = RD1[j-1];
 		}
+		this.RA[j] = (2*this.RD[j]) + this.RC[j] - (2*RP1[j]) + RD1[j];
+		this.RB[j] = (-3*this.RD[j]) - (2*this.RC[j]) + (3*RP1[j]) - RD1[j];
 	}
 };
-LUTSpline.prototype.r = function(L1) {
-	var L = (L1 - this.rL)/(this.rH-this.rL);
-	var max = this.sr - 1;
-	L = L * max;
-	if (L < 0) {
-		return this.rs[0] + (L * this.rdyMin);
-	} else if (L >= max) {
-		return this.rs[max] + ((L - max) * this.rdyMax);
+LUTRSpline.prototype.setMethod = function(idx) {
+	if (typeof idx === 'number') {
+		this.method = idx;
+		this.buildReverse();
+		return true;
 	} else {
-		var f = Math.floor(L);
-		var p0 = this.rs[f];
-		var p1 = this.rs[f + 1];
-		var d0,d1;
-		if (f === 0) {
-			d0 = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-		} else {
-			d0 = (this.rs[f + 1] - this.rs[f - 1])/2;
-		}
-		if (f === max - 1) {
-			d1 = (2 * this.rs[max - 2]) + ((this.rs[max - 1] - this.rs[max - 3])/2) - (4 * this.rs[max - 1]) + (2 * this.rs[max]);
-		} else {
-			d1 = (this.rs[f + 2] - this.rs[f])/2;
-		}
-		var a = (2 * p0) + d0 - (2 * p1) + d1;
-		var b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-		var c = d0;
-		var d = p0;
-		L -= f;
-		return (((((a * L) + b) * L) + c) * L) + d;
+		return false;
 	}
 };
-LUTSpline.prototype.R = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	var max = this.sr - 1;
-	var L,f,p0,p1,d0,d1,a,b,c,d;
-	for (var j=0; j<m; j++) {
-		L = (c[j] - this.rL)/(this.rH-this.rL);
-		L = L * max;
-		if (L < 0) {
-			c[j] = this.rs[0] + (L * this.rdyMin);
-		} else if (L >= max) {
-			c[j] = this.rs[max] + ((L - max) * this.rdyMax);
-		} else {
-			f = Math.floor(L);
-			p0 = this.rs[f];
-			p1 = this.rs[f + 1];
-			if (f === 0) {
-				d0 = ((4 * this.rs[1]) - (3 * this.rs[0]) - this.rs[2])/2;
-			} else {
-				d0 = (this.rs[f + 1] - this.rs[f - 1])/2;
-			}
-			if (f === max - 1) {
-				d1 = (2 * this.rs[max - 2]) + ((this.rs[max - 1] - this.rs[max - 3])/2) - (4 * this.rs[max - 1]) + (2 * this.rs[max]);
-			} else {
-				d1 = (this.rs[f + 2] - this.rs[f])/2;
-			}
-			a = (2 * p0) + d0 - (2 * p1) + d1;
-			b = - (3 * p0) - (2 * d0) + (3 * p1) - d1;
-			c = d0;
-			d = p0;
-			L -= f;
-			c[j] = (((((a * L) + b) * L) + c) * L) + d;
-		}
-	}
+LUTRSpline.prototype.getMethod = function() {
+	return this.method;
 };
-LUTSpline.prototype.getReverse = function() {
-	return this.rs.buffer.slice(0);
+LUTRSpline.prototype.getReverse = function() {
+	return this.RD.buffer;
 };
-LUTSpline.prototype.getMinMax = function() {
+LUTRSpline.prototype.getMinMax = function() {
 	var a=0;
 	var b=1;
-	for (var j=0; j<this.sr; j++) {
-		if (this.rs[j] > b) {
-			b = this.rs[j];
-		} else if (this.rs[j] < a) {
-			a = this.rs[j];
+	var m = this.RD.length;
+	for (var j=0; j<m; j++) {
+		if (this.RD[j] > b) {
+			b = this.RD[j];
+		} else if (this.RD[j] < a) {
+			a = this.RD[j];
 		}
 	}
 	return {a: a, b: b};
 };
-LUTSpline.prototype.getHighLow = function() {
+LUTRSpline.prototype.getHighLow = function() {
 	return {forH:this.fH,forL:this.fL,revH:this.rH,revL:this.rL}
 };
-LUTSpline.prototype.getSR = function() {
-	return this.sr;
+LUTRSpline.prototype.getRM = function() {
+	return this.RM + 1;
+};
+LUTRSpline.prototype.getR = function() {
+	return this.RD.buffer;
+};
+// LUTQSpline - spline object paired down to forward only and mesh over 0-1.0
+function LUTQSpline(buff) {
+	this.meta = {};
+	// Precalculate forward parameters
+	this.FD = new Float64Array(buff);
+	var fm = this.FD.length;
+	var mono = this.FD[fm-1]-this.FD[0];
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
+	}
+	this.FA = new Float64Array(fm);
+	this.FB = new Float64Array(fm);
+	this.FC = new Float64Array(fm);
+	var FP1 = new Float64Array(fm);
+	var FD1 = new Float64Array(fm);
+	for (var j=0; j<fm; j++) {
+		if (j === 0) {
+			FP1[0] = this.FD[1];
+//			this.FC[0] = (0.1*this.FD[3]) - (0.8*this.FD[2]) + (2.3*this.FD[1]) - (1.6*this.FD[0]);
+//			if (this.FC[0]*mono <= 0) { // opposite slope to monotonic
+				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
+				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.FC[0] = 0.0075 * mono / (fm-1);
+				}
+//			}
+			FD1[0] = (this.FD[2] - this.FD[0])/2;
+		} else if (j < fm-1) {
+			FP1[j] = this.FD[j+1];
+			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
+			if (j === fm-2) {
+//				FD1[j] = (-0.1*this.FD[j-2]) + (0.8*this.FD[j-1]) - (2.3*this.FD[j]) + (1.6*this.FD[j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
+					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						FD1[j] = 0.0075 * mono / (fm-1);
+					}
+//				}
+			} else {
+				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
+			}
+		} else {
+			FP1[j] = this.FD[j];
+			this.FC[j] = FD1[j-1];
+			FD1[j] = FD1[j-1];
+		}
+		this.FA[j] = (2*this.FD[j]) + this.FC[j] - (2*FP1[j]) + FD1[j];
+		this.FB[j] = (-3*this.FD[j]) - (2*this.FC[j]) + (3*FP1[j]) - FD1[j];
+	}
+	this.FM = fm-1;
+}
+LUTQSpline.prototype.f = function(L) {
+	var s = this.FM;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTQSpline.prototype.df = function(L) {
+	var s = this.FM;
+	var o;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return s*this.FC[0];
+	} else if (L >= s) {
+		return s*this.FC[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return s*((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+	}
+};
+LUTQSpline.prototype.fCub = function(L) {
+	var s = this.FM;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+	}
+};
+LUTQSpline.prototype.fTet = function(L) {
+	var s = this.FM;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTQSpline.prototype.fLin = function(L) {
+	var s = this.FM;
+	var r,l;
+	L *= s;
+	if (L <= 0) {
+		return (L * this.FC[0]) + this.FD[0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[s]) + this.FD[s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+	}
+};
+LUTQSpline.prototype.FCub = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = (((((this.FA[l] * r) + this.FB[l]) * r) + this.FC[l]) * r) + this.FD[l];
+		}
+	}
+};
+LUTQSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTQSpline.prototype.FLin = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM;
+	var r,l;
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[0]) + this.FD[0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[s]) + this.FD[s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[l]) + (r*this.FD[l+1]);
+		}
+	}
+};
+LUTQSpline.prototype.fRGBCub = function(L) {
+	L = this.f(L);
+	return new Float64Array([L,L,L]);
+};
+LUTQSpline.prototype.fRGBTet = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
+LUTQSpline.prototype.fRGBLin = function(L) {
+	L = this.fLin(L);
+	return new Float64Array([L,L,L]);
+};
+LUTQSpline.prototype.rgbCub = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FCub(out.buffer);
+	return out;
+};
+LUTQSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
+LUTQSpline.prototype.rgbLin = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.FLin(out.buffer);
+	return out;
+};
+LUTQSpline.prototype.RGBCub = function(buff) {
+	this.FCub(out);
+};
+LUTQSpline.prototype.RGBTet = function(buff) {
+	this.FLin(out);
+};
+LUTQSpline.prototype.RGBLin = function(buff) {
+	this.FLin(out);
+};
+LUTQSpline.prototype.J = function(rgbIn) {
+	// calculate the Jacobian matrix at rgbIn
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var J = new Float64Array(9);
+		var s = this.FM;
+		var r,l;
+		c[0] *= s;
+		c[1] *= s;
+		c[2] *= s;
+		if (c[0] <= 0) {
+			J[0] = this.FC[0];
+		} else if (c[0] >= s) {
+			J[0] = this.FC[s];
+		} else {
+			l = Math.floor(c[0]);
+			r = c[0]-l;
+			J[0] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[1] <= 0) {
+			J[4] = this.FC[0];
+		} else if (c[1] >= s) {
+			J[4] = this.FC[s];
+		} else {
+			l = Math.floor(c[1]);
+			r = c[1]-l;
+			J[4] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[2] <= 0) {
+			J[8] = this.FC[0];
+		} else if (c[2] >= s) {
+			J[8] = this.FC[s];
+		} else {
+			l = Math.floor(c[2]);
+			r = c[2]-l;
+			J[8] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		J[0] *= s;
+		J[4] *= s;
+		J[8] *= s;
+		return J;
+	} else {
+		return false;
+	}
+};
+LUTQSpline.prototype.JInv = function(rgbIn) {
+	var M = this.J(rgbIn);
+	if (M[0] !== 0 && M[4] !== 0 && M[8] !== 0) {
+		return new Float64Array([
+			1/M[0],	0,		0,
+			0,		1/M[4],	0,
+			0,		0,		1/M[8]
+		]);
+	} else {
+		return false;
+	}
+};
+LUTQSpline.prototype.getDetails = function() {
+	return {
+		title: '',
+		format: '',
+		dims: 1,
+		s: this.FM+1,
+		min: new Float64Array([0,0,0]),
+		max: new Float64Array([1,1,1]),
+		C: [this.FD.buffer],
+		meta: this.meta
+	};
+};
+LUTQSpline.prototype.getL = function() {
+	return this.FD.buffer;
+};
+LUTQSpline.prototype.getRGB = function() {
+	return [this.FD.buffer];
+};
+LUTQSpline.prototype.getSize = function() {
+	return this.FM+1;
+};
+LUTQSpline.prototype.is1D = function() {
+	return true;
+};
+LUTQSpline.prototype.is3D = function() {
+	return false;
+};
+LUTQSpline.prototype.getTitle = function() {
+	return '';
+};
+LUTQSpline.prototype.getMetadata = function() {
+	return this.meta;
+};
+//
+LUTQSpline.prototype.dRGB = function(rgbIn) {
+	// no point in a full, square Jacobian matrix for a 1D LUT
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var o = new Float64Array(3);
+		var s = this.FM;
+		var r,l;
+		c[0] *= s;
+		c[1] *= s;
+		c[2] *= s;
+		if (c[0] <= 0) {
+			o[0] = this.FC[0];
+		} else if (c[0] >= s) {
+			o[0] = this.FC[s];
+		} else {
+			l = Math.floor(c[0]);
+			r = c[0]-l;
+			o[0] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[1] <= 0) {
+			o[1] = this.FC[0];
+		} else if (c[1] >= s) {
+			o[1] = this.FC[s];
+		} else {
+			l = Math.floor(c[1]);
+			r = c[1]-l;
+			o[1] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		if (c[2] <= 0) {
+			o[2] = this.FC[0];
+		} else if (c[2] >= s) {
+			o[2] = this.FC[s];
+		} else {
+			l = Math.floor(c[2]);
+			r = c[2]-l;
+			o[2] = ((((3*this.FA[l] * r) + (2*this.FB[l])) * r) + this.FC[l]);
+		}
+		o[0] *= s;
+		o[1] *= s;
+		o[2] *= s;
+		return o;
+	} else {
+		return false;
+	}
+};
+// LUTRGBSpline - spline object with different 1D splines for each RGB channel
+function LUTRGBSpline(params) {
+	// Metadata
+	if (typeof params.title === 'string') {
+		this.title = params.title;
+	} else {
+		this.title = '';
+	}
+	if (typeof params.format === 'string') {
+		this.format = params.format;
+	} else {
+		this.format = '';
+	}
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
+	} else {
+		this.meta = {};
+	}
+	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
+	// Set forward range
+	this.fL = new Float64Array(4);
+	this.fH = new Float64Array(4);
+	this.fS = false;
+	if (typeof params.min !== 'undefined' && (params.min[0] !== 0 || params.min[1] !== 0 || params.min[2] !== 0)) {
+		params.fL = params.min[0];
+		params.fLR = params.min[0];
+		params.fLG = params.min[1];
+		params.fLB = params.min[2];
+	}
+	if (typeof params.max !== 'undefined' && (params.max[0] !== 1 || params.max[1] !== 1 || params.max[2] !== 1)) {
+		params.fH = params.max[0];
+		params.fHR = params.max[0];
+		params.fHG = params.max[1];
+		params.fHB = params.max[2];
+	}
+	if (typeof params.fH === 'number') {
+		this.fH[0] = params.fH;
+		this.fH[1] = params.fH;
+		this.fH[2] = params.fH;
+	} else {
+		this.fH[0] = 1;
+		this.fH[1] = 1;
+		this.fH[2] = 1;
+	}
+	if (typeof params.fL === 'number') {
+		this.fL[0] = params.fL;
+		this.fL[1] = params.fL;
+		this.fL[2] = params.fL;
+	} else {
+		this.fL[0] = 0;
+		this.fL[1] = 0;
+		this.fL[2] = 0;
+	}
+	if (typeof params.fLR === 'number' &&
+		typeof params.fHR === 'number' &&
+		typeof params.fLG === 'number' &&
+		typeof params.fHG === 'number' &&
+		typeof params.fLB === 'number' &&
+		typeof params.fHB === 'number') {
+		this.fL[0] = params.fLR;
+		this.fH[0] = params.fHR;
+		this.fL[1] = params.fLG;
+		this.fH[1] = params.fHG;
+		this.fL[2] = params.fLB;
+		this.fH[2] = params.fHB;
+	}
+	this.fLH = new Float64Array([this.fH[0]-this.fL[0],this.fH[1]-this.fL[1],this.fH[2]-this.fL[2],0]);
+	if (this.fL[0] !== 0 || this.fL[1] !== 0 || this.fL[2] !== 0 || this.fH[0] !== 1 || this.fH[1] !== 1 || this.fH[2] !== 1) {
+		this.fS = true;
+	}
+	// Allow for spline input (a bit nuts for 1D, but being robust)
+	if (typeof params.inSpline !== 'undefined') {
+		this.sin = true;
+		this.ins = new LUTQSpline(params.inSpline);
+	} else {
+		this.sin = false;
+	}
+	// Create three separate splines for the red, green and blue channels.
+	this.FA = [];
+	this.FB = [];
+	this.FC = [];
+	this.FD = [];
+	this.FM = [];
+	this.FD[0] = new Float64Array(params.buffR);
+	this.FD[1] = new Float64Array(params.buffG);
+	this.FD[2] = new Float64Array(params.buffB);
+	var fm;
+	for (var i=0; i<3; i++) {
+		fm = this.FD[i].length;
+		this.FA[i] = new Float64Array(fm);
+		this.FB[i] = new Float64Array(fm);
+		this.FC[i] = new Float64Array(fm);
+		this.FM[i] = fm-1;
+	}
+	this.buildMesh();
+	// Precalculate Luma arrays
+	this.buildL();
+}
+LUTRGBSpline.prototype.buildMesh = function() {
+	var buff,fm,mono;
+	var FP1,FD1;
+	// Precalculate forward parameters
+	for (var i=0; i<3; i++) {
+		fm = this.FD[i].length;
+		mono = this.FD[i][fm-1]-this.FD[i][0];
+		if (mono >= 0) {
+			mono = 1;
+		} else if (mono < 0) {
+			mono = -1;
+		}
+		FP1 = new Float64Array(fm);
+		FD1 = new Float64Array(fm);
+		for (var j=0; j<fm; j++) {
+			if (j === 0) {
+				FP1[0] = this.FD[i][1];
+//				this.FC[i][0] = (0.1*this.FD[i][3]) - (0.8*this.FD[i][2]) + (2.3*this.FD[i][1]) - (1.6*this.FD[i][0]);
+//				if (this.FC[i][0]*mono <= 0) { // opposite slope to monotonic
+					this.FC[i][0] = -(0.5*this.FD[i][2]) + (2*this.FD[i][1]) - (1.5*this.FD[i][0]);
+					if (this.FC[i][0]*mono <= 0) { // still opposite slope to monotonic
+						this.FC[i][0] = 0.0075 * mono / (fm-1);
+					}
+//				}
+				FD1[0] = (this.FD[i][2] - this.FD[i][0])/2;
+			} else if (j < fm-1) {
+				FP1[j] = this.FD[i][j+1];
+				this.FC[i][j] = (this.FD[i][j+1] - this.FD[i][j-1])/2;
+				if (j === fm-2) {
+//					FD1[j] = (-0.1*this.FD[i][j-2]) + (0.8*this.FD[i][j-1]) - (2.3*this.FD[i][j]) + (1.6*this.FD[i][j+1]);
+//					if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+						FD1[j] = (0.5*this.FD[i][j-1]) - (2*this.FD[i][j]) + (1.5*this.FD[i][j+1]);
+						if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+							FD1[j] = 0.0075 * mono / (fm-1);
+						}
+//					}
+				} else {
+					FD1[j] = (this.FD[i][j+2] - this.FD[i][j])/2;
+				}
+			} else {
+				FP1[j] = this.FD[i][j];
+				this.FC[i][j] = FD1[j-1];
+				FD1[j] = FD1[j-1];
+			}
+			this.FA[i][j] = (2*this.FD[i][j]) + this.FC[i][j] - (2*FP1[j]) + FD1[j];
+			this.FB[i][j] = (-3*this.FD[i][j]) - (2*this.FC[i][j]) + (3*FP1[j]) - FD1[j];
+		}
+	}
+};
+LUTRGBSpline.prototype.buildL = function() {
+	this.fL[3] = Math.min(this.fL[0],this.fL[1],this.fL[2]);
+	this.fH[3] = Math.max(this.fH[0],this.fH[1],this.fH[2]);
+	this.fLH[3]= this.fH[3]-this.fL[3];
+	this.FM[3] = Math.max(this.FM[0],this.FM[1],this.FM[2]);
+	if (this.FM[3] < 64) {
+		this.FM[3] = 64;
+	}
+	var m = this.FM[3] + 1;
+	this.FD[3] = new Float64Array(m);
+	var input,L,s,r,l,mono;
+	// First build array of luma values from RGB splines
+	for (var j=0; j<m; j++) {
+		input = (j*(this.fLH[3])/(m-1))+this.fL[3];
+		for (var i=0; i<3; i++) {
+			s = this.FM[i];
+			L = (input - this.fL[i])/(this.fLH[i]);
+			if (this.sin) {
+				L = this.ins.f(L);
+			}
+			L *= s;
+			if (L <= 0) {
+				L = (L * this.FC[i][0]) + this.FD[i][0];
+			} else if (L >= s) {
+				L = ((L-s) * this.FC[i][s]) + this.FD[i][s];
+			} else {
+				l = Math.floor(L);
+				r = L-l;
+				L = (((((this.FA[i][l] * r) + this.FB[i][l]) * r) + this.FC[i][l]) * r) + this.FD[i][l];
+			}
+			this.FD[3][j] += L * this.Y[i];
+		}
+	}
+	// Now precalculate forward parameters
+	this.FA[3] = new Float64Array(m);
+	this.FB[3] = new Float64Array(m);
+	this.FC[3] = new Float64Array(m);
+	var FP1 = new Float64Array(m);
+	var FD1 = new Float64Array(m);
+	mono = this.FD[3][m-1]-this.FD[3][0];
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
+	}
+	for (var j=0; j<m; j++) {
+		if (j === 0) {
+			FP1[0] = this.FD[3][1];
+//			this.FC[3][0] = (0.1*this.FD[3][3]) - (0.8*this.FD[3][2]) + (2.3*this.FD[3][1]) - (1.6*this.FD[3][0]);
+//			if (this.FC[3][0]*mono <= 0) { // opposite slope to monotonic
+				this.FC[3][0] = -(0.5*this.FD[3][2]) + (2*this.FD[3][1]) - (1.5*this.FD[3][0]);
+				if (this.FC[3][0]*mono <= 0) { // still opposite slope to monotonic
+					this.FC[3][0] = 0.0075 * mono / (m-1);
+				}
+//			}
+			FD1[0] = (this.FD[3][2] - this.FD[3][0])/2;
+		} else if (j < m-1) {
+			FP1[j] = this.FD[3][j+1];
+			this.FC[3][j] = (this.FD[3][j+1] - this.FD[3][j-1])/2;
+			if (j === m-2) {
+//				FD1[j] = (-0.1*this.FD[3][j-2]) + (0.8*this.FD[3][j-1]) - (2.3*this.FD[3][j]) + (1.6*this.FD[3][j+1]);
+//				if (FD1[j]*mono <= 0) { // opposite slope to monotonic
+					FD1[j] = (0.5*this.FD[3][j-1]) - (2*this.FD[3][j]) + (1.5*this.FD[3][j+1]);
+					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						FD1[j] = 0.0075 * mono / (m-1);
+					}
+//				}
+			} else {
+				FD1[j] = (this.FD[3][j+2] - this.FD[3][j])/2;
+			}
+		} else {
+			FP1[j] = this.FD[3][j];
+			this.FC[3][j] = FD1[j-1];
+			FD1[j] = FD1[j-1];
+		}
+		this.FA[3][j] = (2*this.FD[3][j]) + this.FC[3][j] - (2*FP1[j]) + FD1[j];
+		this.FB[3][j] = (-3*this.FD[3][j]) - (2*this.FC[3][j]) + (3*FP1[j]) - FD1[j];
+	}
+};
+LUTRGBSpline.prototype.f = function(L) {
+	var s = this.FM[3];
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		return (L * this.FC[3][0]) + this.FD[3][0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[3][s]) + this.FD[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[3][l] * r) + this.FB[3][l]) * r) + this.FC[3][l]) * r) + this.FD[3][l];
+	}
+};
+LUTRGBSpline.prototype.df = function(L) {
+	var s = this.FM[3];
+	var o;
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		o = s*this.FC[3][0];
+	} else if (L >= s) {
+		o = s*this.FC[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		o = s*((((3*this.FA[3][l] * r) + (2*this.FB[3][l])) * r) + this.FC[3][l]);
+	}
+	// Allow for scaled inputs
+	if (this.fS) {
+		o /= this.fLH[3];
+	}
+	return o;
+};
+LUTRGBSpline.prototype.fCub = function(L) {
+	var s = this.FM[3];
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		return (L * this.FC[3][0]) + this.FD[3][0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[3][s]) + this.FD[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return (((((this.FA[3][l] * r) + this.FB[3][l]) * r) + this.FC[3][l]) * r) + this.FD[3][l];
+	}
+};
+LUTRGBSpline.prototype.fTet = function(L) {
+	var s = this.FM[3];
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		return (L * this.FC[3][0]) + this.FD[3][0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[3][s]) + this.FD[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
+	}
+};
+LUTRGBSpline.prototype.fLin = function(L) {
+	var s = this.FM[3];
+	var r,l;
+	if (this.fS) {
+		L = s * (L - this.fL[3])/(this.fLH[3]);
+	} else {
+		L *= s;
+	}
+	if (L <= 0) {
+		return (L * this.FC[3][0]) + this.FD[3][0];
+	} else if (L >= s) {
+		return ((L-s) * this.FC[3][s]) + this.FD[3][s];
+	} else {
+		l = Math.floor(L);
+		r = L-l;
+		return ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
+	}
+};
+LUTRGBSpline.prototype.FCub = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM[3];
+	var fL = this.fL[3];
+	var fLH = this.fLH[3];
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = (c[j] - fL)/(fLH);
+		}
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[3][0]) + this.FD[3][0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[3][s]) + this.FD[3][s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = (((((this.FA[3][l] * r) + this.FB[3][l]) * r) + this.FC[3][l]) * r) + this.FD[3][l];
+		}
+	}
+};
+LUTRGBSpline.prototype.FTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM[3];
+	var fL = this.fL[3];
+	var fLH = this.fLH[3];
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = s * (c[j] - fL)/(fLH);
+		}
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[3][0]) + this.FD[3][0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[3][s]) + this.FD[3][s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
+		}
+	}
+};
+LUTRGBSpline.prototype.FLin = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var s = this.FM[3];
+	var fL = this.fL[3];
+	var fLH = this.fLH[3];
+	var r,l;
+	if (this.fS) {
+		for (var j=0; j<m; j++) {
+			c[j] = s * (c[j] - fL)/(fLH);
+		}
+	}
+	for (var j=0; j<m; j++) {
+		c[j] *= s;
+		if (c[j] <= 0) {
+			c[j] = (c[j] * this.FC[3][0]) + this.FD[3][0];
+		} else if (c[j] >= s) {
+			c[j] = ((c[j]-s) * this.FC[3][s]) + this.FD[3][s];
+		} else {
+			l = Math.floor(c[j]);
+			r = c[j]-l;
+			c[j] = ((1-r)*this.FD[3][l]) + (r*this.FD[3][l+1]);
+		}
+	}
+};
+LUTRGBSpline.prototype.fRGBCub = function(L) {
+	var s;
+	var r,l;
+	var o = new Float64Array(3);
+	if (this.fS) {
+		o[0] = (L - this.fL[0])/(this.fLH[0]);
+		o[1] = (L - this.fL[1])/(this.fLH[1]);
+		o[2] = (L - this.fL[2])/(this.fLH[2]);
+	}
+	if (this.sin) {
+		this.ins.FCub(o.buffer);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		o[i] *= s;
+		if (o[i] <= 0) {
+			o[i] = (o[i] * this.FC[i][0]) + this.FD[i][0];
+		} else if (o[i] >= s) {
+			o[i] = ((o[i]-s) * this.FC[i][s]) + this.FD[i][s];
+		} else {
+			l = Math.floor(o[i]);
+			r = o[i]-l;
+			o[i] = (((((this.FA[i][l] * r) + this.FB[i][l]) * r) + this.FC[i][l]) * r) + this.FD[i][l];
+		}
+	}
+	return o;
+};
+LUTRGBSpline.prototype.fRGBTet = function(L) {
+	var s;
+	var r,l;
+	var o = new Float64Array(3);
+	if (this.fS) {
+		o[0] = (L - this.fL[0])/(this.fLH[0]);
+		o[1] = (L - this.fL[1])/(this.fLH[1]);
+		o[2] = (L - this.fL[2])/(this.fLH[2]);
+	}
+	if (this.sin) {
+		this.ins.FCub(o.buffer);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		o[i] *= s;
+		if (o[i] <= 0) {
+			o[i] = (o[i] * this.FC[i][0]) + this.FD[i][0];
+		} else if (o[i] >= s) {
+			o[i] = ((o[i]-s) * this.FC[i][s]) + this.FD[i][s];
+		} else {
+			l = Math.floor(o[i]);
+			r = o[i]-l;
+			o[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
+		}
+	}
+	return o;
+};
+LUTRGBSpline.prototype.fRGBLin = function(L) {
+	var s;
+	var r,l;
+	var o = new Float64Array(3);
+	if (this.fS) {
+		o[0] = (L - this.fL[0])/(this.fLH[0]);
+		o[1] = (L - this.fL[1])/(this.fLH[1]);
+		o[2] = (L - this.fL[2])/(this.fLH[2]);
+	}
+	if (this.sin) {
+		this.ins.FCub(o.buffer);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		o[i] *= s;
+		if (o[i] <= 0) {
+			o[i] = (o[i] * this.FC[i][0]) + this.FD[i][0];
+		} else if (o[i] >= s) {
+			o[i] = ((o[i]-s) * this.FC[i][s]) + this.FD[i][s];
+		} else {
+			l = Math.floor(o[i]);
+			r = o[i]-l;
+			o[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
+		}
+	}
+	return o;
+};
+LUTRGBSpline.prototype.rgbCub = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.RGBCub(out.buffer);
+	return out;
+};
+LUTRGBSpline.prototype.rgbTet = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.RGBLin(out.buffer);
+	return out;
+};
+LUTRGBSpline.prototype.rgbLin = function(rgb) {
+	var out = new Float64Array(rgb.buffer.slice(0));
+	this.RGBLin(out.buffer);
+	return out;
+};
+LUTRGBSpline.prototype.RGBCub = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var fL = this.fL;
+	var fLH = this.fLH;
+	var s,k,l,r;
+	if (this.fS) {
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		for (var j=0; j<m; j+=3) {
+			k = j+i;
+			c[k] *= s;
+			if (c[k] <= 0) {
+				c[k] = (c[k] * this.FC[i][0]) + this.FD[i][0];
+			} else if (c[k] >= s) {
+				c[k] = ((c[k]-s) * this.FC[i][s]) + this.FD[i][s];
+			} else {
+				l = Math.floor(c[k]);
+				r = c[k]-l;
+				c[k] = (((((this.FA[i][l] * r) + this.FB[i][l]) * r) + this.FC[i][l]) * r) + this.FD[i][l];
+			}
+		}
+	}
+};
+LUTRGBSpline.prototype.RGBTet = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var fL = this.fL;
+	var fLH = this.fLH;
+	var s,k,l,r;
+	if (this.fS) {
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		for (var j=0; j<m; j+=3) {
+			k = j+i;
+			c[k] *= s;
+			if (c[k] <= 0) {
+				c[k] = (c[k] * this.FC[i][0]) + this.FD[i][0];
+			} else if (c[k] >= s) {
+				c[k] = ((c[k]-s) * this.FC[i][s]) + this.FD[i][s];
+			} else {
+				l = Math.floor(c[k]);
+				r = c[k]-l;
+				c[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
+			}
+		}
+	}
+};
+LUTRGBSpline.prototype.RGBLin = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var fL = this.fL;
+	var fLH = this.fLH;
+	var s,k,l,r;
+	if (this.fS) {
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var i=0; i<3; i++) {
+		s = this.FM[i];
+		for (var j=0; j<m; j+=3) {
+			k = j+i;
+			c[k] *= s;
+			if (c[k] <= 0) {
+				c[k] = (c[k] * this.FC[i][0]) + this.FD[i][0];
+			} else if (c[k] >= s) {
+				c[k] = ((c[k]-s) * this.FC[i][s]) + this.FD[i][s];
+			} else {
+				l = Math.floor(c[k]);
+				r = c[k]-l;
+				c[j] = ((1-r)*this.FD[i][l]) + (r*this.FD[i][l+1]);
+			}
+		}
+	}
+};
+LUTRGBSpline.prototype.J = function(rgbIn) {
+	// calculate the Jacobian matrix at rgbIn
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var J = new Float64Array(9);
+		var s;
+		var r,l;
+		if (this.fS) {
+			c[0] = (c[0] - this.fL[0])/(this.fLH[0]);
+			c[1] = (c[1] - this.fL[1])/(this.fLH[1]);
+			c[2] = (c[2] - this.fL[2])/(this.fLH[2]);
+		}
+		if (this.sin) {
+			c[0] = this.ins.f(c[0]);
+			c[1] = this.ins.f(c[1]);
+			c[2] = this.ins.f(c[2]);
+		}
+		s = this.FM[0];
+		c[0] *= s;
+		if (c[0] <= 0) {
+			J[0] = this.FC[0][0];
+		} else if (c[0] >= s) {
+			J[0] = this.FC[0][s];
+		} else {
+			l = Math.floor(c[0]);
+			r = c[0]-l;
+			J[0] = ((((3*this.FA[0][l] * r) + (2*this.FB[0][l])) * r) + this.FC[0][l]);
+		}
+		s = this.FM[1];
+		c[1] *= s;
+		if (c[1] <= 0) {
+			J[4] = this.FC[1][0];
+		} else if (c[1] >= s) {
+			J[4] = this.FC[1][s];
+		} else {
+			l = Math.floor(c[1]);
+			r = c[1]-l;
+			J[4] = ((((3*this.FA[1][l] * r) + (2*this.FB[1][l])) * r) + this.FC[1][l]);
+		}
+		s = this.FM[2];
+		c[2] *= s;
+		if (c[2] <= 0) {
+			J[8] = this.FC[2][0];
+		} else if (c[2] >= s) {
+			J[8] = this.FC[2][s];
+		} else {
+			l = Math.floor(c[2]);
+			r = c[2]-l;
+			J[8] = ((((3*this.FA[2][l] * r) + (2*this.FB[2][l])) * r) + this.FC[2][l]);
+		}
+		// Scale to 0-1 range (from 0-s)
+		J[0] *= s;
+		J[1] *= s;
+		J[2] *= s;
+		J[3] *= s;
+		J[4] *= s;
+		J[5] *= s;
+		J[6] *= s;
+		J[7] *= s;
+		J[8] *= s;
+		if (this.sin) {
+			var dRGB = this.ins.dRGB(rgbIn.buffer);
+			J[0] *= dRGB[0];
+			J[1] *= dRGB[1];
+			J[2] *= dRGB[2];
+			J[3] *= dRGB[0];
+			J[4] *= dRGB[1];
+			J[5] *= dRGB[2];
+			J[6] *= dRGB[0];
+			J[7] *= dRGB[1];
+			J[8] *= dRGB[2];
+		}
+		if (this.fS) {
+			J[0] /= fLH[0];
+			J[1] /= fLH[1];
+			J[2] /= fLH[2];
+			J[3] /= fLH[0];
+			J[4] /= fLH[1];
+			J[5] /= fLH[2];
+			J[6] /= fLH[0];
+			J[7] /= fLH[1];
+			J[8] /= fLH[2];
+		}
+		return J;
+	} else {
+		return false;
+	}
+};
+LUTRGBSpline.prototype.JInv = function(rgbIn) {
+	var M = this.J(rgbIn);
+	if (M[0] !== 0 && M[4] !== 0 && M[8] !== 0) {
+		return new Float64Array([
+			1/M[0],	0,		0,
+			0,		1/M[4],	0,
+			0,		0,		1/M[8]
+		]);
+	} else {
+		return false;
+	}
+};
+LUTRGBSpline.prototype.getDetails = function(L) {
+	var out;
+	if (typeof L !== 'undefined' && L ) {
+		out = {
+			title: this.title,
+			format: this.format,
+			dims: 1,
+			s: this.FM[3]+1,
+			min: new Float64Array([this.fL[3],this.fL[3],this.fL[3]]),
+			max: new Float64Array([this.fH[3],this.fH[3],this.fH[3]]),
+			C: [this.FD[3].buffer],
+			meta: this.meta
+		};
+	} else {
+		out = {
+			title: this.title,
+			format: this.format,
+			dims: 1,
+			s: this.FM[3]+1,
+			min: new Float64Array([this.fL[0],this.fL[1],this.fL[2]]),
+			max: new Float64Array([this.fH[0],this.fH[1],this.fH[2]]),
+			C: [this.FD[0].buffer,this.FD[1].buffer,this.FD[2].buffer],
+			meta: this.meta
+		};
+	}
+	return out;
+};
+LUTRGBSpline.prototype.getL = function() {
+	return this.FD[3].buffer;
+};
+LUTRGBSpline.prototype.getRGB = function() {
+	return [this.FD[0].buffer,this.FD[1].buffer,this.FD[2].buffer];
+};
+LUTRGBSpline.prototype.getSize = function() {
+	return this.FM[3]+1;
+};
+LUTRGBSpline.prototype.is1D = function() {
+	return true;
+};
+LUTRGBSpline.prototype.is3D = function() {
+	return false;
+};
+LUTRGBSpline.prototype.getTitle = function() {
+	return this.title;
+};
+LUTRGBSpline.prototype.getMetadata = function() {
+	return this.meta;
+};
+LUTRGBSpline.prototype.isClamped = function() {
+	if (typeof this.clamped === 'undefined') {
+		var mm = this.minMax();
+		var min = Math.min(mm[0],mm[1],mm[2]);
+		var max = Math.max(mm[3],mm[4],mm[5]);
+		if ((min === 0 && max <= 1) || (min >= 0 && max === 1)) {
+			this.clamped = true;
+		} else {
+			this.clamped = false;
+		}
+	}
+	return this.clamped;
+};
+LUTRGBSpline.prototype.deClamp = function() {
+	if (this.isClamped()) {
+		var m,c,C,L,H,LH,S;
+		var fL,fH,fLH;
+		for (var i=0; i<3; i++) {
+			c = this.FD[i];
+			m = c.length;
+			C = false;
+			L = 0;
+			H = m-1;
+			for (var j=0; j<m; j++) {
+				if (j>0) {
+					if (c[j] === 0) {
+						C = true;
+						L = j+1;
+					}
+				}
+			}
+			for (var j=m-2; j>=0; j--) {
+				if (c[j] === 1) {
+					C = true;
+					H = j-1;
+				}
+			}
+			if (C) {
+				if (L > H) {
+					var low = H;
+					H = Math.min(L-2,m-1);
+					L = Math.max(low+2,0);
+				}
+				LH = H-L;
+				S = new LUTQSpline(new Float64Array(c.subarray(L,LH+1)).buffer);
+				fL = this.fL[i];
+				fH = this.fH[i];
+				fLH= fH-fL;
+				for (var j=0; j<m; j++) {
+					if (j===L) {
+						j = H;
+					}
+					// pass through the splines
+					c[j] = S.fCub((j - L)/LH);
+				}
+			}
+		}
+		this.buildMesh();
+		this.buildL();
+		this.clamped = false;
+	}
+};
+//
+LUTRGBSpline.prototype.getColourSpace = function() {
+	var d = this.d;
+	var fL = this.fL;
+	var fH = this.fH;
+	var fLH = this.fLH;
+	var out = {
+		title: this.title + 'CS',
+		format: this.format,
+		fLR: fL[0],
+		fLG: fL[1],
+		fLB: fL[2],
+		fHR: fH[0],
+		fHG: fH[1],
+		fHB: fH[2]
+	};
+	var reverse = new LUTRSpline({ buff:this.L.getL(), fH:fH[3], fL:fL[3] });
+	var base = this.getRGB();
+	reverse.R(base[0]);
+	reverse.R(base[1]);
+	reverse.R(base[2]);
+	out.buffR = base[0];
+	out.buffG = base[1];
+	out.buffB = base[2];
+	return new LUTRGBSpline(out);
+};
+LUTRGBSpline.prototype.compare = function(tgtBuff,tstBuff,method) {
+	// returns the RMS differences in the red channels between a target dataset (tgt) and a test dataset (tst) which 'compare' passes through the lut
+	// method sets the interpolation method used on the test set, currently trilinear (1, 'lin' or 'linear') or tricubic (anything else or the default if 'method' is not present.
+	var tgt = new Float64Array(tgtBuff.slice(0));
+	var tst = new Float64Array(tstBuff.slice(0));
+	var m = tgt.length;
+	if (m !== tst.length) {
+		return false;
+	}
+	if (typeof method !== 'undefined') {
+		method = method.toString().toLowerCase();
+		if (method === '1' || method === 'tet') {
+			this.RGBTet(tst.buffer);
+		} else if (method === '2' || method === 'lin') {
+			this.RGBLin(tst.buffer);
+		} else {
+			this.RGBCub(tst.buffer);
+		}
+	} else {
+		this.RGBCub(tst.buffer);
+	} 
+	var e = new Float64Array(3);
+	for (var j=0; j<m; j += 3) {
+		e[0]  += Math.pow(tst[ j ] - tgt[ j ],2);
+		e[1]  += Math.pow(tst[j+1] - tgt[j+1],2);
+		e[2]  += Math.pow(tst[j+2] - tgt[j+2],2);
+	}
+	e[0] = Math.pow(e[0]*3/m,0.5);
+	e[1] = Math.pow(e[1]*3/m,0.5);
+	e[2] = Math.pow(e[2]*3/m,0.5);
+	return e;
+};
+LUTRGBSpline.prototype.minMax = function() {
+	var x = new Float64Array([
+		 9999, 9999, 9999,	// Absolute min values
+		-9999,-9999,-9999	// Absolute max values
+	]);
+	var c,m;
+	for (var i=0; i<3; i++) {
+		c = this.FD[i];
+		m = c.length;
+		for (var j=0; j<m; j++) {
+			if (c[j] < x[i]) {
+				x[i] = c[j];
+			}
+			if (c[j] > x[i+3]) {
+				x[i+3] = c[j];
+			}
+		}
+	}
+	return x;
+};
+// LUTVolume - 3D mesh object
+function LUTVolume(params) {
+	// Metadata
+	if (typeof params.title === 'string') {
+		this.title = params.title;
+	} else {
+		this.title = '';
+	}
+	if (typeof params.format === 'string') {
+		this.format = params.format;
+	} else {
+		this.format = '';
+	}
+	if (typeof params.meta !== 'undefined') {
+		this.meta = params.meta;
+	} else {
+		this.meta = {};
+	}
+	this.Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
+	// Set forward range
+	this.fL = new Float64Array(4);
+	this.fH = new Float64Array(4);
+	this.fS = false;
+	if (typeof params.min !== 'undefined' && (params.min[0] !== 0 || params.min[1] !== 0 || params.min[2] !== 0)) {
+		params.fL = params.min[0];
+		params.fLR = params.min[0];
+		params.fLG = params.min[1];
+		params.fLB = params.min[2];
+	}
+	if (typeof params.max !== 'undefined' && (params.max[0] !== 1 || params.max[1] !== 1 || params.max[2] !== 1)) {
+		params.fH = params.max[0];
+		params.fHR = params.max[0];
+		params.fHG = params.max[1];
+		params.fHB = params.max[2];
+	}
+	if (typeof params.fH === 'number') {
+		this.fH[0] = params.fH;
+		this.fH[1] = params.fH;
+		this.fH[2] = params.fH;
+	} else {
+		this.fH[0] = 1;
+		this.fH[1] = 1;
+		this.fH[2] = 1;
+	}
+	if (typeof params.fL === 'number') {
+		this.fL[0] = params.fL;
+		this.fL[1] = params.fL;
+		this.fL[2] = params.fL;
+	} else {
+		this.fL[0] = 0;
+		this.fL[1] = 0;
+		this.fL[2] = 0;
+	}
+	if (typeof params.fLR === 'number' &&
+		typeof params.fHR === 'number' &&
+		typeof params.fLG === 'number' &&
+		typeof params.fHG === 'number' &&
+		typeof params.fLB === 'number' &&
+		typeof params.fHB === 'number') {
+		this.fL[0] = params.fLR;
+		this.fH[0] = params.fHR;
+		this.fL[1] = params.fLG;
+		this.fH[1] = params.fHG;
+		this.fL[2] = params.fLB;
+		this.fH[2] = params.fHB;
+	}
+	this.fL[3] = Math.min(this.fL[0],this.fL[1],this.fL[2]);
+	this.fH[3] = Math.max(this.fH[0],this.fH[1],this.fH[2]);
+	this.fLH = new Float64Array([this.fH[0]-this.fL[0],this.fH[1]-this.fL[1],this.fH[2]-this.fL[2],0]);
+	if (this.fL[0] !== 0 || this.fL[1] !== 0 || this.fL[2] !== 0 || this.fH[0] !== 1 || this.fH[1] !== 1 || this.fH[2] !== 1) {
+		this.fS = true;
+	}
+	// Allow for spline input (a bit nuts for 1D, but being robust)
+	if (typeof params.inSpline !== 'undefined') {
+		this.sin = true;
+		this.ins = new LUTQSpline(params.inSpline);
+	} else {
+		this.sin = false;
+	}
+	// create a 'mesh' object to do the 3D interpolation
+	this.pR = new Float64Array(4);
+	this.pG = new Float64Array(4);
+	this.pB = new Float64Array(4);
+	this.buildMesh(params.buffR,params.buffG,params.buffB);
+	// Precalculate Luma arrays
+	this.buildL();
+	// Store some typed arrays for repeat use to minimise garbage collection
+	this.extVars= {
+		dc: new Float64Array(this.d),
+		r: new Float64Array(this.d),
+		J: new Float64Array(this.d*3),
+		JtJ: new Float64Array(9),
+		JtJI: new Float64Array(9),
+		Jtr: new Float64Array(3),
+		del: new Float64Array(3)
+	};
+	this.ABab = new Float64Array([1,0,1,0]);
+}
+LUTVolume.prototype.buildMesh = function(buffR,buffG,buffB) {
+	var red = new Float64Array(buffR);
+	var green = new Float64Array(buffG);
+	var blue = new Float64Array(buffB);
+	var Y = new Float64Array([0.2126,0.7152,0.0722]); // Rec709 luma coefficients
+	this.d = Math.round(Math.pow(red.length,1/3)); // dimensions of the base mesh
+	var d = this.d;
+	this.s = d-1;
+	var d2 = d*d;
+	var d3 = red.length;
+	var nd = d + 2;
+	this.nd = nd;
+	var nd2 = nd * nd;
+	var nd3 = nd2 * nd;
+	var sG = nd3;
+	var sB = 2 * sG;
+	this.mesh = new Float64Array(nd3*3); // the new mesh is two points larger per side, with all three channels in one array for speed
+	var k = nd2 + nd + 1; // first point in the new mesh at which to place mesh values
+	var l=0;
+	// create 4x4x4 array of offsets for quickly getting cubic control points;
+	this.off = new Float64Array(64);
+	for (var b=0; b<4; b++) {
+		for (var g=0; g<4; g++) {
+			for (var r=0; r<4; r++) {
+				this.off[r + (g*4) + (b*16)] = r + (g*nd) + (b*nd2);
+			}
+		}
+	}
+	// populate the core of the new mesh with the old one
+	for (var b=0; b<d; b++) {
+		for (var g=0; g<d; g++) {
+			for (var r=0; r<d; r++) { // typedarray slice and copywithin would allow block copying, but are not generally available in IE and Safari JS
+				this.mesh[ k  ] = red[l];
+				this.mesh[k+sG] = green[l];
+				this.mesh[k+sB] = blue[l];
+				l++;
+				k++;
+			}
+			k += 2;
+		}
+		k += 2 * nd;
+	}
+	// Fill in the gaps around the larger mesh for quicker extrapolation
+	this.fillEdges();
+	// create object-scope typed arrays to minimise garbage collection
+	this.rgb = new Float64Array(18);
+	this.R = new Float64Array(8);
+	this.G = new Float64Array(8);
+	this.B = new Float64Array(8);
+};
+LUTVolume.prototype.buildL = function() {
+	var fL = this.fL[3];
+	var fH = this.fH[3];
+	var fLH= fH-fL;
+	var m = this.getSize();
+	if (m < 65) {
+		m = 65;
+	}
+	var FD = new Float64Array(m);
+	var rgb = new Float64Array(m*3);
+	var m2 = rgb.length;
+	var k;
+	for (var j=0; j<m; j++) { // create rgb array of input values
+		k = j*3;
+		rgb[ k ] = (j*(fLH)/(m-1))+fL;
+		rgb[k+1] = rgb[k];
+		rgb[k+2] = rgb[k];
+	}
+	// apply input scaling as required
+	if (this.fS) {
+		for (var j=0; j<m2; j += 3) {
+			rgb[ j ] = (rgb[ j ] - this.fL[0])/(this.fLH[0]);
+			rgb[j+1] = (rgb[j+1] - this.fL[1])/(this.fLH[1]);
+			rgb[j+2] = (rgb[j+2] - this.fL[2])/(this.fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(rgb.buffer);
+	}
+	this.RGBCub(rgb.buffer); // calculate output rgb values
+	for (var j=0; j<m; j++) {
+		k = j*3;
+		FD[j] = (rgb[ k ]*this.Y[0]) + (rgb[k+1]*this.Y[1]) + (rgb[k+2]*this.Y[2]);
+	}
+	this.L = new LUTSpline({ buff:FD.buffer, fH:fH, fL:fL });
+};
+LUTVolume.prototype.f = function(L) {
+	return this.L.f(L);
+};
+LUTVolume.prototype.df = function(L) {
+	return this.L.df(L);
+};
+LUTVolume.prototype.fCub = function(L) {
+	return this.L.fCub(L);
+};
+LUTVolume.prototype.fTet = function(L) {
+	return this.L.fLin(L);
+};
+LUTVolume.prototype.fLin = function(L) {
+	return this.L.fLin(L);
+};
+LUTVolume.prototype.FCub = function(buff) {
+	this.L.FCub(buff);
+};
+LUTVolume.prototype.FTet = function(buff) {
+	this.L.FLin(buff);
+};
+LUTVolume.prototype.FLin = function(buff) {
+	this.L.FLin(buff);
+};
+LUTVolume.prototype.fRGBCub = function(L) {
+	var o = new Float64Array([L,L,L]);
+	this.RGBCub(o.buffer);
+	return o;
+};
+LUTVolume.prototype.fRGBTet = function(L) {
+	var o = new Float64Array([L,L,L]);
+	this.RGBTet(o.buffer);
+	return o;
+};
+LUTVolume.prototype.fRGBLin = function(L) {
+	var o = new Float64Array([L,L,L]);
+	this.RGBLin(o.buffer);
+	return o;
+};
+LUTVolume.prototype.rgbCub = function(rgbIn) {
+	var rgb = new Float64Array(rgbIn.buffer.slice(0));
+	this.RGBCub(rgb.buffer);
+	return rgb;
+};
+LUTVolume.prototype.rgbTet = function(rgbIn) {
+	var rgb = new Float64Array(rgbIn.buffer.slice(0));
+	this.RGBTet(rgb.buffer);
+	return rgb;
+};
+LUTVolume.prototype.rgbLin = function(rgbIn) {
+	var rgb = new Float64Array(rgbIn.buffer.slice(0));
+	this.RGBLin(rgb.buffer);
+	return rgb;
+};
+LUTVolume.prototype.RGBCub = function(buff) {
+	var c = new Float64Array(buff);
+	var p = this.mesh;
+	var o = this.off;
+	var rgb = this.rgb;
+	var m = c.length;
+	var mm = Math.round(this.mesh.length/3);
+	var s = this.s;
+	var nd = s + 2;
+	var nd1 = nd + 1;
+	var k,b;
+	var R = this.R;
+	var G = this.G;
+	var B = this.B;
+	var E = false;
+	var rE = false;
+	var gE = false;
+	var bE = false;
+	if (this.fS) {
+		var fL = this.fL;
+		var fLH = this.fLH;
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j +=3) {
+		c[ j ] *= s;
+		c[j+1] *= s;
+		c[j+2] *= s;
+		rgb[ 9] = Math.max(0,Math.min(s-1,Math.floor(c[ j ])));
+		rgb[10] = Math.max(0,Math.min(s-1,Math.floor(c[j+1])));
+		rgb[11] = Math.max(0,Math.min(s-1,Math.floor(c[j+2])));
+		c[ j ] -= rgb[ 9];
+		c[j+1] -= rgb[10];
+		c[j+2] -= rgb[11];
+		// clamp values between 0-1.0 for interpolation
+		rgb[0] = Math.max(0,Math.min(1,c[ j ]));
+		rgb[1] = Math.max(0,Math.min(1,c[j+1]));
+		rgb[2] = Math.max(0,Math.min(1,c[j+2]));
+		// note that extrapolation will be needed if values were clamped
+		if (rgb[0] !== c[ j ]) {
+			rE = true;
+			E = true;
+		}
+		if (rgb[1] !== c[j+1]) {
+			gE = true;
+			E = true;
+		}
+		if (rgb[2] !== c[j+2]) {
+			bE = true;
+			E = true;
+		}
+		// Prep all the squares, cubes and cubics
+		rgb[3] = rgb[0]*rgb[0];
+		rgb[4] = rgb[1]*rgb[1];
+		rgb[5] = rgb[2]*rgb[2];
+		rgb[6] = rgb[3]*rgb[0];
+		rgb[7] = rgb[4]*rgb[1];
+		rgb[8] = rgb[5]*rgb[2];
+		R[0] = (-0.5*rgb[6]) + rgb[3] - (0.5*rgb[0]);
+		R[1] = (1.5*rgb[6]) - (2.5*rgb[3]) + 1;
+		R[2] = (-1.5*rgb[6]) + (2*rgb[3]) + (0.5*rgb[0]);
+		R[3] = (0.5*rgb[6]) - (0.5*rgb[3]);
+		G[0] = (-0.5*rgb[7]) + rgb[4] - (0.5*rgb[1]);
+		G[1] = (1.5*rgb[7]) - (2.5*rgb[4]) + 1;
+		G[2] = (-1.5*rgb[7]) + (2*rgb[4]) + (0.5*rgb[1]);
+		G[3] = (0.5*rgb[7]) - (0.5*rgb[4]);
+		B[0] = (-0.5*rgb[8]) + rgb[5] - (0.5*rgb[2]);
+		B[1] = (1.5*rgb[8]) - (2.5*rgb[5]) + 1;
+		B[2] = (-1.5*rgb[8]) + (2*rgb[5]) + (0.5*rgb[2]);
+		B[3] = (0.5*rgb[8]) - (0.5*rgb[5]);
+		// if any or all channels need extrapolation find out the scaling
+		if (rE) {
+			rgb[12] = c[ j ] - rgb[0];
+		}
+		if (gE) {
+			rgb[13] = c[j+1] - rgb[1];
+		}
+		if (bE) {
+			rgb[14] = c[j+2] - rgb[2];
+		}
+		// set value for first control point in the mesh - P[-1,-1,-1]
+		b = (rgb[9]) + ((rgb[10] + (rgb[11]*nd1))*nd1);
+		k = b;
+		// multiply and add the cubics and the control points
+		c[ j ]  = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[0])+
+				  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[3]);
+		k += mm;
+		c[j+1]  = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[0])+
+				  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[3]);
+		k += mm;
+		c[j+2]  = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[0])+
+				  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[3]);
+		// find slopes and perform extrapolation as needed
+		if (E) {
+			if (rE) {
+				R[4] = (-1.5*rgb[3]) + (2*rgb[0]) - 0.5;
+				R[5] = (4.5*rgb[3]) - (5*rgb[0]);
+				R[6] = (-4.5*rgb[3]) + (4*rgb[0]) + 0.5;
+				R[7] = (1.5*rgb[3] - rgb[0]);
+				k = b;
+				rgb[15] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+							(((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+							(((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+							(((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+				  		  (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+							(((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+							(((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+							(((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+						  (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+							(((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+							(((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+							(((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+						  (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+							(((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+							(((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+							(((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+				k += mm;
+				rgb[16] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+							(((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+							(((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+							(((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+				  		  (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+							(((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+							(((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+							(((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+						  (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+							(((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+							(((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+							(((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+						  (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+							(((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+							(((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+							(((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+				k += mm;
+				rgb[27] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+							(((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+							(((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+							(((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+				  		  (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+							(((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+							(((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+							(((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+						  (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+							(((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+							(((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+							(((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+						  (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+							(((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+							(((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+							(((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				G[4] = (-1.5*rgb[4]) + (2*rgb[1]) - 0.5;
+				G[5] = (4.5*rgb[4]) - (5*rgb[1]);
+				G[6] = (-4.5*rgb[4]) + (4*rgb[1]) + 0.5;
+				G[7] = (1.5*rgb[4] - rgb[1]);
+				k = b;
+				rgb[15] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+				k += mm;
+				rgb[16] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+				k += mm;
+				rgb[17] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				B[4] = (-1.5*rgb[5]) + (2*rgb[2]) - 0.5;
+				B[5] = (4.5*rgb[5]) - (5*rgb[2]);
+				B[6] = (-4.5*rgb[5]) + (4*rgb[2]) + 0.5;
+				B[7] = (1.5*rgb[5] - rgb[2]);
+				k = b;
+				rgb[15] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+				k += mm;
+				rgb[16] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+				k += mm;
+				rgb[17] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+							(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+							(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+							(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+				  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+							(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+							(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+							(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+						  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+							(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+							(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+							(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+						  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+							(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+							(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+							(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+	}
+};
+LUTVolume.prototype.RGBTet = function(buff) {
+	var c = new Float64Array(buff);
+	var p = this.mesh;
+	var o = this.off;
+	var rgb = this.rgb;
+	var m = c.length;
+	var mm = Math.round(this.mesh.length/3);
+	var s = this.s;
+	var nd = s + 2;
+	var nd1 = nd + 1;
+	var k,b;
+	var R = this.R;
+	var G = this.G;
+	var B = this.B;
+	var E = false;
+	var rE = false;
+	var gE = false;
+	var bE = false;
+	if (this.fS) {
+		var fL = this.fL;
+		var fLH = this.fLH;
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j +=3) {
+		c[ j ] *= s;
+		c[j+1] *= s;
+		c[j+2] *= s;
+		rgb[ 9] = Math.max(0,Math.min(s-1,Math.floor(c[ j ])));
+		rgb[10] = Math.max(0,Math.min(s-1,Math.floor(c[j+1])));
+		rgb[11] = Math.max(0,Math.min(s-1,Math.floor(c[j+2])));
+		c[ j ] -= rgb[ 9];
+		c[j+1] -= rgb[10];
+		c[j+2] -= rgb[11];
+		// clamp values between 0-1.0 for interpolation
+		rgb[0] = Math.max(0,Math.min(1,c[ j ]));
+		rgb[1] = Math.max(0,Math.min(1,c[j+1]));
+		rgb[2] = Math.max(0,Math.min(1,c[j+2]));
+		// note that extrapolation will be needed if values were clamped
+		if (rgb[0] !== c[ j ]) {
+			rE = true;
+			E = true;
+		}
+		if (rgb[1] !== c[j+1]) {
+			gE = true;
+			E = true;
+		}
+		if (rgb[2] !== c[j+2]) {
+			bE = true;
+			E = true;
+		}
+		// if any or all channels need extrapolation find out the scaling
+		if (rE) {
+			rgb[12] = c[ j ] - rgb[0];
+		}
+		if (gE) {
+			rgb[13] = c[j+1] - rgb[1];
+		}
+		if (bE) {
+			rgb[14] = c[j+2] - rgb[2];
+		}
+		// set value for first control point in the mesh - P[-1,-1,-1]
+		b = (rgb[9]) + ((rgb[10] + (rgb[11]*nd1))*nd1);
+		k = b;
+		// find which tetrahedron to use
+		var tet = (rgb[0]>rgb[1]) + ((rgb[1]>rgb[2])*2) + ((rgb[2]>rgb[0])*4);
+		// perform tetrahedral interpolation
+		switch (tet) {
+			case 0: // rgb[0] === rgb[1] === rgb[2] so straight linear interpolation
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 1:
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[2])*p[k+o[22]]) + ((rgb[2]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				break;
+			case 2:
+				c[ j ] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[0])*p[k+o[25]]) + ((rgb[0]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 3:
+				c[ j ] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[0])*p[k+o[21]]) + ((rgb[0]-rgb[1])*p[k+o[22]]) + ((rgb[1]-rgb[2])*p[k+o[26]]) + (rgb[2]*p[k+o[42]]);
+				break;
+			case 4:
+				c[ j ] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[1])*p[k+o[37]]) + ((rgb[1]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				break;
+			case 5:
+				c[ j ] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[2])*p[k+o[21]]) + ((rgb[2]-rgb[0])*p[k+o[37]]) + ((rgb[0]-rgb[1])*p[k+o[38]]) + (rgb[1]*p[k+o[42]]);
+				break;
+			case 6:
+				c[ j ] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+1] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				k += mm;
+				c[j+2] = ((1-rgb[1])*p[k+o[21]]) + ((rgb[1]-rgb[2])*p[k+o[25]]) + ((rgb[2]-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]);
+				break;
+			default: // shouldn't be possible, but include fallback to trilinear interpolation
+				c[ j ]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+				k += mm;
+				c[j+1]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+				k += mm;
+				c[j+2]  = ((((((1-rgb[0])*p[k+o[21]]) + (rgb[0]*p[k+o[22]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[25]]) + (rgb[0]*p[k+o[26]]))*rgb[1]))*(1-rgb[2]))+
+						  ((((((1-rgb[0])*p[k+o[37]]) + (rgb[0]*p[k+o[38]]))*(1-rgb[1])) + ((((1-rgb[0])*p[k+o[41]]) + (rgb[0]*p[k+o[42]]))*rgb[1]))*rgb[2]);
+		}
+		// find slopes and perform extrapolation as needed
+		// Actually use Trilinear for EXTRAPOLATION, as tends to be smoother than tetrahedral
+		if (E) {
+			R[0] = 1-rgb[0];
+			R[1] = rgb[0];
+			G[0] = 1-rgb[1];
+			G[1] = rgb[1];
+			B[0] = 1-rgb[2];
+			B[1] = rgb[2];
+			if (rE) {
+				k = b;
+				rgb[15] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				k = b;
+				rgb[15] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				k = b;
+				rgb[15] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+/* Tetrahedral EXTRAPOLATION is not great - LUTCalc currently uses Trilinear. The following is tetrahedral code
+		if (E) {
+			// check for and perform extrapolation
+			if (rE) {
+				k=b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[22]]-p[k+o[21]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[26]]-p[k+o[25]];
+						k += mm;
+						rgb[16] = p[k+o[26]]-p[k+o[25]];
+						k += mm;
+						rgb[17] = p[k+o[26]]-p[k+o[25]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[22]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[22]]-p[k+o[21]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[41]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[38]]-p[k+o[37]];
+						k += mm;
+						rgb[16] = p[k+o[38]]-p[k+o[37]];
+						k += mm;
+						rgb[17] = p[k+o[38]]-p[k+o[37]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[41]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[41]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+						k += mm;
+						rgb[16] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+						k += mm;
+						rgb[17] = ((((p[k+o[22]]-p[k+o[21]])*(1-rgb[1])) + ((p[k+o[26]]-p[k+o[25]])*rgb[1]))*(1-rgb[2]))+
+								  ((((p[k+o[38]]-p[k+o[37]])*(1-rgb[1])) + ((p[k+o[42]]-p[k+o[41]])*rgb[1]))*rgb[2]);
+				}
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				k = b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[38]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[25]]-p[k+o[21]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[26]]-p[k+o[22]];
+						k += mm;
+						rgb[16] = p[k+o[26]]-p[k+o[22]];
+						k += mm;
+						rgb[17] = p[k+o[26]]-p[k+o[22]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[41]]-p[k+o[37]];
+						k += mm;
+						rgb[16] = p[k+o[41]]-p[k+o[37]];
+						k += mm;
+						rgb[17] = p[k+o[41]]-p[k+o[37]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[38]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[38]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[25]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[25]]-p[k+o[21]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+						k += mm;
+						rgb[16] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+						k += mm;
+						rgb[17] = ((((p[k+o[25]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[26]]-p[k+o[22]])*rgb[0]))*(1-rgb[2]))+
+								  ((((p[k+o[41]]-p[k+o[37]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[38]])*rgb[0]))*rgb[2]);
+				}
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				k = b;
+				switch (tet) {
+					case 0: // rgb[0] === rgb[1] === rgb[2]
+						rgb[15] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[21]];
+						break;
+					case 1:
+						rgb[15] = p[k+o[38]]-p[k+o[22]];
+						k += mm;
+						rgb[16] = p[k+o[38]]-p[k+o[22]];
+						k += mm;
+						rgb[17] = p[k+o[38]]-p[k+o[22]];
+						break;
+					case 2:
+						rgb[15] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[26]];
+						break;
+					case 3:
+						rgb[15] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[16] = p[k+o[42]]-p[k+o[26]];
+						k += mm;
+						rgb[17] = p[k+o[42]]-p[k+o[26]];
+						break;
+					case 4:
+						rgb[15] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[37]]-p[k+o[21]];
+						break;
+					case 5:
+						rgb[15] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[16] = p[k+o[37]]-p[k+o[21]];
+						k += mm;
+						rgb[17] = p[k+o[37]]-p[k+o[21]];
+						break;
+					case 6:
+						rgb[15] = p[k+o[41]]-p[k+o[25]];
+						k += mm;
+						rgb[16] = p[k+o[41]]-p[k+o[25]];
+						k += mm;
+						rgb[17] = p[k+o[41]]-p[k+o[25]];
+						break;
+					default: // shouldn't be possible, but include fallback to trilinear interpolation
+						rgb[15] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+						k += mm;
+						rgb[16] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+						k += mm;
+						rgb[17] = ((((p[k+o[37]]-p[k+o[21]])*(1-rgb[0])) + ((p[k+o[38]]-p[k+o[22]])*rgb[0]))*(1-rgb[1]))+
+								  ((((p[k+o[41]]-p[k+o[25]])*(1-rgb[0])) + ((p[k+o[42]]-p[k+o[26]])*rgb[0]))*rgb[1]);
+				}
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+*/
+	}
+};
+LUTVolume.prototype.RGBLin = function(buff) {
+	var c = new Float64Array(buff);
+	var p = this.mesh;
+	var o = this.off;
+	var rgb = this.rgb;
+	var m = c.length;
+	var mm = Math.round(this.mesh.length/3);
+	var s = this.s;
+	var nd = s + 2;
+	var nd1 = nd + 1;
+	var k,b;
+	var R = this.R;
+	var G = this.G;
+	var B = this.B;
+	var E = false;
+	var rE = false;
+	var gE = false;
+	var bE = false;
+	if (this.fS) {
+		var fL = this.fL;
+		var fLH = this.fLH;
+		for (var j=0; j<m; j+=3) {
+			c[ j ] = (c[ j ] - fL[0])/(fLH[0]);
+			c[j+1] = (c[j+1] - fL[1])/(fLH[1]);
+			c[j+2] = (c[j+2] - fL[2])/(fLH[2]);
+		}
+	}
+	if (this.sin) {
+		this.ins.FCub(buff);
+	}
+	for (var j=0; j<m; j +=3) {
+		c[ j ] *= s;
+		c[j+1] *= s;
+		c[j+2] *= s;
+		rgb[ 9] = Math.max(0,Math.min(s-1,Math.floor(c[ j ])));
+		rgb[10] = Math.max(0,Math.min(s-1,Math.floor(c[j+1])));
+		rgb[11] = Math.max(0,Math.min(s-1,Math.floor(c[j+2])));
+		c[ j ] -= rgb[ 9];
+		c[j+1] -= rgb[10];
+		c[j+2] -= rgb[11];
+		// clamp values between 0-1.0 for interpolation
+		rgb[0] = Math.max(0,Math.min(1,c[ j ]));
+		rgb[1] = Math.max(0,Math.min(1,c[j+1]));
+		rgb[2] = Math.max(0,Math.min(1,c[j+2]));
+		// note that extrapolation will be needed if values were clamped
+		if (rgb[0] !== c[ j ]) {
+			rE = true;
+			E = true;
+		}
+		if (rgb[1] !== c[j+1]) {
+			gE = true;
+			E = true;
+		}
+		if (rgb[2] !== c[j+2]) {
+			bE = true;
+			E = true;
+		}
+		// Prep all the squares, cubes and cubics
+		R[0] = 1-rgb[0];
+		R[1] = rgb[0];
+		G[0] = 1-rgb[1];
+		G[1] = rgb[1];
+		B[0] = 1-rgb[2];
+		B[1] = rgb[2];
+		// if any or all channels need extrapolation find out the scaling
+		if (rE) {
+			rgb[12] = c[ j ] - rgb[0];
+		}
+		if (gE) {
+			rgb[13] = c[j+1] - rgb[1];
+		}
+		if (bE) {
+			rgb[14] = c[j+2] - rgb[2];
+		}
+		// set value for first control point in the mesh - P[-1,-1,-1]
+		b = (rgb[9]) + ((rgb[10] + (rgb[11]*nd1))*nd1);
+		k = b;
+		// multiply and add the cubics and the control points
+		c[ j ]  = (((((R[0]*p[k+o[21]]) + (R[1]*p[k+o[22]]))*G[0]) + (((R[0]*p[k+o[25]]) + (R[1]*p[k+o[26]]))*G[1]))*B[0])+
+				  (((((R[0]*p[k+o[37]]) + (R[1]*p[k+o[38]]))*G[0]) + (((R[0]*p[k+o[41]]) + (R[1]*p[k+o[42]]))*G[1]))*B[1]);
+		k += mm;
+		c[j+1]  = (((((R[0]*p[k+o[21]]) + (R[1]*p[k+o[22]]))*G[0]) + (((R[0]*p[k+o[25]]) + (R[1]*p[k+o[26]]))*G[1]))*B[0])+
+				  (((((R[0]*p[k+o[37]]) + (R[1]*p[k+o[38]]))*G[0]) + (((R[0]*p[k+o[41]]) + (R[1]*p[k+o[42]]))*G[1]))*B[1]);
+		k += mm;
+		c[j+2]  = (((((R[0]*p[k+o[21]]) + (R[1]*p[k+o[22]]))*G[0]) + (((R[0]*p[k+o[25]]) + (R[1]*p[k+o[26]]))*G[1]))*B[0])+
+				  (((((R[0]*p[k+o[37]]) + (R[1]*p[k+o[38]]))*G[0]) + (((R[0]*p[k+o[41]]) + (R[1]*p[k+o[42]]))*G[1]))*B[1]);
+		// find slopes and perform extrapolation as needed
+		if (E) {
+			if (rE) {
+				k = b;
+				rgb[15] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[22]]-p[k+o[21]])*G[0]) + ((p[k+o[26]]-p[k+o[25]])*G[1]))*B[0])+
+						  ((((p[k+o[38]]-p[k+o[37]])*G[0]) + ((p[k+o[42]]-p[k+o[41]])*G[1]))*B[1]);
+				c[ j ] += rgb[12] * rgb[15];
+				c[j+1] += rgb[12] * rgb[16];
+				c[j+2] += rgb[12] * rgb[17];
+			}
+			if (gE) {
+				k = b;
+				rgb[15] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[25]]-p[k+o[21]])*R[0]) + ((p[k+o[26]]-p[k+o[22]])*R[1]))*B[0])+
+						  ((((p[k+o[41]]-p[k+o[37]])*R[0]) + ((p[k+o[42]]-p[k+o[38]])*R[1]))*B[1]);
+				c[ j ] += rgb[13] * rgb[15];
+				c[j+1] += rgb[13] * rgb[16];
+				c[j+2] += rgb[13] * rgb[17];
+			}
+			if (bE) {
+				k = b;
+				rgb[15] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[16] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				k += mm;
+				rgb[17] = ((((p[k+o[37]]-p[k+o[21]])*R[0]) + ((p[k+o[38]]-p[k+o[22]])*R[1]))*G[0])+
+						 ((((p[k+o[41]]-p[k+o[25]])*R[0]) + ((p[k+o[42]]-p[k+o[26]])*R[1]))*G[1]);
+				c[ j ] += rgb[14] * rgb[15];	
+				c[j+1] += rgb[14] * rgb[16];
+				c[j+2] += rgb[14] * rgb[17];
+			}
+			E = false;
+			rE = false;
+			gE = false;
+			bE = false;
+		}
+	}
+};
+LUTVolume.prototype.J = function(rgbIn) {
+	// calculate the Jacobian matrix at rgbIn
+	if (rgbIn.length === 3) {
+		var c = new Float64Array(rgbIn.buffer.slice(0));
+		var J = new Float64Array(9);
+		var p = this.mesh;
+		var o = this.off;
+		var s = this.s;
+		var rgb = this.rgb;
+		var R = this.R;
+		var G = this.G;
+		var B = this.B;
+		var nd = s + 2;
+		var nd1 = nd + 1;
+		var b,k;
+		var fL = this.fL;
+		var fLH = this.fLH;
+		if (this.fS) {
+			for (var j=0; j<m; j+=3) {
+				c[0] = (c[0] - fL[0])/(fLH[0]);
+				c[1] = (c[1] - fL[1])/(fLH[1]);
+				c[2] = (c[2] - fL[2])/(fLH[2]);
+			}
+		}
+		if (this.sin) {
+			this.ins.FCub(c.buffer);
+		}
+		c[0] *= s;
+		c[1] *= s;
+		c[2] *= s;
+		rgb[ 9] = Math.max(0,Math.min(s-1,Math.floor(c[ j ])));
+		rgb[10] = Math.max(0,Math.min(s-1,Math.floor(c[j+1])));
+		rgb[11] = Math.max(0,Math.min(s-1,Math.floor(c[j+2])));
+		c[0] -= rgb[ 9];
+		c[1] -= rgb[10];
+		c[2] -= rgb[11];
+		// clamp values between 0-1.0 for interpolation
+		rgb[0] = Math.max(0,Math.min(1,c[0]));
+		rgb[1] = Math.max(0,Math.min(1,c[1]));
+		rgb[2] = Math.max(0,Math.min(1,c[2]));
+		// Prep all the squares, cubes and cubics
+		rgb[3] = rgb[0]*rgb[0];
+		rgb[4] = rgb[1]*rgb[1];
+		rgb[5] = rgb[2]*rgb[2];
+		rgb[6] = rgb[3]*rgb[0];
+		rgb[7] = rgb[4]*rgb[1];
+		rgb[8] = rgb[5]*rgb[2];
+		R[0] = (-0.5*rgb[6]) + rgb[3] - (0.5*rgb[0]);
+		R[1] = (1.5*rgb[6]) - (2.5*rgb[3]) + 1;
+		R[2] = (-1.5*rgb[6]) + (2*rgb[3]) + (0.5*rgb[0]);
+		R[3] = (0.5*rgb[6]) - (0.5*rgb[3]);
+		G[0] = (-0.5*rgb[7]) + rgb[4] - (0.5*rgb[1]);
+		G[1] = (1.5*rgb[7]) - (2.5*rgb[4]) + 1;
+		G[2] = (-1.5*rgb[7]) + (2*rgb[4]) + (0.5*rgb[1]);
+		G[3] = (0.5*rgb[7]) - (0.5*rgb[4]);
+		B[0] = (-0.5*rgb[8]) + rgb[5] - (0.5*rgb[2]);
+		B[1] = (1.5*rgb[8]) - (2.5*rgb[5]) + 1;
+		B[2] = (-1.5*rgb[8]) + (2*rgb[5]) + (0.5*rgb[2]);
+		B[3] = (0.5*rgb[8]) - (0.5*rgb[5]);
+		// set value for first control point in the mesh - P[-1,-1,-1]
+		b = (rgb[9]) + ((rgb[10] + (rgb[11]*nd1))*nd1);
+		// d/dR
+		R[4] = (-1.5*rgb[3]) + (2*rgb[0]) - 0.5;
+		R[5] = (4.5*rgb[3]) - (5*rgb[0]);
+		R[6] = (-4.5*rgb[3]) + (4*rgb[0]) + 0.5;
+		R[7] = (1.5*rgb[3] - rgb[0]);
+		k = b;
+		J[0] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+				 (((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+				 (((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+				 (((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+			   (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+				 (((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+				 (((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+				 (((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+			   (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+				 (((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+				 (((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+				 (((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+			   (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+				 (((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+				 (((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+				 (((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+		k += mm;
+		J[3] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+				 (((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+				 (((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+				 (((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+			   (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+				 (((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+				 (((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+				 (((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+			   (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+				 (((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+				 (((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+				 (((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+			   (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+				 (((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+				 (((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+				 (((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+		k += mm;
+		J[6] = (((((R[4]*p[k+o[ 0]])+(R[5]*p[k+o[ 1]])+(R[6]*p[k+o[ 2]])+(R[7]*p[k+o[ 3]]))*G[0])+
+				 (((R[4]*p[k+o[ 4]])+(R[5]*p[k+o[ 5]])+(R[6]*p[k+o[ 6]])+(R[7]*p[k+o[ 7]]))*G[1])+
+				 (((R[4]*p[k+o[ 8]])+(R[5]*p[k+o[ 9]])+(R[6]*p[k+o[10]])+(R[7]*p[k+o[11]]))*G[2])+
+				 (((R[4]*p[k+o[12]])+(R[5]*p[k+o[13]])+(R[6]*p[k+o[14]])+(R[7]*p[k+o[15]]))*G[3]))*B[0])+
+			   (((((R[4]*p[k+o[16]])+(R[5]*p[k+o[17]])+(R[6]*p[k+o[18]])+(R[7]*p[k+o[19]]))*G[0])+
+				 (((R[4]*p[k+o[20]])+(R[5]*p[k+o[21]])+(R[6]*p[k+o[22]])+(R[7]*p[k+o[23]]))*G[1])+
+				 (((R[4]*p[k+o[24]])+(R[5]*p[k+o[25]])+(R[6]*p[k+o[26]])+(R[7]*p[k+o[27]]))*G[2])+
+				 (((R[4]*p[k+o[28]])+(R[5]*p[k+o[29]])+(R[6]*p[k+o[30]])+(R[7]*p[k+o[31]]))*G[3]))*B[1])+
+			   (((((R[4]*p[k+o[32]])+(R[5]*p[k+o[33]])+(R[6]*p[k+o[34]])+(R[7]*p[k+o[35]]))*G[0])+
+				 (((R[4]*p[k+o[36]])+(R[5]*p[k+o[37]])+(R[6]*p[k+o[38]])+(R[7]*p[k+o[39]]))*G[1])+
+				 (((R[4]*p[k+o[40]])+(R[5]*p[k+o[41]])+(R[6]*p[k+o[42]])+(R[7]*p[k+o[43]]))*G[2])+
+				 (((R[4]*p[k+o[44]])+(R[5]*p[k+o[45]])+(R[6]*p[k+o[46]])+(R[7]*p[k+o[47]]))*G[3]))*B[2])+
+			   (((((R[4]*p[k+o[48]])+(R[5]*p[k+o[49]])+(R[6]*p[k+o[50]])+(R[7]*p[k+o[51]]))*G[0])+
+				 (((R[4]*p[k+o[52]])+(R[5]*p[k+o[53]])+(R[6]*p[k+o[54]])+(R[7]*p[k+o[55]]))*G[1])+
+				 (((R[4]*p[k+o[56]])+(R[5]*p[k+o[57]])+(R[6]*p[k+o[58]])+(R[7]*p[k+o[59]]))*G[2])+
+				 (((R[4]*p[k+o[60]])+(R[5]*p[k+o[61]])+(R[6]*p[k+o[62]])+(R[7]*p[k+o[63]]))*G[3]))*B[3]);
+		// d/dG
+		G[4] = (-1.5*rgb[4]) + (2*rgb[1]) - 0.5;
+		G[5] = (4.5*rgb[4]) - (5*rgb[1]);
+		G[6] = (-4.5*rgb[4]) + (4*rgb[1]) + 0.5;
+		G[7] = (1.5*rgb[4] - rgb[1]);
+		k = b;
+		J[1] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+		  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+		k += mm;
+		J[4] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+		 		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+		k += mm;
+		J[7] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[4])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[5])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[6])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[7]))*B[0])+
+		  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[4])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[5])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[6])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[7]))*B[1])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[4])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[5])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[6])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[7]))*B[2])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[4])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[5])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[6])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[7]))*B[3]);
+		// d/dB
+		B[4] = (-1.5*rgb[5]) + (2*rgb[2]) - 0.5;
+		B[5] = (4.5*rgb[5]) - (5*rgb[2]);
+		B[6] = (-4.5*rgb[5]) + (4*rgb[2]) + 0.5;
+		B[7] = (1.5*rgb[5] - rgb[2]);
+		k = b;
+		J[2] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+		  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+		k += mm;
+		J[5] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+		  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+		k += mm;
+		J[8] = (((((R[0]*p[k+o[ 0]])+(R[1]*p[k+o[ 1]])+(R[2]*p[k+o[ 2]])+(R[3]*p[k+o[ 3]]))*G[0])+
+					(((R[0]*p[k+o[ 4]])+(R[1]*p[k+o[ 5]])+(R[2]*p[k+o[ 6]])+(R[3]*p[k+o[ 7]]))*G[1])+
+					(((R[0]*p[k+o[ 8]])+(R[1]*p[k+o[ 9]])+(R[2]*p[k+o[10]])+(R[3]*p[k+o[11]]))*G[2])+
+					(((R[0]*p[k+o[12]])+(R[1]*p[k+o[13]])+(R[2]*p[k+o[14]])+(R[3]*p[k+o[15]]))*G[3]))*B[4])+
+		  		  (((((R[0]*p[k+o[16]])+(R[1]*p[k+o[17]])+(R[2]*p[k+o[18]])+(R[3]*p[k+o[19]]))*G[0])+
+					(((R[0]*p[k+o[20]])+(R[1]*p[k+o[21]])+(R[2]*p[k+o[22]])+(R[3]*p[k+o[23]]))*G[1])+
+					(((R[0]*p[k+o[24]])+(R[1]*p[k+o[25]])+(R[2]*p[k+o[26]])+(R[3]*p[k+o[27]]))*G[2])+
+					(((R[0]*p[k+o[28]])+(R[1]*p[k+o[29]])+(R[2]*p[k+o[30]])+(R[3]*p[k+o[31]]))*G[3]))*B[5])+
+				  (((((R[0]*p[k+o[32]])+(R[1]*p[k+o[33]])+(R[2]*p[k+o[34]])+(R[3]*p[k+o[35]]))*G[0])+
+					(((R[0]*p[k+o[36]])+(R[1]*p[k+o[37]])+(R[2]*p[k+o[38]])+(R[3]*p[k+o[39]]))*G[1])+
+					(((R[0]*p[k+o[40]])+(R[1]*p[k+o[41]])+(R[2]*p[k+o[42]])+(R[3]*p[k+o[43]]))*G[2])+
+					(((R[0]*p[k+o[44]])+(R[1]*p[k+o[45]])+(R[2]*p[k+o[46]])+(R[3]*p[k+o[47]]))*G[3]))*B[6])+
+				  (((((R[0]*p[k+o[48]])+(R[1]*p[k+o[49]])+(R[2]*p[k+o[50]])+(R[3]*p[k+o[51]]))*G[0])+
+					(((R[0]*p[k+o[52]])+(R[1]*p[k+o[53]])+(R[2]*p[k+o[54]])+(R[3]*p[k+o[55]]))*G[1])+
+					(((R[0]*p[k+o[56]])+(R[1]*p[k+o[57]])+(R[2]*p[k+o[58]])+(R[3]*p[k+o[59]]))*G[2])+
+					(((R[0]*p[k+o[60]])+(R[1]*p[k+o[61]])+(R[2]*p[k+o[62]])+(R[3]*p[k+o[63]]))*G[3]))*B[7]);
+		// Scale to 0-1 range (from 0-s)
+		J[0] *= s;
+		J[1] *= s;
+		J[2] *= s;
+		J[3] *= s;
+		J[4] *= s;
+		J[5] *= s;
+		J[6] *= s;
+		J[7] *= s;
+		J[8] *= s;
+		if (this.sin) {
+			var dRGB = this.ins.dRGB(rgbIn.buffer);
+			J[0] *= dRGB[0];
+			J[1] *= dRGB[1];
+			J[2] *= dRGB[2];
+			J[3] *= dRGB[0];
+			J[4] *= dRGB[1];
+			J[5] *= dRGB[2];
+			J[6] *= dRGB[0];
+			J[7] *= dRGB[1];
+			J[8] *= dRGB[2];
+		}
+		if (this.fS) {
+			J[0] /= fLH[0];
+			J[1] /= fLH[1];
+			J[2] /= fLH[2];
+			J[3] /= fLH[0];
+			J[4] /= fLH[1];
+			J[5] /= fLH[2];
+			J[6] /= fLH[0];
+			J[7] /= fLH[1];
+			J[8] /= fLH[2];
+		}
+		return J;
+	} else {
+		return false;
+	}
+};
+LUTVolume.prototype.JInv = function(rgbIn) {
+	var M = this.J(rgbIn);
+	var det =	(M[0]*((M[4]*M[8]) - (M[5]*M[7]))) -
+				(M[1]*((M[3]*M[8]) - (M[5]*M[6]))) +
+				(M[2]*((M[3]*M[7]) - (M[4]*M[6])));
+	if (det === 0) {
+		return false;
+	}
+	return new Float64Array([
+		((M[4]*M[8])-(M[5]*M[7]))/det, ((M[2]*M[7])-(M[1]*M[8]))/det, ((M[1]*M[5])-(M[2]*M[4]))/det,
+		((M[5]*M[6])-(M[3]*M[8]))/det, ((M[0]*M[8])-(M[2]*M[6]))/det, ((M[2]*M[3])-(M[0]*M[5]))/det,
+		((M[3]*M[7])-(M[4]*M[6]))/det, ((M[1]*M[6])-(M[0]*M[7]))/det, ((M[0]*M[4])-(M[1]*M[3]))/det
+	]);
+};
+LUTVolume.prototype.getDetails = function() {
+	var out = {
+		title: this.title,
+		format: this.format,
+		dims: 3,
+		s: this.d,
+		min: new Float64Array([this.fL[0],this.fL[1],this.fL[2]]),
+		max: new Float64Array([this.fH[0],this.fH[1],this.fH[2]]),
+		C: this.getRGB(),
+		meta: this.meta
+	};
+	return out;
+};
+LUTVolume.prototype.getL = function() {
+	return this.L.getL();
+};
+LUTVolume.prototype.getRGB = function() {
+	var d = this.d;
+	var nd = d+2;
+	var m = d*d*d;
+	var nm = nd*nd*nd;
+	var R = new Float64Array(m);
+	var G = new Float64Array(m);
+	var B = new Float64Array(m);
+	var k,l;
+	var p = this.mesh;
+	for (var b=0; b<d; b++) {
+		for (var g=0; g<d; g++) {
+			for (var r=0; r<d; r++) {
+				k = r + ((g + (b*d))*d);
+				l = (r+1) + (((g+1) + ((b+1)*nd))*nd);
+				R[k] = p[l];
+				l += nm;
+				G[k] = p[l];
+				l += nm;
+				B[k] = p[l];
+			}
+		}
+	}
+	return [R.buffer,G.buffer,B.buffer];
+};
+LUTVolume.prototype.getSize = function() {
+	return this.d;
+};
+LUTVolume.prototype.is1D = function() {
+	return false;
+};
+LUTVolume.prototype.is3D = function() {
+	return true;
+};
+LUTVolume.prototype.getTitle = function() {
+	return this.title;
+};
+LUTVolume.prototype.getMetadata = function() {
+	return this.meta;
+};
+LUTVolume.prototype.isClamped = function() {
+	if (typeof this.clamped === 'undefined') {
+		var mm = this.minMax();
+		var min = Math.min(mm[0],mm[1],mm[2]);
+		var max = Math.max(mm[3],mm[4],mm[5]);
+		if ((min === 0 && max <= 1) || (min >= 0 && max === 1)) {
+			this.clamped = true;
+		} else {
+			this.clamped = false;
+		}
+	}
+	return this.clamped;
+};
+LUTVolume.prototype.deClamp = function() {
+	if (this.isClamped()) {
+		this.deClamp1D();
+		this.deClamp3D();
+	}
+};
+//
+LUTVolume.prototype.getColourSpace = function() {
+	var d = this.d;
+	var fL = this.fL;
+	var fH = this.fH;
+	var fLH = this.fLH;
+	var out = {
+		title: this.title + 'CS',
+		format: this.format,
+		fLR: fL[0],
+		fLG: fL[1],
+		fLB: fL[2],
+		fHR: fH[0],
+		fHG: fH[1],
+		fHB: fH[2]
+	};
+	var reverse = new LUTRSpline({ buff:this.L.getL(), fH:fH[3], fL:fL[3] });
+	var base = this.getRGB();
+	reverse.R(base[0]);
+	reverse.R(base[1]);
+	reverse.R(base[2]);
+	out.buffR = base[0];
+	out.buffG = base[1];
+	out.buffB = base[2];
+	return new LUTVolume(out);
+};
+LUTVolume.prototype.deClamp1D = function() {
+	var m = this.d;
+	var r = new Float64Array(m);
+	var g = new Float64Array(m);
+	var b = new Float64Array(m);
+	var rL = 0;
+	var gL = 0;
+	var bL = 0;
+	var rH = m-1;
+	var gH = m-1;
+	var bH = m-1;
+	var nd = this.d + 2;
+	var nm = nd*nd*nd;
+	var k;
+	var M = this.mesh;
+	var rC = false;
+	var gC = false;
+	var bC = false;
+	var fL = Math.min(this.fL[0],this.fL[1],this.fL[2]);
+	var fH = Math.max(this.fH[0],this.fH[1],this.fH[2]);
+	var fLH= fH-fL;
+	// Fill three arrays with values from the gray diagonal of the mesh, and find the index where the values are not 0 or 1
+	for (var j=0; j<m; j++) {
+		k = (j+1) + (((j+1) + ((j+1)*nd))*nd);
+		r[j] = M[k];
+		k += nm;
+		g[j] = M[k];
+		k += nm;
+		b[j] = M[k];
+		if (j>0) {
+//			if (r[j] === 0 && r[j-1] === 0) {
+			if (r[j] === 0) {
+				rC = true;
+				rL = j+1;
+			}
+//			if (g[j] === 0 && g[j-1] === 0) {
+			if (g[j] === 0) {
+				gC = true;
+				gL = j+1;
+			}
+//			if (b[j] === 0 && b[j-1] === 0) {
+			if (b[j] === 0) {
+				bC = true;
+				bL = j+1;
+			}
+		}
+	}
+	for (var j=m-2; j>=0; j--) {
+//		if (r[j] === 1 && (r[j+1] === 1 || rC)) {
+		if (r[j] === 1) {
+			rC = true;
+			rH = j-1;
+		}
+//		if (g[j] === 1 && (g[j+1] === 1 || gC)) {
+		if (g[j] === 1) {
+			gC = true;
+			gH = j-1;
+		}
+//		if (b[j] === 1 && (b[j+1] === 1 || bC)) {
+		if (b[j] === 1) {
+			bC = true;
+			bH = j-1;
+		}
+	}
+	// if the 0 index is greater than 0 or the 1 index less than m-1, make a spline to fill in the gaps
+	if (rC || gC || bC) {
+		var low;
+		if (rL > rH) {
+			low = rH;
+			rH = Math.min(rL-2,m-1);
+			rL = Math.max(low+2,0);
+		}
+		if (gL > gH) {
+			low = gH;
+			gH = Math.min(gL-2,m-1);
+			gL = Math.max(low+2,0);
+		}
+		if (bL > bH) {
+			low = bH;
+			bH = Math.min(bL-2,m-1);
+			bL = Math.max(low+2,0);
+		}
+		var rS,gS,bS;
+		if (rC) {
+			rS = new LUTQSpline(new Float64Array(r.subarray(rL,rH-rL+1)).buffer);
+		} else {
+			rS = new LUTQSpline(r.buffer);
+		}
+		if (gC) {
+			gS = new LUTQSpline(new Float64Array(g.subarray(gL,gH-gL+1)).buffer);
+		} else {
+			gS = new LUTQSpline(g.buffer);
+		}
+		if (bC) {
+			bS = new LUTQSpline(new Float64Array(b.subarray(bL,bH-bL+1)).buffer);
+		} else {
+			bS = new LUTQSpline(b.buffer);
+		}
+		// Now built an array to replace the 'L' spline from this.buildL()
+		var m2 = m;
+		if (m < 65) {
+			m2 = 65;
+		}
+		var FD = new Float64Array(m2);
+		var rI = new Float64Array(m2);
+		for (var j=0; j<m2; j++) { // create rgb array of input values
+			rI[j] = (j*(fLH)/(m2-1))+fL;
+		}
+		var gI = new Float64Array(rI);
+		var bI = new Float64Array(rI);
+		// apply input scaling as required
+		if (this.fS) {
+			for (var j=0; j<m2; j++) {
+				rI[j] = (rI[j] - this.fL[0])/(this.fLH[0]);
+				gI[j] = (gI[j] - this.fL[1])/(this.fLH[1]);
+				bI[j] = (bI[j] - this.fL[2])/(this.fLH[2]);
+			}
+		}
+		if (this.sin) {
+			this.ins.FCub(rI.buffer);
+			this.ins.FCub(gI.buffer);
+			this.ins.FCub(bI.buffer);
+		}
+		// scale for any clamped splines
+		for (var j=0; j<m2; j++) {
+			rI[j] = ((rI[j]*(m-1)) - rL)/(rH-rL);
+			gI[j] = ((gI[j]*(m-1)) - gL)/(gH-gL);
+			bI[j] = ((bI[j]*(m-1)) - bL)/(bH-bL);
+		}
+		// pass through the splines
+		rS.FCub(rI.buffer);
+		gS.FCub(gI.buffer);
+		bS.FCub(bI.buffer);
+		// bring together the results to make the L array
+		for (var j=0; j<m2; j++) {
+			rI[j] = (rI[j]*this.Y[0]) + (gI[j]*this.Y[1]) + (bI[j]*this.Y[2]);
+		}
+		// replace the 'L' spline - make it reversible as that will be needed for 3D declamping
+		this.L = new LUTSpline({ buff:rI.buffer, fH:fH, fL:fL });
+		this.clamped = false;
+		return true;
+	} else {
+		return false;
+	}
+};
+LUTVolume.prototype.deClamp3D = function() {
+	var d = this.d;
+	var d3 = 3*d;
+	var nd = d+2;
+	var nd2 = nd * nd;
+	var nm = nd*nd*nd;
+	var sG = nd2 * nd;
+	var sB = 2 * sG;
+	var M = this.mesh;
+	var r = new Float64Array(d);
+	var g = new Float64Array(d);
+	var b = new Float64Array(d);
+	var l,k;
+	var rC,gC,bC;
+	var rL,gL,bL;
+	var rH,gH,bH;
+	var low;
+	var minMax = this.minMax();
+	var lo = Math.min(0, Math.min(minMax[0],minMax[1],minMax[2])); // 0, or the lowest value in the mesh, whichever the lesser
+	var hi = Math.max(1, Math.max(minMax[3],minMax[4],minMax[5])); // 1.0, or the highest value in the mesh, whichever the greater
+	var min = lo - 0.1; // 10% below the 'lo' value
+	var max = hi + 0.175; // 17.5% above 'hi' value
+	var limits = new Float64Array([lo,hi,min,max]);
+	// First sort out inner splines
+	for (var x=0; x<d; x++) {
+		for (var y=0; y<d; y++) {
+			rL = 0;
+			gL = 0;
+			bL = 0;
+			rH = d-1;
+			gH = d-1;
+			bH = d-1;
+			rC = false;
+			gC = false;
+			bC = false;
+			for (var z=0; z<d; z++) {
+				l = (z+1) + (((y+1) + ((x+1)*nd))*nd);
+				r[z] = M[l];
+				l = (y+1) + (((z+1) + ((x+1)*nd))*nd) + nm;
+				g[z] = M[l];
+				l = (y+1) + (((x+1) + ((z+1)*nd))*nd) + (2*nm);
+				b[z] = M[l];
+				if (z>0) {
+//					if (r[z] === 0 && r[z-1] === 0) {
+					if (r[z] === 0) {
+						rC = true;
+						rL = z+1;
+					}
+//					if (g[z] === 0 && g[z-1] === 0) {
+					if (g[z] === 0) {
+						gC = true;
+						gL = z+1;
+					}
+//					if (b[z] === 0 && b[z-1] === 0) {
+					if (b[z] === 0) {
+						bC = true;
+						bL = z+1;
+					}
+				}
+			}
+			for (var z=d-2; z>=0; z--) {
+//				if (r[z] === 1 && (r[z+1] === 1 || rC)) {
+				if (r[z] === 1) {
+					rC = true;
+					rH = z-1;
+				}
+//				if (g[z] === 1 && (g[z+1] === 1 || gC)) {
+				if (g[z] === 1) {
+					gC = true;
+					gH = z-1;
+				}
+//				if (b[z] === 1 && (b[z+1] === 1 || bC)) {
+				if (b[z] === 1) {
+					bC = true;
+					bH = z-1;
+				}
+			}
+			if (rC) {
+				if (rL > rH) {
+					low = rH;
+					rH = Math.min(rL-2,m-1);
+					rL = Math.max(low+2,0);
+				}
+				this.extrap(r,rL,rH,limits);
+				for (var z=0; z<d; z++) {
+					if (z === rL) {
+						z = rH;
+					}
+					l = (z+1) + (((y+1) + ((x+1)*nd))*nd);
+					M[l] = r[z];
+				}
+			}
+			if (gC) {
+				if (gL > gH) {
+					low = gH;
+					gH = Math.min(gL-2,m-1);
+					gL = Math.max(low+2,0);
+				}
+				this.extrap(g,gL,gH,limits);
+				for (var z=0; z<d; z++) {
+					if (z === gL) {
+						z = gH;
+					}
+					l = (y+1) + (((z+1) + ((x+1)*nd))*nd) + nm;
+					M[l] = g[z];
+				}
+			}
+			if (bC) {
+				if (bL > bH) {
+					low = bH;
+					bH = Math.min(bL-2,m-1);
+					bL = Math.max(low+2,0);
+				}
+				this.extrap(b,bL,bH,limits);
+				for (var z=0; z<d; z++) {
+					if (z === bL) {
+						z = bH;
+					}
+					l = (y+1) + (((x+1) + ((z+1)*nd))*nd) + (2*nm);
+					M[l] = b[z];
+				}
+			}
+		}
+	}
+	// Now fill in the edges and corners as with this.fillEdges()
+	d--;
+	for (var x=1; x<(d); x++) {
+		for (var y=0; y<d; y++) {
+			this.n3b( x, y, 0);
+			this.n3b( x, y, d);
+			this.n3b( x, 0, y);
+			this.n3b( x, d, y);
+			this.n3b( 0, x, y);
+			this.n3b( d, x, y);
+		}
+		this.n3b( x, 0, 0);
+		this.n3b( x, 0, d);
+		this.n3b( x, d, 0);
+		this.n3b( x, d, d);
+		this.n3b( 0, x, 0);
+		this.n3b( 0, x, d);
+		this.n3b( d, x, 0);
+		this.n3b( d, x, d);
+		this.n3b( 0, 0, x);
+		this.n3b( 0, d, x);
+		this.n3b( d, 0, x);
+		this.n3b( d, d, x);
+	}
+	this.n3b( 0, 0, 0);
+	this.n3b( 0, 0, d);
+	this.n3b( 0, d, 0);
+	this.n3b( 0, d, d);
+	this.n3b( d, 0, 0);
+	this.n3b( d, 0, d);
+	this.n3b( d, d, 0);
+	this.n3b( d, d, d);
+	// Repopulate the outer edges of the mesh
+	this.fillEdges();
+	this.clamped = false;
+};
+LUTVolume.prototype.extrap = function(c,L,H,limits) {
+	var m = c.length;
+	var dcLo,dcHi;
+	if (H-L > 2) { // more than four points
+		dcLo = (0.1*c[L+3]) - (0.8*c[L+2]) + (2.3*c[L+1]) - (1.6*c[L]);
+		dcHi = (-0.1*c[H-3]) + (0.8*c[H-2]) - (2.3*c[H-1]) + (1.6*c[H]);
+	} else if (H-L > 1) { // three points
+		dcLo = 1;
+		dcHi = 1;
+	} else { // two points
+		dcLo = c[L+1] - c[L];
+		dcHi = c[H] - c[H-1];
+	}
+	if (L > 0) {
+		for (var j=0; j<L; j++) {
+			c[j] = c[L] + ((j-L)*dcLo);
+		}
+	}
+	if (H < m-1) {
+		for (var j=H+1; j<m; j++) {
+			c[j] = c[H] + ((j-H)*dcHi);
+		}
+	}
+	if (typeof limits !== 'undefined') {
+		var lo = limits[0];
+		var hi = limits[1];
+		var min = limits[2];
+		var max = limits[3];
+		var numLo = Math.pow(min-lo,2);
+		var denLo = min-lo;
+		var numHi = Math.pow(max-hi,2);
+		var denHi = max-hi;
+		for (var j=0; j<m; j++) {
+			if (j === L) {
+				j = H+1;
+			}
+			if (c[j] < lo) {
+				c[j] = min - (numLo/((dcLo*(c[j]-lo))+denLo));
+			} else if (c[j] > hi) {
+				c[j] = max - (numHi/((dcHi*(c[j]-hi))+denHi));
+			}
+		}
+	}
+};
+LUTVolume.prototype.fillEdges = function() {
+	var d = this.d;
+	// fill in the gaps in the new mesh
+	for (var x=0; x<d; x++) {
+		for (var y=0; y<d; y++) {
+			this.n3( x, y,-1);
+			this.n3( x, y, d);
+			this.n3( x,-1, y);
+			this.n3( x, d, y);
+			this.n3(-1, x, y);
+			this.n3( d, x, y);
+		}
+		this.n3( x,-1,-1);
+		this.n3( x,-1, d);
+		this.n3( x, d,-1);
+		this.n3( x, d, d);
+		this.n3(-1, x,-1);
+		this.n3(-1, x, d);
+		this.n3( d, x,-1);
+		this.n3( d, x, d);
+		this.n3(-1,-1, x);
+		this.n3(-1, d, x);
+		this.n3( d,-1, x);
+		this.n3( d, d, x);
+	}
+	this.n3(-1,-1,-1);
+	this.n3(-1,-1, d);
+	this.n3(-1, d,-1);
+	this.n3(-1, d, d);
+	this.n3( d,-1,-1);
+	this.n3( d,-1, d);
+	this.n3( d, d,-1);
+	this.n3( d, d, d);
+};
+LUTVolume.prototype.setP = function(rM,gM,bM,rgb) {
+	// setP is used to change an individual mesh point. The inputs rM, gM, bM are zero-indexed coordinates on the base mesh
+	// rgb is a Float64Array of the r, g and b values to be set at the specified mesh point
+	// setP returns a Float64Array of the rgb value before changing
+	var M = this.mesh;
+	var d = this.d-1;
+	var s = d-4;
+	var nd = this.nd;
+	var nd2 = nd*nd;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var k = (rM + 1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	var o = new Float64Array([M[ k ], M[k+sG], M[k+sB]]);
+	M[ k ] = rgb[0];
+	M[k+sG] = rgb[1];
+	M[k+sB] = rgb[2];
+	// recalculate any edges, faces or corners in the extended mesh affected by the value change
+	if (rM < 4) {
+		// faces
+		this.n3(-1,gM,bM);
+		// edges
+		if (gM ===   rM) { this.n3(-1,-1,bM); }
+		if (gM === s-rM) { this.n3(-1, d,bM); }
+		if (bM ===   rM) { this.n3(-1,gM,-1); }
+		if (bM === s-rM) { this.n3(-1,gM, d); }
+		// corners
+		if (gM ===   rM && bM ===   rM) { this.n3(-1,-1,-1); }
+		if (gM === s-rM && bM ===   rM) { this.n3(-1, d,-1); }
+		if (gM === s-rM && bM === s-rM) { this.n3(-1, d, d); }
+		if (gM ===   rM && bM === s-rM) { this.n3(-1,-1, d); }
+	}
+	if (rM > s) {
+		// faces
+		this.n3( d,gM,bM);
+		// edges
+		if (gM ===   rM) { this.n3( d, d,bM); }
+		if (gM === rM-s) { this.n3( d,-1,bM); }
+		if (bM ===   rM) { this.n3( d,gM, d); }
+		if (bM === rM-s) { this.n3( d,gM,-1); }
+		// corners
+		if (gM ===   rM && bM ===   rM) { this.n3( d, d, d); }
+		if (gM === rM-s && bM ===   rM) { this.n3( d,-1, d); }
+		if (gM === rM-s && bM === rM-s) { this.n3( d,-1,-1); }
+		if (gM ===   rM && bM === rM-s) { this.n3( d, d,-1); }
+	}
+	if (gM < 4) {
+		// faces
+		this.n3(rM,-1,bM);
+		// edges
+		if (bM ===   gM) { this.n3(rM,-1,-1); }
+		if (bM === s-gM) { this.n3(rM,-1, d); }
+	}
+	if (gM > s) {
+		// faces
+		this.n3(rM, d,bM);
+		// edges
+		if (bM ===   gM) { this.n3(rM, d,-1); }
+		if (bM === gM-s) { this.n3(rM, d, d); }
+	}
+	if (bM < 4) { this.n3(rM,gM,-1); }
+	if (bM > s) { this.n3(rM,gM, d); }
+	return o;
+};
+LUTVolume.prototype.getP = function(rM,gM,bM) {
+	var M = this.mesh;
+	var nd = this.nd;
+	var nd2 = nd*nd;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var k = (rM + 1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	return new Float64Array([M[ k ],M[k+sG],M[k+sB]]);
+};
+LUTVolume.prototype.n3 = function(rM,gM,bM,mono) {
+	// 3D extrapolation - calculates all colour channels at once
+	// rM, gM and bM are mesh point coordinates relative to the base mesh, not the extended, precalculated one
+	// ie -1 means the bottom edge of the extended mesh, this.d the top edge
+	var rD,gD,bD;
+	var d = this.d - 1;
+	var pR = this.pR;
+	var pG = this.pG;
+	var pB = this.pB;
+	var o,m;
+	// Get the array position on the extended mesh that we are going to fill
+	var nd = this.nd;
+	var nd2 = nd*nd
+	var k = (rM+1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	// Establish which way the points need to go, and from what base
+	if (rM < 0) {
+		rD = 1;
+	} else if (rM > d) {
+		rD = -1;
+	} else {
+		rD = 0;
+	}
+	if (gM < 0) {
+		gD = 1;
+	} else if (gM > d) {
+		gD = -1;
+	} else {
+		gD = 0;
+	}
+	if (bM < 0) {
+		bD = 1;
+	} else if (bM > d) {
+		bD = -1;
+	} else {
+		bD = 0;
+	}
+	// Fill in the points to be extrapolated
+	var M = this.mesh;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var l = k + rD + (gD*nd) + (bD*nd2);
+	pR[3] = M[l];
+	pG[3] = M[l + sG];
+	pB[3] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[2] = M[l];
+	pG[2] = M[l + sG];
+	pB[2] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[1] = M[l];
+	pG[1] = M[l + sG];
+	pB[1] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[0] = M[l];
+	pG[0] = M[l + sG];
+	pB[0] = M[l + sB];
+	// Now calculate the values
+	// Red
+	m = 0;
+	if (pR[3] === pR[1]) {
+		M[k] = pR[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*rD;
+	} else if (pR[3] > pR[1]) {
+		m = 1;
+	} else {
+		m = -1;
+	}
+
+	if (m !== 0) {
+		o = (-0.4*pR[0]) + (2.2*pR[1]) - (4.2*pR[2]) + (3.4*pR[3]);
+		if ((o-pR[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pR[1] - (3*pR[2]) + (3*pR[3]);
+			if ((o-pR[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pR[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
+		}
+		M[k] = o;
+	}
+	// Green
+	m = 0;
+	if (pG[3] === pG[1]) {
+		M[k + sG] = pG[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*gD;
+	} else if (pG[3] > pG[1]) {
+		m = 1;
+	} else {
+		m = -1;
+	}
+	if (m !== 0) {
+		o = (-0.4*pG[0]) + (2.2*pG[1]) - (4.2*pG[2]) + (3.4*pG[3]);
+		if ((o-pG[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pG[1] - (3*pG[2]) + (3*pG[3]);
+			if ((o-pG[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pG[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
+		}
+		M[k + sG] = o;
+	}
+	// Blue
+	m = 0;
+	if (pB[3] === pB[1]) {
+		M[k + sB] = pB[2];
+//	} else if (typeof mono !== 'undefined') {
+//		m = -mono*bD;
+	} else if (pB[3] > pB[1]) {
+		m = 1;
+	} else {
+		m = -1;
+	}
+	if (m !== 0) {
+		o = (-0.4*pB[0]) + (2.2*pB[1]) - (4.2*pB[2]) + (3.4*pB[3]);
+		if ((o-pB[2])*m <= 0) { // make sure that the slope at y(1) doesn't change sign
+			o = pB[1] - (3*pB[2]) + (3*pB[3]);
+			if ((o-pB[2])*m <= 0) { // if it is still swapping signs, use a slope of 0, ie y(2) = y(1)
+				o = pB[2]; // this allows for a completely flat extrapolation, ie slope = 0 at y(1)
+			}
+		}
+		M[k + sB] = o;
+	}
+};
+LUTVolume.prototype.n3b = function(rM,gM,bM) {
+	// 3D extrapolation - calculates all colour channels at once
+	// rM, gM and bM are mesh point coordinates relative to the base mesh, not the extended, precalculated one
+	// this differs from the basic n3 as it is for filling in the edges, corners and faces of the base mesh
+	// after a declamp, to allow for interaction of colour channels, ie 0 is to bottom, this.d-1 the top.
+	var rD,gD,bD;
+	var d = this.d - 1;
+	var pR = this.pR;
+	var pG = this.pG;
+	var pB = this.pB;
+	var o,m;
+	// Get the array position on the extended mesh that we are going to fill
+	var nd = this.nd;
+	var nd2 = nd*nd
+	var k = (rM+1) + ((gM + 1)*nd) + ((bM + 1)*nd2);
+	// Establish which way the points need to go, and from what base
+	if (rM <= 0) {
+		rD = 1;
+	} else if (rM >= d) {
+		rD = -1;
+	} else {
+		rD = 0;
+	}
+	if (gM <= 0) {
+		gD = 1;
+	} else if (gM >= d) {
+		gD = -1;
+	} else {
+		gD = 0;
+	}
+	if (bM <= 0) {
+		bD = 1;
+	} else if (bM >= d) {
+		bD = -1;
+	} else {
+		bD = 0;
+	}
+	// Fill in the points to be extrapolated
+	var M = this.mesh;
+	var sG = nd2*nd;
+	var sB = 2 * sG;
+	var l = k + rD + (gD*nd) + (bD*nd2);
+	pR[3] = M[l];
+	pG[3] = M[l + sG];
+	pB[3] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[2] = M[l];
+	pG[2] = M[l + sG];
+	pB[2] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[1] = M[l];
+	pG[1] = M[l + sG];
+	pB[1] = M[l + sB];
+	l += rD + (gD*nd) + (bD*nd2);
+	pR[0] = M[l];
+	pG[0] = M[l + sG];
+	pB[0] = M[l + sB];
+	// Now calculate the values
+	M[ k  ] = - (0.1*pR[0]) + (0.8*pR[1]) - (2.3*pR[2]) + (2.6*pR[3]);
+	M[k+sG] = - (0.1*pG[0]) + (0.8*pG[1]) - (2.3*pG[2]) + (2.6*pG[3]);
+	M[k+sB] = - (0.1*pB[0]) + (0.8*pB[1]) - (2.3*pB[2]) + (2.6*pB[3]);
+};
+LUTVolume.prototype.compare = function(tgtBuff,tstBuff,method) {
+	// returns the RMS differences in the red channels between a target dataset (tgt) and a test dataset (tst) which 'compare' passes through the lut
+	// method sets the interpolation method used on the test set, currently trilinear (1, 'lin' or 'linear') or tricubic (anything else or the default if 'method' is not present.
+	var tgt = new Float64Array(tgtBuff.slice(0));
+	var tst = new Float64Array(tstBuff.slice(0));
+	var m = tgt.length;
+	if (m !== tst.length) {
+		return false;
+	}
+	if (typeof method !== 'undefined') {
+		method = method.toString().toLowerCase();
+		if (method === '1' || method === 'tet') {
+			this.RGBTet(tst.buffer);
+		} else if (method === '2' || method === 'lin') {
+			this.RGBLin(tst.buffer);
+		} else {
+			this.RGBCub(tst.buffer);
+		}
+	} else {
+		this.RGBCub(tst.buffer);
+	} 
+	var e = new Float64Array(3);
+	for (var j=0; j<m; j += 3) {
+		e[0]  += Math.pow(tst[ j ] - tgt[ j ],2);
+		e[1]  += Math.pow(tst[j+1] - tgt[j+1],2);
+		e[2]  += Math.pow(tst[j+2] - tgt[j+2],2);
+	}
+	e[0] = Math.pow(e[0]*3/m,0.5);
+	e[1] = Math.pow(e[1]*3/m,0.5);
+	e[2] = Math.pow(e[2]*3/m,0.5);
+	return e;
+};
+LUTVolume.prototype.NR3D = function(tgt,tolerence,maxIterations,seed) { // Multivariate (3D) Newton-Raphson
+	if (tgt.length === 3) {
+		var tol,m,x;
+		if (typeof tolerence === 'number') { // tolerence for what is considered close enough
+			tol = tolerence;
+		} else {
+			tol = 0.00000001;
+		}
+		tol *= tol; // saves putting a square root into the convergence test
+		if (typeof maxItrss === 'number') { // maximum number of iterations before giving up (ie poor convergence)
+			m = maxItrs;
+		} else {
+			m = 50;
+		}
+		if (typeof seed !== 'undefined' && seed.length === 3) { // initial 'seed' value - if none given use the target
+			x = new Float64Array([seed[0],seed[1],seed[2]],0);
+		} else {
+			x = new Float64Array([tgt[0],tgt[1],tgt[2]],0);
+		}
+		var f,Jinv,d;
+		for (var j=0; j<m; j++) {
+			f = this.rgbCub(x);
+			JInv = this.JInv(x);
+			if (JInv) {
+				// Newton-Raphson is a root (0) finder, so subtract the target values
+				f[0] -= tgt[0];
+				f[1] -= tgt[1];
+				f[2] -= tgt[2];
+				// Test for convergence
+				x[3] = (f[0]*f[0]) + (f[1]*f[1]) + (f[2]*f[2]);
+				if (x[3] < tol) {
+					x[3] = 0;
+					return x;
+				} else if (j === m-1) { // last pass - it's not converging
+					x[3] = Math.pow(x[3],0.5); // distance from target 
+					return x;
+				} else {
+					x[0] -= (Jinv[0]*f[0]) + (JInv[1]*f[1]) + (JInv[2]*f[2]);
+					x[1] -= (Jinv[3]*f[0]) + (JInv[4]*f[1]) + (JInv[5]*f[2]);
+					x[2] -= (Jinv[6]*f[0]) + (JInv[7]*f[1]) + (JInv[8]*f[2]);
+				}
+			} else {
+				return false;
+			}
+		}
+	} else {
+		return false
+	}
+};
+LUTVolume.prototype.minMax = function() {
+	var p = this.mesh;
+	var x = new Float64Array([
+		 9999, 9999, 9999,	// Absolute min values
+		-9999,-9999,-9999	// Absolute max values
+	]);
+	var rgb = new Float64Array(3);
+	var m = this.d;
+	var nd = this.d+2;
+	var nm = nd*nd*nd;
+	var l;
+	// First find the minimum and maximum values in the mesh, independent of each other
+	for (var b=0; b<m; b++) {
+		for (var g=0; g<m; g++) {
+			for (var r=0; r<m; r++) {
+				l = (r+1) + (((g+1) + ((b+1)*nd))*nd);
+				if (p[l] < x[0]) {
+					x[0] = p[l];
+				} else if (p[l] > x[3]) {
+					x[3] = p[l];
+				}
+				l += nm;
+				if (p[l] < x[1]) {
+					x[1] = p[l];
+				} else if (p[l] > x[4]) {
+					x[4] = p[l];
+				}
+				l += nm;
+				if (p[l] < x[2]) {
+					x[2] = p[l];
+				} else if (p[l] > x[5]) {
+					x[5] = p[l];
+				}
+			}
+		}
+	}
+	return x;
+};
+LUTVolume.prototype.getLimits = function(minMax) {
+	var p = this.mesh;
+	var x;
+	if (typeof minMax !== 'undefined') {
+		x = minMax;
+	} else {
+		x = this.minMax();
+	}
+	var o = new Float64Array([
+		 9999, 9999, 9999,	// Black
+		-9999, 9999, 9999,	// Red
+		-9999,-9999, 9999,	// Yellow
+		 9999,-9999, 9999,	// Green
+		 9999,-9999,-9999,	// Cyan
+		 9999, 9999,-9999,	// Blue
+		-9999, 9999,-9999,	// Magenta
+		-9999,-9999,-9999	// White
+	]);
+	var i = new Float64Array(24);
+	var d = new Float64Array([
+		9999,9999,9999,9999,9999,9999,9999,9999
+	]);
+	var rgb = new Float64Array(3);
+	var m = this.d;
+	var nd = this.d+2;
+	var nm = nd*nd*nd;
+	var s = m-1;
+	var D;
+	var l;
+	// Now go back through the mesh, comparing distances from the absolute corners
+	for (var b=0; b<m; b++) {
+		for (var g=0; g<m; g++) {
+			for (var r=0; r<m; r++) {
+				l = (r+1) + (((g+1) + ((b+1)*nd))*nd);
+				rgb[0] = p[l];
+				l += nm;
+				rgb[1] = p[l];
+				l += nm;
+				rgb[2] = p[l];
+				D = Math.pow(rgb[0]-x[0],2)+Math.pow(rgb[1]-x[1],2)+Math.pow(rgb[2]-x[2],2);	// Black
+				if (D < d[0]) {
+					o[ 0] = rgb[0];
+					o[ 1] = rgb[1];
+					o[ 2] = rgb[2];
+					i[ 0] = r;
+					i[ 1] = g;
+					i[ 2] = b;
+					d[0] = D;
+				}
+				D = Math.pow(rgb[0]-x[3],2)+Math.pow(rgb[1]-x[1],2)+Math.pow(rgb[2]-x[2],2);	// Red
+				if (D < d[1]) {
+					o[ 3] = rgb[0];
+					o[ 4] = rgb[1];
+					o[ 5] = rgb[2];
+					i[ 3] = r;
+					i[ 4] = g;
+					i[ 5] = b;
+					d[1] = D;
+				}
+				D = Math.pow(rgb[0]-x[3],2)+Math.pow(rgb[1]-x[4],2)+Math.pow(rgb[2]-x[2],2);	// Yellow
+				if (D < d[2]) {
+					o[ 6] = rgb[0];
+					o[ 7] = rgb[1];
+					o[ 8] = rgb[2];
+					i[ 6] = r;
+					i[ 7] = g;
+					i[ 8] = b;
+					d[2] = D;
+				}
+				D = Math.pow(rgb[0]-x[0],2)+Math.pow(rgb[1]-x[4],2)+Math.pow(rgb[2]-x[2],2);	// Green
+				if (D < d[3]) {
+					o[ 9] = rgb[0];
+					o[10] = rgb[1];
+					o[11] = rgb[2];
+					i[ 9] = r;
+					i[10] = g;
+					i[11] = b;
+					d[3] = D;
+				}
+				D = Math.pow(rgb[0]-x[0],2)+Math.pow(rgb[1]-x[4],2)+Math.pow(rgb[2]-x[5],2);	// Cyan
+				if (D < d[4]) {
+					o[12] = rgb[0];
+					o[13] = rgb[1];
+					o[14] = rgb[2];
+					i[12] = r;
+					i[13] = g;
+					i[14] = b;
+					d[4] = D;
+				}
+				D = Math.pow(rgb[0]-x[0],2)+Math.pow(rgb[1]-x[1],2)+Math.pow(rgb[2]-x[5],2);	// Blue
+				if (D < d[5]) {
+					o[15] = rgb[0];
+					o[16] = rgb[1];
+					o[17] = rgb[2];
+					i[15] = r;
+					i[16] = g;
+					i[17] = b;
+					d[5] = D;
+				}
+				D = Math.pow(rgb[0]-x[3],2)+Math.pow(rgb[1]-x[1],2)+Math.pow(rgb[2]-x[5],2);	// Magenta
+				if (D < d[6]) {
+					o[18] = rgb[0];
+					o[19] = rgb[1];
+					o[20] = rgb[2];
+					i[18] = r;
+					i[19] = g;
+					i[20] = b;
+					d[6] = D;
+				}
+				D = Math.pow(rgb[0]-x[3],2)+Math.pow(rgb[1]-x[4],2)+Math.pow(rgb[2]-x[5],2);	// White
+				if (D < d[7]) {
+					o[21] = rgb[0];
+					o[22] = rgb[1];
+					o[23] = rgb[2];
+					i[21] = r;
+					i[22] = g;
+					i[23] = b;
+					d[7] = D;
+				}
+			}
+		}
+	}
+	for (var j=0; j<24; j++) {
+		i[j] /= s
+	}
+	if (this.sin) {
+		var rev = new LUTRSpline({
+			buff: this.ins.getL()
+		});
+		rev.R(i.buffer);
+	}
+	if (this.fS) {
+		var fL = this.fL;
+		var fLH = this.fLH;
+		for (var j=0; j<24; j += 3) {
+			i[ j ] = (i[ j ]*fLH[0]) + fL[0];
+			i[j+1] = (i[j+1]*fLH[1]) + fL[1];
+			i[j+2] = (i[j+2]*fLH[2]) + fL[2];
+		}
+	}
+	return {minMax:x, i:i, o:o};
 };
 // Stringify for inline Web Workers
 function getLUTString() {
@@ -1745,7 +4790,26 @@ function getLUTString() {
 	for (var j in LUTSpline.prototype) {
 		out += 'LUTSpline.prototype.' + j + '=' + LUTSpline.prototype[j].toString() + "\n";
 	}
-
+	// LUTRGBSpline
+	out += LUTRGBSpline.toString() + "\n";
+	for (var j in LUTRGBSpline.prototype) {
+		out += 'LUTRGBSpline.prototype.' + j + '=' + LUTRGBSpline.prototype[j].toString() + "\n";
+	}
+	// LUTRSpline
+	out += LUTRSpline.toString() + "\n";
+	for (var j in LUTRSpline.prototype) {
+		out += 'LUTRSpline.prototype.' + j + '=' + LUTRSpline.prototype[j].toString() + "\n";
+	}
+	// LUTQSpline
+	out += LUTQSpline.toString() + "\n";
+	for (var j in LUTQSpline.prototype) {
+		out += 'LUTQSpline.prototype.' + j + '=' + LUTQSpline.prototype[j].toString() + "\n";
+	}
+	// LUTVolume
+	out += LUTVolume.toString() + "\n";
+	for (var j in LUTVolume.prototype) {
+		out += 'LUTVolume.prototype.' + j + '=' + LUTVolume.prototype[j].toString() + "\n";
+	}
 	return out;
 }
 var workerLUTString = getLUTString();

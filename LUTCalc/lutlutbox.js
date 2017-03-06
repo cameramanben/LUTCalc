@@ -29,6 +29,9 @@ LUTLutBox.prototype.getFieldSet = function() {
 LUTLutBox.prototype.io = function() {
 	this.lutName = document.createElement('input');
 	this.inputs.addInput('name',this.lutName);
+	this.titleButton = document.createElement('input');
+	this.titleButton.setAttribute('type','button');
+	this.titleButton.value = 'Auto Title';
 	this.lutOneD = this.createRadioElement('dims', false);
 	this.lutThreeD = this.createRadioElement('dims', true);
 	this.inputs.addInput('d',[this.lutOneD,this.lutThreeD]);
@@ -132,6 +135,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutName.setAttribute('class','textinput');
 	this.lutName.value = 'Custom LUT';
 	this.box.appendChild(this.lutName);
+	this.box.appendChild(this.titleButton);
 	this.box.appendChild(document.createElement('br'));
 	// 1D or 3D
 	this.dims = document.createElement('span');
@@ -165,15 +169,15 @@ LUTLutBox.prototype.ui = function() {
 	this.lutRange.setAttribute('class','graybox');
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Range:')));
 	this.lutRange.appendChild(this.lutInLegal);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
 	this.lutRange.appendChild(this.lutInData);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('109%')));
 	this.lutRange.appendChild(document.createElement('br'));
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Output Range:')));
 	this.lutRange.appendChild(this.lutOutLegal);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
 	this.lutRange.appendChild(this.lutOutData);
-	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Data')));
+	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('109%')));
 	this.box.appendChild(this.lutRange);
 	this.box.appendChild(document.createElement('br'));
 	// Grading LUT / MLUT radio boxes
@@ -265,7 +269,7 @@ LUTLutBox.prototype.ui = function() {
 	this.lutClip.setAttribute('class','emptybox');
 	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip')));
 	this.lutClip.appendChild(this.lutClipSelect);
-	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('0%-100%')));
 	this.lutClipLegalCheck.setAttribute('type','checkbox');
 	this.lutClipLegalCheck.checked = true;
 	this.clipLegalBox.appendChild(this.lutClipLegalCheck);
@@ -280,6 +284,10 @@ LUTLutBox.prototype.ui = function() {
 LUTLutBox.prototype.events = function() {
 	this.lutName.onchange = function(here){ return function(){
 		here.cleanName();
+//		lutFile.filename();
+	};}(this);
+	this.titleButton.onclick = function(here){ return function(){
+		here.autoTitle();
 //		lutFile.filename();
 	};}(this);
 	this.lutClipSelect.onchange = function(here){ return function(){
@@ -546,4 +554,104 @@ LUTLutBox.prototype.displayCLC = function() {
 	} else {
 		this.clipLegalBox.style.display = 'none';
 	}
+};
+LUTLutBox.prototype.autoTitle = function() {
+	var info = {};
+	this.messages.getInfo(info);
+	var title = '';
+	if (info.nul) {
+		title = 'Null LUT';
+	} else {
+		switch (info.inGammaName) {
+			case 'LogC (Sup 3.x & 4.x)':
+			case 'LogC (Sup 2.x)': title += 'LogC'; break;
+			case 'Canon C-Log2' : title += 'CLog2'; break;
+			case 'Canon C-Log3' : title += 'CLog3'; break;
+			case 'Panasonic V-Log' : title += 'VLog'; break;
+			case 'Fujifilm F-Log' : title += 'FLog'; break;
+			case 'Varicam V709' : title += 'V709'; break;
+			case 'Rec709 (800%)' : title += 'Rec709800'; break;
+			case 'EOS Standard (Legal)' :
+			case 'EOS Standard' : title += 'EOSStd'; break;
+			case 'Hybrid-Log Gamma' : title += 'HLG'; break;
+			case 'Dolby PQ' : title += 'PQ'; break;
+			case 'Canon WideDR' : title += 'WideDR'; break;
+			case 'Rec2020 12-bit' : title += 'Rec2020'; break;
+			case 'Scene Linear IRE - γ1.0 (18% Gray = 0.2)' : title += 'LinIRE'; break;
+			case 'Scene Linear Reflectance - γ1.0 (18% Gray = 0.18)' : title += 'LinRef'; break;
+			default:
+				if (info.inGammaName.indexOf('- γ') > 0) {
+					title += info.inGammaName.substring(0, info.inGammaName.indexOf('- γ') - 1).replace(/\s/g,'');
+				} else {
+					title += info.inGammaName.replace(/[\s/-]/gi, '');
+				}
+		}
+		title += '_';
+		switch (info.inGamutName) {
+			case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
+			case 'Sony S-Gamut3': title += 'SG3'; break;
+			case 'Sony S-Gamut': title += 'SG'; break;
+			case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
+			case 'Canon Cinema Gamut': title += 'CanonCG'; break;
+			case 'Panasonic V-Gamut': title += 'VGamut'; break;
+			case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
+			case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
+			case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
+			case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
+			case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
+			case 'Varicam V709': title += 'V709'; break;
+			default:
+				title += info.inGamutName.replace(/[\s/-]/gi, '');
+		}
+		title += '-';
+		switch (info.outGammaName) {
+			case 'LogC (Sup 3.x & 4.x)':
+			case 'LogC (Sup 2.x)': title += 'LogC'; break;
+			case 'Canon C-Log2' : title += 'CLog2'; break;
+			case 'Canon C-Log3' : title += 'CLog3'; break;
+			case 'Panasonic V-Log' : title += 'VLog'; break;
+			case 'Fujifilm F-Log' : title += 'FLog'; break;
+			case 'Varicam V709' : title += 'V709'; break;
+			case 'Rec709 (800%)' : title += 'Rec709800'; break;
+			case 'EOS Standard (Legal)' :
+			case 'EOS Standard' : title += 'EOSStd'; break;
+			case 'Hybrid-Log Gamma' : title += 'HLG'; break;
+			case 'Dolby PQ' : title += 'PQ'; break;
+			case 'Canon WideDR' : title += 'WideDR'; break;
+			case 'Rec2020 12-bit' : title += 'Rec2020'; break;
+			case 'Scene Linear IRE - γ1.0 (18% Gray = 0.2)' : title += 'LinIRE'; break;
+			case 'Scene Linear Reflectance - γ1.0 (18% Gray = 0.18)' : title += 'LinRef'; break;
+			default:
+				if (info.outGammaName.indexOf('- γ') > 0) {
+					title += info.outGammaName.substring(0, info.outGammaName.indexOf('- γ') - 1).replace(/\s/g,'');
+				} else {
+					title += info.outGammaName.replace(/[\s/-]/gi, '');
+				}
+		}
+		title += '_';
+		switch (info.outGamutName) {
+			case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
+			case 'Sony S-Gamut3': title += 'SG3'; break;
+			case 'Sony S-Gamut': title += 'SG'; break;
+			case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
+			case 'Canon Cinema Gamut': title += 'CanonCG'; break;
+			case 'Panasonic V-Gamut': title += 'VGamut'; break;
+			case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
+			case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
+			case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
+			case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
+			case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
+			case 'Varicam V709': title += 'V709'; break;
+			default:
+				title += info.outGamutName.replace(/[\s/-]/gi, '');;
+		}
+		if (info.doBlk) {
+			title += '_B' + info.blackLevel.replace('.','p');
+		}
+		if (info.doASCCDL && info.ASCSat !== '1') {
+			title += '_S' + info.ASCSat.replace('.','p');
+		}
+	}
+	this.lutName.value = title;
+	this.cleanName();
 };

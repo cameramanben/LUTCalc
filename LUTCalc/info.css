@@ -251,6 +251,12 @@
 	width:21em;
 	height:1.32em;
 }
+#ins-cust-glim {
+	background-image: url('pngs/cust-glim.png');
+	background-size:21em 1.32em;
+	width:21em;
+	height:1.32em;
+}
 #ins-cust-fc {
 	background-image: url('pngs/cust-fc.png');
 	background-size:21em 1.32em;
@@ -273,15 +279,15 @@
 
 #ins-cust-colour-1 {
 	background-image: url('pngs/cust-colour-1.png');
-	background-size:21em 13.55em;
+	background-size:21em 12.61em;
 	width:21em;
-	height:13.55em;
+	height:12.61em;
 }
 #ins-cust-colour-2 {
 	background-image: url('pngs/cust-colour-2.png');
-	background-size:21em 18.61em;
+	background-size:21em 20.86em;
 	width:21em;
-	height:18.61em;
+	height:20.86em;
 }
 #ins-cust-wht-1 {
 	background-image: url('pngs/cust-wht-1.png');
@@ -363,15 +369,15 @@
 }
 #ins-cust-la-2 {
 	background-image: url('pngs/cust-la-2.png');
-	background-size:21em 7.22em;
+	background-size:21em 11.25em;
 	width:21em;
-	height:7.22em;
+	height:11.25em;
 }
 #ins-cust-la-3 {
 	background-image: url('pngs/cust-la-3.png');
-	background-size:21em 7.45em;
+	background-size:21em 15.19em;
 	width:21em;
-	height:7.45em;
+	height:15.19em;
 }
 #ins-cust-bhi-1 {
 	background-image: url('pngs/cust-bhi-1.png');
@@ -396,4 +402,22 @@
 	background-size:21em 5.48em;
 	width:21em;
 	height:5.48em;
+}
+#ins-cust-glim-1 {
+	background-image: url('pngs/cust-glim-1.png');
+	background-size:21em 4.41em;
+	width:21em;
+	height:4.41em;
+}
+#ins-cust-glim-2 {
+	background-image: url('pngs/cust-glim-2.png');
+	background-size:21em 5.34em;
+	width:21em;
+	height:5.34em;
+}
+#ins-cust-glim-3 {
+	background-image: url('pngs/cust-glim-3.png');
+	background-size:21em 5.30em;
+	width:21em;
+	height:5.30em;
 }
