@@ -146,6 +146,16 @@ a:hover {
 	font-size:75%;
 }
 /* News */
+.news-box {
+	display: block;
+	margin:1em 0.15em 0.2em 0.15em;
+	padding: 0.15em 1.35em 0.25em 1.15em;
+	border:1px solid;
+	border-color: #aaaaaa;
+	background-color: #dadada;
+	border-radius:0.25em;
+/*	-moz-border-radius:5px; */
+}
 #news p {
 	margin:0.5em 0 0.5em 0;
 }

@@ -18,6 +18,7 @@ window.onload = function() {
 
 	var secAbout = document.getElementById('about');
 	var secNews = document.getElementById('news');
+	var secOldNews = document.getElementById('oldnews');
 	var secInstall = document.getElementById('install');
 	var secHowTo = document.getElementById('howto');
 	var secFeatures = document.getElementById('features');
@@ -26,6 +27,7 @@ window.onload = function() {
 
 	function showAbout() {
 		secNews.style.display = 'block';
+		secOldNews.style.display = 'none';
 		secAbout.style.display = 'block';
 		secInstall.style.display = 'none';
 		secHowTo.style.display = 'none';
@@ -35,6 +37,7 @@ window.onload = function() {
 	}
 	function showNews() {
 		secNews.style.display = 'block';
+		secOldNews.style.display = 'block';
 		secAbout.style.display = 'none';
 		secInstall.style.display = 'none';
 		secHowTo.style.display = 'none';
