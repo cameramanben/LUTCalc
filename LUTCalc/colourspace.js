@@ -3199,7 +3199,7 @@ CSLUT.prototype.getWP = function() {
 };
 CSLUT.prototype.setRC = function() {
 	var MI = this.colours;
-	var MO = MI.slice(0);
+	var MO = new Float64Array(MI.buffer.slice(0));
 	this.lc(MO.buffer);
 	// MI = matrix of input values, MO = matrix of output values, M is the approximate matrix of the colourspace
 	// then M MI = MO
