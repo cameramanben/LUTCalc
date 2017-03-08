@@ -2603,7 +2603,7 @@ function CSMatrix(name,params,wp) {
 	this.wp = wp;
 }
 CSMatrix.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
+	return new Float64Array(this.wp.buffer.slice(0));
 };
 CSMatrix.prototype.isMatrix = function() {
 	return true;
@@ -2701,7 +2701,7 @@ CSToneCurve.prototype.mInverse = function(M) {
 	]);
 };
 CSToneCurve.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
+	return new Float64Array(this.wp.buffer.slice(0));
 };
 CSToneCurve.prototype.isMatrix = function() {
 	return false;
@@ -2841,7 +2841,7 @@ CSToneCurvePlus.prototype.mInverse = function(M) {
 	]);
 };
 CSToneCurvePlus.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
+	return new Float64Array(this.wp.buffer.slice(0));
 };
 CSToneCurvePlus.prototype.isMatrix = function() {
 	return false;
@@ -3195,11 +3195,11 @@ CSLUT.prototype.setISO = function(iso) {
 	}
 };
 CSLUT.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
+	return new Float64Array(this.wp.buffer.slice(0));
 };
 CSLUT.prototype.setRC = function() {
 	var MI = this.colours;
-	var MO = MI.slice(0);
+	var MO = new Float64Array(MI.buffer.slice(0));
 	this.lc(MO.buffer);
 	// MI = matrix of input values, MO = matrix of output values, M is the approximate matrix of the colourspace
 	// then M MI = MO
@@ -3703,7 +3703,7 @@ function CSCanonIDT(name, day, toSys, wp) {
 	this.setParams();
 }
 CSCanonIDT.prototype.getWP = function() {
-	return new Float64Array(this.wp.slice(0));
+	return new Float64Array(this.wp.buffer.slice(0));
 };
 CSCanonIDT.prototype.setParams = function() {
 	if (this.day) {
