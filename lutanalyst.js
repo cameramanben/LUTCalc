@@ -302,13 +302,19 @@ LUTAnalyst.prototype.updateLACS = function() {
 	this.gtT = this.messages.getGamutThreads();
 	var d = this.cs.getDetails();
 	var meta = d.meta;
+	if (typeof d.min === 'undefined') {
+		d.min = new Float64Array([0,0,0]);
+	}
+	if (typeof d.max === 'undefined') {
+		d.max = new Float64Array([1,1,1]);
+	}
 	var details = {
 		title: d.title,
 		format: d.format,
 		dims: d.dims,
 		s: d.s,
-		min: d.min.slice(0),
-		max: d.max.slice(0),
+		min: d.min,
+		max: d.max,
 		meta: meta
 	};
 	if (d.d === 3 || d.C.length === 3) {
