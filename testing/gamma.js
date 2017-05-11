@@ -5073,20 +5073,25 @@ function getGammaWorkerString() {
 	for (var j in LUTGammaPQ.prototype) {
 		out += 'LUTGammaPQ.prototype.' + j + '=' + LUTGammaPQ.prototype[j].toString() + "\n";
 	}
-	// LUTGammaOOTFPQ
-	out += LUTGammaOOTFPQ.toString() + "\n";
-	for (var j in LUTGammaOOTFPQ.prototype) {
-		out += 'LUTGammaOOTFPQ.prototype.' + j + '=' + LUTGammaOOTFPQ.prototype[j].toString() + "\n";
-	}
 	// LUTGammaHLG
 	out += LUTGammaHLG.toString() + "\n";
 	for (var j in LUTGammaHLG.prototype) {
 		out += 'LUTGammaHLG.prototype.' + j + '=' + LUTGammaHLG.prototype[j].toString() + "\n";
 	}
+	// LUTGammaOOTFPQ
+	out += LUTGammaOOTFPQ.toString() + "\n";
+	for (var j in LUTGammaOOTFPQ.prototype) {
+		out += 'LUTGammaOOTFPQ.prototype.' + j + '=' + LUTGammaOOTFPQ.prototype[j].toString() + "\n";
+	}
 	// LUTGammaOOTFHLG
 	out += LUTGammaOOTFHLG.toString() + "\n";
 	for (var j in LUTGammaOOTFHLG.prototype) {
 		out += 'LUTGammaOOTFHLG.prototype.' + j + '=' + LUTGammaOOTFHLG.prototype[j].toString() + "\n";
+	}
+	// LUTGammaOOTFNone
+	out += LUTGammaOOTFNone.toString() + "\n";
+	for (var j in LUTGammaOOTFNone.prototype) {
+		out += 'LUTGammaOOTFNone.prototype.' + j + '=' + LUTGammaOOTFNone.prototype[j].toString() + "\n";
 	}
 	// LUTGammaITUProp
 	out += LUTGammaITUProp.toString() + "\n";
