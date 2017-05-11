@@ -159,7 +159,7 @@ LUTMessage.prototype.gaSetParams = function() {
 			pqLw: parseFloat(this.inputs.inPQLw.value),
 			pqEOTFLw: parseFloat(this.inputs.inPQEOTFLw.value),
 			hlgLw: parseFloat(this.inputs.inHLGLw.value),
-			hlgBBC: this.inputs.hlgBBCScaleIn[0].checked,
+			hlgBBC: this.inputs.hlgBBCScaleIn[1].checked,
 
 			defGamma: this.inputs.defGammaIn,
 			newISO: parseFloat(this.inputs.cineEI.value),
