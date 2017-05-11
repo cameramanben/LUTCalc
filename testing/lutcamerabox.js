@@ -41,13 +41,13 @@ LUTCameraBox.prototype.io = function() {
 	this.inputs.addInput('nativeISO',this.nativeLabel);
 	this.cineeiInput = document.createElement('input');
 	this.cineeiInput.setAttribute('type','number');
-	this.cineeiInput.setAttribute('class','isoinput');
+	this.cineeiInput.className = 'iso-input';
 	this.cineeiInput.value = this.cameras[this.current].iso.toString();
 	this.inputs.addInput('cineEI',this.cineeiInput);
 	this.shiftInput = document.createElement('input');
 	this.shiftInput.setAttribute('type','number');
 	this.shiftInput.setAttribute('step','any');
-	this.shiftInput.setAttribute('class','shiftinput');
+	this.shiftInput.className = 'shift-input';
 	this.shiftInput.value = '0';
 	this.inputs.addInput('stopShift',this.shiftInput);
 	this.inputs.addInput('defGammaIn',this.cameras[this.current].defgamma);
@@ -167,15 +167,15 @@ LUTCameraBox.prototype.changeCamera = function() {
 	this.shiftInput.value = '0';
 	this.cameraType.value = this.cameras[this.current].type.toString();
 	if (this.cameras[this.current].type === 2) {
-		this.recorded.style.display = 'none';
-		this.shifted.style.display = 'block';
+		this.recorded.className = 'base-inputbox-hide';
+		this.shifted.className = 'base-inputbox';
 	} else if (this.cameras[this.current].type === 1) {
-		this.recorded.style.display = 'block';
-		this.shifted.style.display = 'block';
+		this.recorded.className = 'base-inputbox';
+		this.shifted.className = 'base-inputbox';
 		this.cineeiLabel.innerHTML = 'Recorded ISO';
 	} else {
-		this.recorded.style.display = 'block';
-		this.shifted.style.display = 'block';
+		this.recorded.className = 'base-inputbox';
+		this.shifted.className = 'base-inputbox';
 		this.cineeiLabel.innerHTML = 'CineEI ISO';
 	}
 	this.cameraType.value = this.cameras[this.current].type;
@@ -234,3 +234,7 @@ LUTCameraBox.prototype.setSettings = function(settings) {
 LUTCameraBox.prototype.getHeight = function() {
 	return this.box.clientHeight;
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

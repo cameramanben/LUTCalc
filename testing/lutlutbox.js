@@ -132,21 +132,21 @@ LUTLutBox.prototype.ui = function() {
 	// LUT title / filename
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Title / Filename')));
 	this.lutName.setAttribute('type','text');
-	this.lutName.setAttribute('class','textinput');
+	this.lutName.className = 'text-input';
 	this.lutName.value = 'Custom LUT';
 	this.box.appendChild(this.lutName);
 	this.box.appendChild(this.titleButton);
 	this.box.appendChild(document.createElement('br'));
 	// 1D or 3D
 	this.dims = document.createElement('span');
-	this.dims.setAttribute('class','graybox');
+	this.dims.className = 'graybox';
 	this.dims.appendChild(this.lutOneD);
 	this.dims.appendChild(document.createElement('label').appendChild(document.createTextNode('1D')));
 	this.dims.appendChild(this.lutThreeD);
 	this.dims.appendChild(document.createElement('label').appendChild(document.createTextNode('3D')));
 	this.box.appendChild(this.dims);
 	// 1D size options
-	this.oneD.setAttribute('class','graybox-hide');
+	this.oneD.className = 'graybox-hide';
 	this.oneD.appendChild(this.lutOne[0]);
 	this.oneD.appendChild(this.lutOneLabel[0]);
 	this.oneD.appendChild(this.lutOne[1]);
@@ -155,7 +155,7 @@ LUTLutBox.prototype.ui = function() {
 	this.oneD.appendChild(this.lutOneLabel[2]);
 	this.box.appendChild(this.oneD);
 	// 3D size options
-	this.threeD.setAttribute('class','graybox');
+	this.threeD.className = 'graybox';
 	this.threeD.appendChild(this.lutThree[0]);
 	this.threeD.appendChild(this.lutThreeLabel[0]);
 	this.threeD.appendChild(this.lutThree[1]);
@@ -166,7 +166,7 @@ LUTLutBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('br'));
 	// Input / output ranges
 	this.lutRange = document.createElement('div');
-	this.lutRange.setAttribute('class','graybox');
+	this.lutRange.className = 'graybox';
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Range:')));
 	this.lutRange.appendChild(this.lutInLegal);
 	this.lutRange.appendChild(document.createElement('label').appendChild(document.createTextNode('100%')));
@@ -182,7 +182,7 @@ LUTLutBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('br'));
 	// Grading LUT / MLUT radio boxes
 	this.lutUsage = document.createElement('div');
-	this.lutUsage.setAttribute('class','graybox');
+	this.lutUsage.className = 'graybox';
 	this.lutUsage.appendChild(this.gradeOpt);
 	this.lutUsage.appendChild(document.createElement('label').appendChild(document.createTextNode('Grading LUT')));
 	this.lutUsage.appendChild(this.mlutOpt);
@@ -191,29 +191,29 @@ LUTLutBox.prototype.ui = function() {
 	this.box.appendChild(this.lutUsage);
 	// LUT type selections
 	this.lutType = document.createElement('div');
-	this.lutType.setAttribute('class','emptybox');
+	this.lutType.className = 'emptybox';
 	this.lutType.appendChild(document.createElement('label').appendChild(document.createTextNode('LUT Type')));
 	this.lutType.appendChild(this.inputs.gradeSelect);
 	this.lutType.appendChild(this.inputs.mlutSelect);
 	this.lutUsage.appendChild(this.lutType);
 	// LUT input scaling (useful for narrow range gammas such as Rec709 or linear)
-	this.scaleBox.setAttribute('class','emptybox-hide');
+	this.scaleBox.className = 'emptybox-hide';
 	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Scaling:')));
 	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Min')));
 	this.scaleMin.setAttribute('type','number');
 	this.scaleMin.setAttribute('step','any');
-	this.scaleMin.className = 'ireinput';
+	this.scaleMin.className = 'ire-input';
 	this.scaleMin.value = '0';
 	this.scaleBox.appendChild(this.scaleMin);
 	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Max')));
 	this.scaleMax.setAttribute('type','number');
 	this.scaleMax.setAttribute('step','any');
-	this.scaleMax.className = 'ireinput';
+	this.scaleMax.className = 'ire-input';
 	this.scaleMax.value = '1';
 	this.scaleBox.appendChild(this.scaleMax);
 	this.lutUsage.appendChild(this.scaleBox);
 	// LUT integer bit depths for files which require it (eg 3dl)
-	this.bitsBox.setAttribute('class','emptybox-hide');
+	this.bitsBox.className = 'emptybox-hide';
 	this.bitsBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Bits')));
 	for (var j=10; j<18; j += 2) {
 		var option1 = document.createElement('option');
@@ -266,14 +266,14 @@ LUTLutBox.prototype.ui = function() {
 	this.lutUsage.appendChild(this.nikonBox);
 	// 0-1.0 hard clip checkbox
 	this.lutClip = document.createElement('div');
-	this.lutClip.setAttribute('class','emptybox');
+	this.lutClip.className = 'emptybox';
 	this.lutClip.appendChild(document.createElement('label').appendChild(document.createTextNode('Hard Clip')));
 	this.lutClip.appendChild(this.lutClipSelect);
 	this.clipLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('0%-100%')));
 	this.lutClipLegalCheck.setAttribute('type','checkbox');
 	this.lutClipLegalCheck.checked = true;
 	this.clipLegalBox.appendChild(this.lutClipLegalCheck);
-	this.clipLegalBox.style.display = 'inline';
+	this.clipLegalBox.className = 'input-set';
 	this.lutClip.appendChild(this.clipLegalBox);
 //	this.lutClipCheck.setAttribute('type','checkbox');
 //	this.lutClipCheck.checked = false;
@@ -550,9 +550,9 @@ LUTLutBox.prototype.getInfo = function(info) {
 };
 LUTLutBox.prototype.displayCLC = function() {
 	if (this.lutClipSelect.selectedIndex > 0 && this.lutOutData.checked) {
-		this.clipLegalBox.style.display = 'inline'
+		this.clipLegalBox.className = 'input-set';
 	} else {
-		this.clipLegalBox.style.display = 'none';
+		this.clipLegalBox.className = 'input-set-hide';
 	}
 };
 LUTLutBox.prototype.autoTitle = function() {
@@ -655,3 +655,7 @@ LUTLutBox.prototype.autoTitle = function() {
 	this.lutName.value = title;
 	this.cleanName();
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

@@ -31,7 +31,7 @@ var saveAs = saveAs || (function(view) {
 			var event = new MouseEvent("click");
 			node.dispatchEvent(event);
 		}
-		, is_safari = /constructor/i.test(view.HTMLElement)
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
 		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
 		, throw_outside = function(ex) {
 			(view.setImmediate || view.setTimeout)(function() {
@@ -182,7 +182,7 @@ var saveAs = saveAs || (function(view) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports.saveAs = saveAs;
 } else if ((typeof define !== "undefined" && define !== null) && (define.amd !== null)) {
-  define([], function() {
+  define("FileSaver.js", function() {
     return saveAs;
   });
 }

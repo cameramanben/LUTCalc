@@ -99,7 +99,7 @@ TWKSampler.prototype.io = function() {
 	// Samples Filename
 	this.fileName = document.createElement('input');
 	this.fileName.setAttribute('type','text');
-	this.fileName.setAttribute('class','textinput');
+	this.fileName.className = 'text-input';
 	this.fileName.value = 'Samples';
 	// Save Samples Button
 	this.saveSamplesButton = document.createElement('input');
@@ -233,12 +233,16 @@ TWKSampler.prototype.toggleGrid = function() {
 	if (this.setGrid) {
 		this.setGridButton.value = 'Set Sample Grid';
 		this.gridBox.className = 'twk-tab-hide';
-		this.inputs.samplerCanvas.style.display = 'none';
+		this.inputs.samplerCanvas.className = 'can-hide';
 		this.setGrid = false;
 	} else {
 		this.setGridButton.value = 'Hide Sample Grid';
 		this.gridBox.className = 'twk-tab';
-		this.inputs.samplerCanvas.style.display = 'block';
+		if (this.inputs.small) {
+			this.inputs.samplerCanvas.className = 'can-2-small';
+		} else {
+			this.inputs.samplerCanvas.className = 'can-2-large';
+		}
 		this.setGrid = true;
 	}
 };
@@ -346,3 +350,7 @@ TWKSampler.prototype.saveSamples = function() {
 	}
 	this.files.save( out, this.fileName.value, 'txt', 2 );
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

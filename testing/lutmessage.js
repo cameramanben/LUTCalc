@@ -31,12 +31,14 @@ function LUTMessage(inputs) {
 	// 13 - twkCS
 	// 14 - twkMulti
 	// 15 - twkSampler
+	// 16 - mobile
 	if (typeof this.inputs.blobWorkers !== 'undefined') {
 		this.blobWorkers = this.inputs.blobWorkers;
 	} else {
 		this.blobWorkers = false;
 	}
-this.blobWorkers = false;
+		this.blobWorkers = false;
+//console.log(this.blobWorkers);
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -151,9 +153,14 @@ LUTMessage.prototype.gaSetParams = function() {
 			v: this.gaV,
 			inGamma: parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value),
 			inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
-			pqNits: this.inputs.inPQNits,
 			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
 			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
+
+			pqLw: parseFloat(this.inputs.inPQLw.value),
+			pqEOTFLw: parseFloat(this.inputs.inPQEOTFLw.value),
+			hlgLw: parseFloat(this.inputs.inHLGLw.value),
+			hlgBBC: this.inputs.hlgBBCScaleIn[0].checked,
+
 			defGamma: this.inputs.defGammaIn,
 			newISO: parseFloat(this.inputs.cineEI.value),
 			natISO: parseFloat(this.inputs.nativeISO.innerHTML),
@@ -295,6 +302,9 @@ LUTMessage.prototype.gaRx = function(d) {
 					break;
 			case 36: // Get PSST-CDL colours
 					this.ui[3].psstColours(d);
+					if (this.inputs.isMobile) {
+						this.ui[16].updateUI();
+					}
 					break;
 			case 37: // Get Multi Colours
 					this.ui[3].multiColours(d);
@@ -337,11 +347,18 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 		this.ui[3].setParams(d);
 		this.ui[6].updateGamma();
 		this.ui[8].isChanged(d.eiMult);
+		if (this.inputs.isMobile) {
+			this.ui[16].updateUI();
+		}
 	}
 };
 LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaLA',d.LA);
 	this.inputs.addInput('gammaPQ',d.PQ);
+	this.inputs.addInput('gammaHLG',d.HLG);
+	this.inputs.addInput('gammaPQOOTF',d.PQOOTF);
+	this.inputs.addInput('gammaPQEOTF',d.PQEOTF);
+	this.inputs.addInput('gammaHLGOOTF',d.HLGOOTF);
 	this.inputs.addInput('gammaInList',d.inList);
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);
@@ -548,6 +565,7 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.ui[d.p].recalcMatrix(d.idx,d.wcs,d.matrix);
 					break;
 			case 24: // Send Default LUT-based Gamuts from file to Worker
+					splashProg(5);
 					break;
 			case 25: // Get lists of gamuts
 					this.loadGamutLUTs();
@@ -566,7 +584,15 @@ LUTMessage.prototype.gtRx = function(d) {
 					this.ui[d.p].gotColSqr(d.o,d.tIdx);
 					break;
 			case 29: // Get Multi Colours
-					this.gaTx(d.p,17,{ o: d.o, hs: d.hs, cb:d.cb, to:['o','hs']});
+					if (d.doGamutLim) {
+						if (typeof d.og !== 'undefined') {
+							this.gaTx(d.p,17,{o: d.o, hs: d.hs, cb:d.cb, doGamutLim: true, og: d.og, gLimY: d.gLimY, gLimL: d.gLimL, gLimB: d.gLimB, to:['o','hs','og']});
+						} else {
+							this.gaTx(d.p,17,{o: d.o, hs: d.hs, cb:d.cb, doGamutLim: true, gLimY: d.gLimY, gLimL: d.gLimL, to:['o','hs']});
+						}
+					} else {
+						this.gaTx(d.p,17,{ o: d.o, hs: d.hs, cb:d.cb, doGamutLim: false, to:['o','hs']});
+					}
 					break;
 			case 30: //
 					this.gotIOGamutNames(d);
@@ -610,6 +636,9 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 //		this.ui[6].updateGamma();
 		this.ui[8].isChanged();
 		this.ui[8].testXY();
+		if (this.inputs.isMobile) {
+			this.ui[16].updateUI();
+		}
 	}
 };
 LUTMessage.prototype.gotGamutLists = function(d) {
@@ -1009,3 +1038,10 @@ LUTMessage.prototype.previewSample = function(x,y) {
 LUTMessage.prototype.getSamples = function(gridX,gridY) {
 	return this.ui[8].rgbSamples(gridX,gridY);
 };
+LUTMessage.prototype.mobileOpt = function(opt) {
+	this.ui[16].desktopCur(opt);
+};
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

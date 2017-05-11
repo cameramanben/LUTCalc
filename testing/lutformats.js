@@ -970,3 +970,7 @@ LUTFormats.prototype.parse = function(ext, title, data, lutMaker, lutDest) {
 	}
 	return false;
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

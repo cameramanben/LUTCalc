@@ -267,3 +267,7 @@ function savedFromApp(source, success) {
         lutMessage.saved(parseInt(source), false);
     }
 }
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

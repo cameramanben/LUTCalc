@@ -741,37 +741,33 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gammaDat.push(false);
-
-	this.gammas.push(new LUTGammaRec2100PQ(
-		'Rec2100 PQ'));
-	this.gammaSub.push([this.subIdx('HDR Display')]);
-	this.gammaDat.push(false);
-
-	this.gammas.push(new LUTGammaHLG(
-		'Hybrid-Log Gamma', {r: 0.5, a: 0.17883277, b: 0.28466892, c: c = 0.55991073}));
-	this.gammaSub.push([this.subIdx('HDR Display')]);
-	this.gammaDat.push(false);
+//
+	this.pqOOTF = new LUTGammaOOTFPQ('Display PQ OOTF (nits)', {Lw: 10000, scale: 'nits'});
+	this.hlgOOTF = new LUTGammaOOTFHLG('Display HLG OOTF (nits)', {Lw: 1000, Lb: 0, scale: 'nits'});
+	this.pqNoOOTF = new LUTGammaOOTFNone('Scene Linear (nits)', {Lw: 10000});
+	this.pqOOTFNorm = new LUTGammaOOTFPQ('Display PQ OOTF (Normalised)', {Lw: 10000, scale: 'normalised'});
+	this.hlgOOTFNorm = new LUTGammaOOTFHLG('Display HLG OOTF (Normalised)', {Lw: 1000, Lb: 0, scale: 'normalised'});
+//
 	this.PQ = this.gammas.length;
 	this.gammas.push(new LUTGammaPQ(
-		'Dolby PQ', {Lmax: 300}));
+		'Rec2100 PQ (PQ OOTF)', this.pqOOTF));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaITUProp(
-		'ITU Proposal (400%)', {m: 0.12314858 }));
+	this.gammas.push(new LUTGammaPQ(
+		'Rec2100 PQ (HLG OOTF)', this.hlgOOTF));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaITUProp(
-		'ITU Proposal (800%)', {m: 0.083822216783 }));
+	this.HLG = this.gammas.length;
+	this.gammas.push(new LUTGammaHLG(
+		'Rec2100 HLG', {a: 0.17883277, b: 0.28466892, c: 0.55991073}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaBBC283(
-		'BBC WHP283 (400%)', {m: 0.139401137752}));
+	this.pqEOTFIdx = this.gammas.length;
+	this.gammas.push(new LUTGammaPQ(
+		'PQ (EOTF Only)', this.pqNoOOTF));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaBBC283(
-		'BBC WHP283 (800%)', {m: 0.097401889128}));
-	this.gammaSub.push([this.subIdx('HDR Display')]);
-	this.gammaDat.push(false);
+//
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG3250G36 (HG1)',
 		{
@@ -1082,6 +1078,22 @@ LUTGamma.prototype.gammaList = function() {
 		'ProPhoto / ROMM', [ 1.8,16, 0, Math.pow(16,1.8/-0.8), Math.pow(Math.pow(16,1.8/-0.8),1/1.8), 1.8 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gammaDat.push(false);
+//
+	this.pqOOTFIdx = this.gammas.length;
+	this.gammas.push(this.pqOOTF);
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(this.pqOOTFNorm);
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.hlgOOTFIdx = this.gammas.length;
+	this.gammas.push(this.hlgOOTF);
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(this.hlgOOTFNorm);
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+//
 	this.gammas.push(new LUTGammaGam(
 		'γ1.5', [ 1.5,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
@@ -1130,6 +1142,22 @@ LUTGamma.prototype.gammaList = function() {
 		'γ2.6', [ 2.6,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaITUProp(
+		'ITU Proposal (400%)', {m: 0.12314858 }));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaITUProp(
+		'ITU Proposal (800%)', {m: 0.083822216783 }));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaBBC283(
+		'BBC WHP283 (400%)', {m: 0.139401137752}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaBBC283(
+		'BBC WHP283 (800%)', {m: 0.097401889128}));
+	this.gammaSub.push([this.subIdx('HDR Display')]);
+	this.gammaDat.push(false);
 	this.LA = this.gammas.length;
 	this.gammas.push(new LUTGammaLA(
 		'LA', this.lutMaker));
@@ -1143,23 +1171,35 @@ LUTGamma.prototype.gammaList = function() {
 	var logList = [], linList = [], genList = [], hdrList = [], ioList = [];
 	var firstLin = false;
 	for (var i=0; i < max; i++) {
+		if (i === this.LA) {
+			this.inList.push({name: 'Linear / γ', idx: 9999});
+			this.outList.push({name: 'Linear / γ', idx: 9999});
+		}
 		this.catList[i] = this.gammas[i].cat;
 		switch(this.gammas[i].cat) {
 			case 0: logList.push({name: this.gammas[i].name, idx: i});
 					this.inList.push({name: this.gammas[i].name, idx: i});
 					this.outList.push({name: this.gammas[i].name, idx: i});
 					break;
-			case 1: if (!firstLin) {
+			case 1: /* if (!firstLin) {
 						this.inList.push({name: 'Linear / γ', idx: 9999});
 						this.outList.push({name: 'Linear / γ', idx: 9999});
 						firstLin = true;
-					}
+					} */
 					if (this.gammas[i].gamma !== '') {
 						this.linList.push({name: this.gammas[i].name + ' - ' + this.gammas[i].gamma, idx: i});
 					} else {
 						this.linList.push({name: this.gammas[i].name, idx: i});
 					}
+/*
+					// This allows HDR OOTFs to be on both the main list and the linear sublist
+					if (this.gammas[i].hdrOOTF) {
+						hdrList.push({name: this.gammas[i].name, idx: i});
+						this.inList.push({name: this.gammas[i].name, idx: i});
+						this.outList.push({name: this.gammas[i].name, idx: i});					}
+*/
 					break;
+
 			case 2: genList.push({name: this.gammas[i].name, idx: i});
 					this.outList.push({name: this.gammas[i].name, idx: i});
 					break;
@@ -2461,204 +2501,125 @@ LUTGammaLin.prototype.linFromLegal = function(input) {
 	return input / this.zero;
 };
 // Rec2100 PQ
-function LUTGammaRec2100PQ(name) {
+function LUTGammaPQ(name,ootf) {
 	this.name = name;
-	this.iso = 800;
+	this.ootf = ootf;
 	this.cat = 7;
-}
-LUTGammaRec2100PQ.prototype.changeISO = function(iso) {
-	this.iso = iso;
-};
-LUTGammaRec2100PQ.prototype.linToD = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		c[j] = (c[j] * this.zero * 0.85630498533724) + 0.06256109481916;
-	}
-};
-LUTGammaRec2100PQ.prototype.linToL = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	var m1 = 2610/16384;
-	var m2 = 128*2523/4096;
-	var c2 = 32*2413/4096
-	var c3 = 32*2392/4096;
-	var c1 = c3 - c2 + 1;
-	for (var j=0; j<m; j++) {
-		c[j] *= 0.01; // scale to 0:1
-		if (c[j] > 0.0003024) {
-			c[j] = (1.099*Math.pow(59.5208*c[j],0.45))-0.099;
-		} else {
-			c[j] = 267.84*Math.max(c[j],0);
-		}
-		c[j] = Math.pow(c[j],2.4)/100;
-		c[j] = Math.pow((c1+(c2*Math.pow(c[j],m1)))/(1+(c3*Math.pow(c[j],m1))),m2)
-	}
-};
-LUTGammaRec2100PQ.prototype.linFromD = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		c[j] = (c[j] - 0.06256109481916) / (0.85630498533724 * this.zero);
-	}
-};
-LUTGammaRec2100PQ.prototype.linFromL = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	var m1 = 2610/16384;
-	var m2 = 128*2523/4096;
-	var c2 = 32*2413/4096
-	var c3 = 32*2392/4096;
-	var c1 = c3 - c2 + 1;
-	for (var j=0; j<m; j++) {
-		c[j] = Math.pow(Math.max(Math.pow(c[j],1/m2)-c1,0)/(c2-(c3*Math.pow(c[j],1/m2))),1/m1);
-		c[j] = Math.pow(c[j]*100,1/2.4);
-		if (c[j] > 0.080994816) {
-			c[j] = Math.pow((c[j] + 0.099)/1.099,1/0.45)/59.5208;
-		} else {
-			c[j] /= 267.84;
-		}
-		c[j] /= 0.01;
-	}
-};
-LUTGammaRec2100PQ.prototype.linToData = function(input) {
-	return (input * this.zero * 0.85630498533724) + 0.06256109481916;
-};
-LUTGammaRec2100PQ.prototype.linToLegal = function(input) {
-	var m1 = 2610/16384;
-	var m2 = 128*2523/4096;
-	var c2 = 32*2413/4096
-	var c3 = 32*2392/4096;
-	var c1 = c3 - c2 + 1;
-	input *= 0.01; // scale to 0:1
-	if (input > 0.0003024) {
-		input = (1.099*Math.pow(59.5208*input,0.45))-0.099;
-	} else {
-		input = 267.84*Math.max(input,0);
-	}
-	input = Math.pow(input,2.4)/100;
-	return Math.pow((c1+(c2*Math.pow(input,m1)))/(1+(c3*Math.pow(input,m1))),m2)
-};
-LUTGammaRec2100PQ.prototype.linFromData = function(input) {
-	return (input - 0.06256109481916) / (0.85630498533724 * this.zero);
-};
-LUTGammaRec2100PQ.prototype.linFromLegal = function(input) {
-	var m1 = 2610/16384;
-	var m2 = 128*2523/4096;
-	var c2 = 32*2413/4096
-	var c3 = 32*2392/4096;
-	var c1 = c3 - c2 + 1;
-	input = Math.pow(Math.max(Math.pow(input,1/m2)-c1,0)/(c2-(c3*Math.pow(input,1/m2))),1/m1);
-	input = Math.pow(input*100,1/2.4);
-	if (input > 0.080994816) {
-		input = Math.pow((input + 0.099)/1.099,1/0.45)/59.5208;
-	} else {
-		input /= 267.84;
-	}
-	return input/0.01;
-};
-// Dolby PQ
-function LUTGammaPQ(name,params) {
-	this.name = name;
-	this.params = params.nits;
-	this.cat = 7;
-	this.Lmax = 10000 / params.Lmax;
-	this.n = (2610/4096)*(1/4);
-	this.m = (2523/4096)*128;
+	this.m1 = (2610/16384);
+	this.m2 = (2523/4096)*128;
 	this.c1 = (3424/4096);
 	this.c2 = (2413/4096)*32;
 	this.c3 = (2392/4096)*32;
-	this.changeISO(800);
+	this.iso = 800;
 }
-LUTGammaPQ.prototype.changeLMax = function(Lmax) {
-	this.Lmax = 10000 / Lmax;
-	this.e = this.linToData(0);
-};
 LUTGammaPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
-	this.L = this.Lmax;
-	this.e = this.linToData(0);
 };
-LUTGammaPQ.prototype.linToD = function(buff) {
+LUTGammaPQ.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	this.linToL(buff);
+	if (p) {
+		this.linToL(buff, p);
+	} else {
+		this.linToL(buff);
+	}
 	for (var j=0; j<m; j++) {
-//		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaPQ.prototype.linToL = function(buff) {
+LUTGammaPQ.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
+	var m1 = this.m1;
+	var m2 = this.m2;
+	var c1 = this.c1;
+	var c2 = this.c2;
+	var c3 = this.c3;
+	if (p) {
+		this.ootf.linToL(buff, p);
+	} else {
+		this.ootf.linToL(buff);
+	}
 	for (var j=0; j<m; j++) {
-		if (c[j] < 0) {
-			c[j] = this.e;
-		} else {
-			r = Math.pow(c[j]/this.L,this.n);
-			c[j] = Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m);
-		}
+		r = Math.pow(Math.max(0,c[j])/10000,m1);
+		c[j] = Math.pow((c1+(c2*r))/(1+(c3*r)),m2);
 	}
 };
-LUTGammaPQ.prototype.linFromD = function(buff) {
+LUTGammaPQ.prototype.linFromD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
-//		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 	}
-	this.linFromL(buff);
+	if (p) {
+		this.linFromL(buff, p);
+	} else {
+		this.linFromL(buff);
+	}
 };
-LUTGammaPQ.prototype.linFromL = function(buff) {
+LUTGammaPQ.prototype.linFromL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
+	var m1 = this.m1;
+	var m2 = this.m2;
+	var c1 = this.c1;
+	var c2 = this.c2;
+	var c3 = this.c3;
+	var e = this.linToLegal(0);
 	for (var j=0; j<m; j++) {
-		if (c[j] <= this.e) {
+		if (c[j] <= e) {
 			c[j] = 0;
 		} else {
-			r = Math.pow(c[j],1/this.m);
-			c[j] = this.L*Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.n);
+			r = Math.pow(c[j],1/m2);
+			c[j] = Math.pow((r-c1)/(c2-(c3*r)),1/m1) * 10000;
 		}
+	}
+	if (p) {
+		this.ootf.linFromL(buff, p);
+	} else {
+		this.ootf.linFromL(buff);
 	}
 };
 LUTGammaPQ.prototype.linToData = function(input) {
-//	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
 	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
 };
 LUTGammaPQ.prototype.linToLegal = function(input) {
-	if (input < 0) {
-		return this.e;
-	} else {
-		var r = Math.pow(input/this.L,this.n);
-		return Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m);
-	}
+	var r = Math.pow(Math.max(0,this.ootf.linToLegal(input))/10000,this.m1);
+	return Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2);
 };
 LUTGammaPQ.prototype.linFromData = function(input) {
-//	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaPQ.prototype.linFromLegal = function(input) {
-	if (input <= this.e) {
+	var r = Math.pow(input,1/this.m2);
+	input = this.ootf.linFromLegal(Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.m1) * 10000);
+	if (isNaN(input)) {
 		return 0;
 	} else {
-		var r = Math.pow(input,1/this.m);
-		return this.L*Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.n);
+		return input;
 	}
 };
-// Hybrid Log Gamma
+// Rec2100 Hybrid-Log Gamma (HLG)
 function LUTGammaHLG(name,params) {
 	this.name = name;
-	this.r = params.r;
 	this.a = params.a;
 	this.b = params.b;
 	this.c = params.c;
 	this.cat = 5;
 	this.iso = 800;
+	this.nb = 1;
 }
 LUTGammaHLG.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaHLG.prototype.setBBC = function(bbc) {
+	if (bbc) {
+		this.nb = 2.821251498;
+	} else {
+		this.nb = 1;
+	}
 };
 LUTGammaHLG.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -2672,13 +2633,14 @@ LUTGammaHLG.prototype.linToL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
+	var nb = this.nb;
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = 0;
-		} else if (c[j] <= 1) {
-			c[j] = this.r * Math.pow(c[j],0.5);
+		} else if (c[j] <= 1/nb) {
+			c[j] = Math.pow(c[j]*nb,0.5) / 2;
 		} else {
-			c[j] = (this.a * Math.log(c[j] - this.b)) + this.c;
+			c[j] = (this.a * Math.log((c[j]*nb) - this.b)) + this.c;
 		}
 	}
 };
@@ -2694,13 +2656,14 @@ LUTGammaHLG.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
+	var nb = this.nb;
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = 0;
-		} else if (c[j] <= this.r) {
-			c[j] = Math.pow(c[j]/this.r,2);
+		} else if (c[j] <= 0.5) {
+			c[j] = Math.pow(2*c[j],2)/nb;
 		} else {
-			c[j] = Math.exp((c[j] - this.c)/this.a) + this.b;
+			c[j] = (Math.exp((c[j] - this.c)/this.a) + this.b)/nb;
 		}
 	}
 };
@@ -2710,23 +2673,323 @@ LUTGammaHLG.prototype.linToData = function(input) {
 LUTGammaHLG.prototype.linToLegal = function(input) {
 	if (input < 0) {
 		return 0;
-	} else if (input <= 1) {
-		return this.r * Math.pow(input,0.5);
+	} else if (input <= 1/this.nb) {
+		return Math.pow(input * this.nb,0.5) / 2;
 	} else {
-		return (this.a * Math.log(input - this.b)) + this.c;
-	}
-};
-LUTGammaHLG.prototype.linFromLegal = function(input) {
-	if (input < 0) {
-		return 0;
-	} else if (input <= this.r) {
-		return Math.pow(input/this.r,2);
-	} else {
-		return Math.exp((input - this.c)/this.a) + this.b;
+		return (this.a * Math.log((input * this.nb) - this.b)) + this.c;
 	}
 };
 LUTGammaHLG.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaHLG.prototype.linFromLegal = function(input) {
+	if (input < 0) {
+		return 0;
+	} else if (input <= 0.5) {
+		return Math.pow(2*input,2) / this.nb;
+	} else {
+		return (Math.exp((input - this.c)/this.a) + this.b) / this.nb;
+	}
+};
+// Rec2100 PQ OOTF
+function LUTGammaOOTFPQ(name, params) {
+	this.name = name;
+	if (typeof params.scale === 'string') {
+		switch(params.scale.toLowerCase()) {
+			case 'normalised':
+				this.s = 1/100;
+				break;
+			case 'nits':
+			default:
+				this.s = 100;
+				break;
+		}
+	} else {
+		this.s = 100; // default nits
+	}
+	this.setLw(params.Lw);
+	this.iso = 800;
+	this.gamma = '';
+	this.cat = 1;
+	this.hdrOOTF = true;
+}
+LUTGammaOOTFPQ.prototype.setLw = function(Lw) {
+	this.Lw = Lw;
+	this.e = this.linToLegal(0);
+};
+LUTGammaOOTFPQ.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaOOTFPQ.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	this.linToL(buff);
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaOOTFPQ.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;	
+	var Lw = 1000000/this.Lw;
+	var s = this.s;
+	for (var j=0; j<m; j++) {
+		if (c[j] < 0) {
+			c[j] = this.e;
+		} else {
+			c[j] /= Lw;
+			if (c[j] > 0.0003024) {
+				c[j] = (1.099*Math.pow(59.5208*c[j],0.45))-0.099;
+			} else {
+				c[j] = 267.84*Math.max(c[j],0);
+			}
+			c[j] = Math.pow(c[j],2.4)*s;
+		}
+	}
+};
+LUTGammaOOTFPQ.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+	this.linFromL(buff);
+};
+LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;	
+	var Lw = 1000000/this.Lw;
+	var s = this.s;
+	for (var j=0; j<m; j++) {
+		if (c[j] <= this.e) {
+			c[j] = 0;
+		} else {
+			c[j] = Math.pow(c[j]/s,1/2.4);
+			if (c[j] > 0.080994816) {
+				c[j] = Math.pow((c[j] + 0.099)/1.099,1/0.45)/59.5208;
+			} else {
+				c[j] /= 267.84;
+			}
+			c[j] *= Lw;
+		}
+	}
+};
+LUTGammaOOTFPQ.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaOOTFPQ.prototype.linToLegal = function(input) {
+	if (input < 0) {
+		return this.e;
+	} else {
+		input /= 1000000/this.Lw;
+		if (input > 0.0003024) {
+			input = (1.099*Math.pow(59.5208*input,0.45))-0.099;	
+		} else {
+			input = 267.84*Math.max(input,0);
+		}
+		return Math.pow(input,2.4)*this.s;
+	}
+}
+LUTGammaOOTFPQ.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaOOTFPQ.prototype.linFromLegal = function(input) {
+		if (input <= this.e) {
+			return 0;
+		} else {
+			input = Math.pow(input/this.s,1/2.4);
+			if (input > 0.080994816) {
+				input = Math.pow((input + 0.099)/1.099,1/0.45)/59.5208;
+			} else {
+				input /= 267.84;
+			}
+			return input * 1000000 / this.Lw;
+		}
+};
+// Rec2100 HLG OOTF
+function LUTGammaOOTFHLG(name, params) {
+	this.name = name;
+	if (typeof params.scale === 'string') {
+		switch(params.scale.toLowerCase()) {
+			case 'normalised':
+				this.s = 1/100;
+				break;
+			case 'nits':
+			default:
+				this.s = 1;
+				break;
+		}
+	} else {
+		this.s = 1; // default nits
+	}
+	this.setLw(params.Lw,params.Lb);
+	this.nb = 1;
+	this.iso = 800;
+	this.gamma = '';
+	this.cat = 1;
+	this.hdrOOTF = true;
+}
+LUTGammaOOTFHLG.prototype.setBBC = function(bbc) {
+	if (bbc) {
+		this.nb = 2.821251498;
+	} else {
+		this.nb = 1;
+	}
+};
+LUTGammaOOTFHLG.prototype.setLw = function(Lw, Lb) {
+	this.Lw = Lw;
+	if (typeof Lb === 'number') {
+		this.Lb = Lb;
+	} else {
+		this.Lb = 0;
+	}
+	this.g = (1.2 + (0.42*Math.log(this.Lw/1000)/Math.LN10));
+	this.a = (this.Lw-this.Lb)/Math.pow(12,this.g);
+	this.b = this.Lb;
+};
+LUTGammaOOTFHLG.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaOOTFHLG.prototype.linToD = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (p) {
+		this.linToL(buff, p);
+	} else {
+		this.linToL(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaOOTFHLG.prototype.linToL = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;	
+	var g = this.g;
+	var a = this.a;
+	var b = this.b;
+	var nb = this.nb;
+	var s = this.s * this.Lw / 10000;
+	var mx = this.s * this.Lw;
+	if (p && p.rgb) {
+		var y;
+		for (var j=0; j<m; j += 3) {
+			c[ j ] = Math.max(0,c[ j ]) * nb;
+			c[j+1] = Math.max(0,c[j+1]) * nb;
+			c[j+2] = Math.max(0,c[j+2]) * nb;
+			y = (0.2627 * c[ j ]) + (0.6780 * c[j+1]) + (0.0593 * c[j+2]);
+			c[ j ] = Math.min(mx,((a * Math.pow(y, g-1) * c[ j ]) + b) * s);
+			c[j+1] = Math.min(mx,((a * Math.pow(y, g-1) * c[j+1]) + b) * s);
+			c[j+2] = Math.min(mx,((a * Math.pow(y, g-1) * c[j+2]) + b) * s);
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			c[ j ] = Math.min(mx,((a * Math.pow(Math.max(0,c[ j ] * nb), g)) + b) * s);
+		}
+	}
+};
+LUTGammaOOTFHLG.prototype.linFromD = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+	if (p) {
+		this.linFromL(buff, p);
+	} else {
+		this.linFromL(buff);
+	}
+};
+LUTGammaOOTFHLG.prototype.linFromL = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;	
+	var g = this.g;
+	var a = this.a;
+	var b = this.b;
+	var nb = this.nb;
+	var s = 10000 * this.s / this.Lw;
+	if (p && p.rgb) {
+		var y;
+		for (var j=0; j<m; j += 3) {
+			y = (0.2627 * c[ j ]) + (0.6780 * c[j+1]) + (0.0593 * c[j+2]);
+			c[ j ] = Math.pow(Math.max(0, (y * s) - b) / a, (1-g)/g) * ((c[ j ] * s) - b) / (a*nb);
+			c[j+1] = Math.pow(Math.max(0, (y * s) - b) / a, (1-g)/g) * ((c[j+1] * s) - b) / (a*nb);
+			c[j+2] = Math.pow(Math.max(0, (y * s) - b) / a, (1-g)/g) * ((c[j+2] * s) - b)  / (a*nb);
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			c[ j ] = Math.pow(Math.max(0, (c[ j ] * s) - b)/a, 1/g)/nb;
+		}
+	}
+};
+LUTGammaOOTFHLG.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaOOTFHLG.prototype.linToLegal = function(input) {
+	return Math.min(this.s*100,((this.a * Math.pow(Math.max(0,input * this.nb), this.g)) + this.b) * this.Lw / (10000*this.s));
+};
+LUTGammaOOTFHLG.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaOOTFHLG.prototype.linFromLegal = function(input) {
+	return Math.pow(Math.max(0, (input * 10000 * this.s / this.Lw) - this.b)/this.a, 1/this.g)/this.nb;
+};
+// Rec2100 No OOTF (Scaled Scene Linear)
+function LUTGammaOOTFNone(name, params) {
+	if (params.Lw) {
+		this.Lw = params.Lw;
+	} else {
+		this.Lw = 10000;
+	}
+}
+LUTGammaOOTFNone.prototype.setLw = function(Lw) {
+	this.Lw = Lw;
+};
+LUTGammaOOTFNone.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaOOTFNone.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	this.linToL(buff);
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaOOTFNone.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var Lw = this.Lw;
+	for (var j=0; j<m; j++) {
+		c[ j ] = Math.min(c[ j ]*100, Lw);
+	}
+};
+LUTGammaOOTFNone.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+};
+LUTGammaOOTFNone.prototype.linFromL = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var Lw = this.Lw;
+	for (var j=0; j<m; j++) {
+		c[ j ] = Math.min(c[ j ], Lw)/100;
+	}
+};
+LUTGammaOOTFNone.prototype.linToData = function(input) {
+	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+};
+LUTGammaOOTFNone.prototype.linToLegal = function(input) {
+	return Math.min(input * 100, this.Lw);
+};
+LUTGammaOOTFNone.prototype.linFromData = function(input) {
+	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+};
+LUTGammaOOTFNone.prototype.linFromLegal = function(input) {
+	return Math.min(input, this.Lw) / 100;
 };
 // ITU HDR Proposal
 function LUTGammaITUProp(name,params) {
@@ -3493,9 +3756,24 @@ LUTGamma.prototype.setParams = function(params) {
 			this.sIn = false;
 		}
 	}
-	if (typeof params.pqNits === 'number') {
-		this.gammas[this.PQ].changeLMax(params.pqNits);
+//
+	if (typeof params.hlgBBC === 'boolean') {
+		this.gammas[this.HLG].setBBC(params.hlgBBC);
+		this.hlgOOTF.setBBC(params.hlgBBC);
+		this.hlgOOTFNorm.setBBC(params.hlgBBC);
 	}
+	if (typeof params.pqLw === 'number') {
+		this.pqOOTF.setLw(params.pqLw);
+		this.pqOOTFNorm.setLw(params.pqLw);
+	}
+	if (typeof params.pqEOTFLw === 'number') {
+		this.pqNoOOTF.setLw(params.pqEOTFLw);
+	}
+	if (typeof params.hlgLw === 'number') {
+		this.hlgOOTF.setLw(params.hlgLw);
+		this.hlgOOTFNorm.setLw(params.hlgLw);
+	}
+//
 	if (typeof params.clipSelect === 'number') {
 		switch(params.clipSelect) {
 			case 0: this.clipB = false;
@@ -3836,6 +4114,10 @@ LUTGamma.prototype.getLists = function(p,t) {
 		gammaDat: this.gammaDat,
 		rec709: this.rec709,
 		PQ: this.PQ,
+		HLG: this.HLG,
+		PQOOTF: this.pqOOTFIdx,
+		PQEOTF: this.pqEOTFIdx,
+		HLGOOTF: this.hlgOOTFIdx,
 		LA: this.LA
 	};
 };
@@ -3924,15 +4206,15 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 	var refOut = new Float64Array(refIn);
 	out.curIn = this.curIn;
 	out.curOut = this.curOut;
-	this.gammas[this.curIn].linToL(refIn.buffer);
+	this.gammas[this.curIn].linToL(refIn.buffer, { rec: true });
 	var stopOut = new Float64Array(stopIn);
-	this.gammas[this.curIn].linToL(stopIn.buffer);
-	this.gammas[this.curIn].linFromL(colIn.buffer);
+	this.gammas[this.curIn].linToL(stopIn.buffer, { rec: true });
+	this.gammas[this.curIn].linFromL(colIn.buffer, { rec: true });
 	if (this.nul) {
 		refOut = new Float64Array(refIn);
 		stopOut = new Float64Array(stopIn);
-		this.gammas[this.curIn].linToL(stopPreVals.buffer);
-		this.gammas[this.curIn].linToL(stopVals.buffer);
+		this.gammas[this.curIn].linToL(stopPreVals.buffer, { rec: true });
+		this.gammas[this.curIn].linToL(stopVals.buffer, { rec: true });
 	} else {
 		this.gammas[this.curIn].linFromL(lutOut.buffer);
 		for (var j=0; j<m; j++) {
@@ -3946,7 +4228,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 		this.getLumVals(refOut.buffer);
 		this.getLumVals(stopOut.buffer);
 		this.getLumVals(lutOut.buffer);
-		this.gammas[this.curIn].linToL(stopPreVals.buffer);
+		this.gammas[this.curIn].linToL(stopPreVals.buffer, { rec: true });
 		this.getLumVals(stopVals.buffer);
 		if (this.doBlkHi) {
 			for (var j=0; j<m; j++) {
@@ -4036,7 +4318,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 		table[j] /= 0.9;
 	}
 	if (this.nul) {
-		this.gammas[this.curIn].linToL(table.buffer);
+		this.gammas[this.curIn].linToL(table.buffer, { rec: true });
 	} else {
 		this.getLumVals(table.buffer);
 		if (this.doBlkHi) {
@@ -4563,6 +4845,9 @@ LUTGamma.prototype.multiColours = function(p,t,i) {
 		if (this.doBlkGam) {
 			this.blkGamOut(i.o);
 		}
+		if (i.doGamutLim) {
+			this.gamutLimOut(i.o, i.gLimY, i.gLimL, i.og, i.gLimB);
+		}
 	}
 	for (var j=0; j<m; j++) {
 		o[j] = Math.max(0,(Math.min(255,input[j]*255/1.09475)));
@@ -4574,9 +4859,9 @@ LUTGamma.prototype.multiColours = function(p,t,i) {
 };
 LUTGamma.prototype.chartRGB = function(p,t,i) {
 	var out = { p: p, t: t+20, v: this.ver, colIn: i.colIn, rIn: i.rIn, gIn: i.gIn, bIn: i.bIn, rOut: i.rOut, gOut: i.gOut, bOut: i.bOut, to: ['rIn','gIn','bIn','rOut','gOut','bOut']};
-	this.gammas[this.curIn].linToD(i.rIn);
-	this.gammas[this.curIn].linToD(i.gIn);
-	this.gammas[this.curIn].linToD(i.bIn);
+	this.gammas[this.curIn].linToD(i.rIn, { rec: true });
+	this.gammas[this.curIn].linToD(i.gIn, { rec: true });
+	this.gammas[this.curIn].linToD(i.bIn, { rec: true });
 	this.gammas[this.curOut].linToL(i.rOut);
 	this.gammas[this.curOut].linToL(i.gOut);
 	this.gammas[this.curOut].linToL(i.bOut);
@@ -4648,7 +4933,21 @@ LUTGamma.prototype.chartRGB = function(p,t,i) {
 };
 LUTGamma.prototype.changePQ = function(p,t,i) {
 	var out = {p: p, t: t+20, v: this.ver};
-	this.gammas[this.PQ].changeLMax(i);
+//	this.gammas[this.PQ].changeLMax(i);
+	out.ok = true;
+	return out;
+};
+LUTGamma.prototype.setHDRDisplayIntent = function(p,t,i) {
+	var out = {p: p, t: t+20, v: this.ver};
+	if (typeof i.Lw === 'number') {
+		if (typeof i.Lw === 'number') {
+			this.pqOOTF.setLw(i.Lw,i.Lb);
+			this.pqOOTFNorm.setLw(i.Lw,i.Lb);
+		} else {
+			this.pqOOTF.setLw(i.Lw,0);
+			this.pqOOTFNorm.setLw(i.Lw,0);
+		}
+	}
 	out.ok = true;
 	return out;
 };
@@ -4769,20 +5068,25 @@ function getGammaWorkerString() {
 	for (var j in LUTGammaLin.prototype) {
 		out += 'LUTGammaLin.prototype.' + j + '=' + LUTGammaLin.prototype[j].toString() + "\n";
 	}
-	// LUTGammaRec2100PQ
-	out += LUTGammaRec2100PQ.toString() + "\n";
-	for (var j in LUTGammaRec2100PQ.prototype) {
-		out += 'LUTGammaRec2100PQ.prototype.' + j + '=' + LUTGammaRec2100PQ.prototype[j].toString() + "\n";
-	}
 	// LUTGammaPQ
 	out += LUTGammaPQ.toString() + "\n";
 	for (var j in LUTGammaPQ.prototype) {
 		out += 'LUTGammaPQ.prototype.' + j + '=' + LUTGammaPQ.prototype[j].toString() + "\n";
 	}
+	// LUTGammaOOTFPQ
+	out += LUTGammaOOTFPQ.toString() + "\n";
+	for (var j in LUTGammaOOTFPQ.prototype) {
+		out += 'LUTGammaOOTFPQ.prototype.' + j + '=' + LUTGammaOOTFPQ.prototype[j].toString() + "\n";
+	}
 	// LUTGammaHLG
 	out += LUTGammaHLG.toString() + "\n";
 	for (var j in LUTGammaHLG.prototype) {
 		out += 'LUTGammaHLG.prototype.' + j + '=' + LUTGammaHLG.prototype[j].toString() + "\n";
+	}
+	// LUTGammaOOTFHLG
+	out += LUTGammaOOTFHLG.toString() + "\n";
+	for (var j in LUTGammaOOTFHLG.prototype) {
+		out += 'LUTGammaOOTFHLG.prototype.' + j + '=' + LUTGammaOOTFHLG.prototype[j].toString() + "\n";
 	}
 	// LUTGammaITUProp
 	out += LUTGammaITUProp.toString() + "\n";

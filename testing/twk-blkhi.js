@@ -32,7 +32,7 @@ TWKBlkHi.prototype.io = function() {
 	this.blackLevelInput = document.createElement('input');
 	this.blackLevelInput.setAttribute('type','number');
 	this.blackLevelInput.setAttribute('step','any');
-	this.blackLevelInput.className = 'ireinput';
+	this.blackLevelInput.className = 'ire-input';
 	// Black Level Value Lock
 	this.blackLevelLock = document.createElement('input');
 	this.blackLevelLock.setAttribute('type','checkbox');
@@ -48,7 +48,7 @@ TWKBlkHi.prototype.io = function() {
 	this.highLevelRef = document.createElement('input');
 	this.highLevelRef.setAttribute('type','number');
 	this.highLevelRef.setAttribute('step','any');
-	this.highLevelRef.className = 'ireinput';
+	this.highLevelRef.className = 'ire-input';
 	this.highLevelRef.value='90';
 	// Highlight Reflectance Maps To In Rec709 % IRE - Info Only
 	this.highLevelRec = document.createElement('span');
@@ -56,7 +56,7 @@ TWKBlkHi.prototype.io = function() {
 	this.highLevelMap = document.createElement('input');
 	this.highLevelMap.setAttribute('type','number');
 	this.highLevelMap.setAttribute('step','any');
-	this.highLevelMap.className = 'ireinput';
+	this.highLevelMap.className = 'ire-input';
 	// Highlight Level Lock
 	this.highLevelLock = document.createElement('input');
 	this.highLevelLock.setAttribute('type','checkbox');
@@ -332,3 +332,7 @@ TWKBlkHi.prototype.testHighMap = function() {
 		this.highLevelMap.value = null;
 	}
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}
