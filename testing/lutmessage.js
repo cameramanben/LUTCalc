@@ -37,7 +37,7 @@ function LUTMessage(inputs) {
 	} else {
 		this.blobWorkers = false;
 	}
-//		this.blobWorkers = false;
+		this.blobWorkers = false;
 //console.log(this.blobWorkers);
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
