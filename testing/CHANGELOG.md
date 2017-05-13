@@ -3,8 +3,9 @@ LUTCalc Changelog
 
 v3.1
 ----
-* New Feature - Splash screen displays progress bar.
+* New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).
 * New Feature - Separation on Rec2100 OOTFs and OETF/EOTFs for display referred conversions in PQ and Hybrid-log Gamma.
+* New Feature - Splash screen displays progress bar.
 * Feature Change - Full rewrite of the underlying high dynamic range (HDR) code.
 * Feature Change - User interface improvements.
 * Bugfix - Colour sliders in 'MultiTone' tool now correctly reflect the Gamut Limiter.

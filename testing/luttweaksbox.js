@@ -72,6 +72,8 @@ LUTTweaksBox.prototype.ui = function() {
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
 	this.inputs.tweakTitles.push('Black Gamma');
 	this.tweaksList.push(new TWKBlkGam(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Display Colourspace Converter');
+	this.tweaksList.push(new TWKDisplay(this.holder, this.inputs, this.messages));
 	this.inputs.tweakTitles.push('Gamut Limiter');
 	this.gl = this.tweaksList.length;
 	this.tweaksList.push(new TWKGamutLim(this.holder, this.inputs, this.messages));

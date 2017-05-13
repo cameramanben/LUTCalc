@@ -32,6 +32,7 @@ function LUTMessage(inputs) {
 	// 14 - twkMulti
 	// 15 - twkSampler
 	// 16 - mobile
+	// 17 - twkDisplay
 	if (typeof this.inputs.blobWorkers !== 'undefined') {
 		this.blobWorkers = this.inputs.blobWorkers;
 	} else {
@@ -363,6 +364,9 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);
 	this.inputs.addInput('gammaCatList',d.catList);
+	this.inputs.addInput('gammaDisList',d.disList);
+	this.inputs.addInput('gammaDisBaseGamuts',d.baseDisGamuts);
+	this.inputs.addInput('gammaBaseGamuts',d.baseGamuts);
 	this.inputs.addInput('gammaSubNames',d.subNames);
 	this.inputs.addInput('gammaDataLevel',d.gammaDat);
 	var subLists = [];
@@ -742,6 +746,7 @@ LUTMessage.prototype.updateGammaIn = function() {
 LUTMessage.prototype.updateGammaOut = function() {
 	if (this.go) {
 		this.ui[11].updateGammaOut();
+		this.ui[17].updateGammaOut();
 	}
 }
 LUTMessage.prototype.changeGamut = function() {

@@ -702,8 +702,9 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
 	this.addInfo(this.insClgInfo,false,null,"v3.1");
-	this.addInfo(this.insClgInfo,true,null,"New Feature - Splash screen displays progress bar.");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Separation on Rec2100 OOTFs and OETF/EOTFs for display referred conversions in PQ and Hybrid-log Gamma.");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - Splash screen displays progress bar.");
 	this.addInfo(this.insClgInfo,true,null,"Feature Change - Full rewrite of the underlying high dynamic range (HDR) code.");
 	this.addInfo(this.insClgInfo,true,null,"Feature Change - User interface improvements.");
 	this.addInfo(this.insClgInfo,true,null,"Bugfix - Colour sliders in 'MultiTone' tool now correctly reflect the Gamut Limiter.");
