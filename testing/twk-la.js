@@ -505,7 +505,7 @@ TWKLA.prototype.testPQLw = function() {
 	}
 	this.pqOOTFLw.value = Lw;
 	this.inputs.inPQLw.value = this.pqOOTFLw.value;
-	this.inputs.outPQLw.value = this.pqOOTFLw.value;
+//	this.inputs.outPQLw.value = this.pqOOTFLw.value;
 };
 TWKLA.prototype.testPQEOTFLw = function() {
 	var Lw = parseFloat(this.pqEOTFLw.value);
@@ -516,7 +516,7 @@ TWKLA.prototype.testPQEOTFLw = function() {
 	}
 	this.pqEOTFLw.value = Lw;
 	this.inputs.inPQEOTFLw.value = this.pqEOTFLw.value;
-	this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
+//	this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
 };
 TWKLA.prototype.testHLGLw = function() {
 	var Lw = parseFloat(this.hlgOOTFLw.value);
@@ -527,13 +527,13 @@ TWKLA.prototype.testHLGLw = function() {
 	}
 	this.hlgOOTFLw.value = Lw;
 	this.inputs.inHLGLw.value = this.hlgOOTFLw.value;
-	this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
+//	this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
 };
 TWKLA.prototype.testNHKBBC = function() {
 	this.inputs.hlgBBCScaleIn[0].checked = this.hlgScale[0].checked;
 	this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
-	this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
-	this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+//	this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
+//	this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
 };
 TWKLA.prototype.createRadioElement = function(name, checked) {
     var radioInput;
@@ -859,17 +859,17 @@ TWKLA.prototype.updateLAMethod = function(newMethod) {
 TWKLA.prototype.syncHDRVals = function(here) {
 	if (here) { // send from here to the gamma box
 		this.inputs.inPQLw.value = this.pqOOTFLw.value;
-		this.inputs.outPQLw.value = this.pqOOTFLw.value;
+//		this.inputs.outPQLw.value = this.pqOOTFLw.value;
 		this.inputs.inPQEOTFLw.value = this.pqEOTFLw.value;
-		this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
+//		this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
 		this.inputs.inHLGLw.value = this.hlgOOTFLw.value;
-		this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
+//		this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
 		this.inputs.inHLGLb.value = this.hlgOOTFLb.value;
-		this.inputs.outHLGLb.value = this.hlgOOTFLb.value;
+//		this.inputs.outHLGLb.value = this.hlgOOTFLb.value;
 		this.inputs.hlgBBCScaleIn[0].checked = this.hlgScale[0].checked;
 		this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
-		this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
-		this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+//		this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
+//		this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
 	} else { // collect from gamma box
 		this.pqOOTFLw.value = this.inputs.inPQLw.value;
 		this.pqEOTFLw.value = this.inputs.inPQEOTFLw.value;

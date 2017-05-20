@@ -68,6 +68,8 @@ function LUTGamma() {
 
 	this.camClip = 11.52;
 
+	this.hdrOut = false;
+
 	this.al = 1;
 	this.bl = 0;
 	this.ad = 1;
@@ -1596,7 +1598,7 @@ LUTGamma.prototype.setBlkHi = function(params) {
 		}
 		var blackMap;
 		if (typeof p.blackLevel === 'number') {
-			if (blackLock || (Math.abs(blackDefault-p.blackLevel)>0.0001 && !this.changedOut && !this.changedASCCDL)) {
+			if (blackLock || (Math.abs(blackDefault-p.blackLevel)>0.0001 && !this.changedOut && !this.changedASCCDL && !this.changedHDR)) {
 				blackMap = p.blackLevel;
 			} else {
 				blackMap = blackDefault;
@@ -1606,7 +1608,7 @@ LUTGamma.prototype.setBlkHi = function(params) {
 		}
 		var highMap;
 		if (typeof p.highMap === 'number') {
-			if (highLock || (Math.abs(highDefault-p.highMap)>0.0001 && !this.changedOut && !changedRef && !this.changedASCCDL)) {
+			if (highLock || (Math.abs(highDefault-p.highMap)>0.0001 && !this.changedOut && !changedRef && !this.changedASCCDL && !this.changedHDR)) {
 				highMap = p.highMap;
 			} else {
 				highMap = highDefault;
@@ -2056,6 +2058,19 @@ LUTGamma.prototype.finalOut = function(buff,cb) {
 			}
 			if (this.clipW && cMax>959/1023) {
 				cMax = 959/1023;
+			}
+		}
+	}
+	if (this.hdrOut) {
+		var mx = this.gammas[this.curOut].mxO;
+		if (this.outL) {
+			if (mx < cMax) {
+				cMax = mx;
+			}
+		} else {
+			mx = (mx * 0.85630498533724) + 0.06256109481916;
+			if (mx < cMax) {
+				cMax = mx;
 			}
 		}
 	}
@@ -2782,7 +2797,14 @@ function LUTGammaPQ(name,ootf) {
 	this.c2 = (2413/4096)*32;
 	this.c3 = (2392/4096)*32;
 	this.iso = 800;
+	this.setLw();
 }
+LUTGammaPQ.prototype.setLw = function() {
+	var r = Math.pow(Math.max(0,this.ootf.LwI)/10000,this.m1);
+	this.mxI = Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2);
+	var r = Math.pow(Math.max(0,this.ootf.LwO)/10000,this.m1);
+	this.mxO = Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2);
+};
 LUTGammaPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
@@ -2807,14 +2829,21 @@ LUTGammaPQ.prototype.linToL = function(buff, p) {
 	var c1 = this.c1;
 	var c2 = this.c2;
 	var c3 = this.c3;
+	var mx;
 	if (p) {
 		this.ootf.linToL(buff, p);
+		if (p.rec) {
+			mx = this.mxI;
+		} else {
+			mx = this.mxO;
+		}
 	} else {
 		this.ootf.linToL(buff);
+		mx = this.mxO;
 	}
 	for (var j=0; j<m; j++) {
 		r = Math.pow(Math.max(0,c[j])/10000,m1);
-		c[j] = Math.pow((c1+(c2*r))/(1+(c3*r)),m2);
+		c[j] = Math.min(mx,Math.pow((c1+(c2*r))/(1+(c3*r)),m2));
 	}
 };
 LUTGammaPQ.prototype.linFromD = function(buff, p) {
@@ -2853,12 +2882,27 @@ LUTGammaPQ.prototype.linFromL = function(buff, p) {
 		this.ootf.linFromL(buff);
 	}
 };
-LUTGammaPQ.prototype.linToData = function(input) {
-	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+LUTGammaPQ.prototype.linToData = function(input, p) {
+	if (p) {
+		return (this.linToLegal(input,p) * 0.85630498533724) + 0.06256109481916;
+	} else {
+		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+	}
 };
-LUTGammaPQ.prototype.linToLegal = function(input) {
-	var r = Math.pow(Math.max(0,this.ootf.linToLegal(input))/10000,this.m1);
-	return Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2);
+LUTGammaPQ.prototype.linToLegal = function(input,p) {
+	var mx, r;
+	if (p) {
+		var r = Math.pow(Math.max(0,this.ootf.linToLegal(input, p))/10000,this.m1);
+		if (p.rec) {
+			mx = this.mxI;
+		} else {
+			mx = this.mxO;
+		}
+	} else {
+		var r = Math.pow(Math.max(0,this.ootf.linToLegal(input))/10000,this.m1);
+		mx = this.mxO;
+	}
+	return Math.min(mx,Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2));
 };
 LUTGammaPQ.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
@@ -2880,31 +2924,46 @@ function LUTGammaHLG(name,params) {
 	this.c = params.c;
 	this.cat = 5;
 	this.iso = 800;
-	this.nb = 1;
+	this.nbI = 1;
+	this.nbO = 1;
 }
 LUTGammaHLG.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
-LUTGammaHLG.prototype.setBBC = function(bbc) {
-	if (bbc) {
-		this.nb = 2.821251498;
+LUTGammaHLG.prototype.setBBC = function(bbcIn, bbcOut) {
+	if (bbcIn) {
+		this.nbI = 2.821251498;
 	} else {
-		this.nb = 1;
+		this.nbI = 1;
+	}
+	if (bbcOut) {
+		this.nbO = 2.821251498;
+	} else {
+		this.nbO = 1;
 	}
 };
-LUTGammaHLG.prototype.linToD = function(buff) {
+LUTGammaHLG.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	this.linToL(buff);
+	if (p) {
+		this.linToL(buff, p);
+	} else {
+		this.linToL(buff);
+	}
 	for (var j=0; j<m; j++) {
 		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaHLG.prototype.linToL = function(buff) {
+LUTGammaHLG.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
-	var nb = this.nb;
+	var nb;
+	if (p && p.rec) {
+		nb = this.nbI;
+	} else {
+		nb = this.nbO;
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = 0;
@@ -2927,7 +2986,7 @@ LUTGammaHLG.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
-	var nb = this.nb;
+	var nb = this.nbI;
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = 0;
@@ -2938,16 +2997,26 @@ LUTGammaHLG.prototype.linFromL = function(buff) {
 		}
 	}
 };
-LUTGammaHLG.prototype.linToData = function(input) {
-	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+LUTGammaHLG.prototype.linToData = function(input, p) {
+	if (p) {
+		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+	} else {
+		return (this.linToLegal(input, p) * 0.85630498533724) + 0.06256109481916;
+	}
 };
-LUTGammaHLG.prototype.linToLegal = function(input) {
+LUTGammaHLG.prototype.linToLegal = function(input, p) {
+	var nb;
+	if (p && p.rec) {
+		nb = this.nbI;
+	} else {
+		nb = this.nbO;
+	}
 	if (input < 0) {
 		return 0;
-	} else if (input <= 1/this.nb) {
-		return Math.pow(input * this.nb,0.5) / 2;
+	} else if (input <= 1/nb) {
+		return Math.pow(input * nb,0.5) / 2;
 	} else {
-		return (this.a * Math.log((input * this.nb) - this.b)) + this.c;
+		return (this.a * Math.log((input * nb) - this.b)) + this.c;
 	}
 };
 LUTGammaHLG.prototype.linFromData = function(input) {
@@ -2957,9 +3026,9 @@ LUTGammaHLG.prototype.linFromLegal = function(input) {
 	if (input < 0) {
 		return 0;
 	} else if (input <= 0.5) {
-		return Math.pow(2*input,2) / this.nb;
+		return Math.pow(2*input,2) / this.nbI;
 	} else {
-		return (Math.exp((input - this.c)/this.a) + this.b) / this.nb;
+		return (Math.exp((input - this.c)/this.a) + this.b) / this.nbI;
 	}
 };
 // Rec2100 PQ OOTF
@@ -2978,35 +3047,54 @@ function LUTGammaOOTFPQ(name, params) {
 	} else {
 		this.s = 100; // default nits
 	}
-	this.setLw(params.Lw);
+	this.setLw(params.Lw, params.Lw);
 	this.iso = 800;
 	this.gamma = '';
 	this.cat = 1;
 	this.hdrOOTF = true;
 }
-LUTGammaOOTFPQ.prototype.setLw = function(Lw) {
-	this.Lw = Lw;
-	this.e = this.linToLegal(0);
+LUTGammaOOTFPQ.prototype.setLw = function(LwIn, LwOut) {
+	this.LwI = LwIn;
+	var out = false;
+	if (LwOut !== this.LwO) {
+		out = true;
+	}
+	this.LwO = LwOut;
+	this.eI = this.linToLegal(0, { rec: true });
+	this.eO = this.linToLegal(0);
+	return out;
 };
 LUTGammaOOTFPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
-LUTGammaOOTFPQ.prototype.linToD = function(buff) {
+LUTGammaOOTFPQ.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	this.linToL(buff);
+	if (p) {
+		this.linToL(buff,p);
+	} else {
+		this.linToL(buff);
+	}
 	for (var j=0; j<m; j++) {
 		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaOOTFPQ.prototype.linToL = function(buff) {
+LUTGammaOOTFPQ.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
-	var m = c.length;	
-	var Lw = 1000000/this.Lw;
+	var m = c.length;
+	var Lw, e;
+	if (p && p.rec) {
+//		Lw = 1000000/this.LwI;
+		e = this.eI;
+	} else {
+//		Lw = 1000000/this.LwO;
+		e = this.eO;
+	}
+	Lw = 100;
 	var s = this.s;
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
-			c[j] = this.e;
+			c[j] = e;
 		} else {
 			c[j] /= Lw;
 			if (c[j] > 0.0003024) {
@@ -3018,7 +3106,7 @@ LUTGammaOOTFPQ.prototype.linToL = function(buff) {
 		}
 	}
 };
-LUTGammaOOTFPQ.prototype.linFromD = function(buff) {
+LUTGammaOOTFPQ.prototype.linFromD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
@@ -3028,11 +3116,12 @@ LUTGammaOOTFPQ.prototype.linFromD = function(buff) {
 };
 LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
-	var m = c.length;	
-	var Lw = 1000000/this.Lw;
+	var m = c.length;
+//	var Lw = 1000000/this.LwI;
+	var Lw = 100;
 	var s = this.s;
 	for (var j=0; j<m; j++) {
-		if (c[j] <= this.e) {
+		if (c[j] <= this.eI) {
 			c[j] = 0;
 		} else {
 			c[j] = Math.pow(c[j]/s,1/2.4);
@@ -3045,14 +3134,27 @@ LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
 		}
 	}
 };
-LUTGammaOOTFPQ.prototype.linToData = function(input) {
-	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
-};
-LUTGammaOOTFPQ.prototype.linToLegal = function(input) {
-	if (input < 0) {
-		return this.e;
+LUTGammaOOTFPQ.prototype.linToData = function(input, p) {
+	if (p) {
+		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
 	} else {
-		input /= 1000000/this.Lw;
+		return (this.linToLegal(input, p) * 0.85630498533724) + 0.06256109481916;
+	}
+};
+LUTGammaOOTFPQ.prototype.linToLegal = function(input, p) {
+	var Lw, e;
+	if (p && p.rec) {
+//		Lw = 1000000/this.LwI;
+		e = this.eI;
+	} else {
+//		Lw = 1000000/this.LwO;
+		e = this.eO;
+	}
+	Lw = 100;
+	if (input < 0) {
+		return e;
+	} else {
+		input /= 1000000/Lw;
 		if (input > 0.0003024) {
 			input = (1.099*Math.pow(59.5208*input,0.45))-0.099;	
 		} else {
@@ -3065,7 +3167,7 @@ LUTGammaOOTFPQ.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaOOTFPQ.prototype.linFromLegal = function(input) {
-		if (input <= this.e) {
+		if (input <= this.eI) {
 			return 0;
 		} else {
 			input = Math.pow(input/this.s,1/2.4);
@@ -3074,7 +3176,8 @@ LUTGammaOOTFPQ.prototype.linFromLegal = function(input) {
 			} else {
 				input /= 267.84;
 			}
-			return input * 1000000 / this.Lw;
+//			return input * 1000000 / this.LwI;
+			return input * 10000;
 		}
 };
 // Rec2100 HLG OOTF
@@ -3093,30 +3196,61 @@ function LUTGammaOOTFHLG(name, params) {
 	} else {
 		this.s = 1; // default nits
 	}
-	this.setLw(params.Lw,params.Lb);
-	this.nb = 1;
+	this.setLw(params.Lw, params.Lw, params.Lb, params.Lb);
+	this.nbI = 1;
+	this.nbO = 1;
 	this.iso = 800;
 	this.gamma = '';
 	this.cat = 1;
 	this.hdrOOTF = true;
 }
-LUTGammaOOTFHLG.prototype.setBBC = function(bbc) {
-	if (bbc) {
-		this.nb = 2.821251498;
+LUTGammaOOTFHLG.prototype.setBBC = function(bbcIn, bbcOut) {
+	if (bbcIn) {
+		this.nbI = 2.821251498;
 	} else {
-		this.nb = 1;
+		this.nbI = 1;
+	}
+	var old = false;
+	if  (this.nbO) {
+		old = this.nbO;
+	}
+	if (bbcOut) {
+		this.nbO = 2.821251498;
+	} else {
+		this.nbO = 1;
+	}
+	if (old && old !== this.nbO) {
+		return true;
+	} else {
+		return false;
 	}
 };
-LUTGammaOOTFHLG.prototype.setLw = function(Lw, Lb) {
-	this.Lw = Lw;
-	if (typeof Lb === 'number') {
-		this.Lb = Lb;
-	} else {
-		this.Lb = 0;
+LUTGammaOOTFHLG.prototype.setLw = function(LwIn, LwOut, LbIn, LbOut) {
+	this.LwI = LwIn;
+	var out = false;
+	if (LwOut !== this.LwO) {
+		out = true;
 	}
-	this.g = (1.2 + (0.42*Math.log(this.Lw/1000)/Math.LN10));
-	this.a = (this.Lw-this.Lb)/Math.pow(12,this.g);
-	this.b = this.Lb;
+	this.LwO = LwOut;
+	if (typeof LbIn === 'number') {
+		this.LbI = LbIn;
+		if (typeof LbOut === 'number') {
+			if (LbOut !== this.LbO) {
+				out = true;
+			}
+			this.LbO = LbOut;
+		}
+	} else {
+		this.LbI = 0;
+		this.LbO = 0;
+	}
+	this.gI = (1.2 + (0.42*Math.log(this.LwI/1000)/Math.LN10));
+	this.aI = (this.LwI-this.LbI)/Math.pow(12,this.gI);
+	this.bI = this.LbI;
+	this.gO = (1.2 + (0.42*Math.log(this.LwO/1000)/Math.LN10));
+	this.aO = (this.LwO-this.LbO)/Math.pow(12,this.gO);
+	this.bO = this.LbO;
+	return out;
 };
 LUTGammaOOTFHLG.prototype.changeISO = function(iso) {
 	this.iso = iso;
@@ -3135,13 +3269,23 @@ LUTGammaOOTFHLG.prototype.linToD = function(buff, p) {
 };
 LUTGammaOOTFHLG.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
-	var m = c.length;	
-	var g = this.g;
-	var a = this.a;
-	var b = this.b;
-	var nb = this.nb;
-	var s = this.s * this.Lw / 10000;
-	var mx = this.s * this.Lw;
+	var m = c.length;
+	var g, a, b, nb, s, mx;
+	if (p && p.rec) {
+		g = this.gI;
+		a = this.aI;
+		b = this.bI;
+		nb = this.nbI;
+		s = this.s * this.LwI / 10000;
+		mx = this.s * this.LwI;
+	} else {
+		g = this.gO;
+		a = this.aO;
+		b = this.bO;
+		nb = this.nbO;
+		s = this.s * this.LwO / 10000;
+		mx = this.s * this.LwO;
+	}
 	if (p && p.rgb) {
 		var y;
 		for (var j=0; j<m; j += 3) {
@@ -3174,11 +3318,11 @@ LUTGammaOOTFHLG.prototype.linFromD = function(buff, p) {
 LUTGammaOOTFHLG.prototype.linFromL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;	
-	var g = this.g;
-	var a = this.a;
-	var b = this.b;
-	var nb = this.nb;
-	var s = this.s * this.Lw / 10000;
+	var g = this.gI;
+	var a = this.aI;
+	var b = this.bI;
+	var nb = this.nbI;
+	var s = this.s * this.LwI / 10000;
 	if (p && p.rgb) {
 		var y;
 		for (var j=0; j<m; j += 3) {
@@ -3194,44 +3338,64 @@ LUTGammaOOTFHLG.prototype.linFromL = function(buff, p) {
 		}
 	}
 };
-LUTGammaOOTFHLG.prototype.linToData = function(input) {
-	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+LUTGammaOOTFHLG.prototype.linToData = function(input, p) {
+	if(p) {
+		return (this.linToLegal(input, p) * 0.85630498533724) + 0.06256109481916;
+	} else {
+		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+	}
 };
-LUTGammaOOTFHLG.prototype.linToLegal = function(input) {
-	return Math.min(this.s*this.Lw,((this.a * Math.pow(Math.max(0,input * this.nb), this.g)) + this.b) * this.s * this.Lw / 10000);
+LUTGammaOOTFHLG.prototype.linToLegal = function(input, p) {
+	if (p && p.rec) {
+		return Math.min(this.s*this.LwI,((this.aI * Math.pow(Math.max(0,input * this.nbI), this.gI)) + this.bI) * this.s * this.LwI / 10000);
+	} else {
+		return Math.min(this.s*this.LwO,((this.aO * Math.pow(Math.max(0,input * this.nbO), this.gO)) + this.bO) * this.s * this.LwO / 10000);
+	}
 };
 LUTGammaOOTFHLG.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaOOTFHLG.prototype.linFromLegal = function(input) {
-	return Math.pow(Math.max(0, (input * 10000 / (this.s * this.Lw)) - this.b)/this.a, 1/this.g)/this.nb;
+	return Math.pow(Math.max(0, (input * 10000 / (this.s * this.LwI)) - this.bI)/this.aI, 1/this.gI)/this.nbI;
 };
 // Rec2100 No OOTF (Scaled Scene Linear)
 function LUTGammaOOTFNone(name, params) {
-	if (params.Lw) {
-		this.Lw = params.Lw;
-	} else {
-		this.Lw = 10000;
-	}
+	this.setLw(params.Lw, params.Lw);
 }
-LUTGammaOOTFNone.prototype.setLw = function(Lw) {
-	this.Lw = Lw;
+LUTGammaOOTFNone.prototype.setLw = function(LwIn, LwOut) {
+	this.LwI = LwIn;
+	var out = false;
+	if (LwOut !== this.LwO) {
+		out = true;
+	}
+	this.LwO = LwOut;
+	return out;
 };
 LUTGammaOOTFNone.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
-LUTGammaOOTFNone.prototype.linToD = function(buff) {
+LUTGammaOOTFNone.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	this.linToL(buff);
+	if (p) {
+		this.linToL(buff, p);
+	} else {
+		this.linToL(buff);
+	}
 	for (var j=0; j<m; j++) {
 		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaOOTFNone.prototype.linToL = function(buff) {
+LUTGammaOOTFNone.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	var Lw = this.Lw;
+	var Lw;
+	if (p && p.rec) {
+		Lw = this.LwI;
+	} else {
+		Lw = this.LwO;
+	}
+	Lw = 100000000;
 	for (var j=0; j<m; j++) {
 		c[ j ] = Math.min(c[ j ]*100, Lw);
 	}
@@ -3246,22 +3410,31 @@ LUTGammaOOTFNone.prototype.linFromD = function(buff) {
 LUTGammaOOTFNone.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	var Lw = this.Lw;
+	var Lw = this.LwI;
 	for (var j=0; j<m; j++) {
 		c[ j ] = Math.min(c[ j ], Lw)/100;
 	}
 };
-LUTGammaOOTFNone.prototype.linToData = function(input) {
-	return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+LUTGammaOOTFNone.prototype.linToData = function(input, p) {
+	if (p) {
+		return (this.linToLegal(input, p) * 0.85630498533724) + 0.06256109481916;
+	} else {
+		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
+	}
 };
-LUTGammaOOTFNone.prototype.linToLegal = function(input) {
-	return Math.min(input * 100, this.Lw);
+LUTGammaOOTFNone.prototype.linToLegal = function(input, p) {
+	return input*100;
+//	if (p && p.rec) {
+//		return Math.min(input * 100, this.LwI);
+//	} else {
+//		return Math.min(input * 100, this.LwO);
+//	}
 };
 LUTGammaOOTFNone.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaOOTFNone.prototype.linFromLegal = function(input) {
-	return Math.min(input, this.Lw) / 100;
+	return Math.min(input, this.LwI) / 100;
 };
 // ITU HDR Proposal
 function LUTGammaITUProp(name,params) {
@@ -4029,21 +4202,39 @@ LUTGamma.prototype.setParams = function(params) {
 		}
 	}
 //
-	if (typeof params.hlgBBC === 'boolean') {
-		this.gammas[this.HLG].setBBC(params.hlgBBC);
-		this.hlgOOTF.setBBC(params.hlgBBC);
-		this.hlgOOTFNorm.setBBC(params.hlgBBC);
+	if (this.curOut === this.PQ || this.curOut === (this.PQ+1) || this.curOut === this.pqEOTFIdx) {
+		this.hdrOut = true;
+	} else {
+		this.hdrOut = false;
 	}
-	if (typeof params.pqLw === 'number') {
-		this.pqOOTF.setLw(params.pqLw);
-		this.pqOOTFNorm.setLw(params.pqLw);
+	this.changedHDR = false;
+	if (typeof params.hlgBBCIn === 'boolean' && typeof params.hlgBBCOut === 'boolean') {
+		this.gammas[this.HLG].setBBC(params.hlgBBCIn, params.hlgBBCOut)
+		if (this.hlgOOTF.setBBC(params.hlgBBCIn, params.hlgBBCOut)) {
+			this.changedHDR = true;
+		}
+		this.hlgOOTFNorm.setBBC(params.hlgBBCIn, params.hlgBBCOut);
+		this.gammas[this.PQ + 1].setLw();
 	}
-	if (typeof params.pqEOTFLw === 'number') {
-		this.pqNoOOTF.setLw(params.pqEOTFLw);
+	if (typeof params.pqLwIn === 'number' && typeof params.pqLwOut === 'number') {
+		if (this.pqOOTF.setLw(params.pqLwIn, params.pqLwOut)) {
+			this.changedHDR = true;
+		}
+		this.pqOOTFNorm.setLw(params.pqLw, params.pqLwOut);
+		this.gammas[this.PQ].setLw();
 	}
-	if (typeof params.hlgLw === 'number') {
-		this.hlgOOTF.setLw(params.hlgLw);
-		this.hlgOOTFNorm.setLw(params.hlgLw);
+	if (typeof params.pqEOTFLwIn === 'number' && typeof params.pqEOTFLwOut === 'number') {
+		if (this.pqNoOOTF.setLw(params.pqEOTFLwIn, params.pqEOTFLwOut)) {
+			this.changedHDR = true;
+		}
+		this.gammas[this.pqEOTFIdx].setLw();
+	}
+	if (typeof params.hlgLwIn === 'number' && typeof params.hlgLwOut === 'number') {
+		if (this.hlgOOTF.setLw(params.hlgLwIn, params.hlgLwOut)) {
+			this.changedHDR = true;
+		}
+		this.hlgOOTFNorm.setLw(params.hlgLwIn, params.hlgLwOut);
+		this.gammas[this.PQ + 1].setLw();
 	}
 //
 	if (typeof params.clipSelect === 'number') {
@@ -4213,10 +4404,10 @@ LUTGamma.prototype.laCalcRGB = function(p,t,i) {
 		default:
 			if (i.legIn) {
 				this.gammas[this.SL3Idx].linFromL(buff, { rgb: true });
-				this.gammas[i.gamma].linToL(buff, { rgb: true });
+				this.gammas[i.gamma].linToL(buff, { rgb: true, rec: true });
 			} else {
 				this.gammas[this.SL3Idx].linFromD(buff, { rgb: true });
-				this.gammas[i.gamma].linToD(buff, { rgb: true });
+				this.gammas[i.gamma].linToD(buff, { rgb: true, rec: true });
 			}
 			natTF = 0;
 			break;		
@@ -4423,9 +4614,9 @@ LUTGamma.prototype.SL3Val = function(p,t,i) {
 	}
 	this.gammas[this.SL3Idx].linFromD(buff);
 	if (i.legIn) {
-		this.gammas[i.gamma].linToL(buff, { rgb: true });
+		this.gammas[i.gamma].linToL(buff, { rgb: false, rec: true });
 	} else {
-		this.gammas[i.gamma].linToD(buff, { rgb: true });
+		this.gammas[i.gamma].linToD(buff, { rgb: false, rec: true });
 	}
 	var out = { p: p, t: t+20, v: this.ver, o: buff};
 	out.dim = i.dim;
@@ -4469,6 +4660,12 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			if (this.clipW && cMax>1) {
 				cMax = 1;
 			}
+		}
+	}
+	if (this.hdrOut) {
+		var mx = this.gammas[this.curOut].mxO;
+		if (mx < cMax) {
+			cMax = mx;
 		}
 	}
 	for (var j=0; j<m; j++) {

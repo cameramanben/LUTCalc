@@ -39,7 +39,6 @@ function LUTMessage(inputs) {
 		this.blobWorkers = false;
 	}
 		this.blobWorkers = false;
-//console.log(this.blobWorkers);
 	this.gas = []; // Array of gamma web workers
 	this.gaT = 2; // Gamma threads
 	this.gaN = 0; // Next web worker to send data to
@@ -86,7 +85,7 @@ LUTMessage.prototype.startGaThreads = function() {
 			try {
 				var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
 				this.gas[i] = new Worker(blobURL);
-				URL.revokeObjectURL(blobURL);
+//				URL.revokeObjectURL(blobURL);
 			} catch (e) { // Fallback for - IE10 and 11
 console.log('No Inline Web Workers');
 				this.blobWorkers = false;
@@ -124,7 +123,7 @@ LUTMessage.prototype.changeGaThreads = function(T) {
 					try {
 						var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
 						this.gas[i] = new Worker(blobURL);
-						URL.revokeObjectURL(blobURL);
+//						URL.revokeObjectURL(blobURL);
 					} catch (e) { // Fallback for - IE10 and 11
 						this.blobWorkers = false;
 console.log('No Inline Web Workers');
@@ -157,10 +156,14 @@ LUTMessage.prototype.gaSetParams = function() {
 			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
 			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
 
-			pqLw: parseFloat(this.inputs.inPQLw.value),
-			pqEOTFLw: parseFloat(this.inputs.inPQEOTFLw.value),
-			hlgLw: parseFloat(this.inputs.inHLGLw.value),
-			hlgBBC: this.inputs.hlgBBCScaleIn[1].checked,
+			pqLwIn: parseFloat(this.inputs.inPQLw.value),
+			pqLwOut: parseFloat(this.inputs.outPQLw.value),
+			pqEOTFLwIn: parseFloat(this.inputs.inPQEOTFLw.value),
+			pqEOTFLwOut: parseFloat(this.inputs.outPQEOTFLw.value),
+			hlgLwIn: parseFloat(this.inputs.inHLGLw.value),
+			hlgLwOut: parseFloat(this.inputs.outHLGLw.value),
+			hlgBBCIn: this.inputs.hlgBBCScaleIn[1].checked,
+			hlgBBCOut: this.inputs.hlgBBCScaleOut[1].checked,
 
 			defGamma: this.inputs.defGammaIn,
 			newISO: parseFloat(this.inputs.cineEI.value),
@@ -428,7 +431,7 @@ LUTMessage.prototype.startGtThreads = function() {
 			try {
 				var blobURL = windowURL.createObjectURL(csWorkerBlob);
 				this.gts[i] = new Worker(blobURL);
-				URL.revokeObjectURL(blobURL);
+//				URL.revokeObjectURL(blobURL);
 			} catch (e) { // Fallback for - IE10 and 11
 console.log('No Inline Web Workers');
 				this.blobWorkers = false;
@@ -466,7 +469,7 @@ LUTMessage.prototype.changeGtThreads = function(T) {
 					try {
 						var blobURL = windowURL.createObjectURL(csWorkerBlob);
 						this.gts[i] = new Worker(blobURL);
-						URL.revokeObjectURL(blobURL);
+//						URL.revokeObjectURL(blobURL);
 					} catch (e) { // Fallback for - IE10 and 11
 						this.blobWorkers = false;
 						this.gts[i] = new Worker('colourspaceworker.js');

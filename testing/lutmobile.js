@@ -139,7 +139,7 @@ LUTMobile.prototype.togglePreview = function() {
 	} else {
 		this.preButton.className = 'mob-preview-icon';
 	}
-	this.objects.preview.toggle();
+	this.objects.preview.toggle(this.show);
 	this.showCur();
 };
 LUTMobile.prototype.hideAll = function() {

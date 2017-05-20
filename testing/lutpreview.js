@@ -1033,7 +1033,10 @@ LUTPreview.prototype.getCanVal = function(x,y) {
 	return out;
 };
 // Event responses
-LUTPreview.prototype.toggle = function() {
+LUTPreview.prototype.toggle = function(showPre) {
+	if (showPre) {
+		this.show = false;
+	}
 	if (this.show) {
 		this.pBox.className = 'preview-box-hide';
 		this.wCan.className = 'can-hide';

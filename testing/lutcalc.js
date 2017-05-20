@@ -343,34 +343,46 @@ function lutSlider(p, list) {
 };
 lutSlider.prototype.events = function() {
 	if (this.log) {
-		this.slider.oninput = function(here){ return function(e){
+		this.slider.addEventListener('input', function(here){ return function(e){
 			e.stopImmediatePropagation();
 			e.stopPropagation();
 			here.testNLData(true);
 			here.action();
-		};}(this);
+		};}(this), false);
+		this.slider.addEventListener('change', function(here){ return function(e){
+			e.stopImmediatePropagation();
+			e.stopPropagation();
+			here.testNLData(true);
+			here.action();
+		};}(this), false);
 		if (this.input) {
-			this.input.onchange = function(here){ return function(e){
+			this.input.addEventListener('change', function(here){ return function(e){
 				e.stopImmediatePropagation();
 				e.stopPropagation();
 				here.testNLData(false);
 				here.action();
-			};}(this);
+			};}(this), false);
 		}
 	} else {
-		this.slider.oninput = function(here){ return function(e){
+		this.slider.addEventListener('input', function(here){ return function(e){
 			e.stopImmediatePropagation();
 			e.stopPropagation();
 			here.testData(true);
 			here.action();
-		};}(this);
+		};}(this), false);
+		this.slider.addEventListener('change', function(here){ return function(e){
+			e.stopImmediatePropagation();
+			e.stopPropagation();
+			here.testData(true);
+			here.action();
+		};}(this), false);
 		if (this.input) {
-			this.input.onchange = function(here){ return function(e){
+			this.input.addEventListener('change', function(here){ return function(e){
 				e.stopImmediatePropagation();
 				e.stopPropagation();
 				here.testData(false);
 				here.action();
-			};}(this);
+			};}(this), false);
 		}
 	}
 	if (this.resetButton) {

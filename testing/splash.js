@@ -89,26 +89,28 @@ LUTTests.prototype.blobWorkersTest = function() {
     lutInputs.addInput('blobWorkers',false);
 	if (window.Blob && (window.URL || window.webkitURL)) {
 		this.inputs.blobWorkers = true;
-	}
+		var windowURL = window.URL || window.webkitURL;
+		var workerString = "addEventListener('message', function(e) { postMessage({blobWorkers:e.data.test}); }, false);";
+		workerString = workerString.replace('"use strict";', '');
+		try {
+			var _this = this;
+			var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
+			var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
+			this.testWorker = new Worker(blobURL);
+			URL.revokeObjectURL(blobURL);
+	  		this.testWorker.terminate();
+			this.inputs.blobWorkers = true;
 /*
-	var windowURL = window.URL || window.webkitURL;
-	var workerString = "addEventListener('message', function(e) { postMessage({blobWorkers:e.data.test}); }, false);"
-	workerString = workerString.replace('"use strict";', '');
-	try {
-		var _this = this;
-		var gammaWorkerBlob = new Blob([ workerString ], { type: 'text/javascript' } );
-		var blobURL = windowURL.createObjectURL(gammaWorkerBlob);
-		this.testWorker = new Worker(blobURL);
-		URL.revokeObjectURL(blobURL);
-		this.testWorker.onmessage = function(e) {
-  			_this.inputs.blobWorkers = e.data.blobWorkers;
-  			_this.testWorker.terminate();
-		}
-		this.testWorker.postMessage({test:true});
-	} catch (e) {
-		this.inputs.blobWorkers = false;
-	}
+			this.testWorker.addEventListener('message', function(e) {
+	  			_this.inputs.blobWorkers = e.data.blobWorkers;
+	  			_this.testWorker.terminate();
+			}, false);
+			this.testWorker.postMessage({test:true});
 */
+		} catch (e) {
+			this.inputs.blobWorkers = false;
+		}
+	}
 };
 LUTTests.prototype.canNotifyTest = function() { // Test for HTML5 / Chrome Notifications
 	if (typeof chrome !== 'undefined' && typeof chrome.notifications !== 'undefined') {
@@ -193,7 +195,7 @@ function updateSplash() {
 
 /********************** Start things up **********************/
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v3.1Beta1');
+lutInputs.addInput('version','v3.1Beta2');
 lutInputs.addInput('date','May 2017');
 var splash = splashStart();
 var lutTests = new LUTTests(lutInputs);

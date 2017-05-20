@@ -87,7 +87,7 @@ LUTGammaBox.prototype.io = function() {
 	this.pqEOTFLwIn.className = 'base-input';
 	this.pqEOTFLwIn.value = 10000;
 	this.pqEOTFLwOut = document.createElement('input');
-	this.inputs.addInput('outPQEOTFw',this.pqEOTFLwOut);
+	this.inputs.addInput('outPQEOTFLw',this.pqEOTFLwOut);
 	this.pqEOTFLwOut.setAttribute('type','number');
 	this.pqEOTFLwOut.setAttribute('step',1);
 	this.pqEOTFLwOut.className = 'base-input';
@@ -309,19 +309,19 @@ LUTGammaBox.prototype.events = function() {
 	};}(this);
 	
 	this.hlgScaleIn[0].onchange = function(here){ return function(){
-		here.testNHKBBC(true);
+//		here.testNHKBBC(true);
 		here.messages.gaSetParams();
 	};}(this);
 	this.hlgScaleIn[1].onchange = function(here){ return function(){
-		here.testNHKBBC(true);
+//		here.testNHKBBC(true);
 		here.messages.gaSetParams();
 	};}(this);
 	this.hlgScaleOut[0].onchange = function(here){ return function(){
-		here.testNHKBBC(false);
+//		here.testNHKBBC(false);
 		here.messages.gaSetParams();
 	};}(this);
 	this.hlgScaleOut[1].onchange = function(here){ return function(){
-		here.testNHKBBC(false);
+//		here.testNHKBBC(false);
 		here.messages.gaSetParams();
 	};}(this);
 };
@@ -467,8 +467,11 @@ LUTGammaBox.prototype.testPQLw = function(isIn) {
 	} else {
 		Lw = Math.round(Math.max(100,Math.min(10000,Lw)));
 	}
-	this.pqOOTFLwIn.value = Lw;
-	this.pqOOTFLwOut.value = Lw;
+	if (isIn) {
+		this.pqOOTFLwIn.value = Lw;
+	} else {
+		this.pqOOTFLwOut.value = Lw;
+	}
 };
 LUTGammaBox.prototype.testPQEOTFLw = function(isIn) {
 	var Lw;
@@ -482,8 +485,11 @@ LUTGammaBox.prototype.testPQEOTFLw = function(isIn) {
 	} else {
 		Lw = Math.round(Math.max(100,Math.min(10000,Lw)));
 	}
-	this.pqEOTFLwIn.value = Lw;
-	this.pqEOTFLwOut.value = Lw;
+	if (isIn) {
+		this.pqEOTFLwIn.value = Lw;
+	} else {
+		this.pqEOTFLwOut.value = Lw;
+	}
 };
 LUTGammaBox.prototype.testHLGLw = function(isIn) {
 	var Lw;
@@ -497,9 +503,13 @@ LUTGammaBox.prototype.testHLGLw = function(isIn) {
 	} else {
 		Lw = Math.round(Lw);
 	}
-	this.hlgOOTFLwIn.value = Lw;
-	this.hlgOOTFLwOut.value = Lw;
+	if (isIn) {
+		this.hlgOOTFLwIn.value = Lw;
+	} else {
+		this.hlgOOTFLwOut.value = Lw;
+	}
 };
+/*
 LUTGammaBox.prototype.testNHKBBC = function(isIn) {
 	if (isIn) {
 		this.hlgScaleOut[0].checked = this.hlgScaleIn[0].checked
@@ -509,7 +519,7 @@ LUTGammaBox.prototype.testNHKBBC = function(isIn) {
 		this.hlgScaleIn[1].checked = this.hlgScaleOut[1].checked
 	}
 };
-
+*/
 LUTGammaBox.prototype.changeGammaIn = function() {
 	// Hide Everything
 	this.inLin.className = 'smallerbox-hide';
