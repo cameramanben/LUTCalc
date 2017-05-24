@@ -3082,27 +3082,26 @@ LUTGammaOOTFPQ.prototype.linToD = function(buff, p) {
 LUTGammaOOTFPQ.prototype.linToL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	var Lw, e;
+	var e, Lw;
 	if (p && p.rec) {
-//		Lw = 1000000/this.LwI;
 		e = this.eI;
+		Lw = this.LwI / 100;
 	} else {
-//		Lw = 1000000/this.LwO;
 		e = this.eO;
+		Lw = this.LwO / 100;
 	}
-	Lw = 100;
 	var s = this.s;
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = e;
 		} else {
-			c[j] /= Lw;
+			c[j] /= 100;
 			if (c[j] > 0.0003024) {
 				c[j] = (1.099*Math.pow(59.5208*c[j],0.45))-0.099;
 			} else {
 				c[j] = 267.84*Math.max(c[j],0);
 			}
-			c[j] = Math.pow(c[j],2.4)*s;
+			c[j] = Math.min(Lw,Math.pow(c[j],2.4))*s;
 		}
 	}
 };
@@ -3117,8 +3116,6 @@ LUTGammaOOTFPQ.prototype.linFromD = function(buff, p) {
 LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-//	var Lw = 1000000/this.LwI;
-	var Lw = 100;
 	var s = this.s;
 	for (var j=0; j<m; j++) {
 		if (c[j] <= this.eI) {
@@ -3130,7 +3127,7 @@ LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
 			} else {
 				c[j] /= 267.84;
 			}
-			c[j] *= Lw;
+			c[j] *= 100;
 		}
 	}
 };
@@ -3142,25 +3139,24 @@ LUTGammaOOTFPQ.prototype.linToData = function(input, p) {
 	}
 };
 LUTGammaOOTFPQ.prototype.linToLegal = function(input, p) {
-	var Lw, e;
+	var e, Lw;
 	if (p && p.rec) {
-//		Lw = 1000000/this.LwI;
 		e = this.eI;
+		Lw = this.LwI / 100;
 	} else {
-//		Lw = 1000000/this.LwO;
 		e = this.eO;
+		Lw = this.LwO / 100;
 	}
-	Lw = 100;
 	if (input < 0) {
 		return e;
 	} else {
-		input /= 1000000/Lw;
+		input /= 100;
 		if (input > 0.0003024) {
 			input = (1.099*Math.pow(59.5208*input,0.45))-0.099;	
 		} else {
 			input = 267.84*Math.max(input,0);
 		}
-		return Math.pow(input,2.4)*this.s;
+		return Math.min(Lw,Math.pow(input,2.4))*this.s;
 	}
 }
 LUTGammaOOTFPQ.prototype.linFromData = function(input) {
@@ -3176,8 +3172,7 @@ LUTGammaOOTFPQ.prototype.linFromLegal = function(input) {
 			} else {
 				input /= 267.84;
 			}
-//			return input * 1000000 / this.LwI;
-			return input * 10000;
+			return input * 100;
 		}
 };
 // Rec2100 HLG OOTF
@@ -3186,7 +3181,7 @@ function LUTGammaOOTFHLG(name, params) {
 	if (typeof params.scale === 'string') {
 		switch(params.scale.toLowerCase()) {
 			case 'normalised':
-				this.s = 1/100;
+				this.s = 1/1000;
 				break;
 			case 'nits':
 			default:
@@ -3276,15 +3271,15 @@ LUTGammaOOTFHLG.prototype.linToL = function(buff, p) {
 		a = this.aI;
 		b = this.bI;
 		nb = this.nbI;
-		s = this.s * this.LwI / 10000;
-		mx = this.s * this.LwI;
+		s = this.s;
+		mx = this.LwI * this.s;
 	} else {
 		g = this.gO;
 		a = this.aO;
 		b = this.bO;
 		nb = this.nbO;
-		s = this.s * this.LwO / 10000;
-		mx = this.s * this.LwO;
+		s = this.s;
+		mx = this.LwO * this.s;
 	}
 	if (p && p.rgb) {
 		var y;
@@ -3322,7 +3317,7 @@ LUTGammaOOTFHLG.prototype.linFromL = function(buff, p) {
 	var a = this.aI;
 	var b = this.bI;
 	var nb = this.nbI;
-	var s = this.s * this.LwI / 10000;
+	var s = this.s;
 	if (p && p.rgb) {
 		var y;
 		for (var j=0; j<m; j += 3) {
@@ -3347,16 +3342,16 @@ LUTGammaOOTFHLG.prototype.linToData = function(input, p) {
 };
 LUTGammaOOTFHLG.prototype.linToLegal = function(input, p) {
 	if (p && p.rec) {
-		return Math.min(this.s*this.LwI,((this.aI * Math.pow(Math.max(0,input * this.nbI), this.gI)) + this.bI) * this.s * this.LwI / 10000);
+		return Math.min(this.s*this.LwI,((this.aI * Math.pow(Math.max(0,input * this.nbI), this.gI)) + this.bI) * this.s);
 	} else {
-		return Math.min(this.s*this.LwO,((this.aO * Math.pow(Math.max(0,input * this.nbO), this.gO)) + this.bO) * this.s * this.LwO / 10000);
+		return Math.min(this.s*this.LwO,((this.aO * Math.pow(Math.max(0,input * this.nbO), this.gO)) + this.bO) * this.s);
 	}
 };
 LUTGammaOOTFHLG.prototype.linFromData = function(input) {
 	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaOOTFHLG.prototype.linFromLegal = function(input) {
-	return Math.pow(Math.max(0, (input * 10000 / (this.s * this.LwI)) - this.bI)/this.aI, 1/this.gI)/this.nbI;
+	return Math.pow(Math.max(0, (input / this.s) - this.bI)/this.aI, 1/this.gI)/this.nbI;
 };
 // Rec2100 No OOTF (Scaled Scene Linear)
 function LUTGammaOOTFNone(name, params) {
@@ -4220,7 +4215,7 @@ LUTGamma.prototype.setParams = function(params) {
 		if (this.pqOOTF.setLw(params.pqLwIn, params.pqLwOut)) {
 			this.changedHDR = true;
 		}
-		this.pqOOTFNorm.setLw(params.pqLw, params.pqLwOut);
+		this.pqOOTFNorm.setLw(params.pqLwIn, params.pqLwOut);
 		this.gammas[this.PQ].setLw();
 	}
 	if (typeof params.pqEOTFLwIn === 'number' && typeof params.pqEOTFLwOut === 'number') {
