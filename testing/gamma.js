@@ -992,6 +992,38 @@ LUTGamma.prototype.gammaList = function() {
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
+		'Cinegamma3',
+		{
+			clip: 4.1,
+			loggy: 0.01,
+			lut: new Float64Array(
+				[	0.078131789,0.09920475,0.122162118,0.151981053,
+					0.181906428,0.220375167,0.267387627,0.325563795,
+					0.394207316,0.484397908,0.591913512,0.681441253,
+					0.753396056,0.817388645,0.879105528,0.936594209,
+					0.994314701 ]
+			)
+		}));
+	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
+	this.gts.push('Rec709');
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaLUTSimple(
+		'Cinegamma4',
+		{
+			clip: 4.5,
+			loggy: 0.01,
+			lut: new Float64Array(
+				[	0.077769272,0.095397854,0.120450392,0.156824535,
+					0.196163068,0.242764534,0.297417162,0.357887286,
+					0.430140946,0.515413669,0.618592194,0.705057939,
+					0.771271414,0.832072263,0.885754684,0.936822309,
+					0.987590161 ]
+			)
+		}));
+	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
+	this.gts.push('Rec709');
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD1',
 		{
 			clip: 4,
