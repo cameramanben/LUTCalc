@@ -217,8 +217,20 @@ TWKDisplay.prototype.setParams = function(params) {
 };
 TWKDisplay.prototype.getSettings = function(data) {
 	data.display = {
-		doDisplay: this.tweakCheck.checked
+		doDisplay: this.tweakCheck.checked,
+		baseCS: this.inSpaceSelect.options[this.inSpaceSelect.selectedIndex].lastChild.nodeValue,
+		outputCS: this.outSpaceSelect.options[this.outSpaceSelect.selectedIndex].lastChild.nodeValue,
 	};
+	if (this.gtIdx[this.inSpaceSelect.options.selectedIndex] === 9999) {
+		data.display.baseGamut = this.inGamutSelect.options[this.inGamutSelect.selectedIndex].lastChild.nodeValue;
+	} else {
+		data.display.baseGamut = data.display.baseCS;
+	}
+	if (this.gtIdx[this.outSpaceSelect.options.selectedIndex] === 9999) {
+		data.display.outputGamut = this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue;
+	} else {
+		data.display.outputGamut = data.display.outputCS;
+	}
 };
 TWKDisplay.prototype.setSettings = function(settings) {
 	if (typeof settings.display !== 'undefined') {
@@ -226,6 +238,42 @@ TWKDisplay.prototype.setSettings = function(settings) {
 		if (typeof data.doDisplay === 'boolean') {
 			this.tweakCheck.checked = data.doDisplay;
 			this.toggleTweak();
+		}
+		if (typeof data.baseCS !== 'undefined') {
+			var m = this.inSpaceSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inSpaceSelect.options[j].lastChild.nodeValue === data.baseCS) {
+					this.inSpaceSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.outputCS !== 'undefined') {
+			var m = this.outSpaceSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.outSpaceSelect.options[j].lastChild.nodeValue === data.outputCS) {
+					this.outSpaceSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.baseGamut !== 'undefined') {
+			var m = this.inGamutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.inGamutSelect.options[j].lastChild.nodeValue === data.baseGamut) {
+					this.inGamutSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.outputGamut !== 'undefined') {
+			var m = this.outGamutSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.outGamutSelect.options[j].lastChild.nodeValue === data.outputGamut) {
+					this.outGamutSelect.options[j].selected = true;
+					break;
+				}
+			}
 		}
 	}
 };

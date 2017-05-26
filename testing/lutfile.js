@@ -221,6 +221,7 @@ LUTFile.prototype.filename = function(filename) {
 };
 // Functions available to native apps
 function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
+    format = format.toLowerCase();
 	lutInputs[destination].format = format;
 	if (format.toLowerCase() === 'labin') {
         var max = content.length;

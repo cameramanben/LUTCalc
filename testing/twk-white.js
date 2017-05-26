@@ -247,7 +247,7 @@ TWKWHITE.prototype.getSettings = function(data) {
 		newTemp: parseFloat(this.ctInput.value),
 		lampTemp: parseFloat(this.lampInput.value),
 		Duv: parseFloat(this.duvS.getValue()),
-		Dpl: parseFloat(this.dplS.getValue()),
+//		Dpl: parseFloat(this.dplS.getValue()),
 		advanced: this.advancedCheck.checked,
 		CAT: this.catSelect.options[this.catSelect.selectedIndex].lastChild.nodeValue
 	};
@@ -277,10 +277,10 @@ TWKWHITE.prototype.setSettings = function(settings) {
 		if (typeof data.Duv === 'number') {
 			this.duvS.setValue(parseFloat(data.Duv));
 		}
-		if (typeof data.Dpl === 'number') {
-			this.dplS.setValue(parseFloat(data.Dpl));
-			this.testDplSlider();
-		}
+//		if (typeof data.Dpl === 'number') {
+//			this.dplS.setValue(parseFloat(data.Dpl));
+//			this.testDplSlider();
+//		}
 		if (typeof data.advanced === 'boolean') {
 			this.advancedCheck.checked = data.advanced;
 			this.toggleAdvanced();

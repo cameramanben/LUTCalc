@@ -99,6 +99,8 @@ LUTInfoBox.prototype.events = function() {
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBgm.onclick = function(here){ return function(){ here.showCustBgmInfo(); };}(this);
+	this.custDCCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustDCC.onclick = function(here){ return function(){ here.showCustDCCInfo(); };}(this);
 	this.custGlimBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustGlim.onclick = function(here){ return function(){ here.showCustGlimInfo(); };}(this);
 	this.custBgmBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
@@ -184,6 +186,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custBhi);
 	this.createCustBgm();
 	this.instructionsBox.appendChild(this.custBgm);
+	this.createCustDCC();
+	this.instructionsBox.appendChild(this.custDCC);
 	this.createCustGlim();
 	this.instructionsBox.appendChild(this.custGlim);
 	this.createCustFC();
@@ -277,6 +281,10 @@ LUTInfoBox.prototype.showCustBgmInfo = function() {
 	this.hideAll();
 	this.custBgm.className = 'info-page';
 };
+LUTInfoBox.prototype.showCustDCCInfo = function() {
+	this.hideAll();
+	this.custDCC.className = 'info-page';
+};
 LUTInfoBox.prototype.showCustGlimInfo = function() {
 	this.hideAll();
 	this.custGlim.className = 'info-page';
@@ -315,6 +323,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custKnee.className = 'info-page-hide';
 	this.custBhi.className = 'info-page-hide';
 	this.custBgm.className = 'info-page-hide';
+	this.custDCC.className = 'info-page-hide';
 	this.custGlim.className = 'info-page-hide';
 	this.custFC.className = 'info-page-hide';
 	this.custSamp.className = 'info-page-hide';
@@ -360,7 +369,7 @@ LUTInfoBox.prototype.createMainscreen = function() {
 	this.insMainGam.appendChild(gamInf);
 	left.appendChild(this.insMainGam);
 
-	this.insMainTwk = this.createFigure('main','pngs/main-twk.png',1.1985);
+	this.insMainTwk = this.createFigure('main','pngs/main-twk.png',1.1808);
 	this.insMainTwk.id = 'ins-main-twk';
 	var twkInf = document.createElement('p');
 	twkInf.className = 'ins-main-title';
@@ -518,6 +527,8 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.custbox.appendChild(this.insCustBhi);
 	this.insCustBgm = this.createFigure('cust','pngs/cust-bgm.png',15.9643);
 	this.custbox.appendChild(this.insCustBgm);
+	this.insCustDCC = this.createFigure('cust','pngs/cust-dcc.png',15.9643);
+	this.custbox.appendChild(this.insCustDCC);
 	this.insCustGlim = this.createFigure('cust','pngs/cust-glim.png',15.9643);
 	this.custbox.appendChild(this.insCustGlim);
 	this.insCustFC = this.createFigure('cust','pngs/cust-fc.png',15.9643);
@@ -687,11 +698,12 @@ LUTInfoBox.prototype.createCdtInfo = function() {
 	this.insCdt.appendChild(this.insCdtBack);
 	this.insCdtInfo = document.createElement('div');
 	this.insCdtInfo.setAttribute('class','infotext');
-	this.addInfo(this.insCdtInfo,false,null,'All code written by Ben Turley except:');
+	this.addInfo(this.insCdtInfo,false,null,'All code written by Ben Turley except in the online version:');
 	this.addInfo(this.insCdtInfo,true,'FileSaver.js','HTML5 saveAs() polyfill included in the online version of LUTCalc.');
 	this.addInfo(this.insCdtInfo,true,null,'By Eli Gray under MIT licence on GitHub.');
 	this.addInfo(this.insCdtInfo,true,'Blob.js','W3C Blob polyfill included in the online version of LUTCalc.');
 	this.addInfo(this.insCdtInfo,true,null,'By Eli Gray & Devin Samarin under MIT licence on GitHub.');
+	this.addInfo(this.insCdtInfo,false,null,'Links to many of the technical documents used in creating LUTCalc are available on the LUTCalc website at www.lutcalc.net.');
 	this.insCdt.className = 'info-page-hide';
 	this.insCdt.appendChild(this.insCdtInfo);
 };
@@ -706,12 +718,15 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClgInfo.setAttribute('class','infotext');
 	this.addInfo(this.insClgInfo,false,null,"v3.1");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - Sony Cinegamma 3 and Cinegamma 4 based upon analysis of test images taken with an a7s.");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Separation on Rec2100 OOTFs and OETF/EOTFs for display referred conversions in PQ and Hybrid-log Gamma.");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Splash screen displays progress bar.");
-	this.addInfo(this.insClgInfo,true,null,"Feature Change - Full rewrite of the underlying high dynamic range (HDR) code.");
-	this.addInfo(this.insClgInfo,true,null,"Feature Change - User interface improvements.");
+	this.addInfo(this.insClgInfo,true,null,"Feature Change - Full rewrite of the underlying high dynamic range (HDR) PQ and Hybrid-Log Gamma code.");
+	this.addInfo(this.insClgInfo,true,null,"Feature Change - User interface improvements - online version now uses responsive design principals.");
 	this.addInfo(this.insClgInfo,true,null,"Bugfix - Colour sliders in 'MultiTone' tool now correctly reflect the Gamut Limiter.");
-	this.addInfo(this.insClgInfo,false,null,"v3.1");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - Fixed problem with saving 1D-only LUTAnalyst lacubes and laluts.");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - Fixed issue with Mac App not reading LUTs with upper-case file extensions.");
+	this.addInfo(this.insClgInfo,false,null,"v3.0");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Choice of tricubic, tetrahedral and trilinear interpolation for analysis and use in LUTAnalyst.");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Completely new gamut limiter algorithm and code. Legalises colours and fixes potential LUT overshoots when going from a wide Gamut such as S-Gamut3 to a narrow one such as Rec709.");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - P3 Colourspace now available with DCI, D60 and D65 white points.");
@@ -1285,6 +1300,21 @@ LUTInfoBox.prototype.createCustBgm = function() {
 	this.addInfo(this.custBgmInfo,false,'Power','Sets the gamma or power value for the black gamma region. Values below 1 lead to reduced contrast, whilst values above 1 lead to increased contrast, emphasising shadows. A value of 1 has no effect.');
 	this.custBgm.className = 'info-page-hide';
 	this.custBgm.appendChild(this.custBgmInfo);
+};
+LUTInfoBox.prototype.createCustDCC = function() {
+	this.custDCC = document.createElement('div');
+	this.custDCC.setAttribute('id','cust-dcc');
+	this.custDCCBack = document.createElement('input');
+	this.custDCCBack.setAttribute('type','button');
+	this.custDCCBack.value = 'Back';
+	this.custDCC.appendChild(this.custDCCBack);
+	this.custDCCInfo = document.createElement('div');
+	this.custDCCInfo.setAttribute('class','infotext');
+	this.custDCCInfo.appendChild(this.createFigure('tweak','pngs/cust-dcc-1.png',7.226));
+	this.addInfo(this.custDCCInfo,false,null,"'Display Colourspace Converter' sits after all other colour adjustments and allows a look created for one colourspace to be adapted for another.");
+	this.addInfo(this.custDCCInfo,false,null,"For example, it can be used to make a version of a look created for Rec709 displays that gives the same result on a DCI-P3 display.");
+	this.custDCC.className = 'info-page-hide';
+	this.custDCC.appendChild(this.custDCCInfo);
 };
 LUTInfoBox.prototype.createCustGlim = function() {
 	this.custGlim = document.createElement('div');

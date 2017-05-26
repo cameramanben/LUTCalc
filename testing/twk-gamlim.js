@@ -187,8 +187,18 @@ TWKGamutLim.prototype.setParams = function(params) {
 };
 TWKGamutLim.prototype.getSettings = function(data) {
 	data.gamutLim = {
-		doGamutLim: this.tweakCheck.checked
+		doGamutLim: this.tweakCheck.checked,
+		preLevel: Math.pow(2,this.preS.getValue()),
+		postLevel: this.pstS.getValue()/100,
+		otherGamut: this.diffGam,
+		otherWhich: this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue,
+		both: this.bothCheck.checked
 	};
+	if (this.linear) {
+		data.gamutLim.when = 'pre';
+	} else {
+		data.gamutLim.when = 'post';
+	}
 };
 TWKGamutLim.prototype.setSettings = function(settings) {
 	if (typeof settings.gamutLim !== 'undefined') {
@@ -197,6 +207,38 @@ TWKGamutLim.prototype.setSettings = function(settings) {
 			this.tweakCheck.checked = data.doGamutLim;
 			this.toggleTweak();
 		}
+		if (typeof data.preLevel === 'number') {
+			this.preS.setValue(Math.log(data.preLevel)/Math.log(2));
+			this.preIG.value = Math.round((this.preS.getValue()*10) + 23)/10;
+		}
+		if (typeof data.postLevel === 'number') {
+			this.pstS.setValue(data.postLevel*100);
+		}
+		if (typeof data.otherGamut === 'boolean') {
+			this.diffGam = data.otherGamut;
+		}
+		if (typeof data.otherWhich !== 'undefined') {
+			var m = this.gtSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.gtSelect.options[j].lastChild.nodeValue === data.otherWhich) {
+					this.gtSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.both === 'boolean') {
+			this.bothCheck.checked = data.both
+		}
+		if (typeof data.when !== 'undefined') {
+			if (data.when === 'pre') {
+				this.prePost[0].checked = true;
+				this.prePost[1].checked = false;
+			} else {
+				this.prePost[0].checked = false;
+				this.prePost[1].checked = true;
+			}
+			this.togglePrePost();
+		}		
 	}
 };
 TWKGamutLim.prototype.getInfo = function(info) {

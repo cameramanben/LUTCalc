@@ -826,12 +826,6 @@ LUTGammaBox.prototype.getSettings = function(data) {
 		outLinGamma: outLin,
 		outGamutSub: this.outGamutSubs.options[this.outGamutSubs.selectedIndex].lastChild.nodeValue,
 		outGamut: this.outGamutSelect.options[this.outGamutSelect.options.selectedIndex].lastChild.nodeValue,
-		inPQDisplayMax: parseInt(this.inPQLMax.options[this.inPQLMax.selectedIndex].value),
-		inPQNits: parseInt(this.inPQNits.value),
-		outPQDisplayMax: parseInt(this.outPQLMax.options[this.outPQLMax.selectedIndex].value),
-		outPQNits: parseInt(this.outPQNits.value),
-		sysGamIn: this.sysGamIn.checked,
-		sysGamOut: this.sysGamOut.checked
 	};
 };
 LUTGammaBox.prototype.setSettings = function(settings) {
@@ -944,34 +938,6 @@ LUTGammaBox.prototype.setSettings = function(settings) {
 					this.updateGamutOutList(false);
 				}
 			}
-		}
-		if (typeof data.inPQDisplayMax !== 'undefined' && typeof data.inPQNits !== 'undefined') {
-			var m = this.inPQLMax.options.length;
-			for (var j=0; j<m; j++) {
-				if (parseInt(this.inPQLMax.options[j].value) === parseInt(data.inPQDisplayMax)) {
-					this.inPQLMax.options[j].selected = true;
-					break;
-				}
-			}
-			this.inPQNits.value = parseInt(data.inPQNits);
-			this.changePQNits(true);
-		}
-		if (typeof data.outPQDisplayMax !== 'undefined' && typeof data.outPQNits !== 'undefined') {
-			var m = this.outPQLMax.options.length;
-			for (var j=0; j<m; j++) {
-				if (parseInt(this.outPQLMax.options[j].value) === parseInt(data.outPQDisplayMax)) {
-					this.outPQLMax.options[j].selected = true;
-					break;
-				}
-			}
-			this.outPQNits.value = parseInt(data.outPQNits);
-			this.changePQNits(true);
-		}
-		if (typeof data.sysGamIn === 'boolean') {
-			this.sysGamIn = data.sysGamIn;
-		}
-		if (typeof data.sysGamOut === 'boolean') {
-			this.sysGamOut = data.sysGamOut;
 		}
 		this.changeGammaIn();
 		this.changeGammaOut();
