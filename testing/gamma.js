@@ -2011,6 +2011,7 @@ LUTGamma.prototype.gamutLimOut = function(buff, gY, gL, ogb, gLimB) {
 };
 LUTGamma.prototype.displayOut = function(buff, p) {
 	if (p) {
+		p.out = true;
 		this.gammas[this.dispInIdx].linFromL(buff,p);
 		if (p.rgb && this.dispInGt !== this.dispOutGt) {
 			var c = new Float64Array(buff);
@@ -2028,7 +2029,7 @@ LUTGamma.prototype.displayOut = function(buff, p) {
 		}
 		this.gammas[this.dispOutIdx].linToL(buff,p);
 	} else {
-		this.gammas[this.dispInIdx].linFromL(buff);
+		this.gammas[this.dispInIdx].linFromL(buff, { out: true });
 		this.gammas[this.dispOutIdx].linToL(buff);
 	}
 };
@@ -2093,7 +2094,7 @@ LUTGamma.prototype.finalOut = function(buff,cb) {
 			}
 		}
 	}
-	if (this.hdrOut) {
+	if (this.hdrOut && !this.doDisplay) {
 		var mx = this.gammas[this.curOut].mxO;
 		if (this.outL) {
 			if (mx < cMax) {
@@ -2921,7 +2922,7 @@ LUTGammaPQ.prototype.linToData = function(input, p) {
 		return (this.linToLegal(input) * 0.85630498533724) + 0.06256109481916;
 	}
 };
-LUTGammaPQ.prototype.linToLegal = function(input,p) {
+LUTGammaPQ.prototype.linToLegal = function(input, p) {
 	var mx, r;
 	if (p) {
 		var r = Math.pow(Math.max(0,this.ootf.linToLegal(input, p))/10000,this.m1);
@@ -2936,12 +2937,20 @@ LUTGammaPQ.prototype.linToLegal = function(input,p) {
 	}
 	return Math.min(mx,Math.pow((this.c1+(this.c2*r))/(1+(this.c3*r)),this.m2));
 };
-LUTGammaPQ.prototype.linFromData = function(input) {
-	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+LUTGammaPQ.prototype.linFromData = function(input, p) {
+	if (p) {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724, p);
+	} else {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+	}
 };
-LUTGammaPQ.prototype.linFromLegal = function(input) {
+LUTGammaPQ.prototype.linFromLegal = function(input, p) {
 	var r = Math.pow(input,1/this.m2);
-	input = this.ootf.linFromLegal(Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.m1) * 10000);
+	if (p) {
+		input = this.ootf.linFromLegal(Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.m1) * 10000, p);
+	} else {
+		input = this.ootf.linFromLegal(Math.pow((r-this.c1)/(this.c2-(this.c3*r)),1/this.m1) * 10000);
+	}
 	if (isNaN(input)) {
 		return 0;
 	} else {
@@ -3006,19 +3015,28 @@ LUTGammaHLG.prototype.linToL = function(buff, p) {
 		}
 	}
 };
-LUTGammaHLG.prototype.linFromD = function(buff) {
+LUTGammaHLG.prototype.linFromD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
 		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 	}
-	this.linFromL(buff);
+	if (p) {
+		this.linFromL(buff, p);
+	} else {
+		this.linFromL(buff);
+	}
 };
-LUTGammaHLG.prototype.linFromL = function(buff) {
+LUTGammaHLG.prototype.linFromL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var r;
-	var nb = this.nbI;
+	var nb;
+	if (p && p.out) {
+		nb = this.nbO;
+	} else {
+		nb = this.nbI;
+	}
 	for (var j=0; j<m; j++) {
 		if (c[j] < 0) {
 			c[j] = 0;
@@ -3051,16 +3069,26 @@ LUTGammaHLG.prototype.linToLegal = function(input, p) {
 		return (this.a * Math.log((input * nb) - this.b)) + this.c;
 	}
 };
-LUTGammaHLG.prototype.linFromData = function(input) {
-	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+LUTGammaHLG.prototype.linFromData = function(input, p) {
+	if (p) {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724, p);
+	} else {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+	}
 };
-LUTGammaHLG.prototype.linFromLegal = function(input) {
+LUTGammaHLG.prototype.linFromLegal = function(input, p) {
+	var nb;
+	if (p && p.out) {
+		nb = this.nbO;
+	} else {
+		nb = this.nbI;
+	}
 	if (input < 0) {
 		return 0;
 	} else if (input <= 0.5) {
-		return Math.pow(2*input,2) / this.nbI;
+		return Math.pow(2*input,2) / nb;
 	} else {
-		return (Math.exp((input - this.c)/this.a) + this.b) / this.nbI;
+		return (Math.exp((input - this.c)/this.a) + this.b) / nb;
 	}
 };
 // Rec2100 PQ OOTF
@@ -3143,14 +3171,24 @@ LUTGammaOOTFPQ.prototype.linFromD = function(buff, p) {
 	for (var j=0; j<m; j++) {
 		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
 	}
-	this.linFromL(buff);
+	if (p) {
+		this.linFromL(buff, p);
+	} else {
+		this.linFromL(buff);
+	}
 };
-LUTGammaOOTFPQ.prototype.linFromL = function(buff) {
+LUTGammaOOTFPQ.prototype.linFromL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	var s = this.s;
+	var e;
+	if (p && p.out) {
+		e = this.eO;
+	} else {
+		e = this.eI;
+	}
 	for (var j=0; j<m; j++) {
-		if (c[j] <= this.eI) {
+		if (c[j] <= e) {
 			c[j] = 0;
 		} else {
 			c[j] = Math.pow(c[j]/s,1/2.4);
@@ -3191,21 +3229,30 @@ LUTGammaOOTFPQ.prototype.linToLegal = function(input, p) {
 		return Math.min(Lw,Math.pow(input,2.4))*this.s;
 	}
 }
-LUTGammaOOTFPQ.prototype.linFromData = function(input) {
-	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+LUTGammaOOTFPQ.prototype.linFromData = function(input, p) {
+	if (p) {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724, p);
+	} else {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+	}
 };
-LUTGammaOOTFPQ.prototype.linFromLegal = function(input) {
-		if (input <= this.eI) {
-			return 0;
+LUTGammaOOTFPQ.prototype.linFromLegal = function(input, p) {
+	if (p && p.out) {
+		e = this.eO;
+	} else {
+		e = this.eI;
+	}
+	if (input <= e) {
+		return 0;
+	} else {
+		input = Math.pow(input/this.s,1/2.4);
+		if (input > 0.080994816) {
+			input = Math.pow((input + 0.099)/1.099,1/0.45)/59.5208;
 		} else {
-			input = Math.pow(input/this.s,1/2.4);
-			if (input > 0.080994816) {
-				input = Math.pow((input + 0.099)/1.099,1/0.45)/59.5208;
-			} else {
-				input /= 267.84;
-			}
-			return input * 100;
+			input /= 267.84;
 		}
+		return input * 100;
+	}
 };
 // Rec2100 HLG OOTF
 function LUTGammaOOTFHLG(name, params) {
@@ -3345,11 +3392,19 @@ LUTGammaOOTFHLG.prototype.linFromD = function(buff, p) {
 LUTGammaOOTFHLG.prototype.linFromL = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;	
-	var g = this.gI;
-	var a = this.aI;
-	var b = this.bI;
-	var nb = this.nbI;
-	var s = this.s;
+	if (p && p.out) {
+		g = this.gO;
+		a = this.aO;
+		b = this.bO;
+		nb = this.nbO;
+		s = this.s;
+	} else {
+		g = this.gI;
+		a = this.aI;
+		b = this.bI;
+		nb = this.nbI;
+		s = this.s;
+	}
 	if (p && p.rgb) {
 		var y;
 		for (var j=0; j<m; j += 3) {
@@ -3379,11 +3434,19 @@ LUTGammaOOTFHLG.prototype.linToLegal = function(input, p) {
 		return Math.min(this.s*this.LwO,((this.aO * Math.pow(Math.max(0,input * this.nbO), this.gO)) + this.bO) * this.s);
 	}
 };
-LUTGammaOOTFHLG.prototype.linFromData = function(input) {
-	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+LUTGammaOOTFHLG.prototype.linFromData = function(input, p) {
+	if (p) {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724, p);
+	} else {
+		return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+	}
 };
-LUTGammaOOTFHLG.prototype.linFromLegal = function(input) {
-	return Math.pow(Math.max(0, (input / this.s) - this.bI)/this.aI, 1/this.gI)/this.nbI;
+LUTGammaOOTFHLG.prototype.linFromLegal = function(input, p) {
+	if (p && p.out) {
+		return Math.pow(Math.max(0, (input / this.s) - this.bO)/this.aO, 1/this.gO)/this.nbO;
+	} else {
+		return Math.pow(Math.max(0, (input / this.s) - this.bI)/this.aI, 1/this.gI)/this.nbI;
+	}
 };
 // Rec2100 No OOTF (Scaled Scene Linear)
 function LUTGammaOOTFNone(name, params) {
@@ -3422,7 +3485,6 @@ LUTGammaOOTFNone.prototype.linToL = function(buff, p) {
 	} else {
 		Lw = this.LwO;
 	}
-	Lw = 100000000;
 	for (var j=0; j<m; j++) {
 		c[ j ] = Math.min(c[ j ]*100, Lw);
 	}
@@ -3431,15 +3493,14 @@ LUTGammaOOTFNone.prototype.linFromD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	for (var j=0; j<m; j++) {
-		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+		c[j] = ((c[j]/100) - 0.06256109481916) / 0.85630498533724;
 	}
 };
 LUTGammaOOTFNone.prototype.linFromL = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
-	var Lw = this.LwI;
 	for (var j=0; j<m; j++) {
-		c[ j ] = Math.min(c[ j ], Lw)/100;
+		c[ j ] = c[ j ]/100;
 	}
 };
 LUTGammaOOTFNone.prototype.linToData = function(input, p) {
@@ -3450,18 +3511,17 @@ LUTGammaOOTFNone.prototype.linToData = function(input, p) {
 	}
 };
 LUTGammaOOTFNone.prototype.linToLegal = function(input, p) {
-	return input*100;
-//	if (p && p.rec) {
-//		return Math.min(input * 100, this.LwI);
-//	} else {
-//		return Math.min(input * 100, this.LwO);
-//	}
+	if (p && p.rec) {
+		return Math.min(input * 100, this.LwI);
+	} else {
+		return Math.min(input * 100, this.LwO);
+	}
 };
 LUTGammaOOTFNone.prototype.linFromData = function(input) {
-	return this.linFromLegal((input - 0.06256109481916) / 0.85630498533724);
+	return this.linFromLegal(((input / 100) - 0.06256109481916) / 0.85630498533724);
 };
 LUTGammaOOTFNone.prototype.linFromLegal = function(input) {
-	return Math.min(input, this.LwI) / 100;
+	return input / 100;
 };
 // ITU HDR Proposal
 function LUTGammaITUProp(name,params) {
@@ -4689,7 +4749,7 @@ LUTGamma.prototype.chartVals = function(p,t,i) {
 			}
 		}
 	}
-	if (this.hdrOut) {
+	if (this.hdrOut && !this.doDisplay) {
 		var mx = this.gammas[this.curOut].mxO;
 		if (mx < cMax) {
 			cMax = mx;
@@ -4909,6 +4969,9 @@ LUTGamma.prototype.preview = function(p,t,i) {
 				mx = 1;
 			}
 		}
+	}
+	if (this.hdrOut && !this.doDisplay) {
+		mx = Math.min(mx, this.gammas[this.curOut].mxO);
 	}
 	if (i.leg) {
 		mx2 = 255;
