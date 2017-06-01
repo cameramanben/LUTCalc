@@ -36,73 +36,73 @@ TWKWHITE.prototype.io = function() {
 	// Reference Temperature (Recording)
 	this.refInput = document.createElement('input');
 	this.refInput.setAttribute('type','number');
-	this.refInput.className = 'kelvininput';
+	this.refInput.className = 'kelvin-input';
 	this.refInput.value = '5500';
 	// Desired Colour Temperature
 	this.ctInput = document.createElement('input');
 	this.ctInput.setAttribute('type','number');
-	this.ctInput.className = 'kelvininput';
+	this.ctInput.className = 'kelvin-input';
 	this.ctInput.value = this.refInput.value;
 	// Lamp Colour Temperature Input
 	this.lampInput = document.createElement('input');
 	this.lampInput.setAttribute('type','number');
-	this.lampInput.className = 'kelvininput';
+	this.lampInput.className = 'kelvin-input';
 	this.lampInput.value = this.refInput.value;
 	this.lampButton = document.createElement('input');
 	this.lampButton.setAttribute('type','button');
 	this.lampButton.value = 'Unlock Lightsource From New White';
 	this.lampFree = false;
 	// CTO / CTB Slider
-	this.ctSlider = document.createElement('input');
-	this.ctSlider.setAttribute('type','range');
-	this.ctSlider.setAttribute('min',-1.25);
-	this.ctSlider.setAttribute('max',1.25);
-	this.ctSlider.setAttribute('step',0.05);
-	this.ctSlider.setAttribute('value',0);
-	this.ctSlider.className = 'slider';
-	this.ctSliderLabel = document.createElement('label');
-	this.ctSliderLabel.className = 'slider-data';
-	this.ctSliderLabel.innerHTML = 'Clear';
-	this.ctReset = document.createElement('input');
-	this.ctReset.setAttribute('type','button');
-	this.ctReset.className = 'reset';
-	this.ctReset.setAttribute('value','Reset');
+	this.ctS = new lutSlider({
+		min: -1.25,
+		max: 1.25,
+		value: 0,
+		step: 0.05,
+		title: false,
+		minLabel: 'CTO',
+		maxLabel: 'CTB',
+		input: 'label',
+		reset: true,
+		dataFormat: {
+			neg: '[[VALUE]] CTO',
+			zero: 'Clear',
+			pos: '[[VALUE]] CTB',
+		}
+	});
 	// Duv (Green / Magenta) Slider
-	this.duvHidden = document.createElement('input');
-	this.duvHidden.setAttribute('type','hidden');
-	this.duvHidden.setAttribute('value',0);
-	this.duvSlider = document.createElement('input');
-	this.duvSlider.setAttribute('type','range');
-	this.duvSlider.setAttribute('min',-1.5);
-	this.duvSlider.setAttribute('max',1.5);
-	this.duvSlider.setAttribute('step',0.05);
-	this.duvSlider.setAttribute('value',0);
-	this.duvSlider.className = 'slider';
-	this.duvSliderLabel = document.createElement('label');
-	this.duvSliderLabel.innerHTML = 'Clear';
-	this.duvSliderLabel.className = 'slider-data';
-	this.duvReset = document.createElement('input');
-	this.duvReset.setAttribute('type','button');
-	this.duvReset.className = 'reset';
-	this.duvReset.setAttribute('value','Reset');
+	this.duvS = new lutSlider({
+		min: -1.5,
+		max: 1.5,
+		value: 0,
+		step: 0.05,
+		title: false,
+		minLabel: 'Minus Green',
+		maxLabel: 'Plus Green',
+		input: 'label',
+		reset: true,
+		dataFormat: {
+			neg: '[[VALUE]] Minus Green',
+			zero: 'Clear',
+			pos: '[[VALUE]] Plus Green',
+		}
+	});
 	// Dpl (Yellow / Blue) Slider
-	this.dplHidden = document.createElement('input');
-	this.dplHidden.setAttribute('type','hidden');
-	this.dplHidden.setAttribute('value',0);
-	this.dplSlider = document.createElement('input');
-	this.dplSlider.setAttribute('type','range');
-	this.dplSlider.setAttribute('min',-1.5);
-	this.dplSlider.setAttribute('max',1.5);
-	this.dplSlider.setAttribute('step',0.05);
-	this.dplSlider.setAttribute('value',0);
-	this.dplSlider.className = 'slider';
-	this.dplSliderLabel = document.createElement('label');
-	this.dplSliderLabel.innerHTML = 'Clear';
-	this.dplSliderLabel.className = 'slider-data';
-	this.dplReset = document.createElement('input');
-	this.dplReset.setAttribute('type','button');
-	this.dplReset.className = 'reset';
-	this.dplReset.setAttribute('value','Reset');
+	this.dplS = new lutSlider({
+		min: -1.5,
+		max: 1.5,
+		value: 0,
+		step: 0.05,
+		title: false,
+		minLabel: 'Minus Green',
+		maxLabel: 'Plus Green',
+		input: 'label',
+		reset: true,
+		dataFormat: {
+			neg: '[[VALUE]] Minus Green',
+			zero: 'Clear',
+			pos: '[[VALUE]] Plus Green',
+		}
+	});
 	// Preview Window White Sampling Button
 	this.sample = false;
 	this.sampleButton = document.createElement('input');
@@ -131,7 +131,6 @@ TWKWHITE.prototype.ui = function() {
 	this.box = document.createElement('div');
 	this.box.className = 'tweak';
 	// Tweak - Specific UI Elements
-
 	// Advanced Box - Holds Advanced Or Experimental Inputs
 	this.advancedBox = document.createElement('div');
 	this.advancedBox.className = 'twk-advanced-hide';
@@ -157,42 +156,13 @@ TWKWHITE.prototype.ui = function() {
 	// Colour Temperature Correction
 	this.ctBox = document.createElement('div');
 	this.ctBox.className = 'slider-holder';
-	this.ctBox.appendChild(document.createElement('label').appendChild(document.createTextNode('CTO')));
-	this.ctBox.appendChild(this.ctSlider);
-	this.ctBox.appendChild(document.createElement('label').appendChild(document.createTextNode('CTB')));
-	this.ctBox.appendChild(document.createElement('br'));
-	this.ctBox.appendChild(this.ctSliderLabel);
+	this.ctBox.appendChild(this.ctS.element);
 	this.box.appendChild(this.ctBox);
-	this.box.appendChild(this.ctReset);
-	this.box.appendChild(document.createElement('br'));
 	// Plus / Minus Green
 	this.duvBox = document.createElement('div');
 	this.duvBox.className = 'slider-holder';
-	this.duvBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Minus Green')));
-	this.duvBox.appendChild(this.duvSlider);
-	this.duvBox.appendChild(this.duvHidden);
-	this.duvBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Plus Green')));
-	this.duvBox.appendChild(document.createElement('br'));
-	this.duvBox.appendChild(this.duvSliderLabel);
+	this.duvBox.appendChild(this.duvS.element);
 	this.box.appendChild(this.duvBox);
-	this.box.appendChild(this.duvReset);
-	this.box.appendChild(document.createElement('br'));
-
-/*
-	// Warm / Cool
-	this.dplBox = document.createElement('div');
-	this.dplBox.className = 'slider-holder';
-	this.dplBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Yellow')));
-	this.dplBox.appendChild(this.dplSlider);
-	this.dplBox.appendChild(this.dplHidden);
-	this.dplBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Blue')));
-	this.dplBox.appendChild(document.createElement('br'));
-	this.dplBox.appendChild(this.dplSliderLabel);
-	this.box.appendChild(this.dplBox);
-	this.box.appendChild(this.dplReset);
-	this.box.appendChild(document.createElement('br'));
-*/
-
 	// White Sample Button
 	this.preBox = document.createElement('div');
 	this.preBox.className = 'tweak-hide';
@@ -254,8 +224,8 @@ TWKWHITE.prototype.getCSParams = function(params) {
 		var refMired = 1000000/out.ref;
 		out.ctShift = (1000000/parseFloat(this.ctInput.value))-refMired;
 		out.lampShift = (1000000/parseFloat(this.lampInput.value))-refMired;
-		out.duv = parseFloat(this.duvHidden.value);
-		out.dpl = parseFloat(this.dplHidden.value);
+		out.duv = parseFloat(this.duvS.getValue());
+		out.dpl = parseFloat(this.dplS.getValue());
 		out.CAT = this.catSelect.selectedIndex;
 	} else {
 		out.doWB = false;
@@ -276,8 +246,8 @@ TWKWHITE.prototype.getSettings = function(data) {
 		lampFree: this.lampFree,
 		newTemp: parseFloat(this.ctInput.value),
 		lampTemp: parseFloat(this.lampInput.value),
-		Duv: parseFloat(this.duvSlider.value),
-		Dpl: parseFloat(this.dplSlider.value),
+		Duv: parseFloat(this.duvS.getValue()),
+//		Dpl: parseFloat(this.dplS.getValue()),
 		advanced: this.advancedCheck.checked,
 		CAT: this.catSelect.options[this.catSelect.selectedIndex].lastChild.nodeValue
 	};
@@ -305,13 +275,12 @@ TWKWHITE.prototype.setSettings = function(settings) {
 			this.testLampInput();
 		}
 		if (typeof data.Duv === 'number') {
-			this.duvSlider.value = data.Duv.toString();
-			this.testDuvSlider();
+			this.duvS.setValue(parseFloat(data.Duv));
 		}
-		if (typeof data.Dpl === 'number') {
-			this.dplSlider.value = data.Dpl.toString();
-			this.testDplSlider();
-		}
+//		if (typeof data.Dpl === 'number') {
+//			this.dplS.setValue(parseFloat(data.Dpl));
+//			this.testDplSlider();
+//		}
 		if (typeof data.advanced === 'boolean') {
 			this.advancedCheck.checked = data.advanced;
 			this.toggleAdvanced();
@@ -357,6 +326,16 @@ TWKWHITE.prototype.events = function() {
 		here.testRefInput();
 		here.messages.gtSetParams();
 	};}(this);
+	this.ctS.action = function(here){ return function(){
+		here.testCTSlider();
+		here.messages.gtSetParams();
+	};}(this);
+	this.duvS.action = function(here){ return function(){
+		here.messages.gtSetParams();
+	};}(this);
+	this.dplS.action = function(here){ return function(){
+		here.messages.gtSetParams();
+	};}(this);
 	this.ctInput.onchange = function(here){ return function(){
 		here.testCTInput();
 		here.messages.gtSetParams();
@@ -365,32 +344,8 @@ TWKWHITE.prototype.events = function() {
 		here.testLampInput();
 		here.messages.gtSetParams();
 	};}(this);
-	this.ctSlider.oninput = function(here){ return function(){
-		here.testCTSlider();
-		here.messages.gtSetParams();
-	};}(this);
-	this.duvSlider.oninput = function(here){ return function(){
-		here.testDuvSlider();
-		here.messages.gtSetParams();
-	};}(this);
-	this.dplSlider.oninput = function(here){ return function(){
-		here.testDplSlider();
-		here.messages.gtSetParams();
-	};}(this);
 	this.sampleButton.onclick = function(here){ return function(){
 		here.toggleSample();
-	};}(this);
-	this.ctReset.onclick = function(here){ return function(){
-		here.resetCT();
-		here.messages.gtSetParams();
-	};}(this);
-	this.duvReset.onclick = function(here){ return function(){
-		here.resetDuv();
-		here.messages.gtSetParams();
-	};}(this);
-	this.dplReset.onclick = function(here){ return function(){
-		here.resetDpl();
-		here.messages.gtSetParams();
 	};}(this);
 	this.lampButton.onclick = function(here){ return function(){
 		here.toggleLamp();
@@ -423,14 +378,7 @@ TWKWHITE.prototype.testRefInput = function() {
 	var ctMiredShift = (1000000/temp) - refMired;
 	var miredScale = (1000000/3200)-(1000000/5500); // scale mireds so that 3200 -> 5500 shift = 1 on slider
 	var sliderVal = (ctMiredShift / miredScale).toFixed(2);
-	this.ctSlider.value = sliderVal;
-	if (Math.abs(sliderVal) < 0.0001) {
-		this.ctSliderLabel.innerHTML = 'Clear';
-	} else if (sliderVal<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
-	} else {
-		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
-	}
+	this.ctS.setValue(sliderVal);
 };
 TWKWHITE.prototype.testCTInput = function() {
 	var refMired = 1000000 / Math.round(parseFloat(this.refInput.value));
@@ -444,8 +392,6 @@ TWKWHITE.prototype.testCTInput = function() {
 	}
 	var ctMiredShift = (1000000/temp) - refMired;
 	var miredScale = (1000000/3200)-(1000000/5500); // scale mireds so that 3200 -> 5500 shift = 1 on slider
-	var sliderVal = (ctMiredShift / miredScale).toFixed(2);
-	this.ctSlider.value = sliderVal;
 	if (!this.lampFree) {
 		this.lampInput.value = this.ctInput.value;
 		var m = this.lampTempL.length;
@@ -456,13 +402,7 @@ TWKWHITE.prototype.testCTInput = function() {
 			}
 		}
 	}
-	if (Math.abs(sliderVal) < 0.0001) {
-		this.ctSliderLabel.innerHTML = 'Clear';
-	} else if (sliderVal<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(sliderVal).toString() + ' CTO';
-	} else {
-		this.ctSliderLabel.innerHTML = sliderVal.toString() + ' CTB';
-	}
+	this.ctS.setValue((ctMiredShift / miredScale).toFixed(2));
 };
 TWKWHITE.prototype.lampList = function() {
 	var colours = [	'Warm Comfort Light',
@@ -529,7 +469,7 @@ TWKWHITE.prototype.testLampTempSelect = function() {
 	}
 };
 TWKWHITE.prototype.testCTSlider = function() {
-	var val = parseFloat(this.ctSlider.value);
+	var val = this.ctS.getValue();
 	var miredScale = (1000000/3200)-(1000000/5500); // scale mireds so that 3200 -> 5500 shift = 1 on slider
 	var refMired = 1000000 / Math.round(parseFloat(this.refInput.value));
 	var ctMiredShift = val * miredScale;
@@ -542,69 +482,6 @@ TWKWHITE.prototype.testCTSlider = function() {
 	if (!this.lampFree) {
 		this.lampInput.value = this.ctInput.value;
 	}
-	if (Math.abs(val) < 0.0001) {
-		this.ctSliderLabel.innerHTML = 'Clear';
-	} else 	if (val<0) {
-		this.ctSliderLabel.innerHTML = Math.abs(val).toString() + ' CTO';
-	} else {
-		this.ctSliderLabel.innerHTML = val.toString() + ' CTB';
-	}
-};
-TWKWHITE.prototype.testDuvSlider = function() {
-	var val = parseFloat(this.duvSlider.value);
-	this.duvHidden.value = this.duvSlider.value;
-	if (Math.abs(val) < 0.0001) {
-		this.duvSliderLabel.innerHTML = 'Clear';
-	} else if (val<0) {
-		this.duvSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
-	} else {
-		this.duvSliderLabel.innerHTML = val.toString() + ' Plus Green';
-	}
-};
-TWKWHITE.prototype.testDuvHidden = function() {
-	var val = parseFloat(this.duvHidden.value);
-	this.duvSlider.value = this.duvHidden.value;
-	if (Math.abs(val) < 0.0001) {
-		this.duvSliderLabel.innerHTML = 'Clear';
-	} else if (val<0) {
-		this.duvSliderLabel.innerHTML = Math.abs(val).toString() + ' Minus Green';
-	} else {
-		this.duvSliderLabel.innerHTML = val.toString() + ' Plus Green';
-	}
-};
-TWKWHITE.prototype.testDplSlider = function() {
-	var val = parseFloat(this.dplSlider.value);
-	this.dplHidden.value = this.dplSlider.value;
-	if (Math.abs(val) < 0.0001) {
-		this.dplSliderLabel.innerHTML = 'Clear';
-	} else if (val<0) {
-		this.dplSliderLabel.innerHTML = Math.abs(val).toString() + ' Yellow';
-	} else {
-		this.dplSliderLabel.innerHTML = val.toString() + ' Blue';
-	}
-};
-TWKWHITE.prototype.testDplHidden = function() {
-	var val = parseFloat(this.dplHidden.value);
-	this.dplSlider.value = this.dplHidden.value;
-	if (Math.abs(val) < 0.0001) {
-		this.dplSliderLabel.innerHTML = 'Clear';
-	} else if (val<0) {
-		this.dplSliderLabel.innerHTML = Math.abs(val).toString() + ' Yellow';
-	} else {
-		this.dplSliderLabel.innerHTML = val.toString() + ' Blue';
-	}
-};
-TWKWHITE.prototype.resetCT = function() {
-	this.ctSlider.value = 0;
-	this.testCTSlider();
-};
-TWKWHITE.prototype.resetDuv = function() {
-	this.duvSlider.value = 0;
-	this.testDuvSlider();
-};
-TWKWHITE.prototype.resetDpl = function() {
-	this.dplSlider.value = 0;
-	this.testDplSlider();
 };
 TWKWHITE.prototype.gotCATs = function(CATs) {
 	var max = CATs.length;
@@ -658,10 +535,8 @@ TWKWHITE.prototype.gotPreCCTDuv = function(p) {
 	this.ctInput.value = Math.round(1000000 / ctMiredRef);
 	this.testCTInput();
 	this.lampInput.value = Math.round(1000000 / lampMiredRef);
-	this.duvHidden.value = p.duv;
-	this.testDuvHidden();
-	this.dplHidden.value = p.dpl;
-	this.testDplHidden();
+	this.duvS.setValue(p.duv);
+	this.dplS.setValue(p.dpl);
 	this.messages.gtSetParams();
 };
 TWKWHITE.prototype.toggleAdvanced = function() {
@@ -671,3 +546,7 @@ TWKWHITE.prototype.toggleAdvanced = function() {
 		this.advancedBox.className = 'twk-advanced-hide';
 	}
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

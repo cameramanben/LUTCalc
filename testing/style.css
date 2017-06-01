@@ -1429,6 +1429,7 @@ body {
 			left: 0;
 			right: 0;
 			transform: translateY(-50%);
+            -webkit-transform: translateY(-50%);
 		}
 	#ins-main-buttons {
 		margin: 0px auto;
@@ -1685,6 +1686,7 @@ body {
 	}
 		.info-tab input[type="radio"] {
 			transform: scale(1);
+            -webkit-transform: scale(1);
 			margin: 0.2em;
 			margin-left: 0.5em;
 		}
@@ -2437,6 +2439,7 @@ body {
 			height: 0.8em;
 			background: transparent;
 			transform: rotate(-90deg);
+            -webkit-transform: rotate(-90deg);
 			z-index: 5;
 		}
 			.slider-v ._sliderbox ._slider:focus {
@@ -2765,6 +2768,7 @@ body {
 			height: 0.95em;
 			background: transparent;
 			transform: rotate(-90deg);
+            -webkit-transform: rotate(-90deg);
 			z-index: 5;
 		}
 			.slider-bare-v ._sliderbox ._slider:focus {
@@ -2898,6 +2902,7 @@ body {
 			height: 0.95em;
 			background: transparent;
 			transform: rotate(-90deg);
+            -webkit-transform: rotate(-90deg);
 			z-index: 5;
 		}
 			.slider-bare-red-v ._sliderbox ._slider:focus {

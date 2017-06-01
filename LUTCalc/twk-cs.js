@@ -64,47 +64,48 @@ TWKCS.prototype.io = function() {
 	// Title
 	this.title = document.createElement('input');
 	this.title.setAttribute('type','text');
-	this.title.className = 'textinput';
+	this.title.className = 'text-input';
 	this.title.value = 'Rec709';
 	// White Point
 	this.stdWP = this.createRadioElement('wpOpt', true);
 	this.cstWP = this.createRadioElement('wpOpt', false);
 	this.stdIll = document.createElement('select');
+	this.stdIll.className = 'side-item';
 	this.setIlluminants();
 	// Primaries
 	this.xWP = document.createElement('input');
 	this.xWP.setAttribute('type','text');
-	this.xWP.className = 'basicinput';
+	this.xWP.className = 'base-input';
 	this.xWP.value = this.gamuts[0].wx.toString();
 	this.xWP.disabled = true;
 	this.yWP = document.createElement('input');
 	this.yWP.setAttribute('type','text');
-	this.yWP.className = 'basicinput';
+	this.yWP.className = 'base-input';
 	this.yWP.value = this.gamuts[0].wy.toString();
 	this.yWP.disabled = true;
 	this.xR = document.createElement('input');
 	this.xR.setAttribute('type','text');
-	this.xR.className = 'basicinput';
+	this.xR.className = 'base-input';
 	this.xR.value = this.gamuts[0].rx.toString();
 	this.yR = document.createElement('input');
 	this.yR.setAttribute('type','text');
-	this.yR.className = 'basicinput';
+	this.yR.className = 'base-input';
 	this.yR.value = this.gamuts[0].ry.toString();
 	this.xG = document.createElement('input');
 	this.xG.setAttribute('type','text');
-	this.xG.className = 'basicinput';
+	this.xG.className = 'base-input';
 	this.xG.value = this.gamuts[0].gx.toString();
 	this.yG = document.createElement('input');
 	this.yG.setAttribute('type','text');
-	this.yG.className = 'basicinput';
+	this.yG.className = 'base-input';
 	this.yG.value = this.gamuts[0].gy.toString();
 	this.xB = document.createElement('input');
 	this.xB.setAttribute('type','text');
-	this.xB.className = 'basicinput';
+	this.xB.className = 'base-input';
 	this.xB.value = this.gamuts[0].bx.toString();
 	this.yB = document.createElement('input');
 	this.yB.setAttribute('type','text');
-	this.yB.className = 'basicinput';
+	this.yB.className = 'base-input';
 	this.yB.value = this.gamuts[0].by.toString();
 	// Matrix inputs
 	this.matIn = [];
@@ -112,12 +113,12 @@ TWKCS.prototype.io = function() {
 	for (var j=0; j<9; j++) {
 		var inInput = document.createElement('input');
 		inInput.setAttribute('type','text');
-		inInput.className = 'wideinput';
+		inInput.className = 'wide-input';
 		inInput.disabled = false;
 		this.matIn.push(inInput);
 		var outInput = document.createElement('input');
 		outInput.setAttribute('type','text');
-		outInput.className = 'wideinput';
+		outInput.className = 'wide-input';
 		outInput.disabled = true;
 		this.matOut.push(outInput);
 		if (j === 0 || j === 4 || j === 8) {
@@ -425,7 +426,7 @@ TWKCS.prototype.setSettings = function(settings) {
 					this.yB.value = data.list[j].by.toString();
 					option1.selected = true;
 					if (data.list[j].std) {
-						this.stdIll.style.display = 'inline';
+						this.stdIll.className = 'side-item';
 						this.stdWP.checked = true;
 						this.cstWP.checked = false;
 						this.xWP.disabled = true;
@@ -438,7 +439,7 @@ TWKCS.prototype.setSettings = function(settings) {
 							}
 						}
 					} else {
-						this.stdIll.style.display = 'none';
+						this.stdIll.className = 'side-item-hide';
 						this.stdWP.checked = false;
 						this.cstWP.checked = true;
 						this.xWP.disabled = false;
@@ -629,13 +630,13 @@ TWKCS.prototype.changeIll = function() {
 };
 TWKCS.prototype.illOrWP = function() {
 	if (this.stdWP.checked) {
-		this.stdIll.style.display = 'inline';
+		this.stdIll.className = 'side-item';
 		this.xWP.disabled = true;
 		this.yWP.disabled = true;
 		this.gamuts[this.gamList.selectedIndex].std = this.stdIll.options[this.stdIll.selectedIndex].lastChild.nodeValue;
 		this.changeIll();
 	} else {
-		this.stdIll.style.display = 'none';
+		this.stdIll.className = 'side-item-hide';
 		this.xWP.disabled = false;
 		this.yWP.disabled = false;
 		this.gamuts[this.gamList.selectedIndex].std = false;
@@ -1084,3 +1085,7 @@ TWKCS.prototype.createRadioElement = function(name, checked) {
     }
     return radioInput;
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

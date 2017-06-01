@@ -372,11 +372,13 @@ TWKPSSTCDL.prototype.ui = function() {
 		this.beforeBars1[j].className = 'twk-psst-colour-bars-s';
 		this.coloursBox.appendChild(this.beforeBars1[j]);
 	}
+    this.coloursBox.appendChild(document.createElement('br'));
 	for (var j=0; j<28; j++) {
 		this.afterBars[j] = document.createElement('div');
 		this.afterBars[j].className = 'twk-psst-colour-bars-l';
 		this.coloursBox.appendChild(this.afterBars[j]);
 	}
+    this.coloursBox.appendChild(document.createElement('br'));
 	for (var j=0; j<28; j++) {
 		this.beforeBars2[j] = document.createElement('div');
 		this.beforeBars2[j].className = 'twk-psst-colour-bars-s';

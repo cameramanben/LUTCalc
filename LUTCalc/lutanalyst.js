@@ -351,3 +351,7 @@ LUTAnalyst.prototype.noCS = function() {
 LUTAnalyst.prototype.showGamut = function() {
 	return this.showGt;
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

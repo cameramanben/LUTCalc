@@ -1759,6 +1759,112 @@ LUTColourSpace.prototype.setFC = function(params) {
 	return out;
 };
 // Adjustment functions
+LUTColourSpace.prototype.FCOut = function(buff,out) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var y = this.y;
+	var Y;
+	var fc = new Uint8Array(m/3);
+	out.fc = fc.buffer;
+	out.to.push('fc');
+	var k;
+	for (var j=0; j<m; j += 3) {
+		k = parseInt(j/3);
+		Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
+		for (var s=0; s<10; s++) {
+			if (this.fcVals[s] !==-10 && Y <= this.fcVals[s]) {
+				fc[k] = s;
+				break;
+			}
+		}
+		if (fc[k] === 0 && this.doFCRed && Y > this.fcVals[9]) {
+			fc[k] = 10;
+		} else if ((fc[k] === 0  && Y > this.fcVals[0]) || (fc[k] === 0 && !this.doFCPurple && Y < 0.1) || (fc[k] === 9 && !this.doFCYellow)) {
+			fc[k] = 8;
+		}
+	}
+};
+LUTColourSpace.prototype.PSSTCDLOut = function(buff) {
+	var o = new Float64Array(buff);
+	var max = o.length;
+	var y = this.y;
+	var Y;
+	var Pb,Pr;
+	var m,h,f,y1,y2,m1,m2,col,sat,S,O,P,M,a;
+	var Db = 2*(1-y[2]);
+	var Dr = 2*(1-y[0]);
+	for (var j=0; j<max; j += 3) {
+		Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
+		Pb = (o[j+2]-Y)/Db;
+		Pr = (o[ j ]-Y)/Dr;
+		m = Math.pow((Pb*Pb)+(Pr*Pr),0.5);
+		h = Math.atan2(Pr,Pb)/(2*Math.PI); // converts coordinates to angle from x-axis. 0-deg = 0, 360-deg = 1
+		if (h < 0) {
+			h += 1;
+		}
+		f = this.psstF.fCub(h);
+		y1 = this.psstY.fLin(f);
+		m1 = this.psstM.fLin(f);
+		col = this.psstC.fCub(f);
+		sat = Math.max(0,this.psstSat.fCub(f));
+		S = Math.max(0,this.psstS.fCub(f));
+		O = this.psstO.fCub(f);
+		P = Math.max(0,this.psstP.fCub(f));
+		f = (f+col)%1;
+		if (this.psstYC) {
+			y2 = this.psstY.fLin(f);
+		} else {
+			y2 = y1;
+		}
+		if (this.psstMC) {
+			m2 = this.psstM.fLin(f);
+		} else {
+			m2 = m1;
+		}
+		M = m*sat*m2/m1;
+		a = this.psstB.fCub(f);
+		if (m > 0.005) {
+			Y = (Y*S/y1)+O;
+			Y = ((Y<0)?Y:Math.pow(Y,P));
+			Y = (isNaN(Y)?0:Y);
+			Y *= y2;
+			Pb = M * Math.cos(a);
+			Pr = M * Math.sin(a);
+		} else {
+			var Y2 = (Y*S/y1)+O;
+			Y2 = ((Y2<0)?Y2:Math.pow(Y2,P));
+			Y2 = (isNaN(Y2)?0:Y2);
+			Y2 *= y2;
+			Y =  (((0.005-m) * Y) + (m * Y2))/0.005;
+			Pb = (((0.005-m) * Pb) + (m * M * Math.cos(a)))/0.005;
+			Pr = (((0.005-m) * Pr) + (m * M * Math.sin(a)))/0.005;
+		}
+		o[ j ] = (Pr * Dr) + Y;
+		o[j+2] = (Pb * Db) + Y;
+		o[j+1] = (Y - (y[0]*o[ j ]) -(y[2]*o[j+2]))/y[1];
+	}
+};
+LUTColourSpace.prototype.ASCCDLOut = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var y = this.y;
+	var Y;
+	for (var j=0; j<m; j += 3) {
+		o[ j ] = (o[ j ]*this.asc[0])+this.asc[3];
+		o[ j ] = ((o[ j ]<0)?o[ j ]:Math.pow(o[ j ],this.asc[6]));
+		o[ j ] = (isNaN(o[ j ])?0:o[ j ]);
+		o[j+1] = (o[j+1]*this.asc[1])+this.asc[4];
+		o[j+1] = ((o[j+1]<0)?o[j+1]:Math.pow(o[j+1],this.asc[7]));
+		o[j+1] = (isNaN(o[j+1])?0:o[j+1]);
+		o[j+2] = (o[j+2]*this.asc[2])+this.asc[5];
+		o[j+2] = ((o[j+2]<0)?o[j+2]:Math.pow(o[j+2],this.asc[8]));
+		o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
+		Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
+		o[ j ] = Y + (this.asc[9]*(o[ j ]-Y));
+		o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
+		o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
+	}
+};
 LUTColourSpace.prototype.multiOut = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -1842,6 +1948,121 @@ LUTColourSpace.prototype.multiOut = function(buff) {
 		c[j+1] = mono[1] + (sat*(c[j+1]-mono[1]));
 		c[j+2] = mono[2] + (sat*(c[j+2]-mono[2]));
 	}
+};
+LUTColourSpace.prototype.HGOut = function(buff,g) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	var y = this.y;
+	var Y,r;
+	var h = new Float64Array(o.buffer.slice(0));
+	if (typeof g === 'boolean' && g) {
+		this.csOut[this.curOut].lc(buff);
+		this.csOut[this.curHG].lc(h.buffer);
+	} else {
+		this.csOut[this.curOut].lf(buff);
+		this.csOut[this.curHG].lf(h.buffer);
+	}
+	for (var j=0; j<m; j += 3) {
+		Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
+		if (Y >= this.hgHigh) {
+			o[ j ] = h[j];
+			o[j+1] = h[j+1];
+			o[j+2] = h[j+2];
+		} else if (Y > this.hgLow) {
+			if (this.hgLin) {
+				r = (this.hgHigh - Y)/(this.hgHigh - this.hgLow);
+			} else {
+				r = (this.hgHighStop - (Math.log(Y * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
+			}
+			o[ j ] = (o[ j ] * (r)) + (h[ j ] * (1-r));
+			o[j+1] = (o[j+1] * (r)) + (h[j+1] * (1-r));
+			o[j+2] = (o[j+2] * (r)) + (h[j+2] * (1-r));
+		}
+	}
+};
+LUTColourSpace.prototype.gamutLimOut = function(buff,out) {
+	var o = new Float64Array(buff);
+	var max = o.length;
+	var y = this.y;
+	var Y,k;
+	if (this.gLimLin) { // Linear Space
+		out.doGamutLim = false;
+		if (this.gLimC) { // Secondary colourspace to protect 
+			for (var j=0; j<max; j++) {
+				o[ j ] = Math.max(0, o[ j ]);
+			}
+			var og = new Float64Array(o.buffer.slice(0));
+			this.csIn[this.gLimGIn].lc(og.buffer);
+			this.csOut[this.gLimGOut].lc(og.buffer);
+			var gMX, gMN, gSat;
+			var gY = this.gLimY;
+			var gL = this.gLimL;
+			if (this.gLimB) { // Protect both Primary and Secondary
+				var gMX2, gMN2;
+				for (var j=0; j<max; j += 3) {
+					k = parseInt(j/3);
+					gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+					gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+					gMX2 = Math.max(og[ j ], og[j+1], og[j+2]);
+					gMN2 = Math.min(og[ j ], og[j+1], og[j+2]);
+					gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL ;
+					if (gSat > 1) {
+						Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+						o[ j ] = Y + ((o[ j ]-Y)/gSat);
+						o[j+1] = Y + ((o[j+1]-Y)/gSat);
+						o[j+2] = Y + ((o[j+2]-Y)/gSat);
+					}
+				}
+			} else { // Protect Secondary only
+				for (var j=0; j<max; j += 3) {
+					k = parseInt(j/3);
+					gMX = Math.max(og[ j ], og[j+1], og[j+2]);
+					gMN = Math.min(og[ j ], og[j+1], og[j+2]);
+					gSat = (gMX - gMN)/gL;
+					if (gSat > 1) {
+						Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+						o[ j ] = Y + ((o[ j ]-Y)/gSat);
+						o[j+1] = Y + ((o[j+1]-Y)/gSat);
+						o[j+2] = Y + ((o[j+2]-Y)/gSat);
+					}
+				}
+			}
+		} else { // Protect Primary
+			var gMX, gMN;
+			var gSat;
+			var gY = this.gLimY;
+			var gL = this.gLimL;
+			for (var j=0; j<max; j += 3) {
+				k = parseInt(j/3);
+				o[ j ] = Math.max(0, o[ j ]);
+				o[j+1] = Math.max(0, o[j+1]);
+				o[j+2] = Math.max(0, o[j+2]);
+				gMX = Math.max(o[ j ], o[j+1], o[j+2]);
+				if (gMX > gL) {
+					gMN = Math.min(o[ j ], o[j+1], o[j+2]);
+					gSat = (gMX - gMN)/gL;
+					if (gSat > 1) {
+						Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
+						o[ j ] = Y + ((o[ j ]-Y)/gSat);
+						o[j+1] = Y + ((o[j+1]-Y)/gSat);
+						o[j+2] = Y + ((o[j+2]-Y)/gSat);
+					}
+				}
+			}
+		}
+	} else { // Post Gamma
+		out.doGamutLim = true;
+		out.gLimY = this.gLimY;
+		out.gLimL = this.gLimL;
+		if (this.gLimC) { // Secondary colourspace to protect
+			var og = new Float64Array(o.buffer.slice(0));
+			this.csIn[this.gLimGIn].lc(og.buffer);
+			this.csOut[this.gLimGOut].lc(og.buffer);
+			out.og = og.buffer;
+			out.to.push('og');
+			out.gLimB = this.gLimB;
+		}
+	} // Default protects Primary
 };
 // Colour space data objects
 function CCTxy(LUT) {
@@ -3925,25 +4146,7 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}
 // False Colour
 		if (this.doFC) {
-			var fc = new Uint8Array(max/3);
-			out.fc = fc.buffer;
-			out.to.push('fc');
-			var k;
-			for (var j=0; j<max; j += 3) {
-				k = parseInt(j/3);
-				Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
-				for (var s=0; s<10; s++) {
-					if (this.fcVals[s] !==-10 && Y <= this.fcVals[s]) {
-						fc[k] = s;
-						break;
-					}
-				}
-				if (fc[k] === 0 && this.doFCRed && Y > this.fcVals[9]) {
-					fc[k] = 10;
-				} else if ((fc[k] === 0  && Y > this.fcVals[0]) || (fc[k] === 0 && !this.doFCPurple && Y < 0.1) || (fc[k] === 9 && !this.doFCYellow)) {
-					fc[k] = 8;
-				}
-			}
+			this.FCOut(buff,out);
 		}
 		out.doFC = this.doFC;
 // Colour Temperature Shift
@@ -3952,120 +4155,19 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 		}
 // PSST-CDL
 		if (this.doPSSTCDL) {
-			var Pb,Pr;
-			var m,h,f,y1,y2,m1,m2,col,sat,S,O,P,M,a;
-			var Db = 2*(1-y[2]);
-			var Dr = 2*(1-y[0]);
-			for (var j=0; j<max; j += 3) {
-				Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
-				Pb = (o[j+2]-Y)/Db;
-				Pr = (o[ j ]-Y)/Dr;
-				m = Math.pow((Pb*Pb)+(Pr*Pr),0.5);
-				h = Math.atan2(Pr,Pb)/(2*Math.PI); // converts coordinates to angle from x-axis. 0-deg = 0, 360-deg = 1
-				if (h < 0) {
-					h += 1;
-				}
-				f = this.psstF.fCub(h);
-				y1 = this.psstY.fLin(f);
-				m1 = this.psstM.fLin(f);
-				col = this.psstC.fCub(f);
-				sat = this.psstSat.fCub(f);
-				if (sat < 0) {
-					sat = 0;
-				}
-				S = this.psstS.fCub(f);
-				if (S < 0) {
-					S = 0;
-				}
-				O = this.psstO.fCub(f);
-				P = this.psstP.fCub(f);
-				if (P < 0) {
-					P = 0;
-				}
-				f = (f+col)%1;
-				if (this.psstYC) {
-					y2 = this.psstY.fLin(f);
-				} else {
-					y2 = y1;
-				}
-				if (this.psstMC) {
-					m2 = this.psstM.fLin(f);
-				} else {
-					m2 = m1;
-				}
-				M = m*sat*m2/m1;
-				a = this.psstB.fCub(f);
-				if (m > 0.005) {
-					Y = (Y*S/y1)+O;
-					Y = ((Y<0)?Y:Math.pow(Y,P));
-					Y = (isNaN(Y)?0:Y);
-					Y *= y2;
-					Pb = M * Math.cos(a);
-					Pr = M * Math.sin(a);
-				} else {
-					var Y2 = (Y*S/y1)+O;
-					Y2 = ((Y2<0)?Y2:Math.pow(Y2,P));
-					Y2 = (isNaN(Y2)?0:Y2);
-					Y2 *= y2;
-					Y =  (((0.005-m) * Y) + (m * Y2))/0.005;
-					Pb = (((0.005-m) * Pb) + (m * M * Math.cos(a)))/0.005;
-					Pr = (((0.005-m) * Pr) + (m * M * Math.sin(a)))/0.005;
-				}
-				o[ j ] = (Pr * Dr) + Y;
-				o[j+2] = (Pb * Db) + Y;
-				o[j+1] = (Y - (y[0]*o[ j ]) -(y[2]*o[j+2]))/y[1];
-			}
+			this.PSSTCDLOut(buff);
 		}
 // ASC-CDL
 		if (this.doASCCDL) {
-			for (var j=0; j<max; j += 3) {
-				o[ j ] = (o[ j ]*this.asc[0])+this.asc[3];
-				o[ j ] = ((o[ j ]<0)?o[ j ]:Math.pow(o[ j ],this.asc[6]));
-				o[ j ] = (isNaN(o[ j ])?0:o[ j ]);
-				o[j+1] = (o[j+1]*this.asc[1])+this.asc[4];
-				o[j+1] = ((o[j+1]<0)?o[j+1]:Math.pow(o[j+1],this.asc[7]));
-				o[j+1] = (isNaN(o[j+1])?0:o[j+1]);
-				o[j+2] = (o[j+2]*this.asc[2])+this.asc[5];
-				o[j+2] = ((o[j+2]<0)?o[j+2]:Math.pow(o[j+2],this.asc[8]));
-				o[j+2] = (isNaN(o[j+2])?0:o[j+2]);
-				Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
-				o[ j ] = Y + (this.asc[9]*(o[ j ]-Y));
-				o[j+1] = Y + (this.asc[9]*(o[j+1]-Y));
-				o[j+2] = Y + (this.asc[9]*(o[j+2]-Y));
-			}
+			this.ASCCDLOut(buff);
 		}
 // MultiTone
 		if (this.doMulti) {
-			this.multiOut(o.buffer);
+			this.multiOut(buff);
 		}		
 // Highlight Gamut
 		if (this.doHG) {
-			var h = new Float64Array(o.buffer.slice(0));
-			if (g) {
-				this.csOut[this.curOut].lc(buff);
-				this.csOut[this.curHG].lc(h.buffer);
-			} else {
-				this.csOut[this.curOut].lf(buff);
-				this.csOut[this.curHG].lf(h.buffer);
-			}
-			var r;
-			for (var j=0; j<max; j += 3) {
-				Y = (y[0]*o[j])+(y[1]*o[j+1])+(y[2]*o[j+2]);
-				if (Y >= this.hgHigh) {
-					o[ j ] = h[j];
-					o[j+1] = h[j+1];
-					o[j+2] = h[j+2];
-				} else if (Y > this.hgLow) {
-					if (this.hgLin) {
-						r = (this.hgHigh - Y)/(this.hgHigh - this.hgLow);
-					} else {
-						r = (this.hgHighStop - (Math.log(Y * 5)/Math.LN2))/(this.hgHighStop - this.hgLowStop);
-					}
-					o[ j ] = (o[ j ] * (r)) + (h[ j ] * (1-r));
-					o[j+1] = (o[j+1] * (r)) + (h[j+1] * (1-r));
-					o[j+2] = (o[j+2] * (r)) + (h[j+2] * (1-r));
-				}
-			}
+			this.HGOut(buff,g);
 		} else {
 			if (g) {
 				this.csOut[this.curOut].lc(buff);
@@ -4073,90 +4175,13 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				this.csOut[this.curOut].lf(buff);
 			}
 		}
-	}
 // Gamut Limiter
 		if (this.doGamutLim) {
-			if (this.gLimLin) { // Linear Space
-				out.doGamutLim = false;
-				if (this.gLimC) { // Secondary colourspace to protect 
-					for (var j=0; j<max; j++) {
-						o[ j ] = Math.max(0, o[ j ]);
-					}
-					var og = new Float64Array(o.buffer.slice(0));
-					this.csIn[this.gLimGIn].lc(og.buffer);
-					this.csOut[this.gLimGOut].lc(og.buffer);
-					var gMX, gMN, gSat;
-					var gY = this.gLimY;
-					var gL = this.gLimL;
-					if (this.gLimB) { // Protect both Primary and Secondary
-						var gMX2, gMN2;
-						for (var j=0; j<max; j += 3) {
-							k = parseInt(j/3);
-							gMX = Math.max(o[ j ], o[j+1], o[j+2]);
-							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
-							gMX2 = Math.max(og[ j ], og[j+1], og[j+2]);
-							gMN2 = Math.min(og[ j ], og[j+1], og[j+2]);
-							gSat = Math.max(gMX - gMN, gMX2 - gMN2)/gL ;
-							if (gSat > 1) {
-								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
-								o[ j ] = Y + ((o[ j ]-Y)/gSat);
-								o[j+1] = Y + ((o[j+1]-Y)/gSat);
-							o[j+2] = Y + ((o[j+2]-Y)/gSat);
-							}
-						}
-					} else { // Protect Secondary only
-						for (var j=0; j<max; j += 3) {
-							k = parseInt(j/3);
-							gMX = Math.max(og[ j ], og[j+1], og[j+2]);
-							gMN = Math.min(og[ j ], og[j+1], og[j+2]);
-							gSat = (gMX - gMN)/gL;
-							if (gSat > 1) {
-								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
-								o[ j ] = Y + ((o[ j ]-Y)/gSat);
-								o[j+1] = Y + ((o[j+1]-Y)/gSat);
-							o[j+2] = Y + ((o[j+2]-Y)/gSat);
-							}
-						}
-					}
-				} else { // Protect Primary
-					var gMX, gMN;
-					var gSat;
-					var gY = this.gLimY;
-					var gL = this.gLimL;
-					for (var j=0; j<max; j += 3) {
-						k = parseInt(j/3);
-						o[ j ] = Math.max(0, o[ j ]);
-						o[j+1] = Math.max(0, o[j+1]);
-						o[j+2] = Math.max(0, o[j+2]);
-						gMX = Math.max(o[ j ], o[j+1], o[j+2]);
-						if (gMX > gL) {
-							gMN = Math.min(o[ j ], o[j+1], o[j+2]);
-							gSat = (gMX - gMN)/gL;
-							if (gSat > 1) {
-								Y = (gY[0]*o[j])+(gY[1]*o[j+1])+(gY[2]*o[j+2]);
-								o[ j ] = Y + ((o[ j ]-Y)/gSat);
-								o[j+1] = Y + ((o[j+1]-Y)/gSat);
-								o[j+2] = Y + ((o[j+2]-Y)/gSat);
-							}
-						}
-					}
-				}
-			} else { // Post Gamma
-				out.doGamutLim = true;
-				out.gLimY = this.gLimY;
-				out.gLimL = this.gLimL;
-				if (this.gLimC) { // Secondary colourspace to protect
-					var og = new Float64Array(o.buffer.slice(0));
-					this.csIn[this.gLimGIn].lc(og.buffer);
-					this.csOut[this.gLimGOut].lc(og.buffer);
-					out.og = og.buffer;
-					out.to.push('og');
-					out.gLimB = this.gLimB;
-				}
-			} // Default protects Primary
+			this.gamutLimOut(buff,out);
 		} else {
 			out.doGamutLim = false;
 		}
+	}
 // Done
 	return out;
 };
@@ -4320,9 +4345,35 @@ LUTColourSpace.prototype.getColSqr = function(p,t,i) {
 	return {p: p, t: t+20, v: this.ver, tIdx: i.tIdx, o: o.buffer, cb: this.csOut[this.curOut].cb(), to: ['o']};
 };
 LUTColourSpace.prototype.multiColours = function(p,t,i) {
-	var c = this.mclrs.slice(0);
-	this.multiOut(c);
-	this.csOut[this.curOut].lc(c);
+	var buff = this.mclrs.slice(0);
+	out = {p: p, t: t+20, v: this.ver, o: buff, cb: this.csOut[this.curOut].cb(), to: ['o','hs']};
+// Colour Temperature Shift
+	if (this.doWB) {
+		this.wb.lc(buff);
+	}
+// PSST-CDL
+	if (this.doPSSTCDL) {
+		this.PSSTCDLOut(buff);
+	}
+// ASC-CDL
+	if (this.doASCCDL) {
+		this.ASCCDLOut(buff);
+	}
+// MultiTone
+	this.multiOut(buff);		
+// Highlight Gamut
+	if (this.doHG) {
+		this.HGOut(buff,false);
+	} else {
+		this.csOut[this.curOut].lf(buff);
+	}
+// Gamut Limiter
+	if (this.doGamutLim) {
+		this.gamutLimOut(buff,out);
+	} else {
+		out.doGamutLim = false;
+	}
+// Multi Tones
 	var m = i.hues.length;
 	var hf = new Float64Array(m*3);
 	var f = new Float64Array(this.colSqr);
@@ -4345,7 +4396,8 @@ LUTColourSpace.prototype.multiColours = function(p,t,i) {
 		hs[(j*3)+1] = Math.min(255,Math.max(0,hf[(j*3)+1]*M));
 		hs[(j*3)+2] = Math.min(255,Math.max(0,hf[(j*3)+2]*M));
 	}
-	return {p: p, t: t+20, v: this.ver, o: c, hs: hs.buffer, cb: this.csOut[this.curOut].cb(), to: ['o','hs']};
+	out.hs = hs.buffer;
+	return out;
 };
 LUTColourSpace.prototype.ioNames = function(p,t) {
 	var out = {};

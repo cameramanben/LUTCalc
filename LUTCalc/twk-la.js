@@ -78,6 +78,30 @@ TWKLA.prototype.io = function() {
 	}
 	this.inputs.addInput('laGamutSelect',this.gamutSelect);
 
+	this.pqOOTFLw = document.createElement('input');
+	this.pqOOTFLw.setAttribute('type','number');
+	this.pqOOTFLw.setAttribute('step',1);
+	this.pqOOTFLw.className = 'base-input';
+	this.pqOOTFLw.value = 10000;
+	this.pqEOTFLw = document.createElement('input');
+	this.pqEOTFLw.setAttribute('type','number');
+	this.pqEOTFLw.setAttribute('step',1);
+	this.pqEOTFLw.className = 'base-input';
+	this.pqEOTFLw.value = 10000;
+	this.hlgOOTFLw = document.createElement('input');
+	this.hlgOOTFLw.setAttribute('type','number');
+	this.hlgOOTFLw.setAttribute('step',1);
+	this.hlgOOTFLw.className = 'base-input';
+	this.hlgOOTFLw.value = 1000;
+	this.hlgOOTFLb = document.createElement('input');
+	this.hlgOOTFLb.setAttribute('type','number');
+	this.hlgOOTFLb.setAttribute('step',1);
+	this.hlgOOTFLb.className = 'base-input';
+	this.hlgOOTFLb.value = 0;
+	this.hlgScale = [];
+	this.hlgScale[0] = lutRadioElement('hlgScale', true); // NHK / Base Spec (90% maps to 50% IRE)
+	this.hlgScale[1] = lutRadioElement('hlgScale', false); // BBC (90% maps to 75% IRE)
+
 	this.dim33 = this.createRadioElement('lutAnalystDim',false);
 	this.dim65 = this.createRadioElement('lutAnalystDim',true);
 	this.inputs.addInput('laDim',[this.dim33,this.dim65]);
@@ -115,27 +139,27 @@ TWKLA.prototype.io = function() {
 
 	this.doButton = document.createElement('input');
 	this.doButton.setAttribute('type','button');
-	this.doButton.setAttribute('class','twk-button-hide');
+	this.doButton.className = 'twk-button-hide';
 	this.doButton.value = 'Analyse';
 
 	this.declampButton = document.createElement('input');
 	this.declampButton.setAttribute('type','button');
-	this.declampButton.setAttribute('class','twk-button-hide');
+	this.declampButton.className = 'twk-button-hide';
 	this.declampButton.value = 'Declip';
 
 	this.storeButton = document.createElement('input');
 	this.storeButton.setAttribute('type','button');
-	this.storeButton.setAttribute('class','twk-button-hide');
+	this.storeButton.className = 'twk-button-hide';
 	this.storeButton.value = 'Save Cube';
 
 	this.storeBinButton = document.createElement('input');
 	this.storeBinButton.setAttribute('type','button');
-	this.storeBinButton.setAttribute('class','twk-button-hide');
+	this.storeBinButton.className = 'twk-button-hide';
 	this.storeBinButton.value = 'Save Binary';
 
 	this.backButton = document.createElement('input');
 	this.backButton.setAttribute('type','button');
-	this.backButton.setAttribute('class','twk-button-hide');
+	this.backButton.className = 'twk-button-hide';
 	this.backButton.value = 'New LUT';
 	
 	this.showGt = true;
@@ -176,6 +200,35 @@ TWKLA.prototype.ui = function() {
 	this.linGammaBox.appendChild(this.linGammaSelect);
 	this.linGammaBox.className = 'twk-tab-hide';
 	this.analysisBox.appendChild(this.linGammaBox);
+
+	this.pqOOTFBox = document.createElement('div');
+	this.pqOOTFBox.className = 'twk-tab-hide';
+	this.pqOOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Display: Peak Mastering Level (Lw)')));
+	this.pqOOTFBox.appendChild(this.pqOOTFLw);
+	this.pqOOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('nits')));
+	this.analysisBox.appendChild(this.pqOOTFBox);
+	this.pqEOTFBox = document.createElement('div');
+	this.pqEOTFBox.className = 'twk-tab-hide';
+	this.pqEOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Display: Peak Mastering Level (Lw)')));
+	this.pqEOTFBox.appendChild(this.pqEOTFLw);
+	this.pqEOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('nits')));
+	this.analysisBox.appendChild(this.pqEOTFBox);
+	this.hlgOOTFBox = document.createElement('div');
+	this.hlgOOTFBox.className = 'twk-tab-hide';
+	this.hlgOOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Display: Peak Mastering Level (Lw)')));
+	this.hlgOOTFBox.appendChild(this.hlgOOTFLw);
+	this.hlgOOTFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('nits')));
+//	this.hlgOOTFInBox.appendChild(this.hlgOOTFLbIn);
+	this.analysisBox.appendChild(this.hlgOOTFBox);
+	this.hlgOETFBox = document.createElement('div');
+	this.hlgOETFBox.className = 'twk-tab-hide';
+	this.hlgOETFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Reference White Scaling')));
+	this.hlgOETFBox.appendChild(this.hlgScale[0]);
+	this.hlgOETFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('NHK / Spec. Base')));
+	this.hlgOETFBox.appendChild(this.hlgScale[1]);
+	this.hlgOETFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('BBC')));
+	this.analysisBox.appendChild(this.hlgOETFBox);
+
 	this.gamutBox = document.createElement('div');
 	this.gamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Gamut')));
 	this.gamutBox.appendChild(this.gamutSelect);
@@ -287,11 +340,11 @@ TWKLA.prototype.toggleTweak = function() {
 			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 		}
 		if (this.showGt) {
-			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].style.display = 'block';
-			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].style.display = 'block';
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].className = 'select-item';
+			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].className = 'select-item';
 		} else {
-			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].style.display = 'none';
-			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].style.display = 'none';
+			this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].className = 'select-item-hide';
+			this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].className = 'select-item-hide';
 		}
 	} else {
 		if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.selectedIndex].value) === this.inputs.gammaLA) {
@@ -345,6 +398,7 @@ TWKLA.prototype.setParams = function(params) {
 	if (typeof params.twkLA !== 'undefined') {
 		var p = params.twkLA;
 	}
+	this.syncHDRVals();
 	// Any changes to UI inputs coming from the gamma and gamut workers should go here
 };
 TWKLA.prototype.getSettings = function(data) {
@@ -419,8 +473,68 @@ TWKLA.prototype.events = function() {
 	this.storeBinButton.onclick = function(here){ return function(){
 		here.store(false);
 	};}(this);
+
+	this.pqOOTFLw.onchange = function(here){ return function(){
+		here.testPQLw();
+		here.messages.gaSetParams();
+	};}(this);
+	this.hlgOOTFLw.onchange = function(here){ return function(){
+		here.testHLGLw();
+		here.messages.gaSetParams();
+	};}(this);
+	this.pqEOTFLw.onchange = function(here){ return function(){
+		here.testPQEOTFLw();
+		here.messages.gaSetParams();
+	};}(this);
+	this.hlgScale[0].onchange = function(here){ return function(){
+		here.testNHKBBC();
+		here.messages.gaSetParams();
+	};}(this);
+	this.hlgScale[1].onchange = function(here){ return function(){
+		here.testNHKBBC();
+		here.messages.gaSetParams();
+	};}(this);
 };
 // Tweak-Specific Code
+TWKLA.prototype.testPQLw = function() {
+	var Lw = parseFloat(this.pqOOTFLw.value);
+	if (isNaN(Lw)) {
+		Lw = 10000;
+	} else {
+		Lw = Math.round(Math.max(100,Math.min(10000,Lw)));
+	}
+	this.pqOOTFLw.value = Lw;
+	this.inputs.inPQLw.value = this.pqOOTFLw.value;
+//	this.inputs.outPQLw.value = this.pqOOTFLw.value;
+};
+TWKLA.prototype.testPQEOTFLw = function() {
+	var Lw = parseFloat(this.pqEOTFLw.value);
+	if (isNaN(Lw)) {
+		Lw = 10000;
+	} else {
+		Lw = Math.round(Math.max(100,Math.min(10000,Lw)));
+	}
+	this.pqEOTFLw.value = Lw;
+	this.inputs.inPQEOTFLw.value = this.pqEOTFLw.value;
+//	this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
+};
+TWKLA.prototype.testHLGLw = function() {
+	var Lw = parseFloat(this.hlgOOTFLw.value);
+	if (isNaN(Lw)) {
+		Lw = 1000;
+	} else {
+		Lw = Math.round(Lw);
+	}
+	this.hlgOOTFLw.value = Lw;
+	this.inputs.inHLGLw.value = this.hlgOOTFLw.value;
+//	this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
+};
+TWKLA.prototype.testNHKBBC = function() {
+	this.inputs.hlgBBCScaleIn[0].checked = this.hlgScale[0].checked;
+	this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
+//	this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
+//	this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+};
 TWKLA.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -466,6 +580,7 @@ TWKLA.prototype.gotFile = function() {
 	this.backButton.className = 'twk-button';
 	if (this.newOpt.checked) {
 		this.analysisBox.className = 'twk-tab';
+		this.testGamma();
 		this.inputs.lutAnalyst.reset();
 		var parsed = false;
 		if (this.inputs.laFileData.isTxt) {
@@ -528,10 +643,32 @@ TWKLA.prototype.gotFile = function() {
 	}
 };
 TWKLA.prototype.testGamma = function() {
-	if (this.gammaSelect.options[this.gammaSelect.options.selectedIndex].value == '9999') {
+	// Hide Everything
+	this.linGammaBox.className = 'twk-tab-hide';
+	this.pqOOTFBox.className = 'twk-tab-hide';
+	this.pqEOTFBox.className = 'twk-tab-hide';
+	this.hlgOOTFBox.className = 'twk-tab-hide';
+	this.hlgOETFBox.className = 'twk-tab-hide';
+	// Show As Required
+	var idx = parseInt(this.gammaSelect.options[this.gammaSelect.options.selectedIndex].value);
+	if (idx === 9999) {
 		this.linGammaBox.className = 'twk-tab';
-	} else {
-		this.linGammaBox.className = 'twk-tab-hide';
+		idx = parseInt(this.linGammaSelect.options[this.linGammaSelect.options.selectedIndex].value);
+		if (idx === this.inputs.gammaPQOOTF || idx === this.inputs.gammaPQOOTF + 1) {
+			this.pqOOTFBox.className = 'twk-tab';
+		} else if (idx === this.inputs.gammaHLGOOTF || idx === this.inputs.gammaHLGOOTF + 1) {
+			this.hlgOOTFBox.className = 'twk-tab';
+			this.hlgOETFBox.className = 'twk-tab';
+		}
+	} else if (idx === this.inputs.gammaPQ || idx === this.inputs.gammaPQOOTF || idx === this.inputs.gammaPQOOTF + 1) {
+		this.pqOOTFBox.className = 'twk-tab';
+	} else if (idx === this.inputs.gammaPQ + 1 || idx === this.inputs.gammaHLGOOTF || idx === this.inputs.gammaHLGOOTF + 1) {
+		this.hlgOOTFBox.className = 'twk-tab';
+		this.hlgOETFBox.className = 'twk-tab';
+	} else if (idx === this.inputs.gammaPQEOTF) {
+		this.pqEOTFBox.className = 'twk-tab';
+	} else if (idx === this.inputs.gammaHLG) {
+		this.hlgOETFBox.className = 'twk-tab';
 	}
 };
 TWKLA.prototype.doStuff = function() {
@@ -553,6 +690,7 @@ TWKLA.prototype.doneStuff = function() {
 	if (this.showGt) {
 		this.messages.changeGamut();
 	}
+	maxHeights();
 };
 TWKLA.prototype.reset = function() {
 	this.tweakCheck.checked = false;
@@ -586,47 +724,80 @@ TWKLA.prototype.reset = function() {
 	this.storeBinButton.className = 'twk-button-hide';
 	this.declampButton.className = 'twk-button-hide';
 	this.doButton.className = 'twk-button-hide';
+	maxHeights();
 };
 TWKLA.prototype.store = function(cube) {
-	var meta = this.inputs.lutAnalyst.cs.getMetadata();
-	params = {
-		in1DTF: 'S-Log3',
-		in1DEX: true,
-		in3DTF: 'S-Log3',
-		in3DCS: meta.inputCS,
-		sysCS: meta.sysCS,
-		in3DEX: meta.inputEX,
-		interpolation: meta.interpolation,
-		baseISO: meta.baseISO,
-		inputMatrix: meta.inputMatrix
-	}
-	if (meta.nativeTF !== 0) {
-		params.in3DTF = meta.inputTF;
-	}
-	if (cube) {
-		this.files.save(
-			this.inputs.laCube.build(
+	if (this.inputs.lutAnalyst.cs) { // 3D LUT
+		var meta = this.inputs.lutAnalyst.cs.getMetadata();
+		var params = {
+			in1DTF: 'S-Log3',
+			in1DEX: true,
+			in3DTF: 'S-Log3',
+			in3DCS: meta.inputCS,
+			sysCS: meta.sysCS,
+			in3DEX: meta.inputEX,
+			interpolation: meta.interpolation,
+			baseISO: meta.baseISO,
+			inputMatrix: meta.inputMatrix
+		}
+		if (meta.nativeTF !== 0) {
+			params.in3DTF = meta.inputTF;
+		}
+		if (cube) {
+			this.files.save(
+				this.inputs.laCube.build(
+					this.title.value,
+					this.inputs.lutAnalyst.getL(),
+					this.inputs.lutAnalyst.getRGB(),
+					params
+				),
 				this.title.value,
-				this.inputs.lutAnalyst.getL(),
-				this.inputs.lutAnalyst.getRGB(),
-				params
-			),
-			this.title.value,
-			'lacube',
-			0
-		);
+				'lacube',
+				0
+			);
+		} else {
+			this.files.saveBinary(
+				this.inputs.laBin.build(
+					this.title.value,
+					this.inputs.lutAnalyst.getL(),
+					this.inputs.lutAnalyst.getRGB(),
+					params
+				),
+				this.title.value,
+				'labin',
+				0
+			);
+		}
 	} else {
-		this.files.saveBinary(
-			this.inputs.laBin.build(
+		var params = {
+			in1DTF: 'S-Log3',
+			in1DEX: true,
+		}
+		if (cube) {
+			this.files.save(
+				this.inputs.laCube.build(
+					this.title.value,
+					this.inputs.lutAnalyst.getL(),
+					false,
+					params
+				),
 				this.title.value,
-				this.inputs.lutAnalyst.getL(),
-				this.inputs.lutAnalyst.getRGB(),
-				params
-			),
-			this.title.value,
-			'labin',
-			0
-		);
+				'lacube',
+				0
+			);
+		} else {
+			this.files.saveBinary(
+				this.inputs.laBin.build(
+					this.title.value,
+					this.inputs.lutAnalyst.getL(),
+					false,
+					params
+				),
+				this.title.value,
+				'labin',
+				0
+			);
+		}
 	}
 /*
 	this.files.buildLA1DMethod(
@@ -685,6 +856,29 @@ TWKLA.prototype.updateLAMethod = function(newMethod) {
 		this.oldMethod = newMethod;
 	}
 };
+TWKLA.prototype.syncHDRVals = function(here) {
+	if (here) { // send from here to the gamma box
+		this.inputs.inPQLw.value = this.pqOOTFLw.value;
+//		this.inputs.outPQLw.value = this.pqOOTFLw.value;
+		this.inputs.inPQEOTFLw.value = this.pqEOTFLw.value;
+//		this.inputs.outPQEOTFLw.value = this.pqEOTFLw.value;
+		this.inputs.inHLGLw.value = this.hlgOOTFLw.value;
+//		this.inputs.outHLGLw.value = this.hlgOOTFLw.value;
+		this.inputs.inHLGLb.value = this.hlgOOTFLb.value;
+//		this.inputs.outHLGLb.value = this.hlgOOTFLb.value;
+		this.inputs.hlgBBCScaleIn[0].checked = this.hlgScale[0].checked;
+		this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
+//		this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
+//		this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+	} else { // collect from gamma box
+		this.pqOOTFLw.value = this.inputs.inPQLw.value;
+		this.pqEOTFLw.value = this.inputs.inPQEOTFLw.value;
+		this.hlgOOTFLw.value = this.inputs.inHLGLw.value;
+		this.hlgOOTFLb.value = this.inputs.inHLGLb.value;
+		this.hlgScale[0].checked = this.inputs.hlgBBCScaleIn[0].checked;
+		this.hlgScale[1].checked = this.inputs.hlgBBCScaleIn[1].checked;
+	}
+};
 TWKLA.prototype.cleanTitle = function() {
 	this.title.value = this.title.value.replace(/[/"/']/gi, '');
 	if (parseInt(this.inputs.inGamma.options[this.inputs.inGamma.options.length - 1].value) === this.inputs.gammaLA) {
@@ -699,4 +893,9 @@ TWKLA.prototype.cleanTitle = function() {
 	if (parseInt(this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].value) === this.inputs.gamutLA) {
 		this.inputs.twkHGSelect.options[this.inputs.twkHGSelect.options.length - 1].innerHTML = 'LA - ' + this.title.value;
 	}
+	maxHeights();
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

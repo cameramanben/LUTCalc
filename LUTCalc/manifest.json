@@ -1,7 +1,7 @@
 {
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
-	"version": "3.0.1",
+	"version": "3.1",
 	"manifest_version": 2,
 	"minimum_chrome_version": "23",
 	"app": {
@@ -10,9 +10,7 @@
 				"colourspace.js",
 				"gamma.js",
 				"background.js",
-				"lutinputs.js",
 				"splash.js",
-				"tests.js",
 				"bounding.js",
 				"lut.js",
 				"ring.js",
@@ -39,6 +37,7 @@
 				"twk-hg.js",
 				"twk-multi.js",
 				"twk-gamlim.js",
+				"twk-display.js",
 				"twk-knee.js",
 				"twk-blkhi.js",
 				"twk-blkgam.js",
@@ -50,9 +49,10 @@
 				"lutgeneratebox.js",
 				"lutpreview.js",
 				"lutinfobox.js",
+				"lutmobile.js",
 				"lutcalc.js",
-				"gamma.js",
-				"colourspace.js"
+				"gammaworker.js",
+				"colourspaceworker.js"
 			]
 		}
 	},

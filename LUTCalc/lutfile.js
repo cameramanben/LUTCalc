@@ -221,6 +221,7 @@ LUTFile.prototype.filename = function(filename) {
 };
 // Functions available to native apps
 function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
+    format = format.toLowerCase();
 	lutInputs[destination].format = format;
 	if (format.toLowerCase() === 'labin') {
         var max = content.length;
@@ -266,4 +267,8 @@ function savedFromApp(source, success) {
     } else {
         lutMessage.saved(parseInt(source), false);
     }
+}
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
 }

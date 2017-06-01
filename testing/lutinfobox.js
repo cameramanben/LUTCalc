@@ -431,7 +431,7 @@ LUTInfoBox.prototype.createMainscreen = function() {
 
 	this.changelogButton = document.createElement('a');
 	this.changelogButton.innerHTML = 'Changelog';
-	credits.appendChild(this.changelogButton);
+//	credits.appendChild(this.changelogButton);
 	this.creditsButton = document.createElement('a');
 	this.creditsButton.innerHTML = 'Credits';
 	credits.appendChild(this.creditsButton);
@@ -703,6 +703,8 @@ LUTInfoBox.prototype.createCdtInfo = function() {
 	this.addInfo(this.insCdtInfo,true,null,'By Eli Gray under MIT licence on GitHub.');
 	this.addInfo(this.insCdtInfo,true,'Blob.js','W3C Blob polyfill included in the online version of LUTCalc.');
 	this.addInfo(this.insCdtInfo,true,null,'By Eli Gray & Devin Samarin under MIT licence on GitHub.');
+	this.addInfo(this.insCdtInfo,false,null,'Where available curves and colourspaces included in LUTCalc are derived from publicly available technical documentation from manufacturers and standards bodies.');
+	this.addInfo(this.insCdtInfo,false,null,'Other curves have been derived from analysis of my own test images, checked where possible against available sources such as LUTs and charts in marketing materials.');
 	this.addInfo(this.insCdtInfo,false,null,'Links to many of the technical documents used in creating LUTCalc are available on the LUTCalc website at www.lutcalc.net.');
 	this.insCdt.className = 'info-page-hide';
 	this.insCdt.appendChild(this.insCdtInfo);

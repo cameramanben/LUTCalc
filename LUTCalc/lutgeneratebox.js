@@ -414,3 +414,7 @@ LUTGenerateBox.prototype.buildSetProgressPopup = function() {
 	this.setProgHolder.appendChild(this.setProgBox);
 	modalBox.appendChild(this.setProgHolder);
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

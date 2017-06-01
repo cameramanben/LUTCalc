@@ -1,8 +1,20 @@
 LUTCalc Changelog
 =================
 
-v3 Beta
-----------
+v3.1
+----
+* New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).
+* New Feature - Sony Cinegamma 3 and Cinegamma 4 based upon analysis of test images taken with an a7s.
+* New Feature - Separation on Rec2100 OOTFs and OETF/EOTFs for display referred conversions in PQ and Hybrid-log Gamma.
+* New Feature - Splash screen displays progress bar.
+* Feature Change - Full rewrite of the underlying high dynamic range (HDR) PQ and Hybrid-Log Gamma code.
+* Feature Change - User interface improvements - online version now uses responsive design principals.
+* Bugfix - Colour sliders in 'MultiTone' tool now correctly reflect the Gamut Limiter.
+* Bugfix - Fixed problem with saving 1D-only LUTAnalyst lacubes and laluts.
+* Bugfix - Fixed issue with Mac App not reading LUTs with upper-case file extensions.
+
+v3.0
+----
 * New Feature - Choice of tricubic, tetrahedral and trilinear interpolation for analysis and use in LUTAnalyst.
 * New Feature - Completely new gamut limiter algorithm and code. Legalises colours and fixes potential LUT overshoots when going from a wide Gamut such as S-Gamut3 to a narrow one such as Rec709.
 * New Feature - P3 Colourspace now available with DCI, D60 and D65 white points.

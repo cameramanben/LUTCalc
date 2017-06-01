@@ -30,41 +30,38 @@ TWKGamutLim.prototype.io = function() {
 	this.prePost = [];
 	this.prePost[0] = this.createRadioElement('prePostRadio',false);
 	this.prePost[1] = this.createRadioElement('prePostRadio',true);
-	// Linear Space Level Slider
-	this.preSlider = document.createElement('input');
-	this.preSlider.setAttribute('type','range');
-	this.preSlider.setAttribute('min',-6);
-	this.preSlider.setAttribute('max',6);
-	this.preSlider.setAttribute('step',0.1);
-	this.preSlider.setAttribute('value',0);
-	// Linear Space Level Input 18% Gray
-	this.gOff = 23;
-	this.gMin = this.gOff - 60;
-	this.gMax = 60 - this.gOff;
-	this.preInputG = document.createElement('input');
-	this.preInputG.setAttribute('type','number');
-	this.preInputG.setAttribute('step',0.1);
-	this.preInputG.value = 2.3;
-	this.preInputG.className = 'smallinput';
-	// Linear Space Level Input 90% White
-	this.preInput = document.createElement('input');
-	this.preInput.setAttribute('type','number');
-	this.preInput.setAttribute('step',0.1);
-	this.preInput.value = 0;
-	this.preInput.className = 'smallinput';
-	// Post Tone Map Level Slider
-	this.pstSlider = document.createElement('input');
-	this.pstSlider.setAttribute('type','range');
-	this.pstSlider.setAttribute('min',1);
-	this.pstSlider.setAttribute('max',109);
-	this.pstSlider.setAttribute('step',1);
-	this.pstSlider.setAttribute('value',100);
-	// Post Tone Map Level Input
-	this.pstInput = document.createElement('input');
-	this.pstInput.setAttribute('type','number');
-	this.pstInput.setAttribute('step',1);
-	this.pstInput.value = 100;
-	this.pstInput.className = 'smallinput';
+	// Sliders
+	this.preInputBox = document.createElement('span');
+	this.preIG = document.createElement('input');
+	this.preIG.setAttribute('type','number');
+	this.preIG.setAttribute('step',0.1);
+	this.preIG.value = 2.3;
+	this.preIG.className = '_input';
+	this.preS = new lutSlider({
+		min: -6,
+		max: 6,
+		value: 0,
+		step: 0.1,
+		title: 'Level',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		lhs: this.preInputBox,
+		rhs: 'Stops',
+		reset: false
+	});
+	this.pstS = new lutSlider({
+		min: 1,
+		max: 109,
+		value: 100,
+		step: 1,
+		title: 'Level',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		rhs: '%IRE',
+		reset: false
+	});
 	// Gamut List
 	this.gtSelect = document.createElement('select');
 	this.gamutList = this.inputs.gamutMatrixList;
@@ -104,22 +101,22 @@ TWKGamutLim.prototype.ui = function() {
 	// Linear Space Level Value
 	this.preBox = document.createElement('div');
 	this.preBox.className = 'twk-tab-hide';
-	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
-	this.preBox.appendChild(this.preSlider);
-	this.preBox.appendChild(document.createElement('br'));
-	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('18% Gray +')));
-	this.preBox.appendChild(this.preInputG);
-	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops / Ref White +')));
-	this.preBox.appendChild(this.preInput);
-	this.preBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
+	var preLabL = document.createElement('span');
+	preLabL.innerHTML = '18% Gray +';
+	var preLabR = document.createElement('span');
+	preLabR.innerHTML = 'Stops /';
+	var pstLabL = document.createElement('span');
+	pstLabL.innerHTML = 'Ref White +';
+	this.preInputBox.appendChild(preLabL);
+	this.preInputBox.appendChild(this.preIG);
+	this.preInputBox.appendChild(preLabR);
+	this.preInputBox.appendChild(pstLabL);
+	this.preBox.appendChild(this.preS.element);
 	this.box.appendChild(this.preBox);
 	// Post Tonemap Level Value
 	this.pstBox = document.createElement('div');
 	this.pstBox.className = 'twk-tab';
-	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Level')));
-	this.pstBox.appendChild(this.pstSlider);
-	this.pstBox.appendChild(this.pstInput);
-	this.pstBox.appendChild(document.createElement('label').appendChild(document.createTextNode('% IRE')));
+	this.pstBox.appendChild(this.pstS.element);
 	this.box.appendChild(this.pstBox);
 	// Limit to other colourspaces
 	this.gtBox = document.createElement('div');
@@ -171,10 +168,10 @@ TWKGamutLim.prototype.getCSParams = function(params) {
 	}
 	if (this.linear) {
 		out.lin = true;
-		out.level = Math.pow(2,parseFloat(this.preSlider.value)); // Effect start level in stops around 18% gray
+		out.level = Math.pow(2,this.preS.getValue()); // Effect start level in stops around 18% gray
 	} else {
 		out.lin = false;
-		out.level = parseFloat(this.pstSlider.value)/100; // Effect start level in % IRE
+		out.level = this.pstS.getValue()/100; // Effect start level in % IRE
 	}
 	if (this.diffGam) {
 		out.gamut = this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue;
@@ -191,7 +188,17 @@ TWKGamutLim.prototype.setParams = function(params) {
 TWKGamutLim.prototype.getSettings = function(data) {
 	data.gamutLim = {
 		doGamutLim: this.tweakCheck.checked,
+		preLevel: Math.pow(2,this.preS.getValue()),
+		postLevel: this.pstS.getValue()/100,
+		otherGamut: this.diffGam,
+		otherWhich: this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue,
+		both: this.bothCheck.checked
 	};
+	if (this.linear) {
+		data.gamutLim.when = 'pre';
+	} else {
+		data.gamutLim.when = 'post';
+	}
 };
 TWKGamutLim.prototype.setSettings = function(settings) {
 	if (typeof settings.gamutLim !== 'undefined') {
@@ -200,6 +207,38 @@ TWKGamutLim.prototype.setSettings = function(settings) {
 			this.tweakCheck.checked = data.doGamutLim;
 			this.toggleTweak();
 		}
+		if (typeof data.preLevel === 'number') {
+			this.preS.setValue(Math.log(data.preLevel)/Math.log(2));
+			this.preIG.value = Math.round((this.preS.getValue()*10) + 23)/10;
+		}
+		if (typeof data.postLevel === 'number') {
+			this.pstS.setValue(data.postLevel*100);
+		}
+		if (typeof data.otherGamut === 'boolean') {
+			this.diffGam = data.otherGamut;
+		}
+		if (typeof data.otherWhich !== 'undefined') {
+			var m = this.gtSelect.options.length;
+			for (var j=0; j<m; j++) {
+				if (this.gtSelect.options[j].lastChild.nodeValue === data.otherWhich) {
+					this.gtSelect.options[j].selected = true;
+					break;
+				}
+			}
+		}
+		if (typeof data.both === 'boolean') {
+			this.bothCheck.checked = data.both
+		}
+		if (typeof data.when !== 'undefined') {
+			if (data.when === 'pre') {
+				this.prePost[0].checked = true;
+				this.prePost[1].checked = false;
+			} else {
+				this.prePost[0].checked = false;
+				this.prePost[1].checked = true;
+			}
+			this.togglePrePost();
+		}		
 	}
 };
 TWKGamutLim.prototype.getInfo = function(info) {
@@ -236,24 +275,16 @@ TWKGamutLim.prototype.events = function() {
 	this.prePost[1].onchange = function(here){ return function(){
 		here.togglePrePost();
 	};}(this);
-	this.preSlider.oninput = function(here){ return function(){
-		here.testPre(true);
+	this.preS.action = function(here){ return function(){
+		here.preIG.value = Math.round((this.getValue()*10) + 23)/10;
 		here.messages.gtSetParams();
 	};}(this);
-	this.preInput.onchange = function(here){ return function(){
-		here.testPre(false);
-		here.messages.gtSetParams();
-	};}(this);
-	this.preInputG.onchange = function(here){ return function(){
+	this.preIG.onchange = function(here){ return function(){
 		here.testPreG();
 		here.messages.gtSetParams();
 	};}(this);
-	this.pstSlider.oninput = function(here){ return function(){
-		here.testPst(true);
-		here.messages.gtSetParams();
-	};}(this);
-	this.pstInput.onchange = function(here){ return function(){
-		here.testPst(false);
+	this.pstS.action = function(here){ return function(){
+		here.preIG.value = Math.round((this.getValue()*10) + 23)/10;
 		here.messages.gtSetParams();
 	};}(this);
 	this.gtSelect.onchange = function(here){ return function(){
@@ -277,47 +308,15 @@ TWKGamutLim.prototype.togglePrePost = function() {
 	}
 	this.messages.gtSetParams();
 };
-TWKGamutLim.prototype.testPre = function(slider) {
-	var val;
-	if (slider) {
-		val = parseFloat(this.preSlider.value);
-	} else {
-		val = parseFloat(this.preInput.value);
-	}
-	if (val > 6) {
-		val = 6;
-	} else if (val < -6) {
-		val = -6;
-	}
-	this.preSlider.value = val;
-	this.preInput.value = val;
-	this.preInputG.value = Math.round((val*10) + this.gOff)/10;
-};
 TWKGamutLim.prototype.testPreG = function() {
-	var val = Math.round(parseFloat(this.preInputG.value)*10);
-	if (val > this.gMax) {
-		val = this.gMax;
-	} else if (val < this.gMin) {
-		val = this.gMin;
+	var val = Math.round(parseFloat(this.preIG.value)*10);
+	if (val > 83) {
+		val = 83;
+	} else if (val < -37) {
+		val = -37;
 	}
-	this.preSlider.value = (val - this.gOff)/10;
-	this.preInput.value = (val - this.gOff)/10;
-	this.preInputG.value = val/10;
-};
-TWKGamutLim.prototype.testPst = function(slider) {
-	var val;
-	if (slider) {
-		val = parseFloat(this.pstSlider.value);
-	} else {
-		val = parseFloat(this.pstInput.value);
-	}
-	if (val > 109) {
-		val = 109;
-	} else if (val < 1) {
-		val = 1;
-	}
-	this.pstSlider.value = val;
-	this.pstInput.value = val;
+	this.preS.setValue((val - 23)/10);
+	this.preIG.value = val/10;
 };
 TWKGamutLim.prototype.diffGamut = function() {
 	if (this.gtSelect.selectedIndex > 0 && this.gtSelect.options[this.gtSelect.selectedIndex].lastChild.nodeValue !== this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue) {
@@ -365,4 +364,7 @@ TWKGamutLim.prototype.createRadioElement = function(name, checked) {
     }
     return radioInput;
 };
-
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

@@ -24,97 +24,72 @@ TWKASCCDL.prototype.io = function() {
 	this.tweakCheck.checked = false;
 
 	// Saturation Slider
-	this.satSlider = document.createElement('input');
-	this.satSlider.setAttribute('type','range');
-	this.satSlider.setAttribute('min',0);
-	this.satSlider.setAttribute('max',2);
-	this.satSlider.setAttribute('step',0.05);
-	this.satSlider.setAttribute('value',1);
-	// Saturation Input
-	this.satInput = document.createElement('input');
-	this.satInput.setAttribute('type','text');
-	this.satInput.className = 'smallinput';
-	this.satInput.value = '1';
-	// Saturation Reset Button
-	this.satReset = document.createElement('input');
-	this.satReset.setAttribute('type','button');
-	this.satReset.className = 'smallbutton';
-	this.satReset.setAttribute('value','Reset');
+	this.satS = new lutSlider({
+		min: 0,
+		max: 2,
+		value: 1,
+		step: 0.05,
+		title: false,
+		lhs: 'Saturation',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		inputLim: false,
+		reset: true
+	});
 	// Colour Channel Selector
 	this.channelSelect = document.createElement('select');
 	this.channelSelect.className = 'twk-select';
 	this.channelList();
 	// SOP Arrays
-	this.sSlider = [];
-	this.oSlider = [];
-	this.pSlider = [];
-	this.sInput = [];
-	this.oInput = [];
-	this.pInput = [];
-	this.sReset = [];
-	this.oReset = [];
-	this.pReset = [];
-	this.sAllReset = [];
-	this.oAllReset = [];
-	this.pAllReset = [];
+	this.sS = [];
+	this.oS = [];
+	this.pS = [];
 	for (var j=0; j<4; j++) {
-		// Slope
-		this.sSlider[j] = document.createElement('input');
-		this.sSlider[j].setAttribute('type','range');
-		this.sSlider[j].setAttribute('min',0);
-		this.sSlider[j].setAttribute('max',2);
-		this.sSlider[j].setAttribute('step',0.01);
-		this.sSlider[j].setAttribute('value',1);
-		this.sInput[j] = document.createElement('input');
-		this.sInput[j].setAttribute('type','text');
-		this.sInput[j].className = 'smallinput';
-		this.sInput[j].value = '1';
-		this.sReset[j] = document.createElement('input');
-		this.sReset[j].setAttribute('type','button');
-		this.sReset[j].className = 'smallbutton';
-		this.sReset[j].setAttribute('value','Reset');
-		this.sAllReset[j] = document.createElement('input');
-		this.sAllReset[j].setAttribute('type','button');
-		this.sAllReset[j].className = 'smallbutton';
-		this.sAllReset[j].setAttribute('value','All Reset');
-		// Offset
-		this.oSlider[j] = document.createElement('input');
-		this.oSlider[j].setAttribute('type','range');
-		this.oSlider[j].setAttribute('min',-0.5);
-		this.oSlider[j].setAttribute('max',0.5);
-		this.oSlider[j].setAttribute('step',0.01);
-		this.oSlider[j].setAttribute('value',0);
-		this.oInput[j] = document.createElement('input');
-		this.oInput[j].setAttribute('type','text');
-		this.oInput[j].className = 'smallinput';
-		this.oInput[j].value = '0';
-		this.oReset[j] = document.createElement('input');
-		this.oReset[j].setAttribute('type','button');
-		this.oReset[j].className = 'smallbutton';
-		this.oReset[j].setAttribute('value','Reset');
-		this.oAllReset[j] = document.createElement('input');
-		this.oAllReset[j].setAttribute('type','button');
-		this.oAllReset[j].className = 'smallbutton';
-		this.oAllReset[j].setAttribute('value','All Reset');
-		// Power
-		this.pSlider[j] = document.createElement('input');
-		this.pSlider[j].setAttribute('type','range');
-		this.pSlider[j].setAttribute('min',0);
-		this.pSlider[j].setAttribute('max',2);
-		this.pSlider[j].setAttribute('step',0.01);
-		this.pSlider[j].setAttribute('value',1);
-		this.pInput[j] = document.createElement('input');
-		this.pInput[j].setAttribute('type','text');
-		this.pInput[j].className = 'smallinput';
-		this.pInput[j].value = '1';
-		this.pReset[j] = document.createElement('input');
-		this.pReset[j].setAttribute('type','button');
-		this.pReset[j].className = 'smallbutton';
-		this.pReset[j].setAttribute('value','Reset');
-		this.pAllReset[j] = document.createElement('input');
-		this.pAllReset[j].setAttribute('type','button');
-		this.pAllReset[j].className = 'smallbutton';
-		this.pAllReset[j].setAttribute('value','All Reset');
+		this.sS[j] = new lutSlider({
+			min: 0,
+			mid: 1,
+			max: 10,
+			value: 1,
+			step: 0.01,
+			title: false,
+			lhs: 'Slope',
+			minLabel: false,
+			maxLabel: false,
+			input: 'number',
+			inputLim: false,
+			reset: true,
+			resetAll: true
+		});
+		this.oS[j] = new lutSlider({
+			min: -0.5,
+			max: 0.5,
+			value: 0,
+			step: 0.01,
+			title: false,
+			lhs: 'Offset',
+			minLabel: false,
+			maxLabel: false,
+			input: 'number',
+			inputLim: false,
+			reset: true,
+			resetAll: true
+		});
+		this.pS[j] = new lutSlider({
+			min: 0,
+			mid: 1,
+			max: 10,
+			value: 1,
+			step: 0.01,
+			title: false,
+			lhs: 'Power',
+			minLabel: false,
+			maxLabel: false,
+			input: 'number',
+			inputLim: false,
+			reset: true,
+			resetAll: true
+		});
 	}
 };
 TWKASCCDL.prototype.ui = function() {
@@ -129,13 +104,7 @@ TWKASCCDL.prototype.ui = function() {
 	this.box.className = 'tweak-hide';
 // Tweak - Specific UI Elements
 	// Saturation
-	this.satBox = document.createElement('div');
-	this.satBox.className = 'twk-tab';
-	this.satBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation')));
-	this.satBox.appendChild(this.satSlider);
-	this.satBox.appendChild(this.satInput);
-	this.satBox.appendChild(this.satReset);
-	this.box.appendChild(this.satBox);
+	this.box.appendChild(this.satS.element);
 	// Channel Selector
 	this.box.appendChild(this.channelSelect);
 	this.box.appendChild(document.createElement('br'));
@@ -148,23 +117,9 @@ TWKASCCDL.prototype.ui = function() {
 		} else {
 			this.sop[j].className = 'twk-tab-hide';
 		}
-		this.sop[j].appendChild(document.createElement('label').appendChild(document.createTextNode('Slope')));
-		this.sop[j].appendChild(this.sSlider[j]);
-		this.sop[j].appendChild(this.sInput[j]);
-		this.sop[j].appendChild(this.sReset[j]);
-		this.sop[j].appendChild(this.sAllReset[j]);
-		this.sop[j].appendChild(document.createElement('br'));
-		this.sop[j].appendChild(document.createElement('label').appendChild(document.createTextNode('Offset')));
-		this.sop[j].appendChild(this.oSlider[j]);
-		this.sop[j].appendChild(this.oInput[j]);
-		this.sop[j].appendChild(this.oReset[j]);
-		this.sop[j].appendChild(this.oAllReset[j]);
-		this.sop[j].appendChild(document.createElement('br'));
-		this.sop[j].appendChild(document.createElement('label').appendChild(document.createTextNode('Power')));
-		this.sop[j].appendChild(this.pSlider[j]);
-		this.sop[j].appendChild(this.pInput[j]);
-		this.sop[j].appendChild(this.pReset[j]);
-		this.sop[j].appendChild(this.pAllReset[j]);
+		this.sop[j].appendChild(this.sS[j].element);
+		this.sop[j].appendChild(this.oS[j].element);
+		this.sop[j].appendChild(this.pS[j].element);
 		this.box.appendChild(this.sop[j]);
 	}
 	// Build Box Hierarchy
@@ -180,9 +135,9 @@ TWKASCCDL.prototype.toggleTweaks = function() {
 			this.tweakCheck.checked = false;
 		}
 		if (this.inputs.d[1].checked) {
-			this.satBox.className = 'twk-tab';
+			this.satS.show();
 		} else {
-			this.satBox.className = 'twk-tab-hide';
+			this.satS.hide();
 		}
 	} else {
 		this.holder.className = 'tweakholder-hide';
@@ -205,11 +160,11 @@ TWKASCCDL.prototype.getTFParams = function(params) {
 		out.doASCCDL = true;
 		var cdl = new Float64Array(10);
 		for (var j=0; j<3; j++) {
-			cdl[ j ] = parseFloat(this.sInput[j+1].value);
-			cdl[j+3] = parseFloat(this.oInput[j+1].value);
-			cdl[j+6] = parseFloat(this.pInput[j+1].value);
+			cdl[ j ] = this.sS[j+1].getValue();
+			cdl[j+3] = this.oS[j+1].getValue();
+			cdl[j+6] = this.pS[j+1].getValue();
 		}
-		cdl[9] = parseFloat(this.satInput.value);
+		cdl[9] = this.satS.getValue();
 		out.cdl = cdl.buffer;
 	} else {
 		out.doASCCDL = false;
@@ -224,11 +179,11 @@ TWKASCCDL.prototype.getCSParams = function(params) {
 		out.doASCCDL = true;
 		var cdl = new Float64Array(10);
 		for (var j=0; j<3; j++) {
-			cdl[ j ] = parseFloat(this.sInput[j+1].value);
-			cdl[j+3] = parseFloat(this.oInput[j+1].value);
-			cdl[j+6] = parseFloat(this.pInput[j+1].value);
+			cdl[ j ] = this.sS[j+1].getValue();
+			cdl[j+3] = this.oS[j+1].getValue();
+			cdl[j+6] = this.pS[j+1].getValue();
 		}
-		cdl[9] = parseFloat(this.satInput.value);
+		cdl[9] = this.satS.getValue();
 		out.cdl = cdl.buffer;
 	} else {
 		out.doASCCDL = false;
@@ -244,11 +199,11 @@ TWKASCCDL.prototype.setParams = function(params) {
 TWKASCCDL.prototype.getSettings = function(data) {
 	var cdl = [];
 	for (var j=0; j<3; j++) {
-		cdl[ j ] = parseFloat(this.sInput[j+1].value);
-		cdl[j+3] = parseFloat(this.oInput[j+1].value);
-		cdl[j+6] = parseFloat(this.pInput[j+1].value);
+		cdl[ j ] = this.sS[j+1].getValue();
+		cdl[j+3] = this.oS[j+1].getValue();
+		cdl[j+6] = this.pS[j+1].getValue();
 	}
-	cdl[9] = parseFloat(this.satInput.value);
+	cdl[9] = this.satS.getValue();
 	data.ascCDL = {
 		doASCCDL: this.tweakCheck.checked,
 		cdl: cdl.toString(),
@@ -264,18 +219,15 @@ TWKASCCDL.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.cdl !== 'undefined') {
 			var cdl = data.cdl.split(',').map(Number);
+			this.sS[0].setValue((parseFloat(cdl[0])+parseFloat(cdl[1])+parseFloat(cdl[2]))/3);
+			this.oS[0].setValue((parseFloat(cdl[3])+parseFloat(cdl[4])+parseFloat(cdl[5]))/3);
+			this.pS[0].setValue((parseFloat(cdl[6])+parseFloat(cdl[7])+parseFloat(cdl[8]))/3);
 			for (var j=0; j<3; j++) {
-				this.sInput[j+1].value = cdl[ j ].toString();
-				this.oInput[j+1].value = cdl[j+3].toString();
-				this.pInput[j+1].value = cdl[j+6].toString();
+				this.sS[j+1].setValue(parseFloat(cdl[ j ]));
+				this.oS[j+1].setValue(parseFloat(cdl[j+3]));
+				this.pS[j+1].setValue(parseFloat(cdl[j+6]));
 			}
-			this.satInput.value = cdl[9].toString();
-			this.testSat(false);
-			for (var j=1; j<4; j++) {
-				this.testS(j,false);
-				this.testO(j,false);
-				this.testP(j,false);
-			}
+			this.satS.setValue(parseFloat(cdl[9]));
 		}
 		if (typeof data.channel !== 'undefined') {
 			var m = this.channelSelect.options.length;
@@ -294,7 +246,7 @@ TWKASCCDL.prototype.getInfo = function(info) {
 	var tweak = this.tweakCheck.checked;
 	if (tweaks && tweak) {
 		info.doASCCDL = true;
-		info.ASCSat = this.satInput.value.toString();
+		info.ASCSat = this.satS.getValue().toString();
 	} else {
 		info.doASCCDL = false;
 	}
@@ -326,79 +278,113 @@ TWKASCCDL.prototype.events = function() {
 	this.channelSelect.onchange = function(here){ return function(){
 		here.changeChannel();
 	};}(this);
-	this.satSlider.oninput = function(here){ return function(){
-		here.testSat(true);
+	this.satS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 		here.messages.gtSetParams();
 	};}(this);
-	this.satInput.onchange = function(here){ return function(){
-		here.testSat(false);
+	this.sS[0].action = function(here){ return function(){
+		var off = 0;
+		for (var l=1; l<4; l++) {
+			off += here.sS[l].getValue();
+		}
+		off = this.getValue() - (off/3);
+		for (var l=1; l<4; l++) {
+			here.sS[l].setValue(Math.max(0,here.sS[l].getValue()+off));
+		}
 		here.messages.gaSetParams();
 		here.messages.gtSetParams();
 	};}(this);
-	this.satReset.onclick = function(here){ return function(){
-		here.resetSat();
+	this.oS[0].action = function(here){ return function(){
+		var off = 0;
+		for (var l=1; l<4; l++) {
+			off += here.oS[l].getValue();
+		}
+		off = this.getValue() - (off/3);
+		for (var l=1; l<4; l++) {
+			here.oS[l].setValue(here.oS[l].getValue()+off);
+		}
 		here.messages.gaSetParams();
 		here.messages.gtSetParams();
 	};}(this);
-	for (var j=0; j<4; j++) {
-		this.sSlider[j].oninput = function(i){ return function(){
-			i[0].testS(i[1],true);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.sInput[j].onchange = function(i){ return function(){
-			i[0].testS(i[1],false);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.sReset[j].onclick = function(i){ return function(){
-			i[0].resetS(i[1]);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.sAllReset[j].onclick = function(here){ return function(){
-			here.resetAllS();
+	this.pS[0].action = function(here){ return function(){
+		var off = 0;
+		for (var l=1; l<4; l++) {
+			off += here.pS[l].getValue();
+		}
+		off = this.getValue() - (off/3);
+		for (var l=1; l<4; l++) {
+			here.pS[l].setValue(Math.max(0,here.pS[l].getValue()+off));
+		}
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
+	};}(this);
+	this.sS[0].resetAll = function(here){ return function(){
+		for (var l=0; l<4; l++) {
+			here.sS[l].reset();
+		}
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
+	};}(this);
+	this.oS[0].resetAll = function(here){ return function(){
+		for (var l=0; l<4; l++) {
+			here.oS[l].reset();
+		}
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
+	};}(this);
+	this.pS[0].resetAll = function(here){ return function(){
+		for (var l=0; l<4; l++) {
+			here.pS[l].reset();
+		}
+		here.messages.gaSetParams();
+		here.messages.gtSetParams();
+	};}(this);
+	for (var j=1; j<4; j++) {
+		this.sS[j].action = function(here){ return function(){
+			var o = 0;
+			for (var l=1; l<4; l++) {
+				o += here.sS[l].getValue();
+			}
+			here.sS[0].setValue(o/3);
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);
-		this.oSlider[j].oninput = function(i){ return function(){
-			i[0].testO(i[1],true);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.oInput[j].onchange = function(i){ return function(){
-			i[0].testO(i[1],false);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.oReset[j].onclick = function(i){ return function(){
-			i[0].resetO(i[1]);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.oAllReset[j].onclick = function(here){ return function(){
-			here.resetAllO();
+		this.sS[j].resetAll = function(here){ return function(){
+			for (var l=0; l<4; l++) {
+				here.sS[l].reset();
+			}
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);
-		this.pSlider[j].oninput = function(i){ return function(){
-			i[0].testP(i[1],true);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.pInput[j].onchange = function(i){ return function(){
-			i[0].testP(i[1],false);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.pReset[j].onclick = function(i){ return function(){
-			i[0].resetP(i[1]);
-			i[0].messages.gaSetParams();
-			i[0].messages.gtSetParams();
-		};}([this,j]);
-		this.pAllReset[j].onclick = function(here){ return function(){
-			here.resetAllP();
+		this.oS[j].action = function(here){ return function(){
+			var o = 0;
+			for (var l=1; l<4; l++) {
+				o += here.oS[l].getValue();
+			}
+			here.oS[0].setValue(o/3);
+			here.messages.gaSetParams();
+			here.messages.gtSetParams();
+		};}(this);
+		this.oS[j].resetAll = function(here){ return function(){
+			for (var l=0; l<4; l++) {
+				here.oS[l].reset();
+			}
+			here.messages.gaSetParams();
+			here.messages.gtSetParams();
+		};}(this);
+		this.pS[j].action = function(here){ return function(){
+			var o = 0;
+			for (var l=1; l<4; l++) {
+				o += here.pS[l].getValue();
+			}
+			here.pS[0].setValue(o/3);
+			here.messages.gaSetParams();
+			here.messages.gtSetParams();
+		};}(this);
+		this.pS[j].resetAll = function(here){ return function(){
+			for (var l=0; l<4; l++) {
+				here.pS[l].reset();
+			}
 			here.messages.gaSetParams();
 			here.messages.gtSetParams();
 		};}(this);
@@ -433,214 +419,7 @@ TWKASCCDL.prototype.changeChannel = function() {
 		}
 	}
 };
-TWKASCCDL.prototype.testSat = function(slider) {
-	var s;
-	if (slider) {
-		s = this.satSlider.value;
-	} else {
-		s = this.satInput.value;
-		var S = parseFloat(s);
-		if (isNaN(S)) {
-			s = this.satSlider.value;
-		} else if (S < 0) {
-			s = '0';
-		}
-	}
-	this.satInput.value = s;
-	this.satSlider.value = s;
-};
-TWKASCCDL.prototype.resetSat = function() {
-	this.satSlider.value = '1';
-	this.satInput.value = '1';
-};
-TWKASCCDL.prototype.testS = function(chan,slider) {
-	var val = this.sInput[chan];
-	var sli = this.sSlider[chan];
-	var c1 = 2.197297305;
-	var c2 = -0.397418168;
-	var c3 = 0.185969287;
-	var c4 = -0.124947425;
-	var s,S;
-	if (chan === 0){
-		if (slider) {
-			S = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else {
-			S = parseFloat(val.value);
-		} if (isNaN(S)) {
-			S = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else if (S < 0) {
-			S = 0;
-		}
-		val.value = S.toString();
-		sli.value = ((Math.log((S-c4)/c3)-c2)/c1).toString();
-		var a = 0;
-		for (var j=1; j<4; j++) {
-			a += parseFloat(this.sInput[j].value);
-		}
-		var offset = S - (a/3);
-		var sVal;
-		for (var j=1; j<4; j++) {
-			sVal = parseFloat(this.sInput[j].value) + offset;
-			if (sVal < 0) {
-				sVal = 0;
-			}
-			this.sInput[j].value = sVal.toString();
-			this.sSlider[j].value = ((Math.log((sVal-c4)/c3)-c2)/c1).toString();
-		}
-	} else {
-		if (slider) {
-			S = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else {
-			S = parseFloat(val.value);
-			if (isNaN(S)) {
-				S = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-			} else if (S < 0) {
-				S = 0;
-			}
-		}
-		val.value = S.toString();
-		sli.value = ((Math.log((S-c4)/c3)-c2)/c1).toString();
-	}
-	var a = 0;
-	for (var j=1; j<4; j++) {
-		a += parseFloat(this.sInput[j].value);
-	}
-	a = a/3;
-	this.sInput[0].value = a.toString();
-	this.sSlider[0].value = ((Math.log((a-c4)/c3)-c2)/c1).toString();
-};
-TWKASCCDL.prototype.resetS = function(colour) {
-	this.sSlider[colour].value = '1';
-	this.sInput[colour].value = '1';
-	this.testS(colour,false);
-};
-TWKASCCDL.prototype.resetAllS = function() {
-	for (var j=0; j<4; j++) {
-		this.sSlider[j].value = '1';
-		this.sInput[j].value = '1';
-	}
-};
-TWKASCCDL.prototype.testO = function(chan,slider) {
-	var val = this.oInput[chan];
-	var sli = this.oSlider[chan];
-	var o,O;
-	if (chan === 0){
-		if (slider) {
-			O = parseFloat(sli.value);
-		} else {
-			O = parseFloat(val.value);
-		}
-		if (isNaN(O)) {
-			O = parseFloat(sli.value);
-		}
-		val.value = O.toString();
-		sli.value = O.toString();
-		var a = 0;
-		for (var j=1; j<4; j++) {
-			a += parseFloat(this.oInput[j].value);
-		}
-		var offset = O - (a/3);
-		var oVal;
-		for (var j=1; j<4; j++) {
-			oVal = parseFloat(this.oInput[j].value) + offset;
-			this.oInput[j].value = oVal.toString();
-			this.oSlider[j].value = oVal.toString();
-		}
-	} else {
-		if (slider) {
-			O = parseFloat(sli.value);
-		} else {
-			O = parseFloat(val.value);
-			if (isNaN(O)) {
-				O = parseFloat(sli.value);
-			}
-		}
-		val.value = O.toString();
-		sli.value = O.toString();
-	}
-	var a = 0;
-	for (var j=1; j<4; j++) {
-		a += parseFloat(this.oInput[j].value);
-	}
-	a = a/3;
-	this.oInput[0].value = a.toString();
-	this.oSlider[0].value = a.toString();
-};
-TWKASCCDL.prototype.resetO = function(colour) {
-	this.oSlider[colour].value = '0';
-	this.oInput[colour].value = '0';
-	this.testO(colour,false);
-};
-TWKASCCDL.prototype.resetAllO = function() {
-	for (var j=0; j<4; j++) {
-		this.oSlider[j].value = '0';
-		this.oInput[j].value = '0';
-	}
-};
-TWKASCCDL.prototype.testP = function(chan,slider) {
-	var val = this.pInput[chan];
-	var sli = this.pSlider[chan];
-	var c1 = 2.197297305;
-	var c2 = -0.397418168;
-	var c3 = 0.185969287;
-	var c4 = -0.124947425;
-	var p,P;
-	if (chan === 0){
-		if (slider) {
-			P = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else {
-			P = parseFloat(val.value);
-		} if (isNaN(P)) {
-			P = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else if (P < 0) {
-			P = 0;
-		}
-		val.value = P.toString();
-		sli.value = ((Math.log((P-c4)/c3)-c2)/c1).toString();
-		var a = 0;
-		for (var j=1; j<4; j++) {
-			a += parseFloat(this.pInput[j].value);
-		}
-		var offset = P - (a/3);
-		var pVal;
-		for (var j=1; j<4; j++) {
-			pVal = parseFloat(this.pInput[j].value) + offset;
-			if (pVal < 0) {
-				pVal = 0;
-			}
-			this.pInput[j].value = pVal.toString();
-			this.pSlider[j].value = ((Math.log((pVal-c4)/c3)-c2)/c1).toString();
-		}
-	} else {
-		if (slider) {
-			P = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-		} else {
-			P = parseFloat(val.value);
-			if (isNaN(P)) {
-				P = (c3*Math.exp((c1*parseFloat(sli.value))+c2)) + c4;
-			} else if (P < 0) {
-				P = 0;
-			}
-		}
-		val.value = P.toString();
-		sli.value = ((Math.log((P-c4)/c3)-c2)/c1).toString();
-	}
-	var a = 0;
-	for (var j=1; j<4; j++) {
-		a += parseFloat(this.pInput[j].value);
-	}
-	a = a/3;
-	this.pInput[0].value = a.toString();
-	this.pSlider[0].value = ((Math.log((a-c4)/c3)-c2)/c1).toString();
-};
-TWKASCCDL.prototype.resetP = function(colour) {
-	this.pSlider[colour].value = '1';
-	this.pInput[colour].value = '1';
-	this.testP(colour,false);
-};
-TWKASCCDL.prototype.resetAllP = function() {
-	for (var j=0; j<4; j++) {
-		this.pSlider[j].value = '1';
-		this.pInput[j].value = '1';
-	}
-};
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

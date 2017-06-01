@@ -36,7 +36,7 @@ TWKFC.prototype.io = function() {
 	this.blueInput = document.createElement('input');
 	this.blueInput.setAttribute('type','number');
 	this.blueInput.setAttribute('step','any');
-	this.blueInput.className = 'stopinput';
+	this.blueInput.className = 'stop-input';
 	this.blueInput.value = '6.1';
 	// Green - 18% Gray
 	this.greenCheck = document.createElement('input');
@@ -61,7 +61,7 @@ TWKFC.prototype.io = function() {
 	this.yellowInput = document.createElement('input');
 	this.yellowInput.setAttribute('type','number');
 	this.yellowInput.setAttribute('step','any');
-	this.yellowInput.className = 'stopinput';
+	this.yellowInput.className = 'stop-input';
 	this.yellowInput.value = '0.5';
 	// Red - White Clip
 	this.redCheck = document.createElement('input');
@@ -71,7 +71,7 @@ TWKFC.prototype.io = function() {
 	this.redInput = document.createElement('input');
 	this.redInput.setAttribute('type','number');
 	this.redInput.setAttribute('step','any');
-	this.redInput.className = 'stopinput';
+	this.redInput.className = 'stop-input';
 	this.redInput.value = '6';
 };
 TWKFC.prototype.ui = function() {
@@ -332,3 +332,7 @@ TWKFC.prototype.testRed = function() {
 		this.redInput.value = '6';
 	}
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}
