@@ -23,57 +23,47 @@ TWKBlkGam.prototype.io = function() {
 	this.tweakCheck.className = 'twk-checkbox';
 	this.tweakCheck.checked = false;
 	// Tweak - Specific Inputs
-	// Limit Slider
-	this.limSlider = document.createElement('input');
-	this.limSlider.setAttribute('type','range');
-	this.limSlider.setAttribute('min',-9);
-	this.limSlider.setAttribute('max',2);
-	this.limSlider.setAttribute('step',0.1);
-	this.limSlider.setAttribute('value',-1.5);
-	// Limit Input
-	this.limInput = document.createElement('input');
-	this.limInput.setAttribute('type','text');
-	this.limInput.className = 'smallinput';
-	this.limInput.value = '-1.5';
-	// Limit Reset Button
-	this.limReset = document.createElement('input');
-	this.limReset.setAttribute('type','button');
-	this.limReset.className = 'smallbutton';
-	this.limReset.setAttribute('value','Reset');
-	// Feather Slider
-	this.feaSlider = document.createElement('input');
-	this.feaSlider.setAttribute('type','range');
-	this.feaSlider.setAttribute('min',0);
-	this.feaSlider.setAttribute('max',9);
-	this.feaSlider.setAttribute('step',0.1);
-	this.feaSlider.setAttribute('value',2);
-	// Feather Input
-	this.feaInput = document.createElement('input');
-	this.feaInput.setAttribute('type','text');
-	this.feaInput.className = 'smallinput';
-	this.feaInput.value = '2';
-	// Feather Reset Button
-	this.feaReset = document.createElement('input');
-	this.feaReset.setAttribute('type','button');
-	this.feaReset.className = 'smallbutton';
-	this.feaReset.setAttribute('value','Reset');
-	// Gamma Slider
-	this.gamSlider = document.createElement('input');
-	this.gamSlider.setAttribute('type','range');
-	this.gamSlider.setAttribute('min',0.01);
-	this.gamSlider.setAttribute('max',2);
-	this.gamSlider.setAttribute('step',0.01);
-	this.gamSlider.setAttribute('value',1);
-	// Gamma Input
-	this.gamInput = document.createElement('input');
-	this.gamInput.setAttribute('type','text');
-	this.gamInput.className = 'smallinput';
-	this.gamInput.value = '1';
-	// Gamma Reset Button
-	this.gamReset = document.createElement('input');
-	this.gamReset.setAttribute('type','button');
-	this.gamReset.className = 'smallbutton';
-	this.gamReset.setAttribute('value','Reset');
+	// Power
+	this.gamS = new lutSlider({
+		min: 0.01,
+		mid: 1,
+		max: 10,
+		value: 1,
+		step: 0.01,
+		title: false,
+		lhs: 'Power',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		reset: true
+	});
+	// Limit
+	this.limS = new lutSlider({
+		min: -9,
+		max: 2,
+		value: -1.5,
+		step: 0.1,
+		title: false,
+		lhs: 'Stop Limit',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		reset: true
+	});
+	// Feather
+	this.feaS = new lutSlider({
+		min: 0,
+		max: 9,
+		value: 2,
+		step: 0.1,
+		title: false,
+		lhs: 'Feather',
+		minLabel: false,
+		maxLabel: false,
+		rhs: 'Stops',
+		input: 'number',
+		reset: true
+	});
 };
 TWKBlkGam.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -86,29 +76,9 @@ TWKBlkGam.prototype.ui = function() {
 	this.box = document.createElement('div');
 	this.box.className = 'tweak-hide';
 	// Tweak - Specific UI Elements
-	var limBox = document.createElement('div');
-	limBox.className = 'twk-tab';
-	limBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop Limit')));
-	limBox.appendChild(this.limSlider);
-	limBox.appendChild(this.limInput);
-	limBox.appendChild(this.limReset);
-	this.box.appendChild(limBox);
-	var featherBox = document.createElement('div');
-	featherBox.className = 'twk-tab';
-	featherBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Feather')));
-	featherBox.appendChild(this.feaSlider);
-	featherBox.appendChild(this.feaInput);
-	featherBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
-	featherBox.appendChild(this.feaReset);
-	this.box.appendChild(featherBox);
-	var gamBox = document.createElement('div');
-	gamBox.className = 'twk-tab';
-	gamBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Power')));
-	gamBox.appendChild(this.gamSlider);
-	gamBox.appendChild(this.gamInput);
-	gamBox.appendChild(this.gamReset);
-	this.box.appendChild(gamBox);
-
+	this.box.appendChild(this.gamS.element);
+	this.box.appendChild(this.limS.element);
+	this.box.appendChild(this.feaS.element);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -143,9 +113,9 @@ TWKBlkGam.prototype.getTFParams = function(params) {
 	} else {
 		out.doBlkGam = false;
 	}
-	out.upperLim = parseFloat(this.limInput.value);
-	out.feather = parseFloat(this.feaInput.value);
-	out.power = parseFloat(this.gamInput.value);
+	out.upperLim = this.limS.getValue();
+	out.feather = this.feaS.getValue();
+	out.power = this.gamS.getValue();
 	params.twkBlkGam = out;
 };
 TWKBlkGam.prototype.getCSParams = function(params) {
@@ -160,9 +130,9 @@ TWKBlkGam.prototype.setParams = function(params) {
 TWKBlkGam.prototype.getSettings = function(data) {
 	data.blackGamma = {
 		doBlkGamma: this.tweakCheck.checked,
-		stopLimit: parseFloat(this.limInput.value),
-		feather: parseFloat(this.feaInput.value),
-		power: parseFloat(this.gamInput.value)
+		stopLimit: this.limS.getValue(),
+		feather: this.feaS.getValue(),
+		power: this.gamS.getValue()
 	};
 };
 TWKBlkGam.prototype.setSettings = function(settings) {
@@ -173,16 +143,13 @@ TWKBlkGam.prototype.setSettings = function(settings) {
 			this.toggleTweak();
 		}
 		if (typeof data.stopLimit === 'number') {
-			this.limSlider.value = data.stopLimit.toString();
-			this.limInput.value = data.stopLimit.toString();
+			this.limS.setValue(data.stopLimit);
 		}
 		if (typeof data.feather === 'number') {
-			this.feaSlider.value = data.feather.toString();
-			this.feaInput.value = data.feather.toString();
+			this.feaS.setValue(data.feather);
 		}
 		if (typeof data.power === 'number') {
-			this.gamInput.value = data.power.toString();
-			this.testGam(false);
+			this.gamS.setValue(data.power);
 		}
 	}
 };
@@ -212,111 +179,18 @@ TWKBlkGam.prototype.events = function() {
 		here.toggleTweak();
 		here.messages.gaSetParams();
 	};}(this);
-	this.limSlider.oninput = function(here){ return function(){
-		here.testLim(true);
+	this.limS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
-	this.limInput.onchange = function(here){ return function(){
-		here.testLim(false);
+	this.feaS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
-	this.limReset.onclick = function(here){ return function(){
-		here.resetLim();
-		here.messages.gaSetParams();
-	};}(this);
-	this.feaSlider.oninput = function(here){ return function(){
-		here.testFea(true);
-		here.messages.gaSetParams();
-	};}(this);
-	this.feaInput.onchange = function(here){ return function(){
-		here.testFea(false);
-		here.messages.gaSetParams();
-	};}(this);
-	this.feaReset.onclick = function(here){ return function(){
-		here.resetFea();
-		here.messages.gaSetParams();
-	};}(this);
-	this.gamSlider.oninput = function(here){ return function(){
-		here.testGam(true);
-		here.messages.gaSetParams();
-	};}(this);
-	this.gamInput.onchange = function(here){ return function(){
-		here.testGam(false);
-		here.messages.gaSetParams();
-	};}(this);
-	this.gamReset.onclick = function(here){ return function(){
-		here.resetGam();
+	this.gamS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
 };
 // Tweak-Specific Code
-TWKBlkGam.prototype.testLim = function(slider) {
-	var l,L;
-	if (slider) {
-		l = this.limSlider.value;
-		if (parseFloat(l) < -9) {
-			l = -9;
-		}
-	} else {
-		l = parseFloat(this.limInput.value);
-		if (isNaN(l)) {
-			l = parseFloat(this.limSlider.value);
-		} else if (l < -9) {
-			l = -9;
-		}
-	}
-	this.limInput.value = parseFloat(l).toFixed(1).toString();
-	this.limSlider.value = l.toString();
-};
-TWKBlkGam.prototype.resetLim = function() {
-	this.limSlider.value = '-1.5';
-	this.limInput.value = '-1.5';
-};
-TWKBlkGam.prototype.testFea = function(slider) {
-	var l,L;
-	if (slider) {
-		l = this.feaSlider.value;
-		if (parseFloat(l) < 0) {
-			l = 0;
-		}
-	} else {
-		l = parseFloat(this.feaInput.value);
-		if (isNaN(l)) {
-			l = parseFloat(this.feaSlider.value);
-		} else if (l < 0) {
-			l = 0;
-		}
-	}
-	this.feaInput.value = parseFloat(l).toFixed(1).toString();
-	this.feaSlider.value = l.toString();
-};
-TWKBlkGam.prototype.resetFea = function() {
-	this.feaSlider.value = '2';
-	this.feaInput.value = '2';
-};
-TWKBlkGam.prototype.testGam = function(slider) {
-	var s;
-	var c1 = 2.197297305;
-	var c2 = -0.397418168;
-	var c3 = 0.185969287;
-	var c4 = -0.124947425;
-	if (slider) {
-		s = (c3*Math.exp((c1*parseFloat(this.gamSlider.value))+c2)) + c4;
-		if (s < 0.01) {
-			s = 0.01;
-		}
-	} else {
-		s = parseFloat(this.gamInput.value);
-		if (isNaN(s)) {
-			s = (c3*Math.exp((c1*parseFloat(this.gamSlider.value))+c2)) + c4;
-		} else if (s < 0.01) {
-			s = 0.01;
-		}
-	}
-	this.gamInput.value = s.toFixed(2).toString();
-	this.gamSlider.value = ((Math.log((s-c4)/c3)-c2)/c1).toString();
-};
-TWKBlkGam.prototype.resetGam = function() {
-	this.gamSlider.value = '1';
-	this.gamInput.value = '1';
-};
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

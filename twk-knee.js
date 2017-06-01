@@ -30,60 +30,55 @@ TWKKnee.prototype.io = function() {
 	this.extOpt.value = '1';
 	// Max Start value
 	this.max = 8;
-	// Knee Start Slider
-	this.startSlider = document.createElement('input');
-	this.startSlider.setAttribute('type','range');
-	this.startSlider.className = 'wide-slider';
-	this.startSlider.setAttribute('min',-5);
-	this.startSlider.setAttribute('max',this.max);
-	this.startSlider.setAttribute('step',0.05);
-	this.startSlider.setAttribute('value',0.05);
-	// Knee Start Input
-	this.startInput = document.createElement('input');
-	this.startInput.setAttribute('type','number');
-	this.startInput.setAttribute('step','any');
-	this.startInput.value = 0.05;
-	this.startInput.className = 'stopinput';
-	// Clip Slider
-	this.clipSlider = document.createElement('input');
-	this.clipSlider.setAttribute('type','range');
-	this.clipSlider.className = 'wide-slider';
-	this.clipSlider.setAttribute('min',0.05);
-	this.clipSlider.setAttribute('max',8);
-	this.clipSlider.setAttribute('step',0.05);
-	this.clipSlider.setAttribute('value',6);
-	// Clip Input
-	this.clipInput = document.createElement('input');
-	this.clipInput.setAttribute('type','number');
-	this.clipInput.setAttribute('step','any');
-	this.clipInput.value = 6;
-	this.clipInput.className = 'stopinput';
-	// Slope Slider
-	this.slopeSlider = document.createElement('input');
-	this.slopeSlider.setAttribute('type','range');
-	this.slopeSlider.setAttribute('min',0);
-	this.slopeSlider.setAttribute('max',2.5);
-	this.slopeSlider.setAttribute('step',0.01);
-	this.slopeSlider.setAttribute('value',0.25);
-	// Slope Input
-	this.slopeInput = document.createElement('input');
-	this.slopeInput.setAttribute('type','number');
-	this.slopeInput.setAttribute('step','any');
-	this.slopeInput.value = 0.25;
-	this.slopeInput.className = 'basicinput';
-	// Smoothness (Cubic / Linear split) Slider
-	this.smoothSlider = document.createElement('input');
-	this.smoothSlider.setAttribute('type','range');
-	this.smoothSlider.setAttribute('min',0);
-	this.smoothSlider.setAttribute('max',1);
-	this.smoothSlider.setAttribute('step',0.01);
-	this.smoothSlider.setAttribute('value',1);
-	// Smoothness (Cubic / Linear split) Input
-	this.smoothInput = document.createElement('input');
-	this.smoothInput.setAttribute('type','number');
-	this.smoothInput.setAttribute('step','any');
-	this.smoothInput.value = 1;
-	this.smoothInput.className = 'basicinput';
+	// Sliders
+	this.startS = new lutSlider({
+		min: -5,
+		max: this.max,
+		value: 0.05,
+		step: 0.05,
+		title: 'Knee Start Level',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		lhs: '18% Gray +',
+		rhs: 'Stops',
+		reset: true
+	});
+	this.clipS = new lutSlider({
+		min: 0.05,
+		max: 8,
+		value: 6,
+		step: 0.05,
+		title: 'Clip Level',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		lhs: '18% Gray +',
+		rhs: 'Stops',
+		reset: true
+	});
+	this.slopeS = new lutSlider({
+		min: 0,
+		max: 2.5,
+		value: 0.25,
+		step: 0.01,
+		title: 'Slope At Clip',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		reset: true
+	});
+	this.smoothS = new lutSlider({
+		min: 0,
+		max: 1,
+		value: 1,
+		step: 0.01,
+		title: 'Smoothness',
+		minLabel: false,
+		maxLabel: false,
+		input: 'number',
+		reset: true
+	});
 };
 TWKKnee.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -101,39 +96,11 @@ TWKKnee.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal Range')));
 	this.box.appendChild(this.extOpt);
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Extended Range')));
-	// Knee Start Level
-	var startBox = document.createElement('div');
-	startBox.className = 'twk-sub-box';
-	startBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Knee Start Level')));
-	startBox.appendChild(document.createElement('br'));
-	startBox.appendChild(this.startSlider);
-	startBox.appendChild(document.createElement('br'));
-	startBox.appendChild(document.createElement('label').appendChild(document.createTextNode('18% Gray +')));
-	startBox.appendChild(this.startInput);
-	startBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
-	this.box.appendChild(startBox);
-	// Clip Level
-	var clipBox = document.createElement('div');
-	clipBox.className = 'twk-sub-box';
-	clipBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Clip Level')));
-	clipBox.appendChild(document.createElement('br'));
-	clipBox.appendChild(this.clipSlider);
-	clipBox.appendChild(document.createElement('br'));
-	clipBox.appendChild(document.createElement('label').appendChild(document.createTextNode('18% Gray +')));
-	clipBox.appendChild(this.clipInput);
-	clipBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Stops')));
-	this.box.appendChild(clipBox);
-	// Slope
-	var otherBox = document.createElement('div');
-	otherBox.className = 'twk-sub-box';
-	otherBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Slope At Clip')));
-	otherBox.appendChild(this.slopeSlider);
-	otherBox.appendChild(this.slopeInput);
-	otherBox.appendChild(document.createElement('br'));
-	otherBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Smoothness')));
-	otherBox.appendChild(this.smoothSlider);
-	otherBox.appendChild(this.smoothInput);
-	this.box.appendChild(otherBox);
+	// Sliders
+	this.box.appendChild(this.startS.element);
+	this.box.appendChild(this.clipS.element);
+	this.box.appendChild(this.slopeS.element);
+	this.box.appendChild(this.smoothS.element);
 	// Build Box Hierarchy
 	this.holder.appendChild(this.box);
 };
@@ -173,22 +140,10 @@ TWKKnee.prototype.getTFParams = function(params) {
 	} else {
 		out.legal = false;
 	}
-	var kneeStart = parseFloat(this.startInput.value);
-	if (!isNaN(kneeStart)) {
-		out.kneeStart = kneeStart;
-	}
-	var kneeClip = parseFloat(this.clipInput.value);
-	if (!isNaN(kneeClip)) {
-		out.kneeClip = kneeClip;
-	}
-	var clipSlope = parseFloat(this.slopeInput.value);
-	if (!isNaN(clipSlope)) {
-		out.clipSlope = clipSlope;
-	}
-	var smoothness = parseFloat(this.smoothInput.value);
-	if (!isNaN(smoothness)) {
-		out.smoothness = smoothness;
-	}
+	out.kneeStart = this.startS.getValue();
+	out.kneeClip = this.clipS.getValue();
+	out.clipSlope = this.slopeS.getValue();
+	out.smoothness = this.smoothS.getValue();
 	params.twkKnee = out;
 };
 TWKKnee.prototype.getCSParams = function(params) {
@@ -198,11 +153,10 @@ TWKKnee.prototype.setParams = function(params) {
 	if (typeof params.twkKnee !== 'undefined') {
 		var p = params.twkKnee;
 		if (typeof p.max === 'number') {
-			this.setMax(p.max);
+			this.startS.setMax(p.max.toFixed(2));
 		}
 		if (typeof p.kneeStart === 'number') {
-			this.startSlider.value = p.kneeStart;
-			this.startInput.value = p.kneeStart;
+			this.startS.setValue(p.kneeStart);
 		}
 		this.toggleTweaks();
 	}
@@ -212,10 +166,10 @@ TWKKnee.prototype.getSettings = function(data) {
 	data.knee = {
 		doKnee: this.tweakCheck.checked,
 		legal: this.legOpt.checked,
-		kneeStart: parseFloat(this.startInput.value),
-		kneeClip: parseFloat(this.clipInput.value),
-		clipSlope: parseFloat(this.slopeInput.value),
-		smoothness: parseFloat(this.smoothInput.value),
+		kneeStart: this.startS.getValue(),
+		kneeClip: this.clipS.getValue(),
+		clipSlope: this.slopeS.getValue(),
+		smoothness: this.smoothS.getValue(),
 		max: this.max
 	};
 };
@@ -227,23 +181,19 @@ TWKKnee.prototype.setSettings = function(settings) {
 			this.extOpt.checked = !data.legal;
 		}
 		if (typeof data.kneeStart === 'number') {
-			this.startSlider.value = data.kneeStart;
-			this.startInput.value = data.kneeStart;
+			this.startS.setValue(data.kneeStart);
 		}
 		if (typeof data.kneeClip === 'number') {
-			this.clipSlider.value = data.kneeClip;
-			this.clipInput.value = data.kneeClip;
+			this.clipS.setValue(data.kneeClip);
 		}
 		if (typeof data.clipSlope === 'number') {
-			this.slopeSlider.value = data.clipSlope;
-			this.slopeInput.value = data.clipSlope;
+			this.slopeS.setValue(data.clipSlope);
 		}
 		if (typeof data.smoothness === 'number') {
-			this.smoothSlider.value = data.smoothness;
-			this.smoothInput.value = data.smoothness;
+			this.smoothS.setValue(data.smoothness);
 		}
 		if (typeof data.max === 'number') {
-			this.setMax(data.max);
+			this.startS.setMax(data.max.toFixed(2));
 		}
 	}
 };
@@ -279,36 +229,26 @@ TWKKnee.prototype.events = function() {
 	this.extOpt.onchange = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
-	this.startSlider.oninput = function(here){ return function(){
-		here.testStartSlider();
+	this.startS.action = function(here){ return function(){
+		var clip = here.clipS.getValue();
+		var start = this.getValue();
+		if (start >= clip) {
+			here.clipS.setValue(start + 0.05);
+		}
 		here.messages.gaSetParams();
 	};}(this);
-	this.startInput.onchange = function(here){ return function(){
-		here.testStartInput();
+	this.clipS.action = function(here){ return function(){
+		var clip = this.getValue();
+		var start = here.startS.getValue();
+		if (start >= clip) {
+			here.startS.setValue(start - 0.05);
+		}
 		here.messages.gaSetParams();
 	};}(this);
-	this.clipSlider.oninput = function(here){ return function(){
-		here.testClipSlider();
+	this.slopeS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
-	this.clipInput.onchange = function(here){ return function(){
-		here.testClipInput();
-		here.messages.gaSetParams();
-	};}(this);
-	this.slopeSlider.oninput = function(here){ return function(){
-		here.testSlopeSlider();
-		here.messages.gaSetParams();
-	};}(this);
-	this.slopeInput.onchange = function(here){ return function(){
-		here.testSlopeInput();
-		here.messages.gaSetParams();
-	};}(this);
-	this.smoothSlider.oninput = function(here){ return function(){
-		here.testSmoothSlider();
-		here.messages.gaSetParams();
-	};}(this);
-	this.smoothInput.onchange = function(here){ return function(){
-		here.testSmoothInput();
+	this.smoothS.action = function(here){ return function(){
 		here.messages.gaSetParams();
 	};}(this);
 };
@@ -332,116 +272,7 @@ TWKKnee.prototype.createRadioElement = function(name, checked) {
     }
     return radioInput;
 };
-TWKKnee.prototype.setMax = function(max) {
-	this.max = max;
-	if (parseFloat(this.startInput.value) > this.max || parseFloat(this.startSlider.value) > this.max) {
-		this.startInput.value = this.max;
-		this.startSlider.value = this.max;
-	}
-	this.startSlider.setAttribute('max',this.max);
-};
-TWKKnee.prototype.testStartSlider = function() {
-	var val = parseFloat(this.startSlider.value);
-	if (val > this.max) {
-		val = this.max;
-		this.startSlider.value = val;
-		this.startSlider.setAttribute('max',this.max);
-	}
-	this.startInput.value = val;
-	if (val >= parseFloat(this.clipInput.value)) {
-		this.clipSlider.value = val + 0.05;
-		this.clipInput.value = val + 0.05;
-	}
-};
-TWKKnee.prototype.testStartInput = function() {
-	var val = parseFloat(this.startInput.value);
-	if (isNaN(val)) {
-		this.startInput.value = this.startSlider.value;
-	} else if (val < -5) {
-		this.startInput.value = -5;
-		this.startSlider.value = -5;
-	} else if (val > this.max) {
-		val = this.max;
-		this.startSlider.value = val;
-		this.startInput.value = val;
-		if (val >= parseFloat(this.clipInput.value)) {
-			this.clipSlider.value = val + 0.05;
-			this.clipInput.value = val + 0.05;
-		}
-	} else {
-		this.startSlider.value = val;
-		if (val >= parseFloat(this.clipInput.value)) {
-			this.clipSlider.value = val + 0.05;
-			this.clipInput.value = val + 0.05;
-		}
-	}
-};
-TWKKnee.prototype.testClipInput = function() {
-	var val = parseFloat(this.clipInput.value);
-	if (isNaN(val)) {
-		this.clipInput.value = this.clipSlider.value;
-	} else if (val < 0.1) {
-		if (val <= parseFloat(this.startInput.value)) {
-			this.startInput.value = 0.05;
-			this.startSlider.value = 0.05;
-		}
-		this.clipInput.value = 0.1;
-		this.clipSlider.value = 0.1;
-	} else if (val <= parseFloat(this.startInput.value)) {
-		this.startSlider.value = val - 0.05;
-		this.startInput.value = val - 0.05;
-		this.clipSlider.value = val;
-	} else {
-		this.clipSlider.value = val;
-	}
-};
-TWKKnee.prototype.testClipSlider = function() {
-	var val = parseFloat(this.clipSlider.value);
-	if (val < 0.1) {
-		if (val <= parseFloat(this.startInput.value)) {
-			this.startSlider.value = 0.05;
-			this.startInput.value = 0.05;
-		}
-		this.clipSlider.value = 0.1;
-		this.clipInput.value = 0.1;
-	} else if (val <= parseFloat(this.startInput.value)) {
-		this.startSlider.value = val - 0.05;
-		this.startInput.value = val - 0.05;
-		this.clipInput.value = val;
-	} else {
-		this.clipInput.value = val;
-	}
-};
-TWKKnee.prototype.testSlopeSlider = function() {
-	this.slopeInput.value = this.slopeSlider.value;
-};
-TWKKnee.prototype.testSlopeInput = function() {
-	var val = parseFloat(this.slopeSlider.value);
-	if (isNaN(val)) {
-		this.slopeInput.value = this.slopeSlider.value;
-	} else if (val < 0) {
-		this.slopeSlider.value = 0;
-		this.slopeInput.value = 0;
-	} else {
-		this.slopeSlider.value = val;
-	}
-};
-TWKKnee.prototype.testSmoothSlider = function() {
-	this.smoothInput.value = this.smoothSlider.value;
-}
-TWKKnee.prototype.testSmoothInput = function() {
-	var val = parseFloat(this.smoothInput.value);
-	if (isNaN(val)) {
-		this.smoothInput.value = this.smoothSlider.value;
-	} else {
-		if (val < 0) {
-			this.smoothSlider.value = 0;
-			this.smoothInput.value = 0;
-		} else if (val > 1) {
-			this.smoothSlider.value = 1;
-			this.smoothInput.value = 1;
-		} else {
-			this.smoothSlider.value = val;
-		}
-	}
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
 }

@@ -32,24 +32,34 @@ TWKMulti.prototype.io = function() {
 		1,
 		1,1,1,1,1,1,1,1
 	]);
-	this.satSliders = [];
+	this.satS = [];
 	for (var j=0; j<17; j++) {
-		var slider = document.createElement('input');
-		slider.setAttribute('type','range');
-		slider.setAttribute('min',0);
-		slider.setAttribute('max',2);
-		slider.setAttribute('step',0.01);
-		slider.setAttribute('value',1);
-		slider.className = 'twk-multi-range-array';
-		this.satSliders.push(slider);
+		this.satS[j] = new lutSlider({
+			min: 0,
+			max: 2,
+			value: 1,
+			step: 0.01,
+			style: 'slider-bare',
+			v: true
+		});
 	}
+	this.stopInput = document.createElement('input');
+	this.stopInput.setAttribute('type','number');
+	this.stopInput.setAttribute('step',1);
+	this.stopInput.className = 'small-input';
+	this.stopInput.value = 0;
+	this.satInput = document.createElement('input');
+	this.satInput.setAttribute('type','number');
+	this.satInput.setAttribute('step','any');
+	this.satInput.className = 'small-input';
+	this.satInput.value = 1;
 	this.monochrome = document.createElement('input');
 	this.monochrome.setAttribute('type','button');
-	this.monochrome.className = 'smallbutton';
+	this.monochrome.className = 'small-button';
 	this.monochrome.setAttribute('value','Monochrome');
 	this.satReset = document.createElement('input');
 	this.satReset.setAttribute('type','button');
-	this.satReset.className = 'smallbutton';
+	this.satReset.className = 'small-button';
 	this.satReset.setAttribute('value','Reset Saturation');
 	// Colour Picker
 	this.pRLabel = document.createElement('label');
@@ -85,16 +95,8 @@ TWKMulti.prototype.ui = function() {
 	this.box.className = 'tweak-hide';
 	// Tweak - Specific UI Elements
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Stop:')));
-	this.stopInput = document.createElement('input');
-	this.stopInput.setAttribute('type','text');
-	this.stopInput.className = 'smallinput';
-	this.stopInput.value = '0';
 	this.box.appendChild(this.stopInput);
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Saturation:')));
-	this.satInput = document.createElement('input');
-	this.satInput.setAttribute('type','text');
-	this.satInput.className = 'smallinput';
-	this.satInput.value = '1';
 	this.box.appendChild(this.satInput);
 	// Box for stop-by-stop slider background
 	this.coloursBox = document.createElement('div');
@@ -119,12 +121,15 @@ TWKMulti.prototype.ui = function() {
 	}
 	this.box.appendChild(this.coloursBox);
 	// Array Of Sliders
-	this.sliderBox = document.createElement('div');
-	this.sliderBox.className = 'twk-multi-sliders';
+	this.satSs = document.createElement('div');
+	this.satSs.className = 'twk-multi-sliders';
 	for (var j=0; j<17; j++) {
-		this.sliderBox.appendChild(this.satSliders[j]);
+		var sliderBox = document.createElement('div');
+		sliderBox.className = 'twk-multi-sliderbox';
+		sliderBox.appendChild(this.satS[j].element);
+		this.satSs.appendChild(sliderBox);
 	}
-	this.box.appendChild(this.sliderBox);
+	this.box.appendChild(this.satSs);
 	for (var j=0; j<17; j++) {
 		var stopLabel = document.createElement('label');
 		stopLabel.appendChild(document.createTextNode(j-8));
@@ -175,7 +180,7 @@ TWKMulti.prototype.getCSParams = function(params) {
 		var m = this.tones.length;
 		var pStop = new Float64Array(m);
 		for (var j=0; j<m; j++) {
-			pStop[j] = parseFloat(this.tones[j].stop.value);
+			pStop[j] = this.tones[j].stop.getValue();
 		}
 		var hs = this.getHueSats();
 		out.pHue = hs.hues.buffer;
@@ -203,7 +208,7 @@ TWKMulti.prototype.getSettings = function(data) {
 	var m = this.tones.length;
 	var stops = new Float64Array(m);
 	for (var j=0; j<m; j++) {
-		stops[j] = parseFloat(this.tones[j].stop.value);
+		stops[j] = this.tones[j].stop.getValue();
 	}
 	data.multiTone = {
 		doMulti: this.tweakCheck.checked,
@@ -243,7 +248,9 @@ TWKMulti.prototype.setSettings = function(settings) {
 				} else {
 					this.pHue = monoHue[j];
 				}
-				this.setTone(j,monoHue[j],monoSat[j],monoStop[j]);
+				this.tones[j].hue.setValue(parseInt(monoHue[j]));
+				this.tones[j].sat.setValue(parseFloat((parseFloat(monoSat[j])/255).toFixed(3)));
+				this.tones[j].stop.setValue(parseFloat(monoStop[j]));
 			}
 		}
 	}
@@ -274,28 +281,58 @@ TWKMulti.prototype.events = function() {
 		here.toggleTweak();
 		here.messages.gtSetParams();
 	};}(this);
+	this.stopInput.onchange = function(here){ return function(){
+		var val = parseInt(this.stopInput.value);
+		if (isNaN(val)) {
+			here.stopInput.value = 0;
+			here.satInput.value = here.satS[8].getValue();
+		} else {
+			val = Math.max(-8,Math.min(8,val));
+			here.stopInput.value = val.toString();
+			here.satInput.value = here.satS[val+8].getValue();
+		}
+		here.messages.gtSetParams();
+	};}(this);
+	this.satInput.onchange = function(here){ return function(){
+		var val = parseFloat(here.satInput.value);
+		if (isNaN(val)) {
+			here.satInput.value = parseFloat(this.satS[parseInt(here.stopInput.value)+8].getValue());
+		} else {
+			var i = parseInt(here.stopInput.value)+8;
+			val = Math.max(0,Math.min(2,val));
+			here.satInput.value = val.toString();
+			here.satS[i].setValue(val);
+			here.sat[i] = val;
+		}
+		here.messages.gtSetParams();
+	};}(this);
 	for (var j=0; j<17; j++) {
-		this.satSliders[j].oninput = function(i){ return function(){
-			if (i[0].sat[i[1]] !== parseFloat(i[0].satSliders[i[1]].value)) {
-				i[0].testSat(i[1]);
+		this.satS[j].action = function(i){ return function(){
+			var val = i[0].satS[i[1]].getValue();
+			if (i[0].sat[i[1]] !== val) {
+				i[0].sat[i[1]] = val;
+				i[0].stopInput.value = i[1]-8;
+				i[0].satInput.value = val;		
 				i[0].messages.gtSetParams();
 			}
 		};}([this,j]);
 	}
-	this.stopInput.onchange = function(here){ return function(){
-		here.testStopInput();
-		here.messages.gtSetParams();
-	};}(this);
-	this.satInput.onchange = function(here){ return function(){
-		here.testSatInput();
-		here.messages.gtSetParams();
-	};}(this);
 	this.monochrome.onclick = function(here){ return function(){
-		here.toMono();
+		for (var j=0; j<17; j++) {
+			here.satS[j].setValue(0);
+			here.sat[j] = 0;
+		}
+		here.stopInput.value = 0;
+		here.satInput.value = 0;
 		here.messages.gtSetParams();
 	};}(this);
 	this.satReset.onclick = function(here){ return function(){
-		here.resetSat();
+		for (var j=0; j<17; j++) {
+			here.satS[j].setValue(1);
+			here.sat[j] = 1;
+		}
+		here.stopInput.value = 0;
+		here.satInput.value = 1;
 		here.messages.gtSetParams();
 	};}(this);
 	this.pCan.onclick = function(here){ return function(e){
@@ -314,17 +351,17 @@ TWKMulti.prototype.events = function() {
 // Tweak-Specific Code
 TWKMulti.prototype.addTone = function(idx) {
 	var toneBox = document.createElement('div');
-	toneBox.className = 'twk-sub-box';
+	toneBox.className = 'twk-multi-tone';
 	var pmBox = document.createElement('div');
 	pmBox.className = 'twk-multi-pmbox';
 	var plus = document.createElement('input');
 	plus.setAttribute('type','button');
-	plus.className= 'plusminus';
+	plus.className= 'twk-multi-plus';
 	plus.value = '+';
 	pmBox.appendChild(plus);
 	var minus = document.createElement('input');
 	minus.setAttribute('type','button');
-	minus.className= 'plusminus';
+	minus.className= 'twk-multi-minus';
 	minus.value='-';
 	pmBox.appendChild(minus);
 	toneBox.appendChild(pmBox);
@@ -333,76 +370,69 @@ TWKMulti.prototype.addTone = function(idx) {
 	toneBox.appendChild(toneColour);
 	var toneRight = document.createElement('div');
 	toneRight.className = 'twk-multi-tab';
-	var hueSlider = document.createElement('input');
-	hueSlider.setAttribute('type','range');
-	hueSlider.setAttribute('min',0);
-	hueSlider.setAttribute('max',255);
-	hueSlider.setAttribute('step',1);
-	hueSlider.setAttribute('value',127);
-	toneRight.appendChild(hueSlider);
-	var satSlider = document.createElement('input');
-	satSlider.setAttribute('type','range');
-	satSlider.setAttribute('min',0);
-	satSlider.setAttribute('max',1);
-	satSlider.setAttribute('step',0.001);
-	satSlider.setAttribute('value',0);
-	var stopSlider = document.createElement('input');
-	stopSlider.setAttribute('type','range');
-	stopSlider.setAttribute('min',-8);
-	stopSlider.setAttribute('max',8);
-	stopSlider.setAttribute('step',0.01);
+	var hueS = new lutSlider({
+		min: 0,
+		max: 255,
+		value: 127,
+		step: 1,
+		title: 'Hue',
+		style: 'slider-slim',
+		minLabel: false,
+		maxLabel: false,
+		input: 'label',
+		inputLim: false,
+		reset: false
+	});
+	var satS = new lutSlider({
+		min: 0,
+		max: 1,
+		value: 0,
+		step: 0.001,
+		title: 'Saturation',
+		style: 'slider-slim',
+		minLabel: false,
+		maxLabel: false,
+		input: 'label',
+		inputLim: false,
+		reset: false
+	});
+	var stopS = new lutSlider({
+		min: -8,
+		max: 8,
+		value: 0,
+		step: 0.01,
+		title: 'Stop',
+		style: 'slider-slim',
+		minLabel: false,
+		maxLabel: false,
+		input: 'label',
+		inputLim: false,
+		reset: false
+	});
 	if (this.tones.length === 1 || (this.tones.length > 1 && idx >= this.tones.length)) {
-		var m1 = parseFloat(this.tones[idx-1].stop.value);
+		var m1 = this.tones[idx-1].stop.getValue();
 		if (m1 >= 8) {
 			if (idx - 1 === 0) {
-				this.tones[idx-1].stop.value = 0;
+				this.tones[idx-1].stop.setValue(0);
 			} else {
-				var m2 = parseFloat(this.tones[idx-2].stop.value);
-				this.tones[idx-1].stop.value = parseFloat(((m2+8)/2).toFixed(3))
+				var m2 = this.tones[idx-2].stop.getValue();
+				this.tones[idx-1].stop.setValue(parseFloat(((m2+8)/2).toFixed(3)));
 			}
-			this.tones[idx-1].stopValue.removeChild(this.tones[idx-1].stopValue.firstChild);
-			this.tones[idx-1].stopValue.appendChild(document.createTextNode('0'));
-			stopSlider.setAttribute('value',8);
+			stopS.setValue(8);
 		} else {
-			stopSlider.setAttribute('value',parseFloat(((m1+8)/2).toFixed(3)));
+			stopS.setValue(((m1+8)/2).toFixed(3));
 		}
 	} else if (this.tones.length > 1) {
-		var m1 = parseFloat(this.tones[idx-1].stop.value);
-		var p1 = parseFloat(this.tones[idx].stop.value);
-		stopSlider.setAttribute('value',parseFloat(((m1+p1)/2).toFixed(3)));
+		var m1 = this.tones[idx-1].stop.getValue();
+		var p1 = this.tones[idx].stop.getValue();
+		stopS.setValue(parseFloat(((m1+p1)/2).toFixed(3)));
 	} else {
-		stopSlider.setAttribute('value',0);
+		stopS.setValue(0);
 	}
-	var hueLabel = document.createElement('label');
-	hueLabel.className = 'fixedlabel';
-	hueLabel.appendChild(document.createTextNode('Hue'));
-	toneRight.appendChild(hueLabel);
-	toneRight.appendChild(hueSlider);
-	var hueValue = document.createElement('label');
-	hueValue.className = 'fixedlabel-s';
-	hueValue.appendChild(document.createTextNode(hueSlider.value));
-	toneRight.appendChild(hueValue);
-	toneRight.appendChild(document.createElement('br'));
-	var satLabel = document.createElement('label');
-	satLabel.className = 'fixedlabel';
-	satLabel.appendChild(document.createTextNode('Saturation'));
-	toneRight.appendChild(satLabel);
-	toneRight.appendChild(satSlider);
-	var satValue = document.createElement('label');
-	satValue.className = 'fixedlabel-s';
-	satValue.appendChild(document.createTextNode(satSlider.value));
-	toneRight.appendChild(satValue);
-	toneRight.appendChild(document.createElement('br'));
-	var stopLabel = document.createElement('label');
-	stopLabel.className = 'fixedlabel';
-	stopLabel.appendChild(document.createTextNode('Stop'));
-	toneRight.appendChild(stopLabel);
-	toneRight.appendChild(stopSlider);
-	var stopValue = document.createElement('label');
-	stopValue.className = 'fixedlabel-s';
-	stopValue.appendChild(document.createTextNode(stopSlider.value));
-	toneRight.appendChild(stopValue);
-	toneRight.appendChild(document.createElement('br'));
+	toneRight.appendChild(hueS.element);
+	toneRight.appendChild(satS.element);
+	toneRight.appendChild(stopS.element);
+	toneBox.appendChild(toneRight);
 	toneBox.appendChild(toneRight);
 	if (this.tones.length === 0 || idx >= this.tones.length) {
 		this.box.appendChild(toneBox);
@@ -412,12 +442,9 @@ TWKMulti.prototype.addTone = function(idx) {
 	var object = {
 		idx: this.tIdx,
 		colBox: toneColour,
-		hue: hueSlider,
-		hueValue: hueValue,
-		sat: satSlider,
-		satValue: satValue,
-		stop: stopSlider,
-		stopValue: stopValue,
+		hue: hueS,
+		sat: satS,
+		stop: stopS,
 		box: toneBox
 	};
 	if (idx === 0) {
@@ -444,74 +471,35 @@ TWKMulti.prototype.addTone = function(idx) {
 	toneColour.onclick = function(i){ return function(){
 		i[0].messages.gtTx(i[0].p,8,{tIdx: i[1]});
 	};}([this,this.tIdx]);
-	hueSlider.oninput = function(i){ return function(){
+	hueS.action = function(here){ return function(){
+		here.pHue = this.getValue();
+		here.messages.gtSetParams();
+	};}(this);
+	satS.action = function(here){ return function(){
+		here.pSat = this.getValue();
+		here.messages.gtSetParams();
+	};}(this);
+	stopS.action = function(i){ return function(){
+		i[0].pStop = this.getValue();
 		var idx = i[0].getIdx(i[1]);
-		if (parseInt(i[0].tones[idx].hueValue.lastChild.nodeValue) !== Math.round(i[0].tones[idx].hue.value)) {
-			i[0].testToneHue(idx);
-			i[0].messages.gtSetParams();
+		if (idx > 0) {
+			i[0].shuffleDown(idx-1, i[0].pStop);
 		}
-	};}([this,this.tIdx]);
-	satSlider.oninput = function(i){ return function(){
-		var idx = i[0].getIdx(i[1]);
-		if (parseFloat(i[0].tones[idx].satValue.lastChild.nodeValue) !== parseFloat(i[0].tones[idx].sat.value)) {
-			i[0].testToneSat(idx);
-			i[0].messages.gtSetParams();
+		if (idx < i[0].tones.length-1) {
+			i[0].shuffleUp(idx+1, i[0].pStop);
 		}
+		i[0].messages.gtSetParams();
 	};}([this,this.tIdx]);
-	stopSlider.oninput = function(i){ return function(){
-		var idx = i[0].getIdx(i[1]);
-		if (parseFloat(i[0].tones[idx].stopValue.lastChild.nodeValue) !== parseFloat(i[0].tones[idx].stop.value)) {
-			i[0].testToneStop(idx);
-			i[0].messages.gtSetParams();
-		}
-	};}([this,this.tIdx]);
-	//
 	this.tIdx++;
-};
-TWKMulti.prototype.setTone = function(idx,hue,sat,stop) {
-	var tone = this.tones[idx];
-	tone.hue.value = parseInt(hue);
-	tone.hueValue.removeChild(tone.hueValue.firstChild);
-	tone.hueValue.appendChild(document.createTextNode(parseInt(hue).toString()));
-	tone.sat.value = parseFloat((parseFloat(sat)/255).toFixed(3));
-	tone.satValue.removeChild(tone.satValue.firstChild);
-	tone.satValue.appendChild(document.createTextNode(parseFloat((parseFloat(sat)/255).toFixed(3)).toString()));
-	tone.stop.value = parseFloat(stop);
-	tone.stopValue.removeChild(tone.stopValue.firstChild);
-	tone.stopValue.appendChild(document.createTextNode(parseFloat(stop).toString()));
-};
-TWKMulti.prototype.testToneHue = function(idx) {
-	var tone = this.tones[idx];
-	this.pHue = Math.round(tone.hue.value);
-	tone.hueValue.removeChild(tone.hueValue.firstChild);
-	tone.hueValue.appendChild(document.createTextNode(this.pHue.toString()));
-};
-TWKMulti.prototype.testToneSat = function(idx) {
-	var tone = this.tones[idx];
-	this.pSat = parseFloat(tone.sat.value);
-	tone.satValue.removeChild(tone.satValue.firstChild);
-	tone.satValue.appendChild(document.createTextNode(this.pSat.toString()));
-};
-TWKMulti.prototype.testToneStop = function(idx) {
-	var tone = this.tones[idx];
-	this.pStop = parseFloat(tone.stop.value);
-	tone.stopValue.removeChild(tone.stopValue.firstChild);
-	tone.stopValue.appendChild(document.createTextNode(this.pStop.toString()));
-	if (idx > 0) {
-		this.shuffleDown(idx-1, this.pStop);
-	}
-	if (idx < this.tones.length-1) {
-		this.shuffleUp(idx+1, this.pStop);
-	}
 };
 TWKMulti.prototype.shuffleDown = function(idx, val) {
 	var tone = this.tones[idx];
-	var old = parseFloat(tone.stop.value);
+	var old = tone.stop.getValue();
 	if (old >= val) {
 		val = parseFloat((val - 0.001).toFixed(3));
-		tone.stop.value = val;
-		tone.stopValue.removeChild(tone.stopValue.firstChild);
-		tone.stopValue.appendChild(document.createTextNode(val.toString()));
+		tone.stop.setValue(val);
+//		tone.stopValue.removeChild(tone.stopValue.firstChild);
+//		tone.stopValue.appendChild(document.createTextNode(val.toString()));
 		if (idx > 0) {
 			this.shuffleDown(idx-1, val);
 		}
@@ -519,12 +507,12 @@ TWKMulti.prototype.shuffleDown = function(idx, val) {
 };
 TWKMulti.prototype.shuffleUp = function(idx, val) {
 	var tone = this.tones[idx];
-	var old = parseFloat(tone.stop.value);
+	var old = tone.stop.getValue();
 	if (old <= val) {
 		val = parseFloat((val + 0.001).toFixed(3));
-		tone.stop.value = val;
-		tone.stopValue.removeChild(tone.stopValue.firstChild);
-		tone.stopValue.appendChild(document.createTextNode((val).toString()));
+		tone.stop.setValue(val);
+//		tone.stopValue.removeChild(tone.stopValue.firstChild);
+//		tone.stopValue.appendChild(document.createTextNode((val).toString()));
 		if (idx < this.tones.length-1) {
 			this.shuffleUp(idx+1, val);
 		}
@@ -534,12 +522,8 @@ TWKMulti.prototype.updateTone = function() {
 	var tone = this.tones[this.pIdx];
 	var d = this.pCtx.getImageData(this.pHue,Math.round((1-this.pSat)*255),1,1);
 	tone.colBox.style.backgroundColor = 'rgb('+d.data[0]+','+d.data[1]+','+d.data[2]+')';
-	tone.hue.value = this.pHue;
-	tone.hueValue.removeChild(tone.hueValue.firstChild);
-	tone.hueValue.appendChild(document.createTextNode(this.pHue.toString()));
-	tone.sat.value = this.pSat;
-	tone.satValue.removeChild(tone.satValue.firstChild);
-	tone.satValue.appendChild(document.createTextNode(this.pSat.toString()));
+	tone.hue.setValue(this.pHue);
+	tone.sat.setValue(this.pSat);
 	this.messages.gtSetParams();
 };
 TWKMulti.prototype.getIdx = function(tIdx) {
@@ -552,8 +536,8 @@ TWKMulti.prototype.getIdx = function(tIdx) {
 };
 TWKMulti.prototype.gotColSqr = function(colSqr,tIdx) {
 	this.pIdx = this.getIdx(tIdx);
-	this.pHue = Math.round(parseFloat((this.tones[this.pIdx].hue.value)));
-	this.pSat = parseFloat(this.tones[this.pIdx].sat.value);
+	this.pHue = Math.round((this.tones[this.pIdx].hue.getValue()));
+	this.pSat = this.tones[this.pIdx].sat.getValue();
 	var c = new Uint8Array(colSqr);
 	this.pData.data.set(c);
 	this.pCtx.putImageData(this.pData,0,0);
@@ -573,8 +557,8 @@ TWKMulti.prototype.getHueSats = function() {
 	var h = new Uint8Array(m);
 	var s = new Uint8Array(m);
 	for (var j=0; j<m; j++) {
-		h[j] = Math.round(this.tones[j].hue.value);
-		s[j] = Math.round(parseFloat(this.tones[j].sat.value) * 255);
+		h[j] = Math.round(this.tones[j].hue.getValue());
+		s[j] = Math.round(this.tones[j].sat.getValue() * 255);
 	}
 	return { hues: h, sats: s };
 };
@@ -602,8 +586,6 @@ TWKMulti.prototype.buildPicker = function() {
 	this.pCan.className = 'picker-can';
 	this.pCan.width = '256';
 	this.pCan.height = '256';
-	this.pCan.style.width = '20em';
-	this.pCan.style.height = '20em';
 	this.pCtx = this.pCan.getContext('2d');
 	this.pData = this.pCtx.createImageData(256,256);
 	this.pickerBox.appendChild(this.pCan);
@@ -630,31 +612,6 @@ TWKMulti.prototype.buildPicker = function() {
 //	document.getElementById('body').appendChild(this.pickerHolder);
 	modalBox.appendChild(this.pickerHolder);
 };
-TWKMulti.prototype.testSat = function(i) {
-	var vo = this.sat[i];
-	var vn = parseFloat(this.satSliders[i].value);
-	if (vo !== vn) {
-		this.sat[i] = vn;
-	}
-	this.stopInput.value = (i-8).toString();
-	this.satInput.value = this.sat[i].toString();		
-};
-TWKMulti.prototype.toMono = function() {
-	for (var j=0; j<17; j++) {
-		this.satSliders[j].value = 0;
-		this.sat[j] = 0;
-	}
-	this.stopInput.value = '0';
-	this.satInput.value = '0';
-};
-TWKMulti.prototype.resetSat = function() {
-	for (var j=0; j<17; j++) {
-		this.satSliders[j].value = 1;
-		this.sat[j] = 1;
-	}
-	this.stopInput.value = '0';
-	this.satInput.value = '1';
-};
 TWKMulti.prototype.multiColours = function(p) {
 	var o = new Uint8Array(p.o);
 	var hs = new Uint8Array(p.hs);
@@ -669,28 +626,6 @@ TWKMulti.prototype.multiColours = function(p) {
 	}
 	this.toggleTweaks();
 };
-TWKMulti.prototype.testStopInput = function() {
-	var val = parseInt(this.stopInput.value);
-	if (isNaN(val)) {
-		val = 0;
-	} else {
-		val = Math.max(-8,Math.min(8,val));
-	}
-	this.stopInput.value = val.toString();
-	this.satInput.value = this.satSliders[val+8].value.toString();
-};
-TWKMulti.prototype.testSatInput = function() {
-	var val = parseFloat(this.satInput.value);
-	var i = parseInt(this.stopInput.value)+8;
-	if (isNaN(val)) {
-		val = parseFloat(this.satSliders[i].value);
-	} else {
-		val = Math.max(0,Math.min(2,val));
-	}
-	this.satInput.value = val.toString();
-	this.satSliders[i].value = val;
-	this.sat[i] = val;
-};
 TWKMulti.prototype.taToString = function(data) {
 	var out = [];
 	var m = data.length;
@@ -699,3 +634,7 @@ TWKMulti.prototype.taToString = function(data) {
 	}
 	return out.toString();
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

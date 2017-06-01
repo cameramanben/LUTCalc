@@ -46,23 +46,23 @@ TWKHG.prototype.io = function() {
 	this.linLow = document.createElement('input');
 	this.linLow.setAttribute('type','number');
 	this.linLow.setAttribute('step','any');
-	this.linLow.className = 'ireinput';
+	this.linLow.className = 'ire-input';
 	this.linLow.value = '18';
 	this.linHigh = document.createElement('input');
 	this.linHigh.setAttribute('type','number');
 	this.linHigh.setAttribute('step','any');
-	this.linHigh.className = 'ireinput';
+	this.linHigh.className = 'ire-input';
 	this.linHigh.value = '90';
 	// Log (stop) inputs for the start and end of the transition
 	this.logLow = document.createElement('input');
 	this.logLow.setAttribute('type','number');
 	this.logLow.setAttribute('step','any');
-	this.logLow.className = 'stopinput';
+	this.logLow.className = 'stop-input';
 	this.logLow.value = '0';
 	this.logHigh = document.createElement('input');
 	this.logHigh.setAttribute('type','number');
 	this.logHigh.setAttribute('step','any');
-	this.logHigh.className = 'stopinput';
+	this.logHigh.className = 'stop-input';
 	this.logHigh.value = (Math.log(5*parseFloat(this.linHigh.value)/90)/Math.LN2).toFixed(4).toString();
 };
 TWKHG.prototype.ui = function() {
@@ -340,3 +340,7 @@ TWKHG.prototype.testLogHigh = function() {
 		this.testLogHigh();
 	}
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}

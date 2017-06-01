@@ -177,6 +177,45 @@ function LUTSpline(params) {
 		this.sin = false;
 	}
 }
+LUTSpline.prototype.buildL = function() {
+	var fm = this.FD.length;
+	var mono = this.FD[fm-1]-this.FD[0];
+	if (mono >= 0) {
+		mono = 1;
+	} else if (mono < 0) {
+		mono = -1;
+	}
+	var FP1 = new Float64Array(fm);
+	var FD1 = new Float64Array(fm);
+	for (var j=0; j<fm; j++) {
+		if (j === 0) {
+			FP1[0] = this.FD[1];
+				this.FC[0] = -(0.5*this.FD[2]) + (2*this.FD[1]) - (1.5*this.FD[0]);
+				if (this.FC[0]*mono <= 0) { // still opposite slope to monotonic
+					this.FC[0] = 0.0075 * mono / (fm-1);
+				}
+			FD1[0] = (this.FD[2] - this.FD[0])/2;
+		} else if (j < fm-1) {
+			FP1[j] = this.FD[j+1];
+			this.FC[j] = (this.FD[j+1] - this.FD[j-1])/2;
+			if (j === fm-2) {
+					FD1[j] = (0.5*this.FD[j-1]) - (2*this.FD[j]) + (1.5*this.FD[j+1]);
+					if (FD1[j]*mono <= 0) { // still opposite slope to monotonic - give up!
+						FD1[j] = 0.0075 * mono / (fm-1);
+					}
+			} else {
+				FD1[j] = (this.FD[j+2] - this.FD[j])/2;
+			}
+		} else {
+			FP1[j] = this.FD[j];
+			this.FC[j] = FD1[j-1];
+			FD1[j] = FD1[j-1];
+		}
+		this.FA[j] = (2*this.FD[j]) + this.FC[j] - (2*FP1[j]) + FD1[j];
+		this.FB[j] = (-3*this.FD[j]) - (2*this.FC[j]) + (3*FP1[j]) - FD1[j];
+	}
+	this.FM = fm-1;
+};
 LUTSpline.prototype.f = function(L) {
 	var s = this.FM;
 	var r,l;
@@ -549,6 +588,80 @@ LUTSpline.prototype.getTitle = function() {
 };
 LUTSpline.prototype.getMetadata = function() {
 	return this.meta;
+};
+LUTSpline.prototype.isClamped = function() {
+	if (typeof this.clamped === 'undefined') {
+		var mm = this.minMax();
+		if ((mm[0] === 0 && mm[1] <= 1) || (mm[0] >= 0 && mm[1] === 1)) {
+			this.clamped = true;
+		} else {
+			this.clamped = false;
+		}
+	}
+	return this.clamped;
+};
+LUTSpline.prototype.deClamp = function() {
+	if (this.isClamped()) {
+		var m,c,C,L,H,LH,S;
+		var fL,fH,fLH;
+		var FD = this.FD;
+		m = FD.length;
+		var C = false;
+		var L = 0;
+		var H = m-1;
+		for (var j=0; j<m; j++) {
+			if (j>0) {
+				if (FD[j] === 0) {
+					C = true;
+					L = j+1;
+				}
+			}
+		}
+		for (var j=m-2; j>=0; j--) {
+			if (FD[j] === 1) {
+				C = true;
+				H = j-1;
+			}
+		}
+		if (C) {
+			if (L > H) {
+				var low = H;
+				var H = Math.min(L-2,m-1);
+				var L = Math.max(low+2,0);
+			}
+			var LH = H-L;
+			var S = new LUTQSpline(new Float64Array(c.subarray(L,LH+1)).buffer);
+			var fL = this.fL;
+			var fH = this.fH;
+			var fLH= fH-fL;
+			for (var j=0; j<m; j++) {
+				if (j===L) {
+					j = H;
+				}
+				// pass through the splines
+				FD[j] = S.fCub((j - L)/LH);
+			}
+		}
+		this.buildL();
+		this.clamped = false;
+	}
+};
+LUTSpline.prototype.minMax = function() {
+	var x = new Float64Array([
+		 9999,	// Absolute min value
+		-9999	// Absolute max value
+	]);
+	var FD = this.FD;
+	var m = FD.length;
+	for (var j=0; j<m; j++) {
+		if (FD[j] < x[0]) {
+			x[0] = FD[j];
+		}
+		if (FD[j] > x[1]) {
+			x[1] = FD[j];
+		}
+	}
+	return x;
 };
 // LUTRSpline - spline object with arbitrary input range and inverse automatically calculated
 function LUTRSpline(params) {

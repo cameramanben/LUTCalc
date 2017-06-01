@@ -37,33 +37,51 @@ LUTTweaksBox.prototype.io = function() {
 	this.tweaks.setAttribute('type','checkbox');
 	this.tweaks.checked = true;
 	this.inputs.addInput('tweaks',this.tweaks);
+	this.inputs.addInput('tweakTitles', []);
 };
 LUTTweaksBox.prototype.ui = function() {
-	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Customisation')));
-	this.box.appendChild(this.tweaks);
+	var topBox = document.createElement('div');
+	topBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Customisation')));
+	topBox.appendChild(this.tweaks);
+	topBox.id = 'tweak-top';
+	this.box.appendChild(topBox);
 	this.holder = document.createElement('div');
 	this.holder.id = 'tweaksholder';
 	this.box.appendChild(this.holder);
-	maxHeights();
 
+	this.inputs.tweakTitles.push('Custom Colour Space');
 	this.cs = this.tweaksList.length;
 	this.tweaksList.push(new TWKCS(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('White Balance');
 	this.wb = this.tweaksList.length;
 	this.tweaksList.push(new TWKWHITE(this.holder, this.inputs, this.messages));
 	this.messages.gtTx(3,17,{});
+	this.inputs.tweakTitles.push('PSST-CDL');
 	this.PSST = this.tweaksList.length;
 	this.tweaksList.push(new TWKPSSTCDL(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('ASC-CDL');
 	this.tweaksList.push(new TWKASCCDL(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Multitone');
 	this.multi = this.tweaksList.length;
 	this.tweaksList.push(new TWKMulti(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Highlight Gamut');
 	this.tweaksList.push(new TWKHG(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Knee');
 	this.tweaksList.push(new TWKKnee(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Black Level / Highlight Level');
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Black Gamma');
 	this.tweaksList.push(new TWKBlkGam(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Display Colourspace Converter');
+	this.tweaksList.push(new TWKDisplay(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('Gamut Limiter');
 	this.gl = this.tweaksList.length;
 	this.tweaksList.push(new TWKGamutLim(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('False Colour');
 	this.tweaksList.push(new TWKFC(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('RGB Sampler');
 	this.tweaksList.push(new TWKSampler(this.holder, this.inputs, this.messages, this.files));
+	this.inputs.tweakTitles.push('LUTAnalyst');
 	this.LA = this.tweaksList.length;
 	this.tweaksList.push(new TWKLA(this.holder, this.inputs, this.messages, this.files, this.formats));
 
@@ -216,3 +234,7 @@ LUTTweaksBox.prototype.isCustomGamut = function() {
 	}
 	return custom;
 };
+// Loading progress bar
+if (typeof splash !== 'undefined') {
+	splashProg();
+}
