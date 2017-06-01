@@ -58,6 +58,24 @@
     			<div id="news">
     				<h1 class="section-title">News</h1>
     			<div class="main-section">
+    				<p><strong>LUTCalc v3.1 Update</strong> - 1t June 2017 - HDR, Cinegammas, Display Colourspace Conversion and responsive design</p>
+    				<p>Hi All. This update features a couple of new curves, some important changes to the way others work, a new tool for targeting different displays and the start of changes to the interface. </p>
+    				<p>First, a relatively simple new feature. I've been playing around taking and analysing test images on an a7s the result of which is my estimation of the Cinegamma 3 and Cinegamma 4 curves (Cinegammas 1 and 2 being renamed Hypergammas).</p>
+    				<p>Next, HDR. LUTCalc has long included various high dynamic range curves, including the two which are establishing themselves as standards: Perceptual Quantisation (PQ) and Hybrid-Log Gamma (HLG). However, including equations for technical papers and implementing useful, appropriate options are two different things an I have now tried to put LUTCalc into the right position.</p>
+    				<p>I've been reading up as much as I can about the Rec2100 PQ and HLG colourspaces, and in particular looked to understand the fundamental difference in approach of PQ as a display-referred colourspace against HLG as a scene-referred one.</p>
+    				<p>LUTCalc's model is scene referred, so for the PQ options I have included the PQ reference OOTF, the HLG reference OOTF (which should be used when converting between HLG and PQ and back) and an EOTF-only option.</p>
+    				<p>I have also included options with HLG to choose exposure scaling between the standard (90% white target maps to 50% HLG) and the BBC suggested reference (90% white target maps to 73%). To do all this I decided the best option was to start again from scratch with the HDR code. Hopefully it should now be flexible and correct.</p>
+    				<p>If all that sounds like gobbledigook, uh-huh! HDR is unquestionably becoming important, but the days are early, the concepts potentially such a break from today and the opinions and tastes still so undecided that I see these options as more for information to most people for now.</p>
+    				<p>If, however, all the OOTFs, EOTFs, OETFs and such are nothing new to you and you find that I'm committing some obvious howlers - please do let me know!</p>
+    				<p>The other most obvious feature is what I'm calling the 'Display Colourspace Conversion' tool. This sits after all your other tweaks and customisations and allows you to convert your look from one colourspace (eg Rec709) for use in another (eg DCI-P3).</p>
+    				<p>Lastly, I've gone through an overhaul of how the user interface (UI) is expressed. LUTCalc is fundamentally a web app, built upon HTML, Javascript and CSS. For v3.1 I have been working on 'responsive design' principles, which basically aims to allow LUTCalc to be useable regardless of the screen size.</p>
+    				<p>This is relevant when run in a browser, and whilst I still have to establish the best approach to saving LUTs on devices without detachable media (ie tablets and mobiles), as an information tool LUTCalc now looks a lot better on my iPad! As ever, let me know how it looks for you.</p>
+    				<p>The <strong><a href="LUTCalc/index.html" target="_blank">Online</a></strong> and <strong><a href="macappstore://itunes.apple.com/app/lutcalc/id1000409621?mt=12">Mac OSX</a></strong> versions should now be available. I will put the Chrome App up when I'm back near a better internet connection. Thanks,</p>
+    				<p>Ben</p>
+					<a class="to-top" href="#header-wrap">Back To Top</a>
+    			</div>
+<div id="oldnews">
+    			<div class="main-section">
     				<p><strong>LUTCalc v3.0 Update</strong> - 6th March 2017 - Gamut Limiter, Interpolation Code, 'Standard' Gammas, P3 White Point Options, Custom Colour Space.</p>
 					<p>Hi All. It's been rather a while since I last updated LUTCalc. I have been working on it in bursts, and in particular completely overhauling the 3D interpolation and extrapolation code behind LUTAnalyst and the LUT-based colourspaces such as LC709A.</p>
 					<p>First off though is 'Gamut Limiter'. I had a go at this in an earlier version, but this is a new approach and complete rewrite. It should be good now!</p>
@@ -78,7 +96,6 @@
     				<p>Ben</p>
 					<a class="to-top" href="#header-wrap">Back To Top</a>
     			</div>
-<div id="oldnews">
     			<div class="main-section">
     				<p><strong>LUTCalc v2.90 Update</strong> - 18th October 2016 - Batch Generation, Gamut Limiter, New Gammas, RGB Sampler.</p>
     				<p>Last month I slipped out an update, v2.60, without mention here. It included a couple of useful features. The first was LUT batch generation, so that it is now possible to produce a full set of exposure-corrected LUTs with one click. The other main feature was 'Gamut Limiter', which aims to reduce the possibility of ugly colour clipping when going from a wide gamut to a narrow 'vanilla' Rec709. Please do let me know your thoughts on those.</p>
