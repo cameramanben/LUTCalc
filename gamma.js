@@ -5106,7 +5106,7 @@ LUTGamma.prototype.previewLin = function(p,t,i) {
 	} else {
 		this.gammas[i.gamma].linFromD(o, { rgb: true });
 	}
-	out.o = o.buffer;
+	out.o = o;
 	out.to = ['i','o'];
 	return out;
 /*

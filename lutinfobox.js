@@ -718,6 +718,8 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
+	this.addInfo(this.insClgInfo,false,null,"v3.1.1");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - User preview images were not loading.");
 	this.addInfo(this.insClgInfo,false,null,"v3.1");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - Sony Cinegamma 3 and Cinegamma 4 based upon analysis of test images taken with an a7s.");
