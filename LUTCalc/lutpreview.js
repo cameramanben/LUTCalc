@@ -542,7 +542,7 @@ LUTPreview.prototype.updatePopup = function() {
 			this.preGammaSelect.appendChild(option);
 		}
 	}
-	var max1 = this.inputs.inGamut.options.length;
+	var max1 = this.inputs.inGamutOpts.length;
 	for (var j=0; j<max1; j++) {
 		if (this.inputs.inGamutOpts[j].lastChild.nodeValue !== 'Passthrough') {
 			var option = document.createElement('option');

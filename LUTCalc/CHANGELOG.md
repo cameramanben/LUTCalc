@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v3.1.1
+------
+* Bugfix - User preview images were not loading.
+
 v3.1
 ----
 * New Feature - 'Display Colourspace Converter' tool to quickly convert current look to other base colourspaces (eg Rec709 version and then DCI-P3 version).
