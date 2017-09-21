@@ -40,10 +40,10 @@ cubeLUT.prototype.header = function() {
 	}
 	if (this.flavour !== 1 && (info.scaleMin !== 0 || info.scaleMax !== 1)) {
 		if (this.flavour === 2) {
-			if (info.dimension === 1) {
-				out += 'LUT_3D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
-			} else {
+			if (info.oneD) {
 				out += 'LUT_1D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
+			} else {
+				out += 'LUT_3D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
 			}
 		} else if (this.flavour === 3) {
 			out += 'DOMAIN_MIN ' + info.scaleMin + ' ' + info.scaleMin + ' ' + info.scaleMin + "\n";

@@ -1,6 +1,10 @@
 LUTCalc Changelog
 =================
 
+v3.1.2
+------
+* Bugfix - Correct output of 'LUT_1D_INPUT_RANGE' or 'LUT_3D_INPUT_RANGE' in Resolve-style cube files with input scaling.
+
 v3.1.1
 ------
 * Bugfix - User preview images were not loading.

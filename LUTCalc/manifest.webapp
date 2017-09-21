@@ -2,7 +2,7 @@
 	"name": "LUTCalc",
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
 	"launch_path": "/index.html",
-	"version": "3.1.1",
+	"version": "3.1.2",
 	"icons": {
 		"128": "/img/ff128.png",
 		"512": "/img/ff512.png",
