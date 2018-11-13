@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v3.1.3 Beta 1
+-------------
+* New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).
+* New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.
+
 v3.1.2
 ------
 * Bugfix - Correct output of 'LUT_1D_INPUT_RANGE' or 'LUT_3D_INPUT_RANGE' in Resolve-style cube files with input scaling.

@@ -718,6 +718,12 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
+	this.addInfo(this.insClgInfo,false,null,"v3.1.3 Beta 1");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.");
+
+	this.addInfo(this.insClgInfo,false,null,"v3.1.2");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - Correct output of 'LUT_1D_INPUT_RANGE' or 'LUT_3D_INPUT_RANGE' in Resolve-style cube files with input scaling.");
 	this.addInfo(this.insClgInfo,false,null,"v3.1.1");
 	this.addInfo(this.insClgInfo,true,null,"Bugfix - User preview images were not loading.");
 	this.addInfo(this.insClgInfo,false,null,"v3.1");

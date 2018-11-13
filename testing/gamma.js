@@ -97,10 +97,11 @@ LUTGamma.prototype.subIdx = function(cat) {
 		case 'Bolex': return 8;
 		case 'Fujifilm': return 9;
 		case 'Nikon': return 10;
-		case 'Log': return 11;
-		case 'Display': return 12;
-		case 'HDR Display': return 13;
-		case 'Linear / γ': return 14;
+		case 'DJI': return 11;
+		case 'Log': return 12;
+		case 'Display': return 13;
+		case 'HDR Display': return 14;
+		case 'Linear / γ': return 15;
 	}
 	return false;
 };
@@ -116,6 +117,7 @@ LUTGamma.prototype.gammaList = function() {
 						'Bolex',
 						'Fujifilm',
 						'Nikon',
+						'DJI',
 						'Log',
 						'Display',
 						'HDR Display',
@@ -218,11 +220,36 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('GoPro'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
-	this.gammas.push(new LUTGammaLogClip(
-		'DJI D-Log', [ 0.188272019, -0.011778504, 0.473218054, 6.086793376, 10, 0.419294419, 0.169033387, 0.095812746, 0.00625, 0.902863937, 1.59668525, 22.90700861, -17.39462704 ]));
-	this.gammaSub.push([this.subIdx('Log')]);
+// Linear to log
+// if (in >= [8]) {
+//	out = ([2] * log[4]((in*[3]) + [6])) + [5]
+// } else {
+//	out = (in - [1])/[0]
+// }
+// Log to linear
+// if (in >= [7]) {
+//	out = (power([4],(in - [5])/[2]) - [6]) / [3]
+// } else {
+//	out = ([0] * in) + [1]
+// }
+
+	this.gammas.push(new LUTGammaLog(
+		'DJI X5/X7 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
+	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.DLogM = this.gammas.length;
+	this.gammas.push(new LUTGammaDLog('DJI DLog-M'));
+	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
+	this.gts.push('*');
+	this.gammaDat.push(false);
+	this.gammas.push(new LUTGammaLogClip(
+		'DJI X3 DLog', [ 0.188272019, -0.011778504, 0.473218054, 6.086793376, 10, 0.419294419, 0.169033387, 0.095812746, 0.00625, 0.902863937, 1.59668525, 22.90700861, -17.39462704 ]));
+	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
+	this.gts.push('*');
+	this.gammaDat.push(false);
+
+
 	this.gammas.push(new LUTGammaACEScc(
 		'ACEScc', {}));
 	this.gammaSub.push([this.subIdx('Log')]);
@@ -1303,12 +1330,12 @@ LUTGamma.prototype.gammaList = function() {
 	this.LA = this.gammas.length;
 	this.gammas.push(new LUTGammaLA(
 		'LA', this.lutMaker));
-	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]);
+	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
 	this.gammas.push(new LUTGammaNull(
 		'Null'));
-	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]);
+	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
 	var max = this.gammas.length;
@@ -2125,6 +2152,8 @@ function LUTGammaLog(name,params) {
 LUTGammaLog.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaLog.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaLog.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -2196,6 +2225,8 @@ function LUTGammaLogClip(name,params) {
 }
 LUTGammaLogClip.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaLogClip.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaLogClip.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -2282,6 +2313,8 @@ function LUTGammaCineon(name,params) {
 }
 LUTGammaCineon.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaCineon.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaCineon.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -2408,6 +2441,8 @@ LUTGammaArri.prototype.changeISO = function(iso) {
 		this.cut = (this.cut - this.b) / this.a;
 	}
 };
+LUTGammaArri.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaArri.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -2480,6 +2515,8 @@ function LUTGammaCLog3(name) {
 }
 LUTGammaCLog3.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaCLog3.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaCLog3.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -2556,6 +2593,8 @@ function LUTGammaLogLog(name,params) {
 }
 LUTGammaLogLog.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaLogLog.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaLogLog.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -2636,6 +2675,8 @@ function LUTGammaGam(name,params) {
 LUTGammaGam.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaGam.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaGam.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -2710,6 +2751,8 @@ function LUTGammaBBCGam(name,params) {
 LUTGammaBBCGam.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaBBCGam.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaBBCGam.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -2779,6 +2822,8 @@ function LUTGammaLin(name, zero) {
 LUTGammaLin.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaLin.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaLin.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -2840,6 +2885,8 @@ LUTGammaPQ.prototype.setLw = function() {
 };
 LUTGammaPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaPQ.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaPQ.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
@@ -2970,6 +3017,8 @@ function LUTGammaHLG(name,params) {
 }
 LUTGammaHLG.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaHLG.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaHLG.prototype.setBBC = function(bbcIn, bbcOut) {
 	if (bbcIn) {
@@ -3126,6 +3175,8 @@ LUTGammaOOTFPQ.prototype.setLw = function(LwIn, LwOut) {
 };
 LUTGammaOOTFPQ.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaOOTFPQ.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaOOTFPQ.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
@@ -3329,6 +3380,8 @@ LUTGammaOOTFHLG.prototype.setLw = function(LwIn, LwOut, LbIn, LbOut) {
 LUTGammaOOTFHLG.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaOOTFHLG.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaOOTFHLG.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -3464,6 +3517,8 @@ LUTGammaOOTFNone.prototype.setLw = function(LwIn, LwOut) {
 LUTGammaOOTFNone.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaOOTFNone.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaOOTFNone.prototype.linToD = function(buff, p) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -3538,6 +3593,8 @@ LUTGammaITUProp.prototype.setM = function(m) {
 };
 LUTGammaITUProp.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaITUProp.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaITUProp.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -3625,6 +3682,8 @@ LUTGammaBBC283.prototype.setS = function(s) { // System Gamma
 LUTGammaBBC283.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaBBC283.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaBBC283.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -3699,6 +3758,8 @@ function LUTGammaACEScc(name,params) {
 }
 LUTGammaACEScc.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaACEScc.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaACEScc.prototype.linToL = function(buff) {
 	var c= new Float64Array(buff);
@@ -3787,6 +3848,8 @@ function LUTGammaACESProxy(name,params) {
 LUTGammaACESProxy.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaACESProxy.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaACESProxy.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -3846,6 +3909,8 @@ function LUTGammaGen(name,params) {
 }
 LUTGammaGen.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaGen.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaGen.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -3911,6 +3976,8 @@ function LUTGammaLUTSL3(name,lut) {
 LUTGammaLUTSL3.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaLUTSL3.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaLUTSL3.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
@@ -3957,6 +4024,8 @@ function LUTGammaLUTSimple(name,params) {
 LUTGammaLUTSimple.prototype.changeISO = function(iso) {
 	this.iso = iso;
 };
+LUTGammaLUTSimple.prototype.changeContrast = function(rec,out) {
+};
 LUTGammaLUTSimple.prototype.linToD = function(buff) {
 	var o = new Float64Array(buff);
 	var m = o.length;
@@ -3999,6 +4068,8 @@ function LUTGammaIOLUT(name,params) {
 }
 LUTGammaIOLUT.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaIOLUT.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaIOLUT.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -4061,6 +4132,224 @@ LUTGammaIOLUT.prototype.linFromData = function(input) {
 LUTGammaIOLUT.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 };
+// DJI DLog-M Curves
+function LUTGammaDLog(name) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 6;
+	this.clip = 4.802951742;
+	this.loggy = 0.02;
+	this.log = new Float64Array(6);
+	this.rec = [];
+	this.out = [];
+	this.reccon = 3;
+	this.outcon = 3;
+	this.loadLUTs();
+}
+LUTGammaDLog.prototype.loadLUTs = function() {
+	// Contrast -3
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.027013881, 0.059898339, 0.090088157, 0.118437528,
+						0.145610746, 0.172169533, 0.198613763, 0.227521773, 0.262056586, 0.302175407, 0.34492969, 0.385399436,
+						0.424651585, 0.467275042, 0.510407243, 0.552759914, 0.592749573, 0.629826127, 0.664057729, 0.695758476,
+						0.725291386, 0.752991781, 0.779146345, 0.803993306, 0.827729079, 0.850515908, 0.872488687, 0.893760574,
+						0.914427454  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.12885289, 0.15885059, 0.19144138, 0.226199875, 0.262466189, 0.299384828, 0.334847065,
+						0.364688823, 0.390416782, 0.413838603, 0.436630643, 0.46037471, 0.486584362, 0.509543387, 0.532318837,
+						0.554970585, 0.57771412, 0.601166982, 0.625811624, 0.652038025, 0.680152405, 0.710384832, 0.742896012,
+						0.777783434, 0.815087031, 0.854794442, 0.896845964, 0.941139238, 0.987533704, 1.035854869, 1.085898383,
+						1.137433963  ]
+				).buffer));
+	// Contrast -2
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.031210281, 0.068285973, 0.101551761, 0.132158936,
+						0.160893656, 0.188302321, 0.215465805, 0.245787053, 0.279449722, 0.315427111, 0.351812097, 0.386609889,
+						0.423110071, 0.460310688, 0.49840922, 0.53710835, 0.575293346, 0.61215979, 0.647304693, 0.680626751,
+						0.712198291, 0.742171033, 0.770721576, 0.798024375, 0.824240266, 0.849512889, 0.873968764, 0.897718877,
+						0.920860756  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.125031422, 0.151121007, 0.179907158, 0.21124056, 0.244837237, 0.280317645, 0.316069712,
+						0.347826102, 0.376601031, 0.403745563, 0.430511022, 0.458076706, 0.487569716, 0.512232259, 0.538212324,
+						0.563787753, 0.589013066, 0.614435086, 0.640476557, 0.667481773, 0.695724061, 0.725412299, 0.756696709,
+						0.789674087, 0.824392599, 0.860856239, 0.899029, 0.938838816, 0.980181311, 1.022923372, 1.066906563,
+						1.111950408  ]
+				).buffer));
+	// Contrast -1
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.031210281, 0.083971133, 0.121494403, 0.154287516,
+						0.183562707, 0.210419428, 0.238243695, 0.267538992, 0.297983064, 0.32913085, 0.360463177, 0.391461448,
+						0.421734685, 0.453519587, 0.485544904, 0.518128718, 0.551268321, 0.584699085, 0.61821976, 0.651668307,
+						0.684925468, 0.717912965, 0.750588498, 0.78293948, 0.814976874, 0.846729853, 0.878241601, 0.909566273,
+						0.940767026  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.119702232, 0.140380917, 0.163951817, 0.190659752, 0.220743195, 0.254458113, 0.290796984,
+						0.325213901, 0.357945224, 0.389621678, 0.420821249, 0.452083233, 0.483918385, 0.515547815, 0.546123016,
+						0.576458327, 0.606169418, 0.635519362, 0.664689059, 0.693824954, 0.723042483, 0.752429059, 0.782046706,
+						0.811934418, 0.842110312, 0.872573607, 0.903306472, 0.934275751, 0.965434601, 0.996724043, 1.028074436,
+						1.059406888  ]
+				).buffer));
+	// Contrast 0
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.050605212, 0.101847391, 0.141801367, 0.174553642,
+						0.202322185, 0.22874131, 0.255482461, 0.28250488, 0.309772209, 0.337252216, 0.364916477, 0.392740043,
+						0.420701103, 0.44878065, 0.476962175, 0.505497001, 0.534850524, 0.564998669, 0.59599196, 0.62788934,
+						0.660759718, 0.694683955, 0.729757441, 0.766093505, 0.803827992, 0.843125543, 0.884188395, 0.927269068,
+						0.972689245  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.115301511, 0.13149171, 0.150709282, 0.173520311, 0.200596729, 0.232736113, 0.269479213,
+						0.306121311, 0.342305347, 0.378112298, 0.41360763, 0.448844624, 0.483866883, 0.518710261, 0.553404354,
+						0.587806017, 0.621210936, 0.653692164, 0.685268931, 0.715957019, 0.745769397, 0.77471673, 0.802807792,
+						0.830049806, 0.856448717, 0.882009423, 0.906735956, 0.930631637, 0.9536992, 0.975940896, 0.997358579,
+						1.017953772  ]
+				).buffer));
+	// Contrast +1
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.065301918, 0.122898589, 0.163791157, 0.195392233,
+						0.222619063, 0.249062283, 0.274879392, 0.300175737, 0.325037946, 0.349539312, 0.373743447, 0.39770684,
+						0.419269569, 0.442890208, 0.46719661, 0.492246446, 0.5186057, 0.546354484, 0.575623809, 0.606564753,
+						0.639352843, 0.67419386, 0.711331721, 0.751059159, 0.793733115, 0.839797302, 0.889816948, 0.944534957,
+						1.004968521  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.111565815, 0.123773786, 0.138880449, 0.157644772, 0.181032868, 0.210267605, 0.245497324,
+						0.282372766, 0.320314165, 0.359178573, 0.398828899, 0.439131472, 0.47995439, 0.524196873, 0.564466885,
+						0.603106531, 0.639442649, 0.673698044, 0.706021768, 0.736548095, 0.765398416, 0.792682782, 0.818501185,
+						0.84294462, 0.866095988, 0.888030858, 0.908818132, 0.928520624, 0.947195571, 0.964895085, 0.981666562,
+						0.997553059  ]
+				).buffer));
+	// Contrast +2
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.087126998, 0.14748523, 0.186008431, 0.215075483,
+						0.241476046, 0.266270946, 0.289822865, 0.312379852, 0.334121161, 0.355181885, 0.375667304, 0.395661748,
+						0.417935416, 0.437180913, 0.457332473, 0.478483044, 0.500910514, 0.525100922, 0.551252839, 0.579695788,
+						0.610846553, 0.645240993, 0.683580724, 0.726803064, 0.776188158, 0.83352692, 0.901392061, 0.983599666,
+						1.086113055  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.108032367, 0.116457848, 0.127644377, 0.14254077, 0.162414978, 0.188948062, 0.222967563,
+						0.260543566, 0.300956216, 0.343919729, 0.389172406, 0.436469467, 0.485577963, 0.531756384, 0.579562028,
+						0.623777205, 0.663826544, 0.700184042, 0.733216025, 0.763252327, 0.790590503, 0.815499305, 0.838221588,
+						0.858976768, 0.87796295, 0.895358767, 0.911325024, 0.926006149, 0.939531523, 0.952016681, 0.963564429,
+						0.974265872  ]
+				).buffer));
+	// Contrast +3
+	this.rec.push(new LUTQSpline(new Float64Array(
+					[	-0.25407191, -0.175972281, -0.097872652, -0.019773024, 0.116722074, 0.172097954, 0.205648193, 0.232954536,
+						0.257670154, 0.280585291, 0.302163456, 0.322705091, 0.342418861, 0.361457313, 0.379936505, 0.397947655,
+						0.417231908, 0.434077046, 0.451785726, 0.470466477, 0.490260298, 0.511730454, 0.535127682, 0.560854029,
+						0.589456615, 0.621707867, 0.658750465, 0.702381845, 0.755678207, 0.824596336, 0.923217546, 1.100371354,
+						1.772368213  ]
+				).buffer));
+	this.out.push(new LUTQSpline(new Float64Array(
+					[	0.101661779, 0.104692578, 0.10957075, 0.11711386, 0.12845072, 0.145121036, 0.169194945, 0.20204223,
+						0.240018043, 0.282187099, 0.328050167, 0.377151866, 0.429068134, 0.483397275, 0.537416608, 0.590950346,
+						0.639494073, 0.682513621, 0.720644883, 0.754394462, 0.784219764, 0.81053462, 0.83371391, 0.854097428,
+						0.871993164, 0.887680123, 0.901410791, 0.91341331, 0.923893425, 0.933036256, 0.941007907, 0.947956957,
+						0.954015838  ]
+				).buffer));
+	// Log Parameters
+	this.log[0] = 5/Math.pow(2,this.clip);
+	this.log[1] = this.loggy/this.clip;
+	this.log[2] = (Math.log(1 + this.log[1])-Math.log(this.log[1]))/Math.LN10;
+	this.log[3] = Math.log(this.log[1])/Math.LN10;
+	this.log[4] = this.log[0] / (this.log[1] * this.log[2] * Math.LN10);
+	this.log[5] = this.out[this.reccon].f(0);
+};
+LUTGammaDLog.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaDLog.prototype.changeContrast = function(rec,out) {
+		this.reccon = rec + 3;
+		this.outcon = out + 3;
+};
+LUTGammaDLog.prototype.linToD = function(buff,p) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var log = this.log;
+	for (var j=0; j<m; j++) {
+		if (c[j] >= 0) {
+			c[j] = ((Math.log((c[j] * log[0]) + log[1])/Math.LN10)-log[3])/log[2];
+		} else {
+			c[j] = c[j]*log[4];
+		}
+	}
+	if (p && p.rec) {
+		this.out[this.reccon].FCub(buff);
+	} else {
+		this.out[this.outcon].FCub(buff);
+	}
+};
+LUTGammaDLog.prototype.linToL = function(buff, p) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (p) {
+		this.linToD(buff,p);
+	} else {
+		this.linToD(buff);
+	}
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+};
+LUTGammaDLog.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	var log = this.log;
+	this.rec[this.reccon].FCub(buff);
+	for (var j=0; j<m; j++) {
+		if (c[j] >= log[5]) {
+			c[j] = (Math.pow(10,(c[j] * log[2]) + log[3]) - log[1]) / log[0];		
+		} else {
+			c[j] = c[j] / log[4];
+		}
+	}
+};
+LUTGammaDLog.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+	this.linFromD(buff);
+};
+LUTGammaDLog.prototype.linToData = function(input,p) {
+	if (p && p.rec) {
+		if (input >= 0) {
+			return this.out[this.reccon].f(((Math.log((input * this.log[0]) + this.log[1])/Math.LN10)-this.log[3])/this.log[2]);
+		} else {
+			return this.out[this.reccon].f(input*this.log[4]);
+		}
+	} else {
+		if (input >= 0) {
+			return this.out[this.outcon].f(((Math.log((input * this.log[0]) + this.log[1])/Math.LN10)-this.log[3])/this.log[2]);
+		} else {
+			return this.out[this.outcon].f(input*this.log[4]);
+		}
+	}
+};
+LUTGammaDLog.prototype.linToLegal = function(input,p) {
+	if (p) {
+		return (this.linToData(input,p) - 0.06256109481916) / 0.85630498533724;
+	} else {
+		return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
+	}
+};
+LUTGammaDLog.prototype.linFromData = function(input) {
+	var data = this.rec[this.reccon].f(input);
+	if (data >= this.log[5]) {
+		return (Math.pow(10,(data * this.log[2]) + this.log[3]) - this.log[1]) / this.log[0];		
+	} else {
+		return data / this.log[4];
+	}
+};
+LUTGammaDLog.prototype.linFromLegal = function(input) {
+	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
+};
 // LUTAnalyst
 function LUTGammaLA(name, lutMaker) {
 	this.lutMaker = lutMaker;
@@ -4093,6 +4382,8 @@ LUTGammaLA.prototype.setTitle = function(name) {
 };
 LUTGammaLA.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaLA.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaLA.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -4163,6 +4454,8 @@ function LUTGammaNull(name) {
 }
 LUTGammaNull.prototype.changeISO = function(iso) {
 	this.iso = iso;
+};
+LUTGammaNull.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaNull.prototype.linToD = function(buff) {
 	var c = new Float64Array(buff);
@@ -4256,6 +4549,9 @@ LUTGamma.prototype.setParams = function(params) {
 			}
 		}
 		this.eiMult = Math.pow(2,this.stopShift);
+	}
+	if (typeof params.contrast !== 'undefined' && typeof params.contrast.rec === 'number' && typeof params.contrast.out === 'number') {
+		this.gammas[this.DLogM].changeContrast(params.contrast.rec,params.contrast.out);
 	}
 	if (typeof params.newISO === 'number') {
 		var max = this.gammas.length;
@@ -4680,6 +4976,7 @@ LUTGamma.prototype.getLists = function(p,t) {
 		PQOOTF: this.pqOOTFIdx,
 		PQEOTF: this.pqEOTFIdx,
 		HLGOOTF: this.hlgOOTFIdx,
+		DLogM: this.DLogM,
 		LA: this.LA
 	};
 };
@@ -5487,6 +5784,11 @@ function getGammaWorkerString() {
 	out += LUTGammaLUTSimple.toString() + "\n";
 	for (var j in LUTGammaLUTSimple.prototype) {
 		out += 'LUTGammaLUTSimple.prototype.' + j + '=' + LUTGammaLUTSimple.prototype[j].toString() + "\n";
+	}
+	// LUTGammaDLog
+	out += LUTGammaDLog.toString() + "\n";
+	for (var j in LUTGammaDLog.prototype) {
+		out += 'LUTGammaDLog.prototype.' + j + '=' + LUTGammaDLog.prototype[j].toString() + "\n";
 	}
 	// LUTGammaIOLUT
 	out += LUTGammaIOLUT.toString() + "\n";

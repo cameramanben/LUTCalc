@@ -155,6 +155,10 @@ LUTMessage.prototype.gaSetParams = function() {
 			inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
 			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
 			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
+			contrast: {
+				rec: parseInt(this.inputs.inConGamma.options[this.inputs.inConGamma.options.selectedIndex].value),
+				out: parseInt(this.inputs.outConGamma.options[this.inputs.outConGamma.options.selectedIndex].value),
+			},
 
 			pqLwIn: parseFloat(this.inputs.inPQLw.value),
 			pqLwOut: parseFloat(this.inputs.outPQLw.value),
@@ -363,6 +367,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaPQOOTF',d.PQOOTF);
 	this.inputs.addInput('gammaPQEOTF',d.PQEOTF);
 	this.inputs.addInput('gammaHLGOOTF',d.HLGOOTF);
+	this.inputs.addInput('gammaDLogM',d.DLogM);
 	this.inputs.addInput('gammaInList',d.inList);
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);
@@ -381,6 +386,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 			allIdx = j;
 		}
 	}
+
 	m = d.subList.length;
 	var m2;
 	for (var j=0; j<m; j++) {
