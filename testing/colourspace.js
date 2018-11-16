@@ -184,6 +184,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('RED')]);
 	this.csIn.push(this.toSys('DJI D-Gamut'));
 	this.csInSub.push([this.subIdx('DJI'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('DJI D-GamutM'));
+	this.csInSub.push([this.subIdx('DJI'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Protune Native'));
 	this.csInSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Bolex Wide Gamut'));
@@ -256,6 +258,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('REDWideGamutRGB'));
 	this.csOutSub.push([this.subIdx('RED')]);
 	this.csOut.push(this.fromSys('DJI D-Gamut'));
+	this.csOutSub.push([this.subIdx('DJI'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('DJI D-GamutM'));
 	this.csOutSub.push([this.subIdx('DJI'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Protune Native'));
 	this.csOutSub.push([this.subIdx('GoPro'),this.subIdx('Wide Gamut')]);
@@ -890,6 +894,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	djidgamut.white = this.illuminant('d65');
 	djidgamut.toXYZ = this.RGBtoXYZ(djidgamut.xy,djidgamut.white);
 	this.g.push(djidgamut);
+// DJI D-GamutM
+	var djidgamutm = {};
+	djidgamutm.name = 'DJI D-GamutM';
+	djidgamutm.cat = this.sysCATIdx;
+	djidgamutm.xy = new Float64Array([0.721565,0.305591,0.229956,0.802053,0.074012,-0.056283]);
+	djidgamutm.white = this.illuminant('d65');
+	djidgamutm.toXYZ = this.RGBtoXYZ(djidgamutm.xy,djidgamutm.white);
+	this.g.push(djidgamutm);
 // Protune Native
 	var protune = {};
 	protune.name = 'Protune Native';
