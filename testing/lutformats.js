@@ -729,6 +729,8 @@ LUTFormats.prototype.updateOptions = function() {
 	}
 	// Custom input scaling
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
+		this.inputs.scaleCheck.checked = false;
+		this.inputs.scaleInputs.className = 'emptybox-hide';
 		if (cur.scaling) {
 			this.inputs.scaleBox.className = 'emptybox';
 			if (typeof cur.defMin !== 'undefined') {

@@ -36,6 +36,7 @@ function LUTColourSpace() {
 	this.y = new Float64Array([	0.2126, 0.7152, 0.0722 ]);
 	this.systemMatrices();
 	this.setSaturated();
+	this.Ys = {};
 	this.setYCoeffs();
 
 	this.defLUTs = {};
@@ -55,6 +56,7 @@ function LUTColourSpace() {
 	this.hgLin = true;
 	this.hgLowStop = 0;
 	this.hgHighStop = 0;
+	this.sdrSatGamma = 1.2;
 	this.LA = 0;
 	this.pass = 0;
 	this.inList = [];
@@ -518,6 +520,7 @@ LUTColourSpace.prototype.fromSys = function(name) {
 		if (name === this.g[j].name) {
 			var out = new CSMatrix(name, this.mInverse(this.g[j].toSys), this.g[j].white.buffer.slice(0));
 			this.csM.push(out);
+			this.Ys[name] = this.getYCoeffs(j);
 			return out;
 		}
 	}
@@ -1643,6 +1646,21 @@ LUTColourSpace.prototype.setMulti = function(params) {
 	out.doMulti = this.doMulti;
 	return out;
 };
+LUTColourSpace.prototype.setSDRSat = function(params) {
+	var out = {};
+	this.doSDRSat = false;
+	if (this.tweaks && typeof params.twkSDRSat !== 'undefined') {
+		var p = params.twkSDRSat;
+		if (typeof p.doSDRSat === 'boolean' && p.doSDRSat) {
+			this.doSDRSat = true;
+			if (typeof p.gamma === 'number') {
+				this.sdrSatGamma = p.gamma;
+			}
+		}
+	}
+	out.doSDRSat = this.doSDRSat;
+	return out;
+};
 LUTColourSpace.prototype.setGamutLim = function(params) {
 	var out = {};
 	this.doGamutLim = false;
@@ -2003,6 +2021,39 @@ LUTColourSpace.prototype.HGOut = function(buff,g) {
 			o[ j ] = (o[ j ] * (r)) + (h[ j ] * (1-r));
 			o[j+1] = (o[j+1] * (r)) + (h[j+1] * (1-r));
 			o[j+2] = (o[j+2] * (r)) + (h[j+2] * (1-r));
+		}
+	}
+};
+LUTColourSpace.prototype.SDRSatOut = function(buff) {
+	if (typeof this.Ys[this.csOut[this.curOut].name] !== 'undefined') {
+		var o = new Float64Array(buff);
+		var m = o.length;
+		var y = this.Ys[this.csOut[this.curOut].name];
+		var Y, Pb, Pr;
+		var R,G,B;
+		var Db = 2*(1-y[2]);
+		var Dr = 2*(1-y[0]);
+		var gi = this.sdrSatGamma;
+		var g = 1/gi;
+		for (var j=0; j<m; j += 3) {
+			R = ((o[ j ]<0)?o[ j ]/12:Math.pow(o[ j ]/12,g));
+			R = (isNaN(R)?0:R);
+			G = ((o[j+1]<0)?o[j+1]/12:Math.pow(o[j+1]/12,g));
+			G = (isNaN(G)?0:G);
+			B = ((o[j+2]<0)?o[j+2]/12:Math.pow(o[j+2]/12,g));
+			B = (isNaN(B)?0:B);
+			Y = (y[0]*R)+(y[1]*G)+(y[2]*B);
+			if (Y>0) {
+				Pb = (B-Y)/Db;
+				Pr = (R-Y)/Dr;
+				Y = Math.pow(Y,gi);
+				o[ j ] = (Pr * Dr) + Y;
+				o[j+2] = (Pb * Db) + Y;
+				o[j+1] = (Y - (y[0]*o[ j ]) -(y[2]*o[j+2]))/y[1];
+				o[ j ] *= 12;
+				o[j+1] *= 12;
+				o[j+2] *= 12;
+			}
 		}
 	}
 };
@@ -4128,6 +4179,7 @@ LUTColourSpace.prototype.setParams = function(params) {
 	out.twkPSSTCDL = this.setPSSTCDL(params);
 	out.twkHG = this.setHG(params);
 	out.twkMulti = this.setMulti(params);
+	out.twkSDRSat = this.setSDRSat(params);
 	out.twkGamutLim = this.setGamutLim(params);
 	out.twkFC = this.setFC(params);
 	if (typeof params.isTrans === 'boolean') {
@@ -4201,6 +4253,10 @@ LUTColourSpace.prototype.calc = function(p,t,i,g) {
 				this.csOut[this.curOut].lf(buff);
 			}
 		}
+// SDR Saturation
+		if (this.doSDRSat) {
+			this.SDRSatOut(buff);
+		}		
 // Gamut Limiter
 		if (this.doGamutLim) {
 			this.gamutLimOut(buff,out);

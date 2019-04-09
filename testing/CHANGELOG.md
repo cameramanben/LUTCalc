@@ -1,10 +1,13 @@
 LUTCalc Changelog
 =================
 
-v3.1.3 Beta 1
+v3.2 Beta 1
 -------------
 * New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).
 * New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.
+* New Feature - 'SDR Saturation' improves HLG compatibility on SDR displays by increasing saturation as per the BT.2390 spec. Available with all HDR options.
+* Bugfix - Black Gamma was not available for 1D LUTs.
+* Bugfix - Custom input scaling does not appear or be applied unless explicitly checked. Could cause unexpected results with DaVinci and Adobe cubes if not needed.
 
 v3.1.2
 ------

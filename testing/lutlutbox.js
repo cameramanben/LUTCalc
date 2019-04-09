@@ -81,6 +81,10 @@ LUTLutBox.prototype.io = function() {
 	this.inputs.addInput('lutUsage',[this.gradeOpt,this.mlutOpt]);
 	this.scaleBox = document.createElement('div');
 	this.inputs.addInput('scaleBox',this.scaleBox);
+	this.scaleInputs = document.createElement('div');
+	this.inputs.addInput('scaleInputs',this.scaleInputs);
+	this.scaleCheck = document.createElement('input');
+	this.inputs.addInput('scaleCheck',this.scaleCheck);
 	this.scaleMin = document.createElement('input');
 	this.inputs.addInput('scaleMin',this.scaleMin);
 	this.scaleMax = document.createElement('input');
@@ -199,18 +203,23 @@ LUTLutBox.prototype.ui = function() {
 	// LUT input scaling (useful for narrow range gammas such as Rec709 or linear)
 	this.scaleBox.className = 'emptybox-hide';
 	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Scaling:')));
-	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Min')));
+	this.scaleCheck.setAttribute('type','checkbox');
+	this.scaleCheck.checked = false;
+	this.scaleBox.appendChild(this.scaleCheck);
+	this.scaleInputs.className = 'emptybox-hide';
+	this.scaleInputs.appendChild(document.createElement('label').appendChild(document.createTextNode(' Min')));
 	this.scaleMin.setAttribute('type','number');
 	this.scaleMin.setAttribute('step','any');
 	this.scaleMin.className = 'ire-input';
 	this.scaleMin.value = '0';
-	this.scaleBox.appendChild(this.scaleMin);
-	this.scaleBox.appendChild(document.createElement('label').appendChild(document.createTextNode(' Max')));
+	this.scaleInputs.appendChild(this.scaleMin);
+	this.scaleInputs.appendChild(document.createElement('label').appendChild(document.createTextNode(' Max')));
 	this.scaleMax.setAttribute('type','number');
 	this.scaleMax.setAttribute('step','any');
 	this.scaleMax.className = 'ire-input';
 	this.scaleMax.value = '1';
-	this.scaleBox.appendChild(this.scaleMax);
+	this.scaleInputs.appendChild(this.scaleMax);
+	this.scaleBox.appendChild(this.scaleInputs);
 	this.lutUsage.appendChild(this.scaleBox);
 	// LUT integer bit depths for files which require it (eg 3dl)
 	this.bitsBox.className = 'emptybox-hide';
@@ -300,6 +309,10 @@ LUTLutBox.prototype.events = function() {
 //	this.lutClipCheck.onchange = function(here){ return function(){
 //		here.messages.gaSetParams();
 //	};}(this);
+	this.scaleCheck.onchange = function(here){ return function(){
+		here.toggleInScale();
+		here.messages.gaSetParams();
+	};}(this);
 	this.lutOneD.onchange = function(here){ return function(){
 		here.messages.oneOrThree();
 	};}(this);
@@ -405,6 +418,7 @@ LUTLutBox.prototype.getSettings = function(data) {
 		grading: this.gradeOpt.checked,
 		gradeOption: this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
 		mlutOption: this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].lastChild.nodeValue.replace(/ *\([^)]*\) */g, ""),
+		scaleCheck: this.scaleCheck.checked,
 		scaleMin: parseFloat(this.scaleMin.value),
 		scaleMax: parseFloat(this.scaleMax.value),
 		inBits: parseFloat(this.inBitsSelect.options[this.inBitsSelect.selectedIndex].value),
@@ -458,6 +472,9 @@ LUTLutBox.prototype.setSettings = function(settings) {
 		}
 		if (typeof data.clipLegal === 'boolean') {
 			this.lutClipLegalCheck.checked = data.clipLegal;
+		}
+		if (typeof data.scaleCheck === 'boolean') {
+			this.scaleCheck.checked = data.scaleCheck;
 		}
 		if (typeof data.scaleMin === 'number') {
 			this.scaleMin.value = data.scaleMin;
@@ -539,6 +556,11 @@ LUTLutBox.prototype.getInfo = function(info) {
 	} else {
 		info.legalOut = false;
 	}
+	if (this.scaleCheck.checked) {
+		info.scaleCheck = true;
+	} else {
+		info.scaleCheck = false;
+	}
 	info.scaleMin = parseFloat(this.scaleMin.value);
 	info.scaleMax = parseFloat(this.scaleMax.value);
 	info.inBits = parseInt(this.inBitsSelect.options[this.inBitsSelect.options.selectedIndex].value);
@@ -547,6 +569,13 @@ LUTLutBox.prototype.getInfo = function(info) {
 	info.nikonSharp = parseInt(this.nikonShr.value);
 	info.nikonSat = parseInt(this.nikonSat.value);
 	info.nikonHue = parseInt(this.nikonHue.value);
+};
+LUTLutBox.prototype.toggleInScale = function() {
+	if (this.scaleCheck.checked === true) {
+		this.scaleInputs.className = 'emptybox';
+	} else {
+		this.scaleInputs.className = 'emptybox-hide';
+	}
 };
 LUTLutBox.prototype.displayCLC = function() {
 	if (this.lutClipSelect.selectedIndex > 0 && this.lutOutData.checked) {

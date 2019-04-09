@@ -194,7 +194,7 @@ LUTMessage.prototype.gaSetParams = function() {
 			d.bClip = this.inputs.bClip;
 			d.wClip = this.inputs.wClip;
 		}
-		if (typeof this.inputs.scaleMin.value !== 'undefined') {
+		if (typeof this.inputs.scaleCheck !== 'undefined' && this.inputs.scaleCheck && typeof this.inputs.scaleMin.value !== 'undefined') {
 			d.scaleMin = parseFloat(this.inputs.scaleMin.value);
 			d.scaleMax = parseFloat(this.inputs.scaleMax.value);
 		}
@@ -756,6 +756,7 @@ LUTMessage.prototype.updateGammaOut = function() {
 	if (this.go) {
 		this.ui[11].updateGammaOut();
 		this.ui[17].updateGammaOut();
+		this.ui[3].updateGammaOut();
 	}
 }
 LUTMessage.prototype.changeGamut = function() {

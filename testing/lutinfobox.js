@@ -89,20 +89,22 @@ LUTInfoBox.prototype.events = function() {
 	this.changelogButton.onclick = function(here){ return function(){ here.showClgInfo(); };}(this);
 	this.insClgBack.onclick = function(here){ return function(){ here.showMainscreen(); };}(this);
 	this.insCustHG.onclick = function(here){ return function(){ here.showCustHGInfo(); };}(this);
-	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
-	this.custColourBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustColour.onclick = function(here){ return function(){ here.showCustColourInfo(); };}(this);
-	this.custWhtBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.custHGBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustWht.onclick = function(here){ return function(){ here.showCustWhtInfo(); };}(this);
+	this.custWhtBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustColour.onclick = function(here){ return function(){ here.showCustColourInfo(); };}(this);
+	this.custColourBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustKnee.onclick = function(here){ return function(){ here.showCustKneeInfo(); };}(this);
 	this.custKneeBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustBhi.onclick = function(here){ return function(){ here.showCustBhiInfo(); };}(this);
 	this.custBhiBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
-	this.insCustBgm.onclick = function(here){ return function(){ here.showCustBgmInfo(); };}(this);
-	this.custDCCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustDCC.onclick = function(here){ return function(){ here.showCustDCCInfo(); };}(this);
-	this.custGlimBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.custDCCBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustGlim.onclick = function(here){ return function(){ here.showCustGlimInfo(); };}(this);
+	this.custGlimBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustSDRS.onclick = function(here){ return function(){ here.showCustSDRSInfo(); };}(this);
+	this.custSDRSBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
+	this.insCustBgm.onclick = function(here){ return function(){ here.showCustBgmInfo(); };}(this);
 	this.custBgmBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
 	this.insCustPsst.onclick = function(here){ return function(){ here.showCustPsstInfo(); };}(this);
 	this.custPsstBack.onclick = function(here){ return function(){ here.showCustscreen(); };}(this);
@@ -184,6 +186,8 @@ LUTInfoBox.prototype.instructions = function() {
 	this.instructionsBox.appendChild(this.custKnee);
 	this.createCustBhi();
 	this.instructionsBox.appendChild(this.custBhi);
+	this.createCustSDRS();
+	this.instructionsBox.appendChild(this.custSDRS);
 	this.createCustBgm();
 	this.instructionsBox.appendChild(this.custBgm);
 	this.createCustDCC();
@@ -277,6 +281,10 @@ LUTInfoBox.prototype.showCustBhiInfo = function() {
 	this.hideAll();
 	this.custBhi.className = 'info-page';
 };
+LUTInfoBox.prototype.showCustSDRSInfo = function() {
+	this.hideAll();
+	this.custSDRS.className = 'info-page';
+};
 LUTInfoBox.prototype.showCustBgmInfo = function() {
 	this.hideAll();
 	this.custBgm.className = 'info-page';
@@ -322,6 +330,7 @@ LUTInfoBox.prototype.hideAll = function() {
 	this.custHG.className = 'info-page-hide';
 	this.custKnee.className = 'info-page-hide';
 	this.custBhi.className = 'info-page-hide';
+	this.custSDRS.className = 'info-page-hide';
 	this.custBgm.className = 'info-page-hide';
 	this.custDCC.className = 'info-page-hide';
 	this.custGlim.className = 'info-page-hide';
@@ -527,6 +536,8 @@ LUTInfoBox.prototype.createTwkInfo = function() {
 	this.custbox.appendChild(this.insCustBhi);
 	this.insCustBgm = this.createFigure('cust','pngs/cust-bgm.png',15.9643);
 	this.custbox.appendChild(this.insCustBgm);
+	this.insCustSDRS = this.createFigure('cust','pngs/cust-sdrs.png',15.9643);
+	this.custbox.appendChild(this.insCustSDRS);
 	this.insCustDCC = this.createFigure('cust','pngs/cust-dcc.png',15.9643);
 	this.custbox.appendChild(this.insCustDCC);
 	this.insCustGlim = this.createFigure('cust','pngs/cust-glim.png',15.9643);
@@ -718,10 +729,12 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
-	this.addInfo(this.insClgInfo,false,null,"v3.1.3 Beta 1");
-	this.addInfo(this.insClgInfo,true,null,"* New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).");
-	this.addInfo(this.insClgInfo,true,null,"* New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.");
-
+	this.addInfo(this.insClgInfo,false,null,"v3.2 Beta 1");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.");
+	this.addInfo(this.insClgInfo,true,null,"New Feature - 'SDR Saturation' improves HLG compatibility on SDR displays by increasing saturation as per the BT.2390 spec. Available with all HDR options.");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - Black Gamma was not available for 1D LUTs.");
+	this.addInfo(this.insClgInfo,true,null,"Bugfix - Custom input scaling does not appear or be applied unless explicitly checked. Could cause unexpected results with DaVinci and Adobe cubes if not needed.");
 	this.addInfo(this.insClgInfo,false,null,"v3.1.2");
 	this.addInfo(this.insClgInfo,true,null,"Bugfix - Correct output of 'LUT_1D_INPUT_RANGE' or 'LUT_3D_INPUT_RANGE' in Resolve-style cube files with input scaling.");
 	this.addInfo(this.insClgInfo,false,null,"v3.1.1");
@@ -1293,6 +1306,18 @@ LUTInfoBox.prototype.createCustBhi = function() {
 	this.addInfo(this.custBhiInfo,false,null,'Black and Highlight Level adjustments work together, for example to adjust the LC709 and LC709A curves from being legal range - peaking just below 100% - to extended range (Reflected 1350% maps to 108.9%) without changing the black level.');
 	this.custBhi.className = 'info-page-hide';
 	this.custBhi.appendChild(this.custBhiInfo);
+};
+LUTInfoBox.prototype.createCustSDRS = function() {
+	this.custSDRS = document.createElement('div');
+	this.custSDRS.setAttribute('id','cust-sdrs');
+	this.custSDRSBack = document.createElement('input');
+	this.custSDRSBack.setAttribute('type','button');
+	this.custSDRSBack.value = 'Back';
+	this.custSDRS.appendChild(this.custSDRSBack);
+	this.custSDRSInfo = document.createElement('div');
+	this.custSDRSInfo.setAttribute('class','infotext');
+	this.custSDRS.className = 'info-page-hide';
+	this.custSDRS.appendChild(this.custSDRSInfo);
 };
 LUTInfoBox.prototype.createCustBgm = function() {
 	this.custBgm = document.createElement('div');

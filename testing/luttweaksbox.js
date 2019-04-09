@@ -72,6 +72,9 @@ LUTTweaksBox.prototype.ui = function() {
 	this.tweaksList.push(new TWKBlkHi(this.holder, this.inputs, this.messages));
 	this.inputs.tweakTitles.push('Black Gamma');
 	this.tweaksList.push(new TWKBlkGam(this.holder, this.inputs, this.messages));
+	this.inputs.tweakTitles.push('SDR Saturation');
+	this.sdr = this.tweaksList.length;
+	this.tweaksList.push(new TWKSDRSat(this.holder, this.inputs, this.messages));
 	this.inputs.tweakTitles.push('Display Colourspace Converter');
 	this.tweaksList.push(new TWKDisplay(this.holder, this.inputs, this.messages));
 	this.inputs.tweakTitles.push('Gamut Limiter');
@@ -121,6 +124,9 @@ LUTTweaksBox.prototype.gotGamutLists = function() {
 LUTTweaksBox.prototype.changeGamut = function() {
 	this.tweaksList[this.cs].toggleTweak();
 	this.tweaksList[this.gl].changeGamut();
+};
+LUTTweaksBox.prototype.updateGammaOut = function() {
+	this.tweaksList[this.sdr].toggleTweaks();
 };
 LUTTweaksBox.prototype.gotCATs = function(CATs) {
 	this.tweaksList[this.wb].gotCATs(CATs);
