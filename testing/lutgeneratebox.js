@@ -56,6 +56,12 @@ LUTGenerateBox.prototype.io = function() {
 	this.cancelProgButton = document.createElement('input');
 	this.cancelProgButton.setAttribute('type','button');
 	this.cancelProgButton.value = 'Cancel';
+	this.precisionSetting = document.createElement('input');
+	this.precisionSetting.setAttribute('type', 'number');
+	this.precisionSetting.setAttribute('min', 3);
+	this.precisionSetting.setAttribute('max', 128);
+	this.precisionSetting.setAttribute('step', 1);
+	this.precisionSetting.value = 8;
 	this.settingsButton = document.createElement('input');
 	this.settingsButton.setAttribute('type','button');
 	this.settingsButton.value = 'Settings';
@@ -119,6 +125,11 @@ LUTGenerateBox.prototype.events = function() {
 		modalBox.className = 'modalbox';
 		here.settingsHolder.className = 'settings-popup';
 	};}(this);
+	this.precisionSetting.onchange = function(here){ return function(){
+		var precision = Math.max(3, Math.min(128, parseInt(here.precisionSetting.value)));
+		here.precisionSetting.value = precision;
+		here.messages.setPrecision(precision);
+	};}(this);
 	this.saveButton.onclick = function(here){ return function(){
 		here.file.save(here.messages.getSettings(),new Date().toJSON().slice(0,10),'lutcalc',3);
 	};}(this);
@@ -143,6 +154,20 @@ LUTGenerateBox.prototype.events = function() {
 		modalBox.className = 'modalbox-hide';
 		here.settingsHolder.className = 'settings-popup-hide';
 	};}(this);
+};
+LUTGenerateBox.prototype.getSettings = function(data) {
+	data.generateBox = {
+		precision: parseInt(this.precisionSetting.value)
+	};
+};
+LUTGenerateBox.prototype.setSettings = function(settings) {
+	if (typeof settings.generateBox !== 'undefined') {
+		var data = settings.generateBox;
+		if (typeof data.precision === 'number') {
+			this.precisionSetting.value = data.precision;
+			this.messages.setPrecision(data.precision);
+		}
+	}
 };
 LUTGenerateBox.prototype.getBox = function() {
 	return { box: this.box, button: this.genButton };
@@ -352,6 +377,16 @@ LUTGenerateBox.prototype.buildSettingsPopup = function() {
 	this.settingsBox.appendChild(this.saveButton);
 	this.settingsBox.appendChild(this.loadButton);
 	this.settingsBox.appendChild(document.createElement('br'));
+	var precisionBox = document.createElement('div');
+	var prePrecision = document.createElement('label');
+	prePrecision.innerHTML = "Decimal LUT Precision";
+	var postPrecision = document.createElement('label');
+	postPrecision.innerHTML = "Places";
+	precisionBox.appendChild(prePrecision);
+	precisionBox.appendChild(this.precisionSetting);
+	precisionBox.appendChild(postPrecision);
+	precisionBox.appendChild(document.createElement('br'));
+	this.settingsBox.appendChild(precisionBox);
 	this.settingsBox.appendChild(this.doneButton);
 	this.settingsHolder.appendChild(this.settingsBox);
 	modalBox.appendChild(this.settingsHolder);

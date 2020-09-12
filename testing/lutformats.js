@@ -111,6 +111,22 @@ LUTFormats.prototype.gradesList = function() {
 	});
 /*
 	this.grades.push({
+		title: 'LOGCalc', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [64,256,1024], threeDim: [],
+		defDim: 256,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: -1023, wClip: 67025937, hard: false
+	});
+*/
+/*
+	this.grades.push({
 		title: '1D List (.cube)', type: 'cube1',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [64,128,256], threeDim: [],
@@ -162,7 +178,7 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
-		defLegDat: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,

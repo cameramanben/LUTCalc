@@ -54,6 +54,7 @@ function LUTMessage(inputs) {
 	this.gtU = 0; // Counter keeping tabs on how many of the threads are up-to-date
 	this.gtL = 0;
 	this.startGtThreads();
+	this.precision = 6;
 }
 LUTMessage.prototype.addUI = function(code,ui) {
 	this.ui[code] = ui;
@@ -793,6 +794,7 @@ LUTMessage.prototype.getSettings = function() {
 	this.ui[1].getSettings(data);
 	this.ui[2].getSettings(data);
 	this.ui[3].getSettings(data);
+	this.ui[5].getSettings(data);
 	this.ui[11].getSettings(data);
 	this.ui[4].getSettings(data);
 	return JSON.stringify(data,null,"\t");
@@ -802,6 +804,7 @@ LUTMessage.prototype.setSettings = function() {
 	this.ui[1].setSettings(data);
 	this.ui[2].setSettings(data);
 	this.ui[3].setSettings(data);
+	this.ui[5].setSettings(data);
 	this.ui[11].setSettings(data);
 	this.ui[4].setSettings(data);
 	this.gtSetParams();
@@ -1055,6 +1058,12 @@ LUTMessage.prototype.getSamples = function(gridX,gridY) {
 };
 LUTMessage.prototype.mobileOpt = function(opt) {
 	this.ui[16].desktopCur(opt);
+};
+LUTMessage.prototype.setPrecision = function(precision) {
+	this.precision = precision;
+};
+LUTMessage.prototype.getPrecision = function() {
+	return this.precision;
 };
 // Loading progress bar
 if (typeof splash !== 'undefined') {

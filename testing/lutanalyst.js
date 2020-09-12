@@ -253,17 +253,17 @@ LUTAnalyst.prototype.gotInputVals = function(buff,dim) {
 		for (var j=0; j<m; j++) {
 			if (R[j] < lo) {
 				R[j] = min - (numLo/((dcLo*(R[j]-lo))+denLo));
-			} else if (c[j] > hi) {
+			} else if (R[j] > hi) {
 				R[j] = max - (numHi/((dcHi*(R[j]-hi))+denHi));
 			}
 			if (G[j] < lo) {
 				G[j] = min - (numLo/((dcLo*(G[j]-lo))+denLo));
-			} else if (c[j] > hi) {
+			} else if (G[j] > hi) {
 				G[j] = max - (numHi/((dcHi*(G[j]-hi))+denHi));
 			}
 			if (B[j] < lo) {
 				B[j] = min - (numLo/((dcLo*(B[j]-lo))+denLo));
-			} else if (c[j] > hi) {
+			} else if (B[j] > hi) {
 				B[j] = max - (numHi/((dcHi*(B[j]-hi))+denHi));
 			}
 		}

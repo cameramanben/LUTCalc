@@ -17,11 +17,12 @@ function cubeLUT(messages, isLE, flavour) {
 cubeLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
+	var precision = this.messages.getPrecision();
 	var d = '';
 	for (var j=0; j<max; j += 3) {
-		d +=	lut[ j ].toFixed(6).toString() + ' ' +
-				lut[j+1].toFixed(6).toString() + ' ' +
-				lut[j+2].toFixed(6).toString() + "\n";
+		d +=	lut[ j ].toFixed(precision).toString() + ' ' +
+				lut[j+1].toFixed(precision).toString() + ' ' +
+				lut[j+2].toFixed(precision).toString() + "\n";
 	}
 	return {
 		lut: this.header() + d,
