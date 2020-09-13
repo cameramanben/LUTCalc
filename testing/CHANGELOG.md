@@ -7,12 +7,13 @@ v3.3 Beta 1
 * New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).
 * New Feature - Added Nikon N-Log gamma curve.
 * New Feature - Fixed point precision setting within settings, so that LUT files can be more precise than the default six or eight decimal places. Good for scene linear output LUTs.
+* Feature Change - Improved Arri LogC high ISO highlight response.
 * Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.
 
 v3.2 Beta 1
 -------------
 * New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).
-* New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.
+* New Feature - DJI DLog-M based upon test images taken by Mark Walter with a Mavic 2.
 * New Feature - 'SDR Saturation' improves HLG compatibility on SDR displays by increasing saturation as per the BT.2390 spec. Available with all HDR options.
 * Bugfix - Black Gamma was not available for 1D LUTs.
 * Bugfix - Custom input scaling does not appear or be applied unless explicitly checked. Could cause unexpected results with DaVinci and Adobe cubes if not needed.

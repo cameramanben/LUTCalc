@@ -475,6 +475,15 @@ LUTGammaBox.prototype.defaultGam = function() {
 			break;
 		}
 	}
+	if (defGamut === "Passthrough") {
+		max = this.outGamutSelect.options.length;
+		for (var i = 0; i < max; i++) {
+			if (defGamut === this.outGamutSelect.options[i].lastChild.nodeValue) {
+				this.outGamutSelect.options[i].selected = true;
+				break;
+			}
+		}
+	}
 	this.updateGammaInList(false);
 	this.updateGamutInList(false);
 };

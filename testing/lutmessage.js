@@ -54,7 +54,7 @@ function LUTMessage(inputs) {
 	this.gtU = 0; // Counter keeping tabs on how many of the threads are up-to-date
 	this.gtL = 0;
 	this.startGtThreads();
-	this.precision = 6;
+	this.precision = 8;
 }
 LUTMessage.prototype.addUI = function(code,ui) {
 	this.ui[code] = ui;

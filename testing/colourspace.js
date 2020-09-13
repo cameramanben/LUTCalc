@@ -1123,8 +1123,8 @@ LUTColourSpace.prototype.systemMatrices = function() {
 		} else {
 			this.g[j].toSys = this.mMult(this.system.fromXYZ, this.g[j].toXYZ);
 		}
-		console.log(this.g[j].name);
-		console.log(this.g[j].toXYZ);
+		// console.log(this.g[j].name);
+		// console.log(this.g[j].toXYZ);
 	}
 };
 LUTColourSpace.prototype.initPSSTCDL = function() {

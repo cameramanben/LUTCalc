@@ -123,15 +123,19 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Panasonic",model:"AU-EVA1 (High Base)",iso:2500,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
 	this.cameras.push({make:"Panasonic",model:"GH4",iso:200,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-8,wclip:4});
 	this.cameras.push({make:"Panasonic",model:"GH5",iso:200,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-8,wclip:4});
-	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 6k",iso:400,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:5.9});
-	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 6k (High Base)",iso:3200,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-6.5,wclip:5.6});
-	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k",iso:400,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.6,wclip:5.5});
-	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k (High Base)",iso:3200,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.2,wclip:5.1});
+	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 6k",iso:400,type:2,defgamma:"BMD Film 4.6k",defgamut:"Passthrough",bclip:-7.5,wclip:5.9});
+	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 6k (High Base)",iso:3200,type:2,defgamma:"BMD Film 4.6k",defgamut:"Passthrough",bclip:-6.5,wclip:5.6});
+	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k",iso:400,type:2,defgamma:"BMD Film 4.6k",defgamut:"Passthrough",bclip:-7.6,wclip:5.5});
+	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k (High Base)",iso:3200,type:2,defgamma:"BMD Film 4.6k",defgamut:"Passthrough",bclip:-7.2,wclip:5.1});
 	this.cameras.push({make:"GoPro",model:"Hero",iso:400,type:2,defgamma:"Protune",defgamut:"Protune Native",bclip:-9,wclip:3.3});
-	this.cameras.push({make:"Nikon",model:"Z6",iso:800,type:2,defgamma:"NLog",defgamut:"Rec2020",bclip:-6,wclip:6});
-	this.cameras.push({make:"Nikon",model:"Z7",iso:800,type:2,defgamma:"NLog",defgamut:"Rec2020",bclip:-6,wclip:6});
+	this.cameras.push({make:"DJI",model:"Mavic 2",iso:400,type:2,defgamma:"DJI DLog-M",defgamut:"Passthrough",bclip:-6.3,wclip:3.7});
+	this.cameras.push({make:"DJI",model:"Zenmuse X7",iso:400,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-9.2,wclip:4.8});
+	this.cameras.push({make:"DJI",model:"Zenmuse X5S",iso:500,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-7.7,wclip:5.13});
+	this.cameras.push({make:"DJI",model:"Zenmuse X3",iso:100,type:2,defgamma:"DJI X3 DLog",defgamut:"Passthrough",bclip:-7,wclip:3});
+	this.cameras.push({make:"Nikon",model:"Z6",iso:800,type:2,defgamma:"Nikon N-Log",defgamut:"Rec2020",bclip:-6,wclip:6});
+	this.cameras.push({make:"Nikon",model:"Z7",iso:800,type:2,defgamma:"Nikon N-Log",defgamut:"Rec2020",bclip:-6,wclip:6});
 //	this.cameras.push({make:"Nikon",model:"Z780",iso:800,type:2,defgamma:"NLog",defgamut:"Rec2020",bclip:-6,wclip:6});
-	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Rec709",bclip:-10.9,wclip:3.5});
+	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Passthrough",bclip:-10.9,wclip:3.5});
 	this.cameras.push({make:"",model:"Generic",iso:800,type:2,defgamma:"Cineon",defgamut:"Rec709",bclip:-10,wclip:10});
 };
 LUTCameraBox.prototype.clearSelect = function(sel) {
@@ -141,7 +145,7 @@ LUTCameraBox.prototype.clearSelect = function(sel) {
 	}
 };
 LUTCameraBox.prototype.manufacturerOptions = function() {
-	var manufacturers = ["Sony", "ARRI", "RED", "Canon", "Panasonic", "Blackmagic", "GoPro", "Nikon", "All"];
+	var manufacturers = ["Sony", "ARRI", "RED", "Canon", "Panasonic", "Blackmagic", "GoPro", "DJI", "Nikon", "All"];
 	var max = manufacturers.length;
 	for (var i=0; i<max; i++) {
 		var option = document.createElement('option');

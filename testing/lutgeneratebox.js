@@ -61,7 +61,7 @@ LUTGenerateBox.prototype.io = function() {
 	this.precisionSetting.setAttribute('min', 3);
 	this.precisionSetting.setAttribute('max', 128);
 	this.precisionSetting.setAttribute('step', 1);
-	this.precisionSetting.value = 8;
+	this.precisionSetting.value = this.messages.getPrecision();
 	this.settingsButton = document.createElement('input');
 	this.settingsButton.setAttribute('type','button');
 	this.settingsButton.value = 'Settings';

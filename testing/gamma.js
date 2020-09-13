@@ -248,13 +248,13 @@ LUTGamma.prototype.gammaList = function() {
 //	out = ([0] * in) + [1]
 // }
 
-	this.gammas.push(new LUTGammaLog(
-		'DJI X5/X7 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
+	this.DLogM = this.gammas.length;
+	this.gammas.push(new LUTGammaDLog('DJI DLog-M'));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
-	this.DLogM = this.gammas.length;
-	this.gammas.push(new LUTGammaDLog('DJI DLog-M'));
+	this.gammas.push(new LUTGammaLog(
+		'DJI X5/X7 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
@@ -2238,79 +2238,6 @@ LUTGammaLog.prototype.linFromData = function(input) {
 LUTGammaLog.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 };
-// Nikon Log
-function LUTGammaNLog(name) {
-	this.name = name;
-	this.iso = 800;
-	this.cat = 0;
-	this.logCut = 451.7887494 / 1023;
-}
-LUTGammaNLog.prototype.changeISO = function(iso) {
-	this.iso = iso;
-};
-LUTGammaNLog.prototype.changeContrast = function(rec,out) {
-};
-LUTGammaNLog.prototype.linToD = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		c[j] *= 0.9;
-		if (c[j] >= 0.328) {
-			c[j] = ((150 * Math.log(c[j])) + 619) / 1023;
-		} else {
-			c[j] = Math.cbrt(c[j] + 0.0075) * 650.1864339 / 1023;
-		}
-	}
-};
-LUTGammaNLog.prototype.linToL = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	this.linToD(buff);
-	for (var j=0; j<m; j++) {
-		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
-	}
-};
-LUTGammaNLog.prototype.linFromD = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		if (c[j] >= this.logCut) {
-			c[j] = Math.exp(((c[j] * 1023) - 619)/150);		
-		} else {
-			c[j] = Math.pow(c[j] / 650.1864339, 3) - 0.0075;
-		}
-		c[j] /= 0.9;
-	}
-};
-LUTGammaNLog.prototype.linFromL = function(buff) {
-	var c = new Float64Array(buff);
-	var m = c.length;
-	for (var j=0; j<m; j++) {
-		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
-	}
-	this.linFromD(buff);
-};
-LUTGammaNLog.prototype.linToData = function(input) {
-	input *= 0.9;
-	if (input >= 0.328) {
-		return ((150 * Math.log(input)) + 619) / 1023;
-	} else {
-		return Math.cbrt(input + 0.0075) * 650.1864339 / 1023;
-	}
-};
-LUTGammaNLog.prototype.linToLegal = function(input) {
-	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
-};
-LUTGammaNLog.prototype.linFromData = function(input) {
-	if (input >= this.logCut) {
-		return (Math.exp(((input * 1023) - 619)/150) / 0.9);
-	} else {
-		return ((Math.pow(input / 650.1864339, 3) - 0.0075) / 0.9);
-	}
-};
-LUTGammaNLog.prototype.linFromLegal = function(input) {
-	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
-};
 // Generalised Log with a soft clip
 function LUTGammaLogClip(name,params) {
 	this.name = name;
@@ -2475,67 +2402,169 @@ function LUTGammaArri(name,sup) {
 	this.sup = sup;
 	this.iso = 800;
 	this.cat = 0;
-		if (this.sup === 2) {
-		this.nomEI = 400;
-		this.blackSig = 0.003907;
-		this.blackOff = 0.000977;
-		this.midGray = 0.01;
-		this.encGain = 0.256598;
-		this.encOff = 0.391007;		
+	this.params = [];
+	this.tHK = [];
+	this.fHK = [];
+	this.tHS = 0.0;
+	this.fHS = 0.0;
+	this.knee = false;
+	this.xm = 0.0;
+	if (this.sup === 2) {
+		this.nominalEI = 400;
+		this.blackSignal = 0.003907;
+		this.blackOffset = 0.000977;
+		this.midGraySignal = 0.01;
+		this.encodingGain = 0.256598;
+		this.encodingOffset = 0.391007;		
 	} else {
-		this.nomEI = 400;
-		this.blackSig = 0.003907;
-		this.blackOff = 0;
-		this.midGray = 0.01;
-		this.encGain = 0.256598;
-		this.encOff = 0.391007;
+		this.nominalEI = 400;
+		this.blackSignal = 16.0 / 4095.0;
+		this.blackOffset = 0.0; // unused
+		this.midGraySignal = 0.01;
+		this.encodingGain = (500.0 / 1023.0) * 0.525;
+		this.encodingOffset = 400.0 / 1023.0;
 	}
 	this.changeISO(this.iso);
 }
-LUTGammaArri.prototype.changeISO = function(iso) {
-	this.iso = iso;
-	var gain,encGain,encOffset,nz;
-	var slope, offset, gray, s, t;
+LUTGammaArri.prototype.getParams = function(ei) {
+	var gain = ei / this.nominalEI;
+	var out = [];
 	if (this.sup === 2) {
-		gain = iso / this.nomEI;
-		encGain = (Math.log(gain)/Math.log(2) * (0.89 - 1) / 3 + 1) * this.encGain;
-		gray = this.midGray + this.blackOff;
-		var f16 = (Math.log(((this.blackSig - this.blackSig) * gain + this.blackOff) / gray)/Math.LN10) * encGain + this.encOff;
-		var f17 = (Math.log((((this.blackSig + 1.0 / 4095.0) - this.blackSig) * gain + this.blackOff) / gray)/Math.LN10) * encGain + this.encOff;
-		this.cut = this.blackSig;
-		this.d = this.encOff;
-		this.c = encGain;
-		this.b = this.blackOff / gray;
-		this.a = (gain / gray)/(gain * (0.18/this.midGray));
-		this.ff = f16;
-		this.e = 4095 * (f17-f16)/(gain*(0.18/this.midGray));
+		var encGain = (Math.log(gain)/Math.LN2 * (0.89 - 1) / 3 + 1) * this.encodingGain;
+		var midGray = this.midGraySignal + this.blackOffset;
+		var f16 = (Math.log((((this.blackSignal) 				- this.blackSignal) * gain + this.blackOffset) / midGray)/Math.LN10) * encGain + this.encodingOffset;
+		var f17 = (Math.log((((this.blackSignal + 1.0 / 4095.0) - this.blackSignal) * gain + this.blackOffset) / midGray)/Math.LN10) * encGain + this.encodingOffset;
+		out[0] = this.blackSignal;										// cut
+		out[4] = this.encodingOffset;									// d
+		out[3] = encGain;											// c
+		out[2] = this.blackOffset / midGray;								// b
+		out[1] = (gain / midGray)/(gain * (0.18 / this.midGraySignal));	// a
+		out[6] = f16;												// f
+		out[5] = 4095.0 * (f17-f16)/(gain*(0.18 / this.midGraySignal));	// e
+		out[7] = 0.0;												// xm - not used in sup 2
+		out[8] = 0.0;												// x1 - not used in sup 2
+		out[9] = 0.0;												// x2 - not used in sup 2
+		out[10] = 0.0;												// not used in sup 2
+		out[11] = 0.0;												// not used in sup 2
+		out[12] = 0.0;												// not used in sup 2
+		out[13] = 0.0;												// not used in sup 2
 	} else {
-		this.cut = 1/9;
-		slope = 1 / (this.cut*Math.LN10);
-		offset = (Math.log(this.cut)/Math.LN10) - slope * this.cut;
-		gain = iso / this.nomEI;
-		gray = this.midGray / gain;
-		encGain = (Math.log(iso/this.nomEI)/Math.log(2) * (0.89 - 1) / 3 + 1) * this.encGain;
-		encOffset = this.encOff;
+		out[0] = 1.0 / 9.0;											// cut
+		var slope = 1.0 / (out[0] * Math.LN10);
+		var offset = (Math.log(out[0]) / Math.LN10) - slope * out[0];
+		var gray = this.midGraySignal / gain;
+		var encGain = (Math.log(gain)/Math.LN2 * (0.89 - 1.0) / 3.0 + 1.0) * this.encodingGain;
+		var encOffset = this.encodingOffset;
+		var nz = 0.0;
 		for (var j=0; j<3; j++) {
 			nz = ((95.0 / 1023.0 - encOffset) / encGain - offset) / slope;
-			encOffset = this.encOff - (Math.log(1 + nz)/Math.LN10) * encGain
+			encOffset = this.encodingOffset - (Math.log(1 + nz) / Math.LN10) * encGain;
 		}
-		this.a = 1/gray;
-		this.b = nz - this.blackSig / gray;
-		this.e = slope * this.a * encGain;
-		this.ff = encGain * (slope*this.b + offset) + encOffset;
-		s = 4 / (0.18*iso);
-		t = this.blackSig;
-		this.b = this.b + this.a * t;
-		this.a = this.a * s;
-		this.ff = this.ff + this.e * t;
-		this.e = this.e * s;
-		this.c = encGain;
-		this.d = encOffset;
-		this.cut = (this.cut - this.b) / this.a;
+		var xm = (Math.log((1 - this.blackSignal) / gray + nz) / Math.LN10) * encGain + encOffset;
+		out[1] = 1.0 / gray;										// a
+		out[2] = nz - this.blackSignal / gray;						// b
+		out[5] = slope * out[1] * encGain;							// e
+		out[6] = encGain * (slope * out[2] + offset) + encOffset;	// f
+		var s = 4.0 / (0.18 * ei);
+		var t = this.blackSignal;
+		out[2] = out[2] + out[1] * t;
+		out[1] *= s;
+		out[6] = out[6] + out[5] * t;
+		out[5] *= s;
+		out[3] = encGain;											// c
+		out[4] = encOffset;											// d
+		out[0] = (out[0] - out[2]) / out[1];
+		out[7] = xm;												// xm
+		out[8] = 0.8;												// x1
+		out[9] = 1;													// x2
+		out[10] = 0.8;
+		out[11] = xm;
+		out[12] = 1.0;
+		out[13] = ((5.0 * xm) - 4.0) * ((5.0 * xm) - 4.0);
 	}
-};
+	return out;
+}
+LUTGammaArri.prototype.setHighKnee = function(x1, x2, v1, v2, v3, v4) {
+	var hk = [];
+	var d3 = x2-x1;
+	d3 = d3 * d3 * d3;
+	// Arri adjusts the log curve with a form of highlight knee for high ISOs.
+	// Whether it happens is determined by a claculation - xm being above 1.0
+	// For xm values above 1.0, the cubic knee kicks in for LogC values above
+	// 0.8 on a 0-1.0 data range scale
+	// Arri's calculations are presented in parametric form, I've disentangled
+	// things to generate four cubic coefficients when the ISO changes, for
+	// fewer and simpler calculations on pixels (multiply and adds)
+	// a x^3
+	hk[0] =		v1 * 2.0;
+	hk[0] +=	v2 * -2.0;
+	hk[0] +=	v3 * (x2 - x1);
+	hk[0] +=	v4 * (x2 - x1);
+	hk[0] /=	d3;
+	// b x^2
+	hk[1] =		v1 * -3.0 * (x1 + x2);
+	hk[1] +=	v2 * 3.0 * (x1 + x2);
+	hk[1] +=	v3 * ((x1 * x1) + (x1 * x2) - (2.0 * x2 * x2));
+	hk[1] +=	v4 * ((2.0 * x1 * x1) - (x1 * x2) - (x2 * x2));
+	hk[1] /=	d3;
+	// c x
+	hk[2] =		v1 * 6.0 * x1 * x2;
+	hk[2] +=	v2 * -6.0 * x1 * x2;
+	hk[2] +=	v3 * ((-2.0 * x1 * x1 * x2) + (x1 * x2 * x2) + (x2 * x2 * x2));
+	hk[2] +=	v4 * ((2.0 * x1 * x2 * x2) - (x1 * x1 * x2) - (x1 * x1 * x1));
+	hk[2] /=	d3;
+	// d
+	hk[3] =		v1 * ((x2 * x2 * x2) - (3.0 * x1 * x2 * x2));
+	hk[3] +=	v2 * ((3.0 * x1 * x1 * x2) - (x1 * x1 * x1));
+	hk[3] +=	v3 * ((x1 * x1 * x2 * x2) - (x1 * x2 * x2 * x2));
+	hk[3] +=	v4 * ((x1 * x1 * x1 * x2) - (x1 * x1 * x2 * x2));
+	hk[3] /=	d3;
+	
+	// This replaces the LogC values above 0.8 BEFORE going log -> lin, but for lin -> log
+	// have fun inverting arbitrary cubics. easy life is to calculate a cubic approximation
+	// it's a short stretch of monotonic cubic, and we can extrapolate above 1.0
+	var fd0 = 1 / ((1.92 * hk[0]) + (1.6 * hk[1]) + hk[2]);
+	var fd1 = 1 / ((3 * hk[0]) + (2 * hk[1]) + hk[2]);
+	var fxm = this.xm - 0.8;
+	this.tHK[0] = (((fd0+fd1) * fxm) -0.4)/(fxm * fxm * fxm);
+	this.tHK[2] = 1.0;
+	this.tHK[3] = 0.8;
+	this.tHK[1] = (fd1/(2 * fxm)) - (1.5 * fxm * this.tHK[0]) - (this.tHK[2] / (2 * fxm));
+	this.tHS = (((0.6 * this.tHK[0]) + 0.4) * this.tHK[1]) + this.tHK[2];
+	this.fHK[0] = hk[0];
+	this.fHK[1] = hk[1];
+	this.fHK[2] = hk[2];
+	this.fHK[3] = hk[3];
+	this.fHS = (3 * this.fHK[0]) + (2 * this.fHK[1]) + this.fHK[2];
+	this.knee = true;
+}
+LUTGammaArri.prototype.changeISO = function(iso) {
+	this.iso = iso;
+	var arri = this.getParams(iso);
+	this.params[0] = 1.0 / arri[5];					// lin slope
+	this.params[1] = -arri[6] / arri[5];			// lin offset
+	this.params[2] = arri[3];						// log slope
+	this.params[3] = arri[1];						// input slope
+	this.params[4] = 10;							// base
+	this.params[5] = arri[4];						// log offset
+	this.params[6] = arri[2];						// input offset
+	this.params[7] = (arri[5] * arri[0]) + arri[6];	// log input crossover
+	this.params[8] = arri[0];						// log output crossover
+	// set up some reciprocal values, as multiplies are quicker than divides later on.
+	this.params[9] = arri[5]; // reciprocal of p0, multiplies are faster than divides.
+	this.params[10] = 1.0 / this.params[2];
+	this.params[11] = 1.0 / this.params[3];
+	this.params[12] = this.params[2] / Math.log(this.params[4]);
+	// if superblacks are undefined, clamp before reaching NaN (hard black). Not the case here, but we're on a roll.
+	this.params[13] = (this.params[12] * Math.log((0.000000000000001 * this.params[3]) + this.params[6])) + this.params[5];
+	// Think-of-everything Arri have a log rolloff for high ISO - add an extra bit of complexity. Fun.
+	this.xm = arri[7];
+	if (this.xm > 1.0) {
+		this.setHighKnee(arri[8], arri[9], arri[10], arri[11], arri[12], arri[13]);
+	} else {
+		this.knee = false;
+	}
+}
 LUTGammaArri.prototype.changeContrast = function(rec,out) {
 };
 LUTGammaArri.prototype.linToD = function(buff) {
@@ -2543,10 +2572,24 @@ LUTGammaArri.prototype.linToD = function(buff) {
 	var m = c.length;
 	for (var j=0; j<m; j++) {
 		c[j] = c[j] * 0.9;
-		if (c[j] > this.cut) {
-			c[j] = ((this.c * Math.log((this.a * c[j]) + this.b)/Math.LN10) + this.d);
+		if (c[j] >= this.params[8]) {
+			c[j] = (Math.log((c[j] * this.params[3]) + this.params[6]) * this.params[12]) + this.params[5];
+		} else if (this.params[0] === 0.0) {
+			c[j] = this.params[13];
 		} else {
-			c[j] = ((this.e * c[j]) + this.ff);
+			c[j] = (c[j] - this.params[1]) * this.params[9];
+		}
+	}
+	if (this.knee) {
+		for (var j=0; j<m; j++) {
+			if (c[j] > 0.8) {
+				if (c[j] > this.xm) {
+					c[j] = ((c[j] - this.xm) * this.tHS) + 1;
+				} else {
+					c[j] -= 0.8
+					c[j] = (((((this.tHK[0] * c[j]) + this.tHK[1]) * c[j]) + this.tHK[2]) * c[j]) + this.tHK[3];
+				}
+			}
 		}
 	}
 };
@@ -2561,11 +2604,22 @@ LUTGammaArri.prototype.linToL = function(buff) {
 LUTGammaArri.prototype.linFromD = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
+	if (this.knee) {
+		for (var j=0; j<m; j++) {
+			if (c[j] > 0.8) {
+				if (c[j] > 1.0) {
+					c[j] = ((c[j] - 1.0) * this.fHS) + 1.0;
+				} else {
+					c[j] = (((((this.fHK[0] * c[j]) + this.fHK[1]) * c[j]) + this.fHK[2]) * c[j]) + this.fHK[3];
+				}
+			}
+		}
+	}
 	for (var j=0; j<m; j++) {
-		if (c[j] > ((this.e * this.cut) + this.ff)) {
-			c[j] = (Math.pow(10, (c[j] - this.d) / this.c) - this.b)/(this.a*0.9);
+		if (c[j] >= this.params[7]) {
+			c[j] = (Math.pow(this.params[4],(c[j] - this.params[5]) * this.params[10]) - this.params[6]) * this.params[11] / 0.9;
 		} else {
-			c[j] = ((c[j] - this.ff) / (this.e*0.9));
+			c[j] = ((c[j] * this.params[0]) + this.params[1]) / 0.9;
 		}
 	}
 };
@@ -2579,11 +2633,23 @@ LUTGammaArri.prototype.linFromL = function(buff) {
 };
 LUTGammaArri.prototype.linToData = function(input) {
 	var out;
-	input = input * 0.9;
-	if (input > this.cut) {
-		out = ((this.c * Math.log((this.a * input) + this.b)/Math.LN10) + this.d);
+	input *= 0.9;
+	if (input >= this.params[8]) {
+		out = (Math.log((input * this.params[3]) + this.params[6]) * this.params[12]) + this.params[5];
+	} else if (this.params[0] === 0.0) {
+		out = this.params[13];
 	} else {
-		out = ((this.e * input) + this.ff);
+		out = (input - this.params[1]) * this.params[9];
+	}
+	if (this.knee) {
+		if (input > 0.8) {
+			if (input > this.xm) {
+				out = ((input - this.xm) * this.tHS) + 1;
+			} else {
+				input -= 0.8;
+				out = (((((this.tHK[0] * input) + this.tHK[1]) * input) + this.tHK[2]) * input) + this.tHK[3];
+			}
+		}
 	}
 	return out;
 };
@@ -2592,12 +2658,20 @@ LUTGammaArri.prototype.linToLegal = function(input) {
 };
 LUTGammaArri.prototype.linFromData = function(input) {
 	var out;
-	if (input > ((this.e * this.cut) + this.ff)) {
-		out = (Math.pow(10, (input - this.d) / this.c) - this.b)/(this.a*0.9);
-	} else {
-		out = ((input - this.ff) / (this.e*0.9));
+	if (this.knee) {
+		if (input > 0.8) {
+			if (input > 1.0) {
+				input = ((input - 1.0) * this.fHS) + 1.0;
+			} else {
+				input = (((((this.fHK[0] * input) + this.fHK[1]) * input) + this.fHK[2]) * input) + this.fHK[3];
+			}
+		}
 	}
-	return out;
+	if (input >= this.params[7]) {
+		return (Math.pow(this.params[4],(input - this.params[5]) * this.params[10]) - this.params[6]) * this.params[11] / 0.9;
+	} else {
+		return ((input * this.params[0]) + this.params[1]) / 0.9;
+	}
 };
 LUTGammaArri.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
@@ -2678,6 +2752,79 @@ LUTGammaCLog3.prototype.linFromLegal = function(input) {
 	} else {
 		return (Math.pow(10,(input - 0.069886632)/0.42889912)-1) / (14.98325);
 	}
+};
+// Nikon N-Log
+function LUTGammaNLog(name) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 0;
+	this.logCut = 451.7887494 / 1023;
+}
+LUTGammaNLog.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaNLog.prototype.changeContrast = function(rec,out) {
+};
+LUTGammaNLog.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] *= 0.9;
+		if (c[j] >= 0.328) {
+			c[j] = ((150 * Math.log(c[j])) + 619) / 1023;
+		} else {
+			c[j] = Math.cbrt(c[j] + 0.0075) * 650.1864339 / 1023;
+		}
+	}
+};
+LUTGammaNLog.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	this.linToD(buff);
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+};
+LUTGammaNLog.prototype.linFromD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		if (c[j] >= this.logCut) {
+			c[j] = Math.exp(((c[j] * 1023) - 619)/150);		
+		} else {
+			c[j] = Math.pow(c[j] / 650.1864339, 3) - 0.0075;
+		}
+		c[j] /= 0.9;
+	}
+};
+LUTGammaNLog.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+	this.linFromD(buff);
+};
+LUTGammaNLog.prototype.linToData = function(input) {
+	input *= 0.9;
+	if (input >= 0.328) {
+		return ((150 * Math.log(input)) + 619) / 1023;
+	} else {
+		return Math.cbrt(input + 0.0075) * 650.1864339 / 1023;
+	}
+};
+LUTGammaNLog.prototype.linToLegal = function(input) {
+	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
+};
+LUTGammaNLog.prototype.linFromData = function(input) {
+	if (input >= this.logCut) {
+		return (Math.exp(((input * 1023) - 619)/150) / 0.9);
+	} else {
+		return ((Math.pow(input / 650.1864339, 3) - 0.0075) / 0.9);
+	}
+};
+LUTGammaNLog.prototype.linFromLegal = function(input) {
+	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 };
 // Log and Log across threshold (RED Log3G10)
 function LUTGammaLogLog(name,params) {
