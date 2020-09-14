@@ -440,7 +440,7 @@ LUTInfoBox.prototype.createMainscreen = function() {
 
 	this.changelogButton = document.createElement('a');
 	this.changelogButton.innerHTML = 'Changelog';
-//	credits.appendChild(this.changelogButton);
+	credits.appendChild(this.changelogButton);
 	this.creditsButton = document.createElement('a');
 	this.creditsButton.innerHTML = 'Credits';
 	credits.appendChild(this.creditsButton);
@@ -734,6 +734,7 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Added Nikon N-Log gamma curve.");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Fixed point precision setting within settings, so that LUT files can be more precise than the default six or eight decimal places. Good for scene linear output LUTs.");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - Added Sony s709 colourspace, estimated using Venice ACES primaries to reduce green on FS7 / FX9. TBD if this is the right approach.");
 	this.addInfo(this.insClgInfo,true,null,"* Feature Change - Improved Arri LogC high ISO highlight response.");
 	this.addInfo(this.insClgInfo,true,null,"* Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.");
 	this.addInfo(this.insClgInfo,false,null,"v3.2 Beta 1");

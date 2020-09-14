@@ -37,14 +37,15 @@ TWKSDRSat.prototype.io = function() {
 		reset: true
 	});
 	this.hdrs = [
-		'Rec2100 PQ (PQ OOTF)',
-		'Rec2100 PQ (HLG OOTF)',
+//		'Rec2100 PQ (PQ OOTF)',
+//		'Rec2100 PQ (HLG OOTF)',
 		'Rec2100 HLG',
-		'PQ (EOTF Only)',
+//		'PQ (EOTF Only)',
 		'ITU Proposal (400%)',
 		'ITU Proposal (800%)',
 		'BBC WHP283 (400%)',
-		'BBC WHP283 (800%)'];
+		'BBC WHP283 (800%)'
+	];
 };
 TWKSDRSat.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)

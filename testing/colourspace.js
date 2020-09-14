@@ -320,6 +320,22 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 		)
 	);
 	this.csOutSub.push([this.subIdx('ARRI'),this.subIdx('Rec709')]);
+
+	this.defLUTs.s709 = this.csOut.length;
+	this.csOut.push(
+		this.fromSysLUT('s709',
+			{
+				format: 'cube',
+				min: [0,0,0],
+				max: [1,1,1],
+				wp: this.illuminant('d65'),
+				genInt: 1,
+				preInt: 1
+			}
+		)
+	);
+	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Rec709')]);
+
 	this.defLUTs.LC709 = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('LC709',

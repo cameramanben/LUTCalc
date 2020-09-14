@@ -7,6 +7,7 @@ v3.3 Beta 1
 * New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).
 * New Feature - Added Nikon N-Log gamma curve.
 * New Feature - Fixed point precision setting within settings, so that LUT files can be more precise than the default six or eight decimal places. Good for scene linear output LUTs.
+* New Feature - Added Sony s709 colourspace, estimated using Venice ACES primaries to reduce green on FS7 / FX9. TBD if this is the right approach. 
 * Feature Change - Improved Arri LogC high ISO highlight response.
 * Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.
 
