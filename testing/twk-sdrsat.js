@@ -46,6 +46,10 @@ TWKSDRSat.prototype.io = function() {
 		'BBC WHP283 (400%)',
 		'BBC WHP283 (800%)'
 	];
+	this.wgts = [
+		'Rec2020',
+		'Rec2100'
+	];
 };
 TWKSDRSat.prototype.ui = function() {
 	// General Tweak Holder (Including Checkbox)
@@ -66,7 +70,8 @@ TWKSDRSat.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
 	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
 		var oG = this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue;
-		if (this.hdrs.indexOf(oG) > -1) {
+		var oGt = this.inputs.outGamut.options[this.inputs.outGamut.selectedIndex].lastChild.nodeValue;
+		if (this.hdrs.indexOf(oG) > -1 && this.wgts.indexOf(oGt) > -1) {
 			this.holder.className = 'tweakholder';
 		} else {
 			this.holder.className = 'tweakholder-hide';
