@@ -96,10 +96,10 @@ LUTCameraBox.prototype.events = function() {
 // Set Up Data
 LUTCameraBox.prototype.cameraList = function() {
 // Type: 0 == CineEI, 1 == Variable Parameters (Arri), 2 == Baked In Gain (Canon)
-	this.cameras.push({make:"Sony",model:"Venice",iso:500,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-9,wclip:6});
-	this.cameras.push({make:"Sony",model:"Venice (High Base)",iso:2500,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-9,wclip:6});
+	this.cameras.push({make:"Sony",model:"Venice",iso:500,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine (Venice)",bclip:-9,wclip:6});
+	this.cameras.push({make:"Sony",model:"Venice (High Base)",iso:2500,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine (Venice)",bclip:-9,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FX9",iso:800,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
-	this.cameras.push({make:"Sony",model:"PXW_FX9 (High Base)",iso:4000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
+	this.cameras.push({make:"Sony",model:"PXW-FX9 (High Base)",iso:4000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F55",iso:1250,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F5",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PXW-FS7",iso:2000,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3.cine",bclip:-8,wclip:6});
