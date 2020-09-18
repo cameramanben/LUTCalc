@@ -41,6 +41,7 @@ function LUTGamma() {
 	this.subNames = [];
 	this.gammaSub = [];
 	this.gammaDat = [];
+	this.gammaExt = [];
 
 	this.kSmooth = 1;
 
@@ -130,21 +131,25 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Log')]);
 	this.gts.push('Sony S-Gamut3.cine');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'S-Log2', [ 0.330000000129966,-0.0291229262672453,0.3705223107287920,0.7077625570776260,10,0.6162444730868150,0.0375840001141552,0.0879765396,0 ]));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Log')]);
 	this.gts.push('Sony S-Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'S-Log', [ 0.3241960136,-0.0286107171, 0.3705223110, 1,10.0000000000, 0.6162444740, 0.0375840000, 0.0882900450, 0.000000000000001 ]));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Log')]);
 	this.gts.push('Sony S-Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 
 	this.gammas.push(new LUTGammaLog2('LOGCalc Scaler', 7.46633, -0.0411526));
 	this.gammaSub.push(this.subIdx(['Log']));
 	this.gts.push('Sony S-Gamut3.cine');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 
 
 	this.gammas.push(new LUTGammaArri(
@@ -152,94 +157,112 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('ARRI'),this.subIdx('Log')]);
 	this.gts.push('Alexa Wide Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaArri(
 		'LogC (Sup 2.x)',2));
 	this.gammaSub.push([this.subIdx('ARRI'),this.subIdx('Log')]);
 	this.gts.push('Alexa Wide Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'C-Log', [ 0.3734467748,-0.0467265867, 0.45310179472141, 10.1596, 10, 0.1251224801564, 1, 0.00391002619746, -0.0452664 ]));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Canon C-Log2', [ 0.045164984,-0.006747091156,0.241360772,87.09937546,10,0.092864125,1,0,-0.006747091156 ]));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
 	this.gts.push('Canon Cinema Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaCLog3(
 		'Canon C-Log3'));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
 	this.gts.push('Canon Cinema Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaCineon(
 		'Cineon', {cv:1023, bp:95, wp: 685, nGamma: 0.6, cv2d:0.002}));
 	this.gammaSub.push([this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Panasonic V-Log', [ 0.198412698,-0.024801587, 0.241514, 0.9, 10, 0.598206, 0.00873, 0.181, 0.009 ]));
 	this.gammaSub.push([this.subIdx('Panasonic'),this.subIdx('Log')]);
 	this.gts.push('Panasonic V-Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Fujifilm F-Log', [ 0.1144737, -0.010630486, 0.344676, 0.5000004, 10, 0.790453, 0.009468, 0.100537775, 0.000988889 ]));
 	this.gammaSub.push([this.subIdx('Fujifilm'),this.subIdx('Log')]);
 	this.gts.push('Fujifilm F-Log Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaCineon(
 		'REDLogFilm', {cv:1023, bp:95, wp: 685, nGamma: 0.6, cv2d:0.002}));
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLogLog(
 		'RED Log3G10', [ 0.224282,155.975327,0.01 ]));
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'BMD Pocket Film', [ 0.195367159 / 0.9, -0.014273567 / 0.9, 0.36274758, 1.05345192 * 0.9, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 * 0.9 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film', [ 0.261115778 * 0.9, -0.024248528 * 0.9, 0.367608577, 0.86786483 / 0.9, 10, 0.644065346, 0.03135747, 0.114002127, 0.005519226 / 0.9 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film4k', [ 0.37237694 * 0.9, -0.034580801 * 0.9, 0.582240088, 2.617961052 / 0.9, 10, 0.461883884, 0.231964429, 0.10772883, 0.005534931 / 0.9 ]));
 //		'BMD Film4k', [ 0.37237694, -0.034580801, 0.582240088, 2.617961052, 10, 0.461883884, 0.231964429, 0.10772883, 0.005534931 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 /*
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film4.6k', [ 0.195367159, -0.014273567, 0.36274758, 1.05345192, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 */
 	this.gammas.push(new LUTGammaLog(
 		'BMD Film4.6k', [ 0.195367159 / 0.9, -0.014273567 / 0.9, 0.36274758, 1.05345192 * 0.9, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 * 0.9 ]));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Bolex Log', [ 1/(5.9861078*0.9), -0.0625265/(0.9*5.9861078), 0.2756705, 5, 10, 0.4150634, 0.0280665, 0.1520070, 0.014948/0.9 ]));
 	this.gammaSub.push([this.subIdx('Bolex'),this.subIdx('Log')]);
 	this.gts.push('Bolex Wide Gamut');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Panalog', [ 0.324196014, -0.020278938, 0.434198361, 0.956463747, 10, 0.665276427, 0.040913561, 0.088290045, 0 ]));
 	this.gammaSub.push([this.subIdx('Panavision'),this.subIdx('Log')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
 		'Protune', [ 0,0, 876/1023, 53.39427221, 113, 64/1023, 1, 0, 0 ]));
 	this.gammaSub.push([this.subIdx('GoPro'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 // Linear to log
 // if (in >= [8]) {
 //	out = ([2] * log[4]((in*[3]) + [6])) + [5]
@@ -258,16 +281,19 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLog(
 		'DJI X5/X7 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLogClip(
 		'DJI X3 DLog', [ 0.188272019, -0.011778504, 0.473218054, 6.086793376, 10, 0.419294419, 0.169033387, 0.095812746, 0.00625, 0.902863937, 1.59668525, 22.90700861, -17.39462704 ]));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 
 
 	this.gammas.push(new LUTGammaACEScc(
@@ -275,16 +301,19 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Log')]);
 	this.gts.push('ACES AP0');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaACESProxy(
 		'ACESproxy10', 10));
 	this.gammaSub.push([this.subIdx('Log')]);
 	this.gts.push('ACEScg AP1');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaACESProxy(
 		'ACESproxy12', 12));
 	this.gammaSub.push([this.subIdx('Log')]);
 	this.gts.push('ACEScg AP1');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'Amira709',
 		new Float64Array(
@@ -302,6 +331,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('ARRI'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'Alexa-X-2',
 		new Float64Array(
@@ -319,6 +349,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('ARRI'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 
 	this.gammas.push(new LUTGammaIOLUT(
 		's709',
@@ -351,6 +382,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 
 
 	this.gammas.push(new LUTGammaLUTSL3(
@@ -370,6 +402,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'LC709',
 		new Float64Array(
@@ -387,6 +420,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'Sony Cine+709',
 		new Float64Array(
@@ -403,6 +437,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'Varicam V709',
 		new Float64Array(
@@ -419,7 +454,8 @@ LUTGamma.prototype.gammaList = function() {
 	));
 	this.gammaSub.push([this.subIdx('Panasonic'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
-	this.gammaDat.push(true);
+	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'REDGamma',
 		new Float64Array(
@@ -437,6 +473,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'REDGamma2',
 		new Float64Array(
@@ -454,6 +491,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'REDGamma3',
 		new Float64Array(
@@ -469,6 +507,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSL3(
 		'REDGamma4',
 		new Float64Array(
@@ -486,6 +525,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('RED'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Rec709 (800%)',
 		{
@@ -514,7 +554,8 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
-	this.gammaDat.push(true);
+	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'EOS Standard',
 		{
@@ -531,6 +572,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'EOS Standard (Legal)',
 		{
@@ -547,6 +589,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Canon Normal 1',
 		{
@@ -563,6 +606,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Canon Normal 2',
 		{
@@ -579,6 +623,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Canon Normal 3',
 		{
@@ -595,6 +640,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Canon Normal 4',
 		{
@@ -611,11 +657,13 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 
 	this.gammas.push(new LUTGammaNLog('Nikon N-Log'));
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Log')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(true);
+	this.gammaExt.push(true);
 
 
 	this.gammas.push(new LUTGammaIOLUT(
@@ -663,6 +711,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Nikon Neutral',
 		{
@@ -708,6 +757,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Nikon Vivid',
 		{
@@ -753,6 +803,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Nikon Monochrome',
 		{
@@ -798,6 +849,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Nikon Portrait',
 		{
@@ -843,6 +895,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaIOLUT(
 		'Nikon Landscape',
 		{
@@ -888,6 +941,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Nikon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 //
 	this.pqOOTF = new LUTGammaOOTFPQ('Display PQ OOTF (nits)', {Lw: 10000, scale: 'nits'});
 	this.hlgOOTF = new LUTGammaOOTFHLG('Display HLG OOTF (nits)', {Lw: 1000, Lb: 0, scale: 'nits'});
@@ -901,23 +955,27 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaPQ(
 		'Rec2100 PQ (HLG OOTF)', this.hlgOOTF));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.HLG = this.gammas.length;
 	this.gammas.push(new LUTGammaHLG(
 		'Rec2100 HLG', {a: 0.17883277, b: 0.28466892, c: 0.55991073}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.pqEOTFIdx = this.gammas.length;
 	this.gammas.push(new LUTGammaPQ(
 		'PQ (EOTF Only)', this.pqNoOOTF));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 //
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG3250G36 (HG1)',
@@ -935,6 +993,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG4600G30 (HG2)',
 		{
@@ -951,6 +1010,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG3259G40 (HG3)',
 		{
@@ -967,6 +1027,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG4609G33 (HG4)',
 		{
@@ -983,6 +1044,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG8000G36 (HG5)',
 		{
@@ -999,6 +1061,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG8000G30 (HG6)',
 		{
@@ -1015,6 +1078,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG8009G40 (HG7)',
 		{
@@ -1031,6 +1095,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'HG8009G33 (HG8)',
 		{
@@ -1047,6 +1112,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Cinegamma1',
 		{
@@ -1063,6 +1129,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Cinegamma2',
 		{
@@ -1079,6 +1146,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Cinegamma3',
 		{
@@ -1095,6 +1163,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Cinegamma4',
 		{
@@ -1111,6 +1180,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD1',
 		{
@@ -1127,6 +1197,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD2 - x4.5',
 		{
@@ -1143,6 +1214,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD3 - x3.5',
 		{
@@ -1159,6 +1231,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD4 - SMPTE240M',
 		{
@@ -1175,6 +1248,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD5 - Rec709',
 		{
@@ -1191,6 +1265,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Sony STD6 - x5',
 		{
@@ -1207,6 +1282,7 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Sony'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 /*
 	this.gammas.push(new LUTGammaGen(
 		'Canon WideDR',
@@ -1220,6 +1296,7 @@ LUTGamma.prototype.gammaList = function() {
 		}));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 */
 	this.gammas.push(new LUTGammaLUTSimple(
 		'Canon WideDR',
@@ -1237,168 +1314,201 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(true);
 	this.rec709 = this.gammas.length;
 	this.gammas.push(new LUTGammaGam(
 		'Rec709', [ 1/0.45, 4.50000000, 0.09900000, 0.01800000, 0.08100000, 1.9 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'Rec2020 12-bit', [ 1/0.45, 4.50000000, 0.09930000, 0.01810000, 0.08145000, 1.9 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'sRGB', [ 2.40000000,12.92000000, 0.05500000, 0.00313080, 0.04015966, 2.2 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('sRGB');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'DCI', [ 2.6,1, 0, 0.0000001, 0.0000001, 2.6 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLin(
 		'Scene Linear IRE', 0.2));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaLin(
 		'Scene Reflectance', 0.18));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaBBCGam(
 		'BBC 0.4', [ 0.4,5, -0.02262, 0.037703, Math.pow((0.037703-0.02262)/(1-0.02262),0.4), false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaBBCGam(
 		'BBC 0.5', [ 0.5,5, -0.01011, 0.020202, Math.pow((0.020202-0.01011)/(1-0.01011),0.5), false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaBBCGam(
 		'BBC 0.6', [ 0.6,5, -0.00334, 0.008857, Math.pow((0.008857-0.00334)/(1-0.00334),0.6), false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('Rec709');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'ProPhoto / ROMM', [ 1.8,16, 0, Math.pow(16,1.8/-0.8), Math.pow(Math.pow(16,1.8/-0.8),1/1.8), 1.8 ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('ProPhoto RGB');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ1.5', [ 1.5,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ1.6', [ 1.6,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ1.7', [ 1.7,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ1.8', [ 1.8,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ1.9', [ 1.9,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.0', [ 2.0,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.1', [ 2.1,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.2', [ 2.2,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.3', [ 2.3,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.4', [ 2.4,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.5', [ 2.5,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaGam(
 		'γ2.6', [ 2.6,1, 0, 0.0000001, 0.0000001, false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 //
 	this.pqOOTFIdx = this.gammas.length;
 	this.gammas.push(this.pqOOTF);
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(this.pqOOTFNorm);
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.hlgOOTFIdx = this.gammas.length;
 	this.gammas.push(this.hlgOOTF);
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(this.hlgOOTFNorm);
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('Rec2020');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 //
 	this.gammas.push(new LUTGammaITUProp(
 		'ITU Proposal (400%)', {m: 0.12314858 }));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaITUProp(
 		'ITU Proposal (800%)', {m: 0.083822216783 }));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaBBC283(
 		'BBC WHP283 (400%)', {m: 0.139401137752}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaBBC283(
 		'BBC WHP283 (800%)', {m: 0.097401889128}));
 	this.gammaSub.push([this.subIdx('HDR Display')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.LA = this.gammas.length;
 	this.gammas.push(new LUTGammaLA(
 		'LA', this.lutMaker));
 	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaNull(
 		'Null'));
 	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
+	this.gammaExt.push(false);
 	var max = this.gammas.length;
 	var logList = [], linList = [], genList = [], hdrList = [], ioList = [];
 	var firstLin = false;
@@ -5363,6 +5473,7 @@ LUTGamma.prototype.getLists = function(p,t) {
 		subNames: this.subNames,
 		subList: this.gammaSub,
 		gammaDat: this.gammaDat,
+		gammaExt: this.gammaExt,
 		rec709: this.rec709,
 		PQ: this.PQ,
 		HLG: this.HLG,

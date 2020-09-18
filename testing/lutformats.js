@@ -142,7 +142,7 @@ LUTFormats.prototype.gradesList = function() {
 	});
 */
 	this.grades.push({
-		title: 'DaVinci Resolve 12+ auto (.cube)', type: 'cube2',
+		title: 'DaVinci Resolve 12+ (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
@@ -157,7 +157,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve (.cube)', type: 'cube2',
+		title: 'DaVinci Resolve Old (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
@@ -182,6 +182,7 @@ LUTFormats.prototype.gradesList = function() {
 		scaling: true,
 		setBits: false,
 		resSDI: false,
+		defMin: 0, defMax: 1.095,
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -823,6 +824,21 @@ LUTFormats.prototype.updateGammaIn = function() {
 			this.inputs.inRange[0].checked = true;
 		} else {
 			this.inputs.inRange[1].checked = true;
+		}
+	}
+	if (this.inputs.gammaExt[curIn] && !gamDat) {
+		this.inputs.scaleMin.value = 0.0;
+		this.inputs.scaleMax.value = 1.095;
+		if (this.inputs.scaleBox.className == 'emptybox') {
+			this.inputs.scaleCheck.checked = true;
+			this.inputs.scaleInputs.className = 'emptybox';
+		}
+	} else if (parseFloat(this.inputs.scaleMax.value) === 1.095 || this.inputs.scaleCheck.checked === false){
+		this.inputs.scaleMin.value = 0.0;
+		this.inputs.scaleMax.value = 1.0;
+		if (this.inputs.scaleBox.className == 'emptybox') {
+			this.inputs.scaleCheck.checked = false;
+			this.inputs.scaleInputs.className = 'emptybox-hide';
 		}
 	}
 };

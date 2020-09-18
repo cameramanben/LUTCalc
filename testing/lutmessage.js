@@ -198,6 +198,13 @@ LUTMessage.prototype.gaSetParams = function() {
 		if (typeof this.inputs.scaleCheck !== 'undefined' && this.inputs.scaleCheck && typeof this.inputs.scaleMin.value !== 'undefined') {
 			d.scaleMin = parseFloat(this.inputs.scaleMin.value);
 			d.scaleMax = parseFloat(this.inputs.scaleMax.value);
+			if (d.scaleMin !== 0.0 || d.scaleMax !== 1.0) {
+				d.scaleCheck = true;
+			} else {
+				d.scaleCheck = false;
+			}
+		} else {
+			d.scaleCheck = false;
 		}
 		this.ui[3].getTFParams(d);
 		var max = this.gas.length;
@@ -378,6 +385,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaBaseGamuts',d.baseGamuts);
 	this.inputs.addInput('gammaSubNames',d.subNames);
 	this.inputs.addInput('gammaDataLevel',d.gammaDat);
+	this.inputs.addInput('gammaExt',d.gammaExt);
 	var subLists = [];
 	var m = d.subNames.length;
 	var allIdx = m-1;

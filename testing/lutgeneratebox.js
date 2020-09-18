@@ -224,9 +224,9 @@ LUTGenerateBox.prototype.oneDLUT = function() {
 		var start = chunk*j;
 		if ((start + chunk) > this.dimension) {
 			if (this.doSet) {
-				this.messages.gaTx(this.p,1,{start: start,vals: (this.dimension-start),dim: this.dimension, eiMult: Math.pow(2,this.setVal)});
+				this.messages.gaTx(this.p,1,{start: start,vals: (this.dimension - start),dim: this.dimension, eiMult: Math.pow(2,this.setVal)});
 			} else {
-				this.messages.gaTx(this.p,1,{start: start,vals: (this.dimension-start),dim: this.dimension});
+				this.messages.gaTx(this.p,1,{start: start,vals: (this.dimension - start),dim: this.dimension});
 			}
 		} else {
 			if (this.doSet) {

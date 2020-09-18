@@ -10,6 +10,7 @@ v3.3 Beta 1
 * New Feature - Added Sony s709 colourspace, estimated using Venice ACES primaries to reduce green on FS7 / FX9. TBD if this is the right approach. 
 * Feature Change - Improved Arri LogC high ISO highlight response.
 * Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.
+* Bugfix - Fixed custom input scaling bug.
 
 v3.2 Beta 1
 -------------
