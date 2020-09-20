@@ -737,6 +737,7 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Added Sony s709 colourspace, estimated using Venice ACES primaries to reduce green on FS7 / FX9. TBD if this is the right approach.");
 	this.addInfo(this.insClgInfo,true,null,"* Feature Change - Improved Arri LogC high ISO highlight response.");
 	this.addInfo(this.insClgInfo,true,null,"* Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.");
+	this.addInfo(this.insClgInfo,true,null,"* Feature Change - Added 33x LUT option to SmallHD, confirmed SmallHD preset over HDMI and SDI using FX9 and a6500 with latest PageOS4.");
 	this.addInfo(this.insClgInfo,false,null,"v3.2 Beta 1");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).");
 	this.addInfo(this.insClgInfo,true,null,"New Feature - DJI DLog-M based upon test images taken by Mark Walter a Mavic 2.");
