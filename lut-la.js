@@ -23,6 +23,8 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 	var in3DCS = 'Sony S-Gamut3.cine'; // system default
 	var sysCS = 'Sony S-Gamut3.cine'; // system default
 	var in3DRG = '109'; // system default
+	// Precision
+	var precision = this.messages.getPrecision();	
 	// 1D Transfer function
 	if (typeof params.in1DTF !== 'undefined') {
 		in1DTF = params.in1DTF;
@@ -47,7 +49,7 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 	}
 	var m = tf.length;
 	for (var j=0; j<m; j++) {
-		out += tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\t" + tf[j].toFixed(8).toString() + "\n";
+		out += tf[j].toFixed(precision).toString() + "\t" + tf[j].toFixed(precision).toString() + "\t" + tf[j].toFixed(precision).toString() + "\n";
 	}
 	// 3D Colourspace if present
 	if (typeof csBuff !== 'undefined' && csBuff) {
@@ -100,7 +102,7 @@ lacubeLUT.prototype.build = function(title, tfBuff, csBuff, params) {
 		}
 		m = cs[0].length;
 		for (var j=0; j<m; j++) {
-			out += cs[0][j].toFixed(8).toString() + "\t" + cs[1][j].toFixed(8).toString() + "\t" + cs[2][j].toFixed(8).toString() + "\n";
+			out += cs[0][j].toFixed(precision).toString() + "\t" + cs[1][j].toFixed(precision).toString() + "\t" + cs[2][j].toFixed(precision).toString() + "\n";
 		}
 	}
 	return out;

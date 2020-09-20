@@ -17,11 +17,12 @@ function cubeLUT(messages, isLE, flavour) {
 cubeLUT.prototype.build = function(buff, fileName, ext) {
 	var lut = new Float64Array(buff);
 	var max = lut.length;
+	var precision = this.messages.getPrecision();
 	var d = '';
 	for (var j=0; j<max; j += 3) {
-		d +=	lut[ j ].toFixed(6).toString() + ' ' +
-				lut[j+1].toFixed(6).toString() + ' ' +
-				lut[j+2].toFixed(6).toString() + "\n";
+		d +=	lut[ j ].toFixed(precision).toString() + ' ' +
+				lut[j+1].toFixed(precision).toString() + ' ' +
+				lut[j+2].toFixed(precision).toString() + "\n";
 	}
 	return {
 		lut: this.header() + d,
@@ -38,7 +39,7 @@ cubeLUT.prototype.header = function() {
 	} else {
 		out += 'LUT_3D_SIZE ' + info.dimension.toString() + "\n";
 	}
-	if (this.flavour !== 1 && (info.scaleMin !== 0 || info.scaleMax !== 1)) {
+	if (this.flavour !== 1 && info.scaleCheck && (info.scaleMin !== 0 || info.scaleMax !== 1)) {
 		if (this.flavour === 2) {
 			if (info.oneD) {
 				out += 'LUT_1D_INPUT_RANGE ' + info.scaleMin + ' ' + info.scaleMax + "\n";
