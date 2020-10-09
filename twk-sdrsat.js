@@ -137,6 +137,18 @@ TWKSDRSat.prototype.getInfo = function(info) {
 		info.doSDRSat = false;
 	}
 };
+TWKSDRSat.prototype.isCustomGamma = function() {
+	return false;
+};
+TWKSDRSat.prototype.isCustomGamut = function() {
+	var tweaks = this.inputs.tweaks.checked;
+	var tweak = this.tweakCheck.checked;
+	if (tweaks && tweak) {
+		return true;
+	} else {
+		return false;
+	}
+};
 TWKSDRSat.prototype.events = function() {
 	this.tweakCheck.onclick = function(here){ return function(){
 		here.toggleTweak();
