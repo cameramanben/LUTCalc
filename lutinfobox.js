@@ -2074,6 +2074,12 @@ LUTInfoBox.prototype.gammaChartOpt = function() {
 LUTInfoBox.prototype.gammaPrint = function() {
 	var custom = this.messages.isCustomGamma();
 	var title = this.inputs.name.value;
+    var recGamma;
+    if (this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value !== '9999') {
+        recGamma = this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].lastChild.nodeValue;
+    } else {
+        recGamma = this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].lastChild.nodeValue;
+    }
 	var gamma;
 	if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value !== '9999') {
 		gamma = this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue;
@@ -2099,7 +2105,36 @@ LUTInfoBox.prototype.gammaPrint = function() {
 	this.printElements.clip2.drawImage(document.getElementById('can-stop-clip'), 0, 0);
 	this.printElements.out3.clearRect(0, 0, this.lutChart.width, this.lutChart.height);
 	this.printElements.out3.drawImage(document.getElementById('can-lut-out'), 0, 0);
-	if (this.inputs.isApp) {
+	if (this.inputs.appleApp) {
+        var chartCanvas = document.createElement('canvas');
+        chartCanvas.width = this.printElements.rec2.canvas.width;
+        chartCanvas.height = this.printElements.rec2.canvas.height;
+        var chartContext = chartCanvas.getContext('2d');
+        chartContext.drawImage(this.printElements.rec2.canvas, 0, 0);
+        chartContext.drawImage(this.printElements.out2.canvas, 0, 0);
+        chartContext.drawImage(this.printElements.clip2.canvas, 0, 0);
+
+        var data = {
+            title: title,
+            camera: this.messages.getCamera(),
+            recGamma: this.gammaInName,
+            details: 'LUTCalc ' + this.inputs.version,
+            inValues: Array.from(this.stopIn),
+            outValues: Array.from(this.stopOut),
+            lutIn: Array.from(this.lutIn),
+            lutOut: Array.from(this.lutOut),
+            minStop: this.stopX[0],
+            maxStop: this.stopX[this.stopX.length - 1],
+            reflectances: [0,0.18,0.38,0.44,0.9,7.2,Math.pow(2,parseFloat(this.inputs.wclip))*0.18],
+            reflectanceValues: Array.from(this.tableIREVals),
+            stops: [-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8],
+            stopValues: Array.from(this.stopVals),
+            blackClip: this.inputs.bclip,
+            whiteClip: this.inputs.wclip
+        };
+ 		window.webkit.messageHandlers.printCharts.postMessage(JSON.stringify(data));
+ 
+	} else if (this.inputs.isApp) {
 		window.lutCalcApp.printCharts();
 	} else {
 		window.print();

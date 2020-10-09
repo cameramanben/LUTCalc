@@ -12,6 +12,7 @@
 */
 /************************* LUTInputs *************************/
 /*********** Data available globally within LUTCalc **********/
+console.log("App Running");
 function LUTInputs() {
 	this.ready = [true,
 		false, // 1 - camerabox
@@ -72,9 +73,14 @@ LUTTests.prototype.runTests = function() {
 	this.isLETest();
 };
 LUTTests.prototype.isAppTest = function() { // Test for native app bridges
-	if (typeof window.lutCalcApp !== 'undefined') {
+	if (typeof window.webkit !== 'undefined' && window.webkit && window.webkit.messageHandlers) {
+        lutInputs.addInput('appleApp',true);
+    	lutInputs.addInput('isApp',true);
+	} else if (typeof window.lutCalcApp !== 'undefined') {
+    	lutInputs.addInput('appleApp',false);
     	lutInputs.addInput('isApp',true);
 	} else {
+    	lutInputs.addInput('appleApp',false);
     	lutInputs.addInput('isApp',false);
 	}
 };
@@ -196,6 +202,6 @@ function updateSplash() {
 /********************** Start things up **********************/
 var lutInputs = new LUTInputs();
 lutInputs.addInput('version','v3.3 Beta 1');
-lutInputs.addInput('date','September 2020');
+lutInputs.addInput('date','October 2020');
 var splash = splashStart();
 var lutTests = new LUTTests(lutInputs);
