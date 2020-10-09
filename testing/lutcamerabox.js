@@ -136,7 +136,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Nikon",model:"Z7",iso:800,type:2,defgamma:"Nikon N-Log",defgamut:"Rec2020",bclip:-6,wclip:6});
 //	this.cameras.push({make:"Nikon",model:"Z780",iso:800,type:2,defgamma:"NLog",defgamut:"Rec2020",bclip:-6,wclip:6});
 	this.cameras.push({make:"Nikon",model:"D800",iso:100,type:2,defgamma:"Nikon Neutral",defgamut:"Passthrough",bclip:-10.9,wclip:3.5});
-	this.cameras.push({make:"",model:"Generic",iso:800,type:2,defgamma:"Cineon",defgamut:"Rec709",bclip:-10,wclip:10});
+	this.cameras.push({make:"",model:"Generic",iso:800,type:2,defgamma:"Cineon",defgamut:"Rec709",bclip:-9,wclip:9});
 };
 LUTCameraBox.prototype.clearSelect = function(sel) {
 	var m = sel.options.length;
@@ -265,6 +265,10 @@ LUTCameraBox.prototype.changeShift = function() {
 		this.cineeiInput.value = Math.round((Math.pow(2,parseFloat(this.shiftInput.value)))*parseFloat(this.nativeLabel.innerHTML)).toString();
 	}
 
+};
+LUTCameraBox.prototype.getCamera = function() {
+    var idx = parseInt(this.cameraSelect.options[this.cameraSelect.selectedIndex].value);
+    return this.cameras[idx].make + " " + this.cameras[idx].model;
 };
 LUTCameraBox.prototype.getInfo = function(info) {
 	var idx = parseInt(this.cameraSelect.options[this.cameraSelect.selectedIndex].value);

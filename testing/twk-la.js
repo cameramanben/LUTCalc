@@ -583,7 +583,7 @@ TWKLA.prototype.gotFile = function() {
 		this.testGamma();
 		this.inputs.lutAnalyst.reset();
 		var parsed = false;
-		if (this.inputs.laFileData.isTxt) {
+ 		if (this.inputs.laFileData.isTxt) {
 			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.text, this.inputs.lutAnalyst, 'inLUT');
 		} else {
 			parsed = this.formats.parse(this.inputs.laFileData.format,this.inputs.laFileData.title, this.inputs.laFileData.buff, this.inputs.lutAnalyst, 'inLUT');

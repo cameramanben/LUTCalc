@@ -1074,6 +1074,9 @@ LUTMessage.prototype.setPrecision = function(precision) {
 LUTMessage.prototype.getPrecision = function() {
 	return this.precision;
 };
+LUTMessage.prototype.getCamera = function() {
+    return this.ui[1].getCamera();
+};
 // Loading progress bar
 if (typeof splash !== 'undefined') {
 	splashProg();
