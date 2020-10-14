@@ -287,14 +287,32 @@ LUTCameraBox.prototype.getSettings = function(data) {
 LUTCameraBox.prototype.setSettings = function(settings) {
 	if (typeof settings.cameraBox !== 'undefined') {
 		var data = settings.cameraBox;
-		if (typeof data.model === 'string') {
+
+        if (typeof data.model === 'string') {
 			var m = this.cameras.length;
+            var idx = 0;
 			for (var j=0; j<m; j++) {
 				if (this.cameras[j].model === data.model) {
-					this.cameraSelect.options[j].selected = true;
+                    idx = j;
 					break;
 				}
 			}
+            m = this.manufacturerSelect.options.length;
+            this.manufacturerSelect.options[m - 1].selected = true;
+            for (var j=0; j<m; j++) {
+                if (this.manufacturerSelect.options[j].lastChild.nodeValue === this.cameras[idx].make) {
+                    this.manufacturerSelect.options[j].selected = true;
+                    break;
+                }
+            }
+            this.cameraOptions();
+            m = this.cameraSelect.length;
+            for (var j=0; j<m; j++) {
+                if (parseInt(this.cameraSelect.options[j].value) === idx) {
+                    this.cameraSelect.options[j].selected = true;
+                    break;
+                }
+            }
 			this.changeCamera();
 		}
 		if (typeof data.shift === 'number') {

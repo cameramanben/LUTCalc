@@ -155,6 +155,23 @@ LUTGenerateBox.prototype.events = function() {
 		here.settingsHolder.className = 'settings-popup-hide';
 	};}(this);
 };
+LUTGenerateBox.prototype.triggerSettingsPopup = function() {
+    modalBox.className = 'modalbox';
+    this.settingsHolder.className = 'settings-popup';
+};
+LUTGenerateBox.prototype.triggerSetReset = function() {
+    window.webkit.messageHandlers.setReset.postMessage(this.messages.getSettings());
+};
+LUTGenerateBox.prototype.triggerSetDefault = function() {
+    window.webkit.messageHandlers.setDefault.postMessage(this.messages.getSettings());
+};
+LUTGenerateBox.prototype.triggerSetCurrent = function() {
+    window.webkit.messageHandlers.setCurrent.postMessage(this.messages.getSettings());
+};
+LUTGenerateBox.prototype.triggerGenerateSet = function() {
+    modalBox.className = 'modalbox';
+    this.genSetHolder.className = 'lutset-popup';
+};
 LUTGenerateBox.prototype.getSettings = function(data) {
 	data.generateBox = {
 		precision: parseInt(this.precisionSetting.value)
@@ -176,7 +193,7 @@ LUTGenerateBox.prototype.gotBaseIRE = function(baseIRE) {
 	this.baseIRE = baseIRE;
 };
 LUTGenerateBox.prototype.generate = function() {
-	this.doSet = false;
+    this.doSet = false;
 	this.inputs.doSaveDialog = 1;
 	if (this.inputs.d[0].checked) {
 		this.oneDLUT();

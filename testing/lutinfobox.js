@@ -729,7 +729,7 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
-	this.addInfo(this.insClgInfo,false,null,"v3.3 Beta 1");
+	this.addInfo(this.insClgInfo,false,null,"v4.0");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Additional cameras; Sony, Panasonic, DJI, Nikon.");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Added Nikon N-Log gamma curve.");
@@ -2048,6 +2048,11 @@ LUTInfoBox.prototype.createFigure = function(type, filename, ratio) {
 	return box;
 };
 // Event Responses
+LUTInfoBox.prototype.triggerInstructions = function() {
+        console.log("instructions")
+        this.instructionsOpt();
+        this.messages.mobileOpt('inf');
+}
 LUTInfoBox.prototype.instructionsOpt = function() {
 	this.showMainscreen();
 	this.instructionsBox.className = 'info-tab-ins';
