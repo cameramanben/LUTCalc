@@ -55,6 +55,9 @@ function LUTMessage(inputs) {
 	this.gtL = 0;
 	this.startGtThreads();
 	this.precision = 8;
+    this.gaReady = false;
+    this.gtReady = false;
+    this.gagtReady = false;
 }
 LUTMessage.prototype.addUI = function(code,ui) {
 	this.ui[code] = ui;
@@ -366,6 +369,16 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 		if (this.inputs.isMobile) {
 			this.ui[16].updateUI();
 		}
+        if (!this.gagtReady) {
+            this.gaReady = true;
+            if (this.gtReady) {
+                this.gagtReady = true;
+                if (this.inputs.appleApp) {
+                    var data = { version: this.inputs.versionNum }
+                    window.webkit.messageHandlers.appReady.postMessage(JSON.stringify(data));
+                }
+            }
+        }
 	}
 };
 LUTMessage.prototype.gotGammaLists = function(d) {
@@ -661,7 +674,16 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 		if (this.inputs.isMobile) {
 			this.ui[16].updateUI();
 		}
-	}
+        if (!this.gagtReady) {
+            this.gtReady = true;
+            if (this.gaReady) {
+                this.gagtReady = true;
+                if (this.inputs.appleApp) {
+                    window.webkit.messageHandlers.appReady.postMessage("");
+                }
+            }
+        }
+    }
 };
 LUTMessage.prototype.gotGamutLists = function(d) {
 	this.inputs.addInput('gamutPass',d.pass);
@@ -802,13 +824,17 @@ LUTMessage.prototype.getSettings = function() {
 	this.ui[1].getSettings(data);
 	this.ui[2].getSettings(data);
 	this.ui[3].getSettings(data);
-	this.ui[5].getSettings(data);
+ 	this.ui[5].getSettings(data);
 	this.ui[11].getSettings(data);
 	this.ui[4].getSettings(data);
 	return JSON.stringify(data,null,"\t");
 };
 LUTMessage.prototype.setSettings = function() {
 	var data = JSON.parse(this.inputs.settingsData.text.join(''));
+    if (typeof data.lutBox !== 'undefined' && typeof data.lutBox.oneD === 'boolean') {
+        this.inputs.d[0].checked = data.oneD;
+        this.inputs.d[1].checked = !data.oneD;
+    }
 	this.ui[1].setSettings(data);
 	this.ui[2].setSettings(data);
 	this.ui[3].setSettings(data);

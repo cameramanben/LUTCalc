@@ -21,7 +21,7 @@ function LUTFile(inputs, messages) {
 	this.inputs.addInput('doSaveDialog',1);
 }
 LUTFile.prototype.save = function(data, fileName, extension, source) {
-    if (this.inputs.appleApp) {
+     if (this.inputs.appleApp) {
         var data = {
             data: data,
             filename: this.filename(fileName),
@@ -29,7 +29,7 @@ LUTFile.prototype.save = function(data, fileName, extension, source) {
             doDialog: this.inputs.doSaveDialog,
             source: source
         }
-        window.webkit.messageHandlers.saveLUT.postMessage(JSON.stringify(data));
+        window.webkit.messageHandlers.saveText.postMessage(JSON.stringify(data));
     } else if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination

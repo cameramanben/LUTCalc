@@ -176,6 +176,10 @@ TWKKnee.prototype.getSettings = function(data) {
 TWKKnee.prototype.setSettings = function(settings) {
 	if (typeof settings.knee !== 'undefined') {
 		var data = settings.knee;
+        if (typeof data.doKnee === 'boolean') {
+            this.tweakCheck.checked = data.doKnee;
+            this.toggleTweak();
+        }
 		if (typeof data.legal === 'boolean') {
 			this.legOpt.checked = data.legal;
 			this.extOpt.checked = !data.legal;

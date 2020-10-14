@@ -435,12 +435,13 @@ LUTLutBox.prototype.setSettings = function(settings) {
 		if (typeof data.oneD === 'boolean') {
 			this.lutOneD.checked = data.oneD;
 			this.lutThreeD.checked = !data.oneD;
+            this.messages.oneOrThree();
 		}
 		if (typeof data.meshSize === 'number') {
 			var m = this.inputs.dimension.length;
 			for (var j=0; j<m; j++) {
 				if (parseInt(this.inputs.dimension[j].value) === data.meshSize) {
-					this.inputs.dimension[j].checked = true;
+ 					this.inputs.dimension[j].checked = true;
 					break;
 				}
 			}

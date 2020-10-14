@@ -12,7 +12,6 @@
 */
 /************************* LUTInputs *************************/
 /*********** Data available globally within LUTCalc **********/
-console.log("App Running");
 function LUTInputs() {
 	this.ready = [true,
 		false, // 1 - camerabox
@@ -201,7 +200,8 @@ function updateSplash() {
 
 /********************** Start things up **********************/
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v3.3 Beta 1');
+lutInputs.addInput('version','v4.0');
+lutInputs.addInput('versionNum', 4.0);
 lutInputs.addInput('date','October 2020');
 var splash = splashStart();
 var lutTests = new LUTTests(lutInputs);

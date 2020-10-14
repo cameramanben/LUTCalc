@@ -1,8 +1,8 @@
 LUTCalc Changelog
 =================
 
-v3.3 Beta 1
------------
+v4.0
+----
 * New Feature - Additional cameras; Sony, Panasonic, DJI, Nikon.
 * New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).
 * New Feature - Added Nikon N-Log gamma curve.
