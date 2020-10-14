@@ -19,15 +19,16 @@ spi3dLUT.prototype.build = function(buff, fileName, ext) {
 	this.messages.getInfo(info);
 	var m = parseInt(info.dimension);
 	var d = '';
+	var precision = this.messages.getPrecision();	
 	var j;
 	for (var r=0; r<m; r++) {
 		for (var g=0; g<m; g++) {
 			for (var b=0; b<m; b++) {
 				j = (r + (g*m) + (b*m*m))*3;
 				d +=	r.toString() + ' ' + g.toString() + ' ' + b.toString() + ' ' +
-						lut[ j ].toFixed(8).toString() + ' ' +
-						lut[j+1].toFixed(8).toString() + ' ' +
-						lut[j+2].toFixed(8).toString() + "\n";
+						lut[ j ].toFixed(precision).toString() + ' ' +
+						lut[j+1].toFixed(precision).toString() + ' ' +
+						lut[j+2].toFixed(precision).toString() + "\n";
 			}
 		}
 	}

@@ -111,6 +111,22 @@ LUTFormats.prototype.gradesList = function() {
 	});
 /*
 	this.grades.push({
+		title: 'LOGCalc', type: 'cube1',
+		oneD: true, threeD: false, defThree: false,
+		oneDim: [64,256,1024], threeDim: [],
+		defDim: 256,
+		someGammas: false,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: false,
+		scaling: false,
+		setBits: false,
+		resSDI: false,
+		bClip: -1023, wClip: 67025937, hard: false
+	});
+*/
+/*
+	this.grades.push({
 		title: '1D List (.cube)', type: 'cube1',
 		oneD: true, threeD: false, defThree: false,
 		oneDim: [64,128,256], threeDim: [],
@@ -126,14 +142,14 @@ LUTFormats.prototype.gradesList = function() {
 	});
 */
 	this.grades.push({
-		title: 'DaVinci Resolve 12+ auto (.cube)', type: 'cube2',
+		title: 'DaVinci Resolve 12+ (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
 		someGammas: false,
-		legIn: true, datIn: true, defLegIn: true,
-		legOut: true, datOut: true, defLegOut: true,
-		defLegDat: true,
+		legIn: true, datIn: true, defLegIn: false,
+		legOut: true, datOut: true, defLegOut: false,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
@@ -141,7 +157,7 @@ LUTFormats.prototype.gradesList = function() {
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
-		title: 'DaVinci Resolve (.cube)', type: 'cube2',
+		title: 'DaVinci Resolve Old (.cube)', type: 'cube2',
 		oneD: true, threeD: true, defThree: true,
 		oneDim: [1024,4096,16384], threeDim: [17,33,65],
 		defDim: 65,
@@ -162,10 +178,11 @@ LUTFormats.prototype.gradesList = function() {
 		someGammas: false,
 		legIn: true, datIn: true, defLegIn: false,
 		legOut: true, datOut: true, defLegOut: false,
-		defLegDat: true,
+		defLegDat: false,
 		scaling: true,
 		setBits: false,
 		resSDI: false,
+		defMin: 0, defMax: 1.095,
 		bClip: -1023, wClip: 67025937, hard: false
 	});
 	this.grades.push({
@@ -372,8 +389,8 @@ LUTFormats.prototype.mlutsList = function() {
 	this.mluts.push({
 		title: 'SmallHD 3D MLUT (.cube)', type: 'cube1',
 		oneD: false, threeD: true, defThree: true,
-		oneDim: [], threeDim: [17],
-		defDim: 17,
+		oneDim: [], threeDim: [17, 33],
+		defDim: 33,
 		someGammas: false,
 		legIn: false, datIn: true, defLegIn: false,
 		legOut: false, datOut: true, defLegOut: false,
@@ -729,6 +746,8 @@ LUTFormats.prototype.updateOptions = function() {
 	}
 	// Custom input scaling
 	if (idx !== curIdx || changedType) { // Set to default only if the LUT format has changed
+		this.inputs.scaleCheck.checked = false;
+		this.inputs.scaleInputs.className = 'emptybox-hide';
 		if (cur.scaling) {
 			this.inputs.scaleBox.className = 'emptybox';
 			if (typeof cur.defMin !== 'undefined') {
@@ -805,6 +824,21 @@ LUTFormats.prototype.updateGammaIn = function() {
 			this.inputs.inRange[0].checked = true;
 		} else {
 			this.inputs.inRange[1].checked = true;
+		}
+	}
+	if (this.inputs.gammaExt[curIn] && !gamDat) {
+		this.inputs.scaleMin.value = 0.0;
+		this.inputs.scaleMax.value = 1.095;
+		if (this.inputs.scaleBox.className == 'emptybox') {
+			this.inputs.scaleCheck.checked = true;
+			this.inputs.scaleInputs.className = 'emptybox';
+		}
+	} else if (parseFloat(this.inputs.scaleMax.value) === 1.095 || this.inputs.scaleCheck.checked === false){
+		this.inputs.scaleMin.value = 0.0;
+		this.inputs.scaleMax.value = 1.0;
+		if (this.inputs.scaleBox.className == 'emptybox') {
+			this.inputs.scaleCheck.checked = false;
+			this.inputs.scaleInputs.className = 'emptybox-hide';
 		}
 	}
 };
@@ -963,7 +997,7 @@ LUTFormats.prototype.build = function(type,buff) {
 };
 LUTFormats.prototype.parse = function(ext, title, data, lutMaker, lutDest) {
 	var max = this.types.length;
-	for (var j=0; j<max; j++) {
+ 	for (var j=0; j<max; j++) {
 		if (this.exts[j] === ext) {
 			return this.formats[j].parse(title, data, lutMaker, lutDest);
 		}

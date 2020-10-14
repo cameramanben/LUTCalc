@@ -72,9 +72,14 @@ LUTTests.prototype.runTests = function() {
 	this.isLETest();
 };
 LUTTests.prototype.isAppTest = function() { // Test for native app bridges
-	if (typeof window.lutCalcApp !== 'undefined') {
+	if (typeof window.webkit !== 'undefined' && window.webkit && window.webkit.messageHandlers) {
+        lutInputs.addInput('appleApp',true);
+    	lutInputs.addInput('isApp',true);
+	} else if (typeof window.lutCalcApp !== 'undefined') {
+    	lutInputs.addInput('appleApp',false);
     	lutInputs.addInput('isApp',true);
 	} else {
+    	lutInputs.addInput('appleApp',false);
     	lutInputs.addInput('isApp',false);
 	}
 };
@@ -195,7 +200,8 @@ function updateSplash() {
 
 /********************** Start things up **********************/
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v3.1.2');
-lutInputs.addInput('date','September 2017');
+lutInputs.addInput('version','v4.0');
+lutInputs.addInput('versionNum', 4.0);
+lutInputs.addInput('date','October 2020');
 var splash = splashStart();
 var lutTests = new LUTTests(lutInputs);

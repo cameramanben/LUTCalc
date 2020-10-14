@@ -54,6 +54,10 @@ function LUTMessage(inputs) {
 	this.gtU = 0; // Counter keeping tabs on how many of the threads are up-to-date
 	this.gtL = 0;
 	this.startGtThreads();
+	this.precision = 8;
+    this.gaReady = false;
+    this.gtReady = false;
+    this.gagtReady = false;
 }
 LUTMessage.prototype.addUI = function(code,ui) {
 	this.ui[code] = ui;
@@ -155,6 +159,10 @@ LUTMessage.prototype.gaSetParams = function() {
 			inLinGamma: parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.options.selectedIndex].value),
 			outGamma: parseInt(this.inputs.outGamma.options[this.inputs.outGamma.options.selectedIndex].value),
 			outLinGamma: parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.options.selectedIndex].value),
+			contrast: {
+				rec: parseInt(this.inputs.inConGamma.options[this.inputs.inConGamma.options.selectedIndex].value),
+				out: parseInt(this.inputs.outConGamma.options[this.inputs.outConGamma.options.selectedIndex].value),
+			},
 
 			pqLwIn: parseFloat(this.inputs.inPQLw.value),
 			pqLwOut: parseFloat(this.inputs.outPQLw.value),
@@ -190,9 +198,16 @@ LUTMessage.prototype.gaSetParams = function() {
 			d.bClip = this.inputs.bClip;
 			d.wClip = this.inputs.wClip;
 		}
-		if (typeof this.inputs.scaleMin.value !== 'undefined') {
+		if (typeof this.inputs.scaleCheck !== 'undefined' && this.inputs.scaleCheck && typeof this.inputs.scaleMin.value !== 'undefined') {
 			d.scaleMin = parseFloat(this.inputs.scaleMin.value);
 			d.scaleMax = parseFloat(this.inputs.scaleMax.value);
+			if (d.scaleMin !== 0.0 || d.scaleMax !== 1.0) {
+				d.scaleCheck = true;
+			} else {
+				d.scaleCheck = false;
+			}
+		} else {
+			d.scaleCheck = false;
 		}
 		this.ui[3].getTFParams(d);
 		var max = this.gas.length;
@@ -354,6 +369,16 @@ LUTMessage.prototype.gammaParamsSet = function(d) {
 		if (this.inputs.isMobile) {
 			this.ui[16].updateUI();
 		}
+        if (!this.gagtReady) {
+            this.gaReady = true;
+            if (this.gtReady) {
+                this.gagtReady = true;
+                if (this.inputs.appleApp) {
+                    var data = { version: this.inputs.versionNum }
+                    window.webkit.messageHandlers.appReady.postMessage(JSON.stringify(data));
+                }
+            }
+        }
 	}
 };
 LUTMessage.prototype.gotGammaLists = function(d) {
@@ -363,6 +388,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaPQOOTF',d.PQOOTF);
 	this.inputs.addInput('gammaPQEOTF',d.PQEOTF);
 	this.inputs.addInput('gammaHLGOOTF',d.HLGOOTF);
+	this.inputs.addInput('gammaDLogM',d.DLogM);
 	this.inputs.addInput('gammaInList',d.inList);
 	this.inputs.addInput('gammaOutList',d.outList);
 	this.inputs.addInput('gammaLinList',d.linList);
@@ -372,6 +398,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaBaseGamuts',d.baseGamuts);
 	this.inputs.addInput('gammaSubNames',d.subNames);
 	this.inputs.addInput('gammaDataLevel',d.gammaDat);
+	this.inputs.addInput('gammaExt',d.gammaExt);
 	var subLists = [];
 	var m = d.subNames.length;
 	var allIdx = m-1;
@@ -381,6 +408,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 			allIdx = j;
 		}
 	}
+
 	m = d.subList.length;
 	var m2;
 	for (var j=0; j<m; j++) {
@@ -646,7 +674,16 @@ LUTMessage.prototype.gamutParamsSet = function(d) {
 		if (this.inputs.isMobile) {
 			this.ui[16].updateUI();
 		}
-	}
+        if (!this.gagtReady) {
+            this.gtReady = true;
+            if (this.gaReady) {
+                this.gagtReady = true;
+                if (this.inputs.appleApp) {
+                    window.webkit.messageHandlers.appReady.postMessage("");
+                }
+            }
+        }
+    }
 };
 LUTMessage.prototype.gotGamutLists = function(d) {
 	this.inputs.addInput('gamutPass',d.pass);
@@ -750,6 +787,7 @@ LUTMessage.prototype.updateGammaOut = function() {
 	if (this.go) {
 		this.ui[11].updateGammaOut();
 		this.ui[17].updateGammaOut();
+		this.ui[3].updateGammaOut();
 	}
 }
 LUTMessage.prototype.changeGamut = function() {
@@ -786,15 +824,21 @@ LUTMessage.prototype.getSettings = function() {
 	this.ui[1].getSettings(data);
 	this.ui[2].getSettings(data);
 	this.ui[3].getSettings(data);
+ 	this.ui[5].getSettings(data);
 	this.ui[11].getSettings(data);
 	this.ui[4].getSettings(data);
 	return JSON.stringify(data,null,"\t");
 };
 LUTMessage.prototype.setSettings = function() {
 	var data = JSON.parse(this.inputs.settingsData.text.join(''));
+    if (typeof data.lutBox !== 'undefined' && typeof data.lutBox.oneD === 'boolean') {
+        this.inputs.d[0].checked = data.oneD;
+        this.inputs.d[1].checked = !data.oneD;
+    }
 	this.ui[1].setSettings(data);
 	this.ui[2].setSettings(data);
 	this.ui[3].setSettings(data);
+	this.ui[5].setSettings(data);
 	this.ui[11].setSettings(data);
 	this.ui[4].setSettings(data);
 	this.gtSetParams();
@@ -826,6 +870,7 @@ LUTMessage.prototype.loadGamutLUTs = function() {
 	var fileNames = [
 		'LC709',
 		'LC709A',
+		's709',
 		'cpouttungsten',
 		'cpoutdaylight',
 		'Amira709',
@@ -1048,6 +1093,15 @@ LUTMessage.prototype.getSamples = function(gridX,gridY) {
 };
 LUTMessage.prototype.mobileOpt = function(opt) {
 	this.ui[16].desktopCur(opt);
+};
+LUTMessage.prototype.setPrecision = function(precision) {
+	this.precision = precision;
+};
+LUTMessage.prototype.getPrecision = function() {
+	return this.precision;
+};
+LUTMessage.prototype.getCamera = function() {
+    return this.ui[1].getCamera();
 };
 // Loading progress bar
 if (typeof splash !== 'undefined') {

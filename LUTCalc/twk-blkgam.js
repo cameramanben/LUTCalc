@@ -84,7 +84,7 @@ TWKBlkGam.prototype.ui = function() {
 };
 TWKBlkGam.prototype.toggleTweaks = function() {
 	// If The Overall Checkbox Is Ticked
-	if (this.inputs.tweaks.checked && this.inputs.d[1].checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
+	if (this.inputs.tweaks.checked) { // This checks for 'Customisations' to be checked and LUT type set to '3D' (the d[1] item)
 		if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue !== 'Null') {
 			this.holder.className = 'tweakholder';
 		} else {

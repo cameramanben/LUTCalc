@@ -21,7 +21,16 @@ function LUTFile(inputs, messages) {
 	this.inputs.addInput('doSaveDialog',1);
 }
 LUTFile.prototype.save = function(data, fileName, extension, source) {
-    if (this.inputs.isApp) { // From native app detection in lutcalc.js
+     if (this.inputs.appleApp) {
+        var data = {
+            data: data,
+            filename: this.filename(fileName),
+            extension: extension,
+            doDialog: this.inputs.doSaveDialog,
+            source: source
+        }
+        window.webkit.messageHandlers.saveText.postMessage(JSON.stringify(data));
+    } else if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveLUT(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
@@ -60,7 +69,18 @@ LUTFile.prototype.save = function(data, fileName, extension, source) {
 	}
 };
 LUTFile.prototype.saveBinary = function(data, fileName, extension, source) {
-    if (this.inputs.isApp) { // From native app detection in lutcalc.js
+    if (this.inputs.appleApp) { // WKWebView uses a different mechanism to WebView, so appleApp triggers the 'new' approach
+        var data = {
+            data: btoa(new Uint8Array(data).reduce((data, byte)=> {
+                    return data + String.fromCharCode(byte);
+                }, '')),
+            filename: this.filename(fileName),
+            extension: extension,
+            doDialog: this.inputs.doSaveDialog,
+            source: source
+        }
+        window.webkit.messageHandlers.saveBIN.postMessage(JSON.stringify(data));
+    } else if (this.inputs.isApp) { // From native app detection in lutcalc.js
         return window.lutCalcApp.saveBIN(data, this.filename(fileName), extension, this.inputs.doSaveDialog, source);
     } else if (this.inputs.isChromeApp) { // Use Chrome App fileSystem API to select destination
 		chrome.fileSystem.chooseEntry(
@@ -99,7 +119,15 @@ LUTFile.prototype.saveBinary = function(data, fileName, extension, source) {
 	}
 };
 LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, isTxt, destination, parentObject, next) {
-	if (this.inputs.isApp) {
+    if (this.inputs.appleApp) {
+        var data = {
+            extensions: extensions.toString(),
+            destination: destination,
+            parent: parentObject.p,
+            next: next
+        }
+        window.webkit.messageHandlers.loadLUT.postMessage(JSON.stringify(data));
+    } else if (this.inputs.isApp) {
 		window.lutCalcApp.loadLUT(extensions.toString(), destination, parentObject.p, next);
 	} else {
 		var file = fileInput.files[0];
@@ -165,7 +193,15 @@ LUTFile.prototype.loadLUTFromInput = function(fileInput, extensions, isTxt, dest
 	}
 };
 LUTFile.prototype.loadImgFromInput = function(fileInput, extensions, destination, parentObject, next) {
-	if (this.inputs.isApp) {
+    if (this.inputs.appleApp) {
+        var data = {
+            extensions: extensions.toString(),
+            destination: destination,
+            parent: parentObject.p,
+            next: next
+        }
+        window.webkit.messageHandlers.loadImg.postMessage(JSON.stringify(data));
+    } else 	if (this.inputs.isApp) {
 		window.lutCalcApp.loadImg(extensions.toString(), destination, parentObject.p, next);
 	} else {
 		var file = fileInput.files[0];
@@ -220,6 +256,30 @@ LUTFile.prototype.filename = function(filename) {
 	return filename.replace(/[^a-z0-9_\-\ ]/gi, '').replace(/[^a-z0-9_\-]/gi, '_');
 };
 // Functions available to native apps
+function loadLUTFromAppleApp(fileName, format, content64, destination, parentIdx, next) {
+    lutInputs[destination].format = format;
+    var content = atob(content64);
+    if (format.toLowerCase() === 'labin') {
+        var max = content.length;
+        var data = new Uint8Array(max);
+        for (var j=0; j<max; j++) {
+            data[j] = content.charCodeAt(j);
+        }
+        lutInputs[destination].title = fileName;
+        lutInputs[destination].buff = data.buffer;
+        lutInputs[destination].isTxt = false;
+    } else {
+        lutInputs[destination].title = fileName;
+        lutInputs[destination].text = content.split(/[\n\u0085\u2028\u2029]|\r\n?/);
+        lutInputs[destination].isTxt = true;
+    }
+    switch (parseInt(parentIdx)) {
+        case 5: lutGenerate.followUp(parseInt(next));
+                break;
+        case 10: lutTweaksBox.followUp(parseInt(parentIdx),parseInt(next));
+                 break;
+    }
+}
 function loadLUTFromApp(fileName, format, content, destination, parentIdx, next) {
     format = format.toLowerCase();
 	lutInputs[destination].format = format;
@@ -244,13 +304,38 @@ function loadLUTFromApp(fileName, format, content, destination, parentIdx, next)
 				break;
 	}
 }
+function loadImgFromAppleApp(format, title, content64, destination, parentIdx, next) {
+    var theDestination = lutInputs[destination];
+    var nextObject;
+    switch (parseInt(parentIdx)) {
+        case 8: nextObject = lutPreview;
+                break;
+    }
+    theDestination.title = title;
+    var contentString = atob(content64);
+
+    var max = contentString.length;
+    var data = new Uint8Array(max);
+    for (var j=0; j<max; j++) {
+        data[j] = contentString.charCodeAt(j);
+    }
+    var content = new Uint16Array(data.buffer);
+    max = content.length;
+    theDestination.imageData = new Float64Array(max);
+    var sample;
+     for (var j=0; j<max; j++) {
+         sample = parseFloat(content[ j ])/65535;
+         theDestination.imageData[ j ] = sample;
+     }
+     nextObject.followUp(parseInt(next));
+}
 function loadImgFromApp(format, title, content, destination, parentIdx, next) {
-	var theDestination = lutInputs[destination];
-	var nextObject;
-	switch (parseInt(parentIdx)) {
-		case 8: nextObject = lutPreview;
-				break;
-	}
+    var theDestination = lutInputs[destination];
+    var nextObject;
+    switch (parseInt(parentIdx)) {
+        case 8: nextObject = lutPreview;
+                break;
+    }
     theDestination.title = title;
      var max = content.length;
      theDestination.imageData = new Float64Array(max);

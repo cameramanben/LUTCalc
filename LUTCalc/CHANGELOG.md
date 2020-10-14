@@ -1,6 +1,26 @@
 LUTCalc Changelog
 =================
 
+v4.0
+----
+* New Feature - Additional cameras; Sony, Panasonic, DJI, Nikon.
+* New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).
+* New Feature - Added Nikon N-Log gamma curve.
+* New Feature - Fixed point precision setting within settings, so that LUT files can be more precise than the default six or eight decimal places. Good for scene linear output LUTs.
+* New Feature - Added Sony s709 colourspace, estimated using Venice ACES primaries to reduce green on FS7 / FX9. TBD if this is the right approach. 
+* Feature Change - Improved Arri LogC high ISO highlight response.
+* Feature Change - Added 33x LUT option to SmallHD, confirmed SmallHD preset over HDMI and SDI using FX9 and a6500 with latest PageOS4. 
+* Bugfix - Fixed Lumetri / Speedgrade cube linear and conventional gamma settings.
+* Bugfix - Fixed custom input scaling bug.
+
+v3.2 Beta 1
+-----------
+* New Feature - DJI DLog and DGamut (Zenmuse X5 and X7 version).
+* New Feature - DJI DLog-M based upon test images taken by Mark Walter with a Mavic 2.
+* New Feature - 'SDR Saturation' improves HLG compatibility on SDR displays by increasing saturation as per the BT.2390 spec. Available with all HDR options.
+* Bugfix - Black Gamma was not available for 1D LUTs.
+* Bugfix - Custom input scaling does not appear or be applied unless explicitly checked. Could cause unexpected results with DaVinci and Adobe cubes if not needed.
+
 v3.1.2
 ------
 * Bugfix - Correct output of 'LUT_1D_INPUT_RANGE' or 'LUT_3D_INPUT_RANGE' in Resolve-style cube files with input scaling.
