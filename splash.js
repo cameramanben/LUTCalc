@@ -200,8 +200,8 @@ function updateSplash() {
 
 /********************** Start things up **********************/
 var lutInputs = new LUTInputs();
-lutInputs.addInput('version','v4.0');
-lutInputs.addInput('versionNum', 4.0);
-lutInputs.addInput('date','October 2020');
+lutInputs.addInput('version','v4.02');
+lutInputs.addInput('versionNum', 4.02);
+lutInputs.addInput('date','January 2021');
 var splash = splashStart();
 var lutTests = new LUTTests(lutInputs);

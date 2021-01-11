@@ -176,6 +176,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Panasonic'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Fujifilm F-Log Gamut'));
 	this.csInSub.push([this.subIdx('Fujifilm'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('DaVinci Wide Gamut'));
+	this.csInSub.push([this.subIdx('Blackmagic'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Blackmagic 4.6k Film'));
 	this.csInSub.push([this.subIdx('Blackmagic'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Blackmagic 4k Film'));
@@ -261,6 +263,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Fujifilm F-Log Gamut'));
 	this.csOutSub.push([this.subIdx('Fujifilm'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('DaVinci Wide Gamut'));
+	this.csOutSub.push([this.subIdx('Blackmagic'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Blackmagic 4.6k Film'));
 	this.csOutSub.push([this.subIdx('Blackmagic'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Blackmagic 4k Film'));
@@ -865,6 +869,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	canoncg.white = this.illuminant('d65');
 	canoncg.toXYZ = this.RGBtoXYZ(canoncg.xy,canoncg.white);
 	this.g.push(canoncg);
+// DaVinci Wide Gamut
+	var davinciwg = {};
+	davinciwg.name = 'DaVinci Wide Gamut';
+	davinciwg.cat = this.CATs.modelIdx('Bradford Chromatic Adaptation');
+	davinciwg.xy = new Float64Array([0.8000,0.3130, 0.1682,0.9877, 0.0790,-0.1155]);
+	davinciwg.white = this.illuminant('d65');
+	davinciwg.toXYZ = this.RGBtoXYZ(davinciwg.xy,davinciwg.white);
+	this.g.push(davinciwg);
 // Panasonic V-Gamut
 	var vgamut = {};
 	vgamut.name = 'Panasonic V-Gamut';
