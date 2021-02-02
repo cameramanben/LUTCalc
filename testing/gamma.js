@@ -3064,7 +3064,7 @@ function LUTGammaDaVinci(name) {
 	this.m = 10.44426855;
 	this.lin_cut = 0.00262409;
 	this.log_cut = 0.02740668;
-	this.rescale = 1 / 0.9;
+	this.rescale = 1.0 / 0.9;
 	this.iso = 800;
 	this.cat = 0;
 }
@@ -3129,7 +3129,7 @@ LUTGammaDaVinci.prototype.linFromData = function(input) {
 };
 LUTGammaDaVinci.prototype.linFromLegal = function(input) {
 	if (input >= this.log_cut) {
-		return (Math.pow(2, (input / this.c) - this.b) - this.a) * this.scale;
+		return (Math.pow(2, (input / this.c) - this.b) - this.a) * this.rescale;
 	} else {
 		return input / this.m;
 	}
