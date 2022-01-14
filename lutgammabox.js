@@ -469,6 +469,7 @@ LUTGammaBox.prototype.defaultGam = function() {
 	this.changeGammaIn();
 	max = this.inGamutSelect.options.length;
 	var defGamut = this.inputs.defGamutIn;
+
 	for (var i = 0; i < max; i++) {
 		if (defGamut === this.inGamutSelect.options[i].lastChild.nodeValue) {
 			this.inGamutSelect.options[i].selected = true;
@@ -483,6 +484,8 @@ LUTGammaBox.prototype.defaultGam = function() {
 				break;
 			}
 		}
+	} else if (this.outGamutSelect.options[this.outGamutSelect.selectedIndex].lastChild.nodeValue === "Passthrough") {
+		this.outGamutSelect.options[0].selected = true;
 	}
 	this.updateGammaInList(false);
 	this.updateGamutInList(false);

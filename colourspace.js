@@ -208,7 +208,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Bolex'),this.subIdx('Wide Gamut')]);
 	this.rec709In = this.csIn.length;
 	this.csIn.push(this.toSys('Rec709'));
-	this.csInSub.push([this.subIdx('Rec709')]);
+	this.csInSub.push([this.subIdx('Rec709'),this.subIdx('DJI')]);
 	this.csIn.push(this.toSys('Rec2020'));
 	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Rec2100'));
@@ -295,7 +295,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Bolex'),this.subIdx('Wide Gamut')]);
 	this.rec709Out = this.csIn.length;
 	this.csOut.push(this.fromSys('Rec709'));
-	this.csOutSub.push([this.subIdx('Rec709')]);
+	this.csOutSub.push([this.subIdx('Rec709'),this.subIdx('DJI')]);
 	this.defLUTs.Amira709 = this.csOut.length;
 	this.csOut.push(
 		this.fromSysLUT('Amira709',
