@@ -129,6 +129,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k (High Base)",iso:3200,type:2,defgamma:"BMD Pocket Film",defgamut:"Passthrough",bclip:-7.2,wclip:5.1});
 	this.cameras.push({make:"GoPro",model:"Hero",iso:400,type:2,defgamma:"Protune",defgamut:"Protune Native",bclip:-9,wclip:3.3});
 	this.cameras.push({make:"DJI",model:"Mavic 2",iso:400,type:2,defgamma:"DJI DLog-M",defgamut:"Passthrough",bclip:-10.3,wclip:3.7});
+	this.cameras.push({make:"DJI",model:"Mini 2",iso:100,type:2,defgamma:"DJI Mini 2",defgamut:"Rec709",bclip:-7,wclip:2.8});
 	this.cameras.push({make:"DJI",model:"Zenmuse X7",iso:400,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-9.2,wclip:4.8});
 	this.cameras.push({make:"DJI",model:"Zenmuse X5S",iso:500,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-7.7,wclip:5.13});
 	this.cameras.push({make:"DJI",model:"Zenmuse X3",iso:100,type:2,defgamma:"DJI X3 DLog",defgamut:"Passthrough",bclip:-7,wclip:3});
