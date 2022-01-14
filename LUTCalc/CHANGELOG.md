@@ -1,6 +1,14 @@
 LUTCalc Changelog
 =================
 
+v4.03
+-----
+* Bugfix - Fixed Nikon N-Log bug
+
+v4.02
+-----
+* New Feature - added DaVinci intermediate colourspace - uses green primary based on published matrices and current Resolve 17 rather than published primaries, pending Blackmagic decision on correcting their white paper.
+
 v4.0
 ----
 * New Feature - Additional cameras; Sony, Panasonic, DJI, Nikon.

@@ -729,6 +729,10 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
+	this.addInfo(this.insClgInfo,false,null,"v4.03");
+	this.addInfo(this.insClgInfo,true,null,"* Bugfix - Fixed Nikon N-Log bug.");
+	this.addInfo(this.insClgInfo,false,null,"v4.02");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - added DaVinci intermediate colourspace - uses green primary based on published matrices and current Resolve 17 rather than published primaries, pending Blackmagic decision on correcting their white paper.");
 	this.addInfo(this.insClgInfo,false,null,"v4.0");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Additional cameras; Sony, Panasonic, DJI, Nikon.");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Sony Venice-tuned S-Gamut3 and S-Gamut3.cine using primaries calculated from Sony's IDTs (these shouldn't be camera-specific, the S-Gamut primaries should be set in stone, but Sony definitely offers different ones for the Venice).");
