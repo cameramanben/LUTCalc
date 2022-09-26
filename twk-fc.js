@@ -324,11 +324,7 @@ TWKFC.prototype.testYellow = function() {
 	}
 };
 TWKFC.prototype.testRed = function() {
-	if (!isNaN(parseFloat(this.redInput.value)) && isFinite(this.redInput.value)) {
-		 if (parseFloat(this.redInput.value)<3.5) {
-			this.redInput.value = '3.5';
-		 }
-	} else {
+	if (isNaN(parseFloat(this.redInput.value)) || !isFinite(this.redInput.value)) {
 		this.redInput.value = '6';
 	}
 };
