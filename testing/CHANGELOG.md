@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v4.04
+-----
+* New Feature - ARRI LogC4 and Wide Gamut 4
+* New Feature - CIELAB colourspace (Experimental) from a request.
+
 v4.03
 -----
 * Bugfix - Fixed Nikon N-Log bug

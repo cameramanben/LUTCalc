@@ -145,9 +145,18 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
 
+/*
 	this.gammas.push(new LUTGammaLog2('LOGCalc Scaler', 7.46633, -0.0411526));
 	this.gammaSub.push(this.subIdx(['Log']));
 	this.gts.push('Sony S-Gamut3.cine');
+	this.gammaDat.push(true);
+	this.gammaExt.push(true);
+*/
+
+	this.gammas.push(new LUTGammaLogC4(
+		'LogC4'));
+	this.gammaSub.push([this.subIdx('ARRI'),this.subIdx('Log')]);
+	this.gts.push('ARRI Wide Gamut 4');
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
 
@@ -270,18 +279,20 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaDat.push(false);
 	this.gammaExt.push(false);
 
+	this.gammas.push(new LUTGammaLog(
+		'DJI X5/X7/X9 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
+	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
+	this.gts.push('*');
+	this.gammaDat.push(false);
+	this.gammaExt.push(false);
+
 	this.DLogM = this.gammas.length;
 	this.gammas.push(new LUTGammaDLog('DJI DLog-M'));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
 	this.gammaExt.push(false);
-	this.gammas.push(new LUTGammaLog(
-		'DJI X5/X7 DLog', [ 1/(6.025*0.9), -0.0929/(6.025*0.9), 0.256663, 0.9892 * 0.9, 10, 0.584555, 0.0108, 0.14, 0.0078 * 0.9 ]));
-	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
-	this.gts.push('*');
-	this.gammaDat.push(false);
-	this.gammaExt.push(false);
+
 	this.gammas.push(new LUTGammaLogClip(
 		'DJI X3 DLog', [ 0.188272019, -0.011778504, 0.473218054, 6.086793376, 10, 0.419294419, 0.169033387, 0.095812746, 0.00625, 0.902863937, 1.59668525, 22.90700861, -17.39462704 ]));
 	this.gammaSub.push([this.subIdx('DJI'),this.subIdx('Log')]);
@@ -2588,7 +2599,7 @@ LUTGammaCineon.prototype.linFromData = function(input) {
 LUTGammaCineon.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 };
-// LogC
+// ARRI LogC
 function LUTGammaArri(name,sup) {
 	this.name = name;
 	this.sup = sup;
@@ -2866,6 +2877,85 @@ LUTGammaArri.prototype.linFromData = function(input) {
 	}
 };
 LUTGammaArri.prototype.linFromLegal = function(input) {
+	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
+};
+// ARRI LogC4
+function LUTGammaLogC4(name) {
+	this.name = name;
+	this.iso = 800;
+	this.cat = 0;
+	this.a = (Math.pow(2.0, 18) - 16.0) / 117.45;
+	this.oneovera = 1.0 / this.a;
+	this.b = (1023.0 - 95.0) / 1023.0;
+	this.c = 95.0 / 1023.0;
+	this.s = 7.0 * Math.LN2 * Math.pow(2, 7 - (14 * this.c / this.b)) / (this.a * this.b);
+	this.oneovers = 1.0 / this.s;
+	this.t = (Math.pow(2, (-14.0 * this.c / this.b) + 6) - 64.0) / this.a;
+	this.bund14 = 14.0 / this.b;
+	this.bdiv14 = 1.0 / this.bund14;
+}
+LUTGammaLogC4.prototype.changeISO = function(iso) {
+	this.iso = iso;
+};
+LUTGammaLogC4.prototype.changeContrast = function(rec,out) {
+};
+LUTGammaLogC4.prototype.linToD = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = c[j] * 0.9;
+		if (c[j] >= this.t) {
+			c[j] = ((Math.log2((this.a * c[j]) + 64.0) - 6.0) * this.bdiv14) + this.c;
+		} else {
+			c[j] = (c[j] - this.t) * this.oneovers;
+		}
+	}
+};
+LUTGammaLogC4.prototype.linToL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	this.linToD(buff);
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] - 0.06256109481916) / 0.85630498533724;
+	}
+};
+LUTGammaLogC4.prototype.linFromD = function(buff) {
+	var o = new Float64Array(buff);
+	var m = o.length;
+	for (var j=0; j<m; j++) {
+		if (o[j] >= 0) {
+			o[j] = (Math.pow(2,(this.bund14 * (o[j] - this.c)) + 6.0) - 64.0) * this.oneovera / 0.9;
+		} else {
+			o[j] = ((o[j] * this.s) + this.t) / 0.9;
+		}
+	}};
+LUTGammaLogC4.prototype.linFromL = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	for (var j=0; j<m; j++) {
+		c[j] = (c[j] * 0.85630498533724) + 0.06256109481916;
+	}
+	this.linFromD(buff);
+};
+LUTGammaLogC4.prototype.linToData = function(input) {
+	input *= 0.9;
+	if (input >= this.t) {
+		return ((Math.log2((this.a * input) + 64.0) - 6.0) * this.bdiv14) + this.c;
+	} else {
+		return (input - this.t) * this.oneovers;
+	}
+};
+LUTGammaLogC4.prototype.linToLegal = function(input) {
+	return (this.linToData(input) - 0.06256109481916) / 0.85630498533724;
+};
+LUTGammaLogC4.prototype.linFromData = function(input) {
+	if (input >= 0) {
+		return (Math.pow(2,(this.bund14 * (input - this.c)) + 6.0) - 64.0) * this.oneovera / 0.9;
+	} else {
+		return ((input * this.s) + this.t) / 0.9;
+	}
+};
+LUTGammaLogC4.prototype.linFromLegal = function(input) {
 	return this.linFromData((input * 0.85630498533724) + 0.06256109481916);
 };
 // Canon C-Log3
@@ -6325,6 +6415,11 @@ function getGammaWorkerString() {
 	out += LUTGammaArri.toString() + "\n";
 	for (var j in LUTGammaArri.prototype) {
 		out += 'LUTGammaArri.prototype.' + j + '=' + LUTGammaArri.prototype[j].toString() + "\n";
+	}
+	// LUTGammaLogC4
+	out += LUTGammaLogC4.toString() + "\n";
+	for (var j in LUTGammaLogC4.prototype) {
+		out += 'LUTGammaLogC4.prototype.' + j + '=' + LUTGammaLogC4.prototype[j].toString() + "\n";
 	}
 	// LUTGammaCLog3
 	out += LUTGammaCLog3.toString() + "\n";

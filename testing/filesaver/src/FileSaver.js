@@ -69,7 +69,7 @@ function click (node) {
 // Detect WebView inside a native macOS app by ruling out all browsers
 // We just need to check for 'Safari' because all other browsers (besides Firefox) include that too
 // https://www.whatismybrowser.com/guides/the-latest-user-agent/macos
-var isMacOSWebView = /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent)
+var isMacOSWebView = _global.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent)
 
 var saveAs = _global.saveAs || (
   // probably in some web worker
@@ -80,7 +80,8 @@ var saveAs = _global.saveAs || (
   : ('download' in HTMLAnchorElement.prototype && !isMacOSWebView)
   ? function saveAs (blob, name, opts) {
     var URL = _global.URL || _global.webkitURL
-    var a = document.createElement('a')
+    // Namespace is used to prevent conflict w/ Chrome Poper Blocker extension (Issue #561)
+    var a = document.createElementNS('http://www.w3.org/1999/xhtml', 'a')
     name = name || blob.name || 'download'
 
     a.download = name
