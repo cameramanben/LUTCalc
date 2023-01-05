@@ -168,6 +168,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Sony S-Gamut'));
 	this.csInSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('ARRI Wide Gamut 4'));
+	this.csInSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Alexa Wide Gamut'));
 	this.csInSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Canon Cinema Gamut'));
@@ -239,6 +241,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Adobe'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('ProPhoto RGB'));
 	this.csInSub.push([this.subIdx('Wide Gamut')]);
+	this.csIn.push(new CSLabSpace('CIELAB D65', 95.0489, 100.0, 108.8840, true, this.toSys('XYZ')));
+	this.csInSub.push([this.subIdx('Wide Gamut')]);
+	this.csIn.push(new CSLabSpace('CIELAB D50', 96.4212, 100.0, 82.5188, true, this.toSys('XYZ')));
+	this.csInSub.push([this.subIdx('Wide Gamut')]);
 	this.custIn = this.csIn.length;
 	this.csIn.push(this.toSys('Custom In'));
 	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]);
@@ -255,6 +261,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Sony S-Gamut'));
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('ARRI Wide Gamut 4'));
+	this.csOutSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Alexa Wide Gamut'));
 	this.csOutSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Canon Cinema Gamut'));
@@ -452,6 +460,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Adobe Wide Gamut RGB'));
 	this.csOutSub.push([this.subIdx('Adobe'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('ProPhoto RGB'));
+	this.csOutSub.push([this.subIdx('Wide Gamut')]);
+	this.csOut.push(new CSLabSpace('CIELAB D65', 95.0489, 100.0, 108.8840, false, this.fromSys('XYZ')));
+	this.csOutSub.push([this.subIdx('Wide Gamut')]);
+	this.csOut.push(new CSLabSpace('CIELAB D50', 96.4212, 100.0, 82.5188, false, this.fromSys('XYZ')));
 	this.csOutSub.push([this.subIdx('Wide Gamut')]);
 	this.custOut = this.csOut.length;
 	this.csOut.push(this.toSys('Custom Out'));
@@ -853,6 +865,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	sgamut.white = this.illuminant('d65');
 	sgamut.toXYZ = this.RGBtoXYZ(sgamut.xy,sgamut.white);
 	this.g.push(sgamut);
+// ARRI Wide Gamut 4
+	var arriwg4 = {};
+	arriwg4.name = 'ARRI Wide Gamut 4';
+	arriwg4.cat = this.CATs.modelIdx('CIECAT02');
+	arriwg4.xy = new Float64Array([0.7347,0.2653, 0.1424,0.8576, 0.0991,-0.0308]);
+	arriwg4.white = this.illuminant('d65');
+	arriwg4.toXYZ = this.RGBtoXYZ(arriwg4.xy,arriwg4.white);
+	this.g.push(arriwg4);
 // ALEXA Wide Gamut RGB
 	var alexawgrgb = {};
 	alexawgrgb.name = 'Alexa Wide Gamut';
@@ -4232,6 +4252,97 @@ CSCanonIDT.prototype.lc = function(buff) {
 CSCanonIDT.prototype.lf = function(buff) {
 	this.lc(buff);
 };
+function CSLabSpace(name, Xn, Yn, Zn, toSys, XYZ) {
+	this.name = name;
+	this.toSys = toSys;
+	this.XYZ = XYZ;
+	this.Xn = Xn / Yn;
+	this.Yn = 1.0;
+	this.Zn = Zn / Yn;
+	this.d = 6.0 / 29.0;
+	this.d3 = Math.pow(this.d, 3);
+	this.oneover3d2 = 1.0 / (3.0 * this.d * this.d);
+	this.threed2 = 3.0 * this.d * this.d;
+	this.fourover29 = 4.0 / 29.0;
+}
+CSLabSpace.prototype.getWP = function() {
+	return new Float64Array([this.Xn, this.Yn, this.Zn]);
+}
+CSLabSpace.prototype.isMatrix = function() {
+	return false;
+};
+CSLabSpace.prototype.cb = function() {
+	return false;
+};
+CSLabSpace.prototype.lc = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (this.toSys) {
+		var m = c.length;
+		var fiX, fiY, fiZ;
+		var outMul = 1.0 / 0.9;
+		for (var j=0; j<m; j+= 3) {
+			c[j] *= 90.0;
+			c[j+1] *= 90.0;
+			c[j+2] *= 90.0;
+			fiY = (c[j] + 16.0) / 116;
+			fiX = fiY + (c[j+1] / 500.0);
+			fiZ = fiY - (c[j+2] / 200.0);
+			if (fiX > this.d3) {
+				fiX = Math.pow(fiX, 3);
+			} else {
+				fiX = this.threed2 * (fiX - this.fourover29);
+			}
+			if (fiY > this.d3) {
+				fiY = Math.pow(fiY, 3);
+			} else {
+				fiY = this.threed2 * (fiY - this.fourover29);
+			}
+			if (fiZ > this.d3) {
+				fiZ = Math.pow(fiZ, 3);
+			} else {
+				fiZ = this.threed2 * (fiZ - this.fourover29);
+			}
+			c[ j ] = fiX * this.Xn * outMul; // X
+			c[j+1] = fiY * this.Yn * outMul; // Y
+			c[j+2] = fiZ * this.Zn * outMul; // Z
+		}
+		this.XYZ.lc(c.buffer);
+	} else {
+		this.XYZ.lc(c.buffer);
+		var ftX, ftY, ftZ;
+		var outMul = 0.01 / 0.9;
+		for (var j=0; j<m; j+= 3) {
+			ftX = c[ j ] * 0.9 / this.Xn;
+			ftY = c[j+1] * 0.9 / this.Yn;
+			ftZ = c[j+2] * 0.9 / this.Zn;
+			if (ftX > this.d3) {
+				ftX = Math.cbrt(ftX);
+			} else {
+				ftX = (ftX * this.oneover3d2) + this.fourover29;
+			}
+			if (ftY > this.d3) {
+				ftY = Math.cbrt(ftY);
+			} else {
+				ftY = (ftY * this.oneover3d2) + this.fourover29;
+			}
+			if (ftZ > this.d3) {
+				ftZ = Math.cbrt(ftZ);
+			} else {
+				ftZ = (ftZ * this.oneover3d2) + this.fourover29;
+			}
+			c[ j ] = (116.0 * ftY) - 16.0; // L*
+			c[j+1] = 500.0 * (ftX - ftY); // a*
+			c[j+2] = 200.0 * (ftY - ftZ); // b*
+			c[j] *= outMul;
+			c[j+1] *= outMul;
+			c[j+2] *= outMul;
+		}
+	}
+};
+CSLabSpace.prototype.lf = function(buff) {
+	this.lc(buff);
+};
 // IO functions
 LUTColourSpace.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
@@ -5088,6 +5199,11 @@ function getCSString() {
 	out += CSCanonIDT.toString() + "\n";
 	for (var j in CSCanonIDT.prototype) {
 		out += 'CSCanonIDT.prototype.' + j + '=' + CSCanonIDT.prototype[j].toString() + "\n";
+	}
+	// CSLabSpace
+	out += CSLabSpace.toString() + "\n";
+	for (var j in CSLabSpace.prototype) {
+		out += 'CSLabSpace.prototype.' + j + '=' + CSLabSpace.prototype[j].toString() + "\n";
 	}
 	// LUTCSWorker
 	out += LUTCSWorker.toString() + "\n";

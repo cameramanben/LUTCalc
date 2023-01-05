@@ -110,6 +110,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Sony",model:"F65",iso:800,type:0,defgamma:"S-Log3",defgamut:"Sony S-Gamut3",bclip:-8,wclip:6});
 	this.cameras.push({make:"Sony",model:"PMW-F3",iso:800,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
 	this.cameras.push({make:"Sony",model:"F35",iso:500,type:0,defgamma:"S-Log",defgamut:"Sony S-Gamut",bclip:-6.6,wclip:5.5});
+	this.cameras.push({make:"ARRI",model:"Alexa 35",iso:800,type:2,defgamma:"LogC4",defgamut:"ARRI Wide Gamut 4",bclip:-9.3,wclip:7.7});
 	this.cameras.push({make:"ARRI",model:"Alexa / Amira",iso:800,type:1,defgamma:"LogC (Sup 3.x & 4.x)",defgamut:"Alexa Wide Gamut",bclip:-6.6,wclip:7.4});
 	this.cameras.push({make:"RED",model:"Epic DRAGON",iso:800,type:0,defgamma:"REDLogFilm",defgamut:"DRAGONColor2",bclip:-10,wclip:6.3});
 	this.cameras.push({make:"Canon",model:"C300",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon CP IDT (Daylight)",bclip:-6.7,wclip:5.3});
@@ -128,10 +129,18 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k",iso:400,type:2,defgamma:"BMD Pocket Film",defgamut:"Passthrough",bclip:-7.6,wclip:5.5});
 	this.cameras.push({make:"Blackmagic",model:"Pocket Cinema 4k (High Base)",iso:3200,type:2,defgamma:"BMD Pocket Film",defgamut:"Passthrough",bclip:-7.2,wclip:5.1});
 	this.cameras.push({make:"GoPro",model:"Hero",iso:400,type:2,defgamma:"Protune",defgamut:"Protune Native",bclip:-9,wclip:3.3});
+	this.cameras.push({make:"DJI",model:"4D 6k",iso:800,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.2,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"4D 6k (High Base)",iso:5000,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.0,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"4D 8k",iso:800,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.6,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"4D 8k (High Base)",iso:4000,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.4,wclip:7.1});
 	this.cameras.push({make:"DJI",model:"Mavic 2",iso:400,type:2,defgamma:"DJI DLog-M",defgamut:"Passthrough",bclip:-10.3,wclip:3.7});
 	this.cameras.push({make:"DJI",model:"Mini 2",iso:100,type:2,defgamma:"DJI Mini 2",defgamut:"Rec709",bclip:-7,wclip:2.8});
-	this.cameras.push({make:"DJI",model:"Zenmuse X7",iso:400,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-9.2,wclip:4.8});
-	this.cameras.push({make:"DJI",model:"Zenmuse X5S",iso:500,type:2,defgamma:"DJI X5/X7 DLog",defgamut:"Passthrough",bclip:-7.7,wclip:5.13});
+	this.cameras.push({make:"DJI",model:"Zenmuse X9-6k",iso:800,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.2,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"Zenmuse X9-6k (High Base)",iso:5000,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.0,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"Zenmuse X9-8k",iso:800,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.6,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"Zenmuse X9-8k (High Base)",iso:4000,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"DJI D-Gamut",bclip:-7.4,wclip:7.1});
+	this.cameras.push({make:"DJI",model:"Zenmuse X7",iso:400,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"Passthrough",bclip:-9.2,wclip:4.8});
+	this.cameras.push({make:"DJI",model:"Zenmuse X5S",iso:500,type:2,defgamma:"DJI X5/X7/X9 DLog",defgamut:"Passthrough",bclip:-7.7,wclip:5.13});
 	this.cameras.push({make:"DJI",model:"Zenmuse X3",iso:100,type:2,defgamma:"DJI X3 DLog",defgamut:"Passthrough",bclip:-7,wclip:3});
 	this.cameras.push({make:"Nikon",model:"Z6",iso:800,type:2,defgamma:"Nikon N-Log",defgamut:"Rec2020",bclip:-6,wclip:6});
 	this.cameras.push({make:"Nikon",model:"Z7",iso:800,type:2,defgamma:"Nikon N-Log",defgamut:"Rec2020",bclip:-6,wclip:6});
