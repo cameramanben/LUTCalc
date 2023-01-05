@@ -1406,6 +1406,14 @@ LUTGamma.prototype.gammaList = function() {
 	this.gts.push('*');
 	this.gammaDat.push(false);
 	this.gammaExt.push(false);
+
+	this.gammas.push(new LUTGammaGam(
+		'CIE L*', [ 3.0,24389.0 / 2700.0, 0.16, 216.0 / 24389.0 , 216.0 / 2700.0, 2.45 ]));
+	this.gammaSub.push([this.subIdx('Display')]);
+	this.gts.push('sRGB');
+	this.gammaDat.push(false);
+	this.gammaExt.push(false);
+
 	this.gammas.push(new LUTGammaBBCGam(
 		'BBC 0.4', [ 0.4,5, -0.02262, 0.037703, Math.pow((0.037703-0.02262)/(1-0.02262),0.4), false ]));
 	this.gammaSub.push([this.subIdx('Display')]);
