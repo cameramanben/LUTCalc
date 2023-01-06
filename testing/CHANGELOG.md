@@ -1,10 +1,12 @@
 LUTCalc Changelog
 =================
 
-v4.04
+v4.05
 -----
-* New Feature - ARRI LogC4 and Wide Gamut 4
-* New Feature - CIELAB colourspace (Experimental) from a request.
+* New Feature - ARRI LogC4 and Wide Gamut 4.
+* New Feature - CIE L* gamma function.
+* New Feature - CIELAB gamut, combined with L* gamma, makes CIE LAB colourspace.
+* New Feature - Additional camera presets - ARRI Alexa 35, DJI 4D, DJI Xenmuse X9.
 
 v4.03
 -----

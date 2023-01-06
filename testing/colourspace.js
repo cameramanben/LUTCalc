@@ -4264,10 +4264,57 @@ function CSLabSpace(name, Xn, Yn, Zn, toSys, XYZ) {
 	this.oneover3d2 = 1.0 / (3.0 * this.d * this.d);
 	this.threed2 = 3.0 * this.d * this.d;
 	this.fourover29 = 4.0 / 29.0;
+	
+	this.p1 = 24389.0 / 2700.0;
+	this.p2 = 0.16;
+	this.p3 = 216.0 / 24389.0;
+	this.p4 = 216.0 / 2700.0;
 }
+CSLabSpace.prototype.f = function(buff, transfer) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (transfer) {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p3) {
+				c[j] = (1.16 * Math.cbrt(c[j])) - 0.16;
+			} else {
+				c[j] = this.p1 * c[j];
+			}
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p3) {
+				c[j] = Math.cbrt(c[j]);
+			} else {
+				c[j] = ((this.p1 * c[j]) + 0.16) / 1.16;
+			}
+		}
+	}
+};
+CSLabSpace.prototype.fInv = function(buff, transfer) {
+	var c= new Float64Array(buff);
+	var m = c.length;
+	if (transfer) {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p4) {
+				c[j] = Math.pow((c[j] + 0.16)/(1.16), 3.0);		
+			} else {
+				c[j] = (c[j] / this.p1);
+			}
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p4) {
+				c[j] = Math.pow(c[j], 3.0);		
+			} else {
+				c[j] = ((c[j] * 1.16) - 0.16) / this.p1;
+			}
+		}
+	}
+};
 CSLabSpace.prototype.getWP = function() {
 	return new Float64Array([this.Xn, this.Yn, this.Zn]);
-}
+};
 CSLabSpace.prototype.isMatrix = function() {
 	return false;
 };
@@ -4278,66 +4325,38 @@ CSLabSpace.prototype.lc = function(buff) {
 	var c = new Float64Array(buff);
 	var m = c.length;
 	if (this.toSys) {
+		this.f(c.buffer, true);
 		var m = c.length;
-		var fiX, fiY, fiZ;
-		var outMul = 1.0 / 0.9;
+		var fY;
 		for (var j=0; j<m; j+= 3) {
-			c[j] *= 90.0;
-			c[j+1] *= 90.0;
-			c[j+2] *= 90.0;
-			fiY = (c[j] + 16.0) / 116;
-			fiX = fiY + (c[j+1] / 500.0);
-			fiZ = fiY - (c[j+2] / 200.0);
-			if (fiX > this.d3) {
-				fiX = Math.pow(fiX, 3);
-			} else {
-				fiX = this.threed2 * (fiX - this.fourover29);
-			}
-			if (fiY > this.d3) {
-				fiY = Math.pow(fiY, 3);
-			} else {
-				fiY = this.threed2 * (fiY - this.fourover29);
-			}
-			if (fiZ > this.d3) {
-				fiZ = Math.pow(fiZ, 3);
-			} else {
-				fiZ = this.threed2 * (fiZ - this.fourover29);
-			}
-			c[ j ] = fiX * this.Xn * outMul; // X
-			c[j+1] = fiY * this.Yn * outMul; // Y
-			c[j+2] = fiZ * this.Zn * outMul; // Z
+			fY = (c[ j ] + 0.16) / 1.16;
+			c[ j ] = (c[j+1] + fY) / 5.0;
+			c[j+2] = (c[j+2] + fY) / 2.0;
+			c[j+1] = fY;
+		}
+		this.fInv(c.buffer, false);
+		for (var j=0; j<m; j+= 3) {
+			c[ j ] *= this.Xn;
+			c[j+1] *= this.Yn;
+			c[j+2] *= this.Zn;
 		}
 		this.XYZ.lc(c.buffer);
 	} else {
 		this.XYZ.lc(c.buffer);
-		var ftX, ftY, ftZ;
-		var outMul = 0.01 / 0.9;
 		for (var j=0; j<m; j+= 3) {
-			ftX = c[ j ] * 0.9 / this.Xn;
-			ftY = c[j+1] * 0.9 / this.Yn;
-			ftZ = c[j+2] * 0.9 / this.Zn;
-			if (ftX > this.d3) {
-				ftX = Math.cbrt(ftX);
-			} else {
-				ftX = (ftX * this.oneover3d2) + this.fourover29;
-			}
-			if (ftY > this.d3) {
-				ftY = Math.cbrt(ftY);
-			} else {
-				ftY = (ftY * this.oneover3d2) + this.fourover29;
-			}
-			if (ftZ > this.d3) {
-				ftZ = Math.cbrt(ftZ);
-			} else {
-				ftZ = (ftZ * this.oneover3d2) + this.fourover29;
-			}
-			c[ j ] = (116.0 * ftY) - 16.0; // L*
-			c[j+1] = 500.0 * (ftX - ftY); // a*
-			c[j+2] = 200.0 * (ftY - ftZ); // b*
-			c[j] *= outMul;
-			c[j+1] *= outMul;
-			c[j+2] *= outMul;
+			c[ j ] /= this.Xn;
+			c[j+1] /= this.Yn;
+			c[j+2] /= this.Zn;
 		}
+		this.f(c.buffer, false);
+		var fY;
+		for (var j=0; j<m; j+= 3) {
+			fY = c[j+1];
+			c[j+1] = 5.0 * (c[ j ] - fY);	// a*
+			c[j+2] = 2.0 * (c[j+2] - fY);	// b*
+			c[ j ] = (1.16 * fY) - 0.16;	// L*
+		}
+		this.fInv(c.buffer, true);
 	}
 };
 CSLabSpace.prototype.lf = function(buff) {
