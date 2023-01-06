@@ -729,6 +729,11 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
+	this.addInfo(this.insClgInfo,false,null,"v4.05");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - ARRI LogC4 and Wide Gamut 4.");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - CIE L* gamma function.");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - CIELAB gamut, combined with L* gamma, makes CIE LAB colourspace.");
+	this.addInfo(this.insClgInfo,true,null,"* New Feature - Additional camera presets - ARRI Alexa 35, DJI 4D, DJI Xenmuse X9.");	
 	this.addInfo(this.insClgInfo,false,null,"v4.03");
 	this.addInfo(this.insClgInfo,true,null,"* Bugfix - Fixed Nikon N-Log bug.");
 	this.addInfo(this.insClgInfo,false,null,"v4.02");
