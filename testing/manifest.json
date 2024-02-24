@@ -11,83 +11,83 @@
 	"type": "web",
 	"icons": [
     {
-      "src": "/images/lutcalc-16.png",
+      "src": "./img/lutcalc-16.png",
       "type": "image/png",
       "sizes": "16x16"
     },
     {
-      "src": "/images/lutcalc-19.png",
+      "src": "./img/lutcalc-19.png",
       "type": "image/png",
       "sizes": "19x19"
     },
     {
-      "src": "/images/lutcalc-32.png",
+      "src": "./img/lutcalc-32.png",
       "type": "image/png",
       "sizes": "32x32"
     },
     {
-      "src": "/images/lutcalc-38.png",
+      "src": "./img/lutcalc-38.png",
       "type": "image/png",
       "sizes": "38x38"
     },
     {
-      "src": "/images/lutcalc-48.png",
+      "src": "./img/lutcalc-48.png",
       "type": "image/png",
       "sizes": "48x48"
     },
     {
-      "src": "/images/lutcalc-60.png",
+      "src": "./img/lutcalc-60.png",
       "type": "image/png",
       "sizes": "60x60"
     },
     {
-      "src": "/images/lutcalc-64.png",
+      "src": "./img/lutcalc-64.png",
       "type": "image/png",
       "sizes": "64x64"
     },
     {
-      "src": "/images/lutcalc-90.png",
+      "src": "./img/lutcalc-90.png",
       "type": "image/png",
       "sizes": "90x90"
     },
     {
-      "src": "/images/lutcalc-128.png",
+      "src": "./img/lutcalc-128.png",
       "type": "image/png",
       "sizes": "128x128"
     },
     {
-      "src": "/images/lutcalc-256.png",
+      "src": "./img/lutcalc-256.png",
       "type": "image/png",
       "sizes": "256x256"
     },
     {
-      "src": "/images/lutcalc-512.png",
+      "src": "./img/lutcalc-512.png",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/images/lutcalc-1024.png",
+      "src": "./img/lutcalc-1024.png",
       "type": "image/png",
       "sizes": "1024x1024"
     }
   ],
-	"start_url": "/index.html",
-	"launch_path": "/index.html",
+	"start_url": "/testing/index.html",
+	"launch_path": "/testing/index.html",
 	"background_color": "#eaeaea",
 	"display": "standalone",
-	"scope": "/",
+	"scope": "/testing",
 	"theme_color": "#202090",
 	"shortcuts": [],
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
 	"screenshots": [
 		{
-			"src": "/img/Screenshot-Wide-1.png",
+			"src": "./img/Screenshot-Wide-1.png",
 			"type": "image/png",
 			"sizes": "720x389",
 			"form_factor": "wide"
 		},
 		{
-			"src": "/img/Screenshot-Tall-1.png",
+			"src": "./img/Screenshot-Tall-1.png",
 			"type": "image/png",
 			"sizes": "649x720",
 			"form_factor": "narrow"
