@@ -71,11 +71,11 @@
       "sizes": "1024x1024"
     }
   ],
-	"start_url": "/testing/index.html",
-	"launch_path": "/testing/index.html",
+	"start_url": "./index.html",
+	"launch_path": "./index.html",
 	"background_color": "#eaeaea",
 	"display": "standalone",
-	"scope": "/testing",
+	"scope": "./",
 	"theme_color": "#202090",
 	"shortcuts": [],
 	"description": "Camera LUT Generator / Analyser / Visualiser.",
