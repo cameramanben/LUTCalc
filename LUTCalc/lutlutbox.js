@@ -369,9 +369,6 @@ LUTLutBox.prototype.buildClipSelect = function() {
 	this.lutClipSelect.appendChild(optWhite);
 	this.lutClipSelect.options[2].selected = true;	
 };
-LUTLutBox.prototype.cleanName = function() {
-	this.lutName.value = this.lutName.value.replace(/[/"/']/gi, '');
-};
 LUTLutBox.prototype.createRadioElement = function(name, checked) {
     var radioInput;
     try {
@@ -702,6 +699,9 @@ LUTLutBox.prototype.autoTitle = function() {
 	}
 	this.lutName.value = title;
 	this.cleanName();
+};
+LUTLutBox.prototype.cleanName = function() {
+	this.lutName.value = this.lutName.value.replace(/[/"/']/gi, '');
 };
 // Loading progress bar
 if (typeof splash !== 'undefined') {

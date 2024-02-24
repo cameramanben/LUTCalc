@@ -96,7 +96,7 @@ function notifyUser(title,message) {
 			'lutcalc-' + Math.random().toString(),
 			{
 				type: 'basic',
-				iconUrl: 'img/logo64.png',
+				iconUrl: 'img/lutcalc-64.png',
 				title: title,
 				message: message,
 				priority: 0

@@ -799,7 +799,9 @@ LUTMessage.prototype.updateARRIRangeIn = function() {
 LUTMessage.prototype.updateARRIRangeOut = function() {
 	this.ui[11].updateARRIRangeOut();
 };
-
+LUTMessage.prototype.hideGammaSubsOut = function() {
+	this.ui[2].hideGammaSubsOut();
+};
 LUTMessage.prototype.changeGamut = function() {
 	if (this.go) {
 		this.ui[3].changeGamut();

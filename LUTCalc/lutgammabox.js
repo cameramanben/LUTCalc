@@ -658,6 +658,15 @@ LUTGammaBox.prototype.changeGammaIn = function() {
 	}
 	this.messages.updateGammaIn();
 };
+LUTGammaBox.prototype.hideGammaSubsOut = function() {
+	this.outLin.className = 'smallerbox-hide';
+	this.outCon.className = 'smallerbox-hide';
+	this.pqOOTFOutBox.className = 'smallerbox-hide';
+	this.pqEOTFOutBox.className = 'smallerbox-hide';
+	this.hlgOOTFOutBox.className = 'smallerbox-hide';
+	this.hlgOETFOutBox.className = 'smallerbox-hide';
+	this.arriLegalOutBox.className = 'smallerbox-hide';
+};
 LUTGammaBox.prototype.changeGammaOut = function() {
 	// Hide Everything
 	this.outLin.className = 'smallerbox-hide';
@@ -722,7 +731,7 @@ LUTGammaBox.prototype.updateGammaInList = function(setParams) {
 				if (val === cur) {
 					curOK = this.inGammaSelect.options.length-1;
 				}
-				if (val = 9999) {
+				if (val === 9999) {
 					linIdx = this.inGammaSelect.length;
 				}
 				break;
