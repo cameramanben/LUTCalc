@@ -1571,13 +1571,13 @@ LUTGamma.prototype.gammaList = function() {
 	this.LA = this.gammas.length;
 	this.gammas.push(new LUTGammaLA(
 		'LA', this.lutMaker));
-	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
+	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
 	this.gts.push('*');
 	this.gammaDat.push(false);
 	this.gammaExt.push(false);
 	this.gammas.push(new LUTGammaNull(
 		'Null'));
-	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
+	this.gammaSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
 	this.gts.push('*');
 	this.gammaDat.push(true);
 	this.gammaExt.push(false);

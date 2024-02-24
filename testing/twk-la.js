@@ -711,6 +711,7 @@ TWKLA.prototype.doneStuff = function() {
 	this.storeBinButton.className = 'twk-button';
 	this.toggleTweak();
 	this.inputs.outGamma.options[this.inputs.outGamma.options.length - 1].selected = true;
+	this.messages.hideGammaSubsOut();
 	if (this.showGt) {
 		this.inputs.outGamut.options[this.inputs.outGamut.options.length - 1].selected = true;
 	}
