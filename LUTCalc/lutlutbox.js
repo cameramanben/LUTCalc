@@ -597,6 +597,7 @@ LUTLutBox.prototype.autoTitle = function() {
 			case 'LogC (Sup 2.x)': title += 'LogC'; break;
 			case 'Canon C-Log2' : title += 'CLog2'; break;
 			case 'Canon C-Log3' : title += 'CLog3'; break;
+			case 'Apple Log': title += 'AppleLog'; break;
 			case 'Panasonic V-Log' : title += 'VLog'; break;
 			case 'Fujifilm F-Log' : title += 'FLog'; break;
 			case 'Varicam V709' : title += 'V709'; break;
@@ -616,22 +617,30 @@ LUTLutBox.prototype.autoTitle = function() {
 					title += info.inGammaName.replace(/[\s/-]/gi, '');
 				}
 		}
-		title += '_';
-		switch (info.inGamutName) {
-			case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
-			case 'Sony S-Gamut3': title += 'SG3'; break;
-			case 'Sony S-Gamut': title += 'SG'; break;
-			case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
-			case 'Canon Cinema Gamut': title += 'CanonCG'; break;
-			case 'Panasonic V-Gamut': title += 'VGamut'; break;
-			case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
-			case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
-			case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
-			case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
-			case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
-			case 'Varicam V709': title += 'V709'; break;
-			default:
-				title += info.inGamutName.replace(/[\s/-]/gi, '');
+		if (this.lutThreeD.checked) {
+			title += '_';
+			switch (info.inGamutName) {
+				case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
+				case 'Sony S-Gamut3': title += 'SG3'; break;
+				case 'Sony S-Gamut': title += 'SG'; break;
+				case 'Sony S-Gamut3.cine (Venice)': title += 'SG3cVenice'; break;
+				case 'Sony S-Gamut3 (Venice)': title += 'SG3Venice'; break;
+				case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
+				case 'ARRI Wide Gamut 4': title +='ARRIWG4'; break;
+				case 'Canon Cinema Gamut': title += 'CanonCG'; break;
+				case 'Panasonic V-Gamut': title += 'VGamut'; break;
+				case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
+				case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
+				case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
+				case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
+				case 'DJI X3 DLog':
+				case 'DJI X5/X7/X9 DLog': title += 'DJIDLog'; break;
+				case 'DJI DLog-M': title += 'DJIDLogM'; break;
+				case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
+				case 'Varicam V709': title += 'V709'; break;
+				default:
+					title += info.inGamutName.replace(/[\s/-]/gi, '');
+			}
 		}
 		title += '-';
 		switch (info.outGammaName) {
@@ -639,6 +648,7 @@ LUTLutBox.prototype.autoTitle = function() {
 			case 'LogC (Sup 2.x)': title += 'LogC'; break;
 			case 'Canon C-Log2' : title += 'CLog2'; break;
 			case 'Canon C-Log3' : title += 'CLog3'; break;
+			case 'Apple Log': title += 'AppleLog'; break;
 			case 'Panasonic V-Log' : title += 'VLog'; break;
 			case 'Fujifilm F-Log' : title += 'FLog'; break;
 			case 'Varicam V709' : title += 'V709'; break;
@@ -658,22 +668,30 @@ LUTLutBox.prototype.autoTitle = function() {
 					title += info.outGammaName.replace(/[\s/-]/gi, '');
 				}
 		}
-		title += '_';
-		switch (info.outGamutName) {
-			case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
-			case 'Sony S-Gamut3': title += 'SG3'; break;
-			case 'Sony S-Gamut': title += 'SG'; break;
-			case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
-			case 'Canon Cinema Gamut': title += 'CanonCG'; break;
-			case 'Panasonic V-Gamut': title += 'VGamut'; break;
-			case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
-			case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
-			case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
-			case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
-			case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
-			case 'Varicam V709': title += 'V709'; break;
-			default:
-				title += info.outGamutName.replace(/[\s/-]/gi, '');;
+		if (this.lutThreeD.checked) {
+			title += '_';
+			switch (info.outGamutName) {
+				case 'Sony S-Gamut3.cine': title += 'SG3c'; break;
+				case 'Sony S-Gamut3': title += 'SG3'; break;
+				case 'Sony S-Gamut': title += 'SG'; break;
+				case 'Sony S-Gamut3.cine (Venice)': title += 'SG3cVenice'; break;
+				case 'Sony S-Gamut3 (Venice)': title += 'SG3Venice'; break;
+				case 'Alexa Wide Gamut': title += 'AlexaWG'; break;
+				case 'ARRI Wide Gamut 4': title +='ARRIWG4'; break;
+				case 'Canon Cinema Gamut': title += 'CanonCG'; break;
+				case 'Panasonic V-Gamut': title += 'VGamut'; break;
+				case 'Fujifilm F-Log Gamut': title += 'FLogGamut'; break;
+				case 'Canon CP IDT (Daylight)': title += 'C300Day'; break;
+				case 'Canon CP IDT (Tungsten)': title += 'C300Tung'; break;
+				case 'Canon DCI-P3+': title += 'CanonDCIP3p'; break;
+				case 'DJI X3 DLog':
+				case 'DJI X5/X7/X9 DLog': title += 'DJIDLog'; break;
+				case 'DJI DLog-M': title += 'DJIDLogM'; break;
+				case 'Adobe Wide Gamut RGB': title += 'AdobeWGRGB'; break;
+				case 'Varicam V709': title += 'V709'; break;
+				default:
+					title += info.outGamutName.replace(/[\s/-]/gi, '');;
+			}
 		}
 		if (info.doBlk) {
 			title += '_B' + info.blackLevel.replace('.','p');

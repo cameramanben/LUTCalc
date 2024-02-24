@@ -799,6 +799,50 @@ LUTFormats.prototype.updateOptions = function() {
 	// Line up current and changed indeces
 	this.curIdx = idx;
 };
+LUTFormats.prototype.updateARRIRangeIn = function() {
+	var cur, idx;
+	if (this.inputs.lutUsage[0].checked) {
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
+		cur = this.grades[idx];
+	} else {
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
+		cur = this.mluts[idx];
+	}
+	var curIn = parseInt(this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value);
+	if (curIn === 9999) {
+		curIn = parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].value);
+	}
+	// Allow for Arri codec range legal / full
+	if (this.inputs.gammaArriList.indexOf(curIn) > -1) {
+		if (this.inputs.arriLegalIn[1].checked && cur.datIn) {
+			this.inputs.inRange[1].checked = true;
+		} else if ((!this.inputs.arriLegalIn[1].checked) && cur.legIn) {
+			this.inputs.inRange[0].checked = true;
+		}
+	}
+};
+LUTFormats.prototype.updateARRIRangeOut = function() {
+	var cur, idx;
+	if (this.inputs.lutUsage[0].checked) {
+		idx = parseInt(this.inputs.gradeSelect.options[this.inputs.gradeSelect.selectedIndex].value);
+		cur = this.grades[idx];
+	} else {
+		idx = parseInt(this.inputs.mlutSelect.options[this.inputs.mlutSelect.selectedIndex].value);
+		cur = this.mluts[idx];
+	}
+	var curOut = parseInt(this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value);
+	if (curOut === 9999) {
+		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
+	}
+	// Allow for Arri codec range legal / full
+	if (this.inputs.gammaArriList.indexOf(curOut) > -1) {
+		if (this.inputs.arriLegalOut[1].checked && cur.datOut) {
+			this.inputs.outRange[1].checked = true;
+		} else if ((!this.inputs.arriLegalOut[1].checked) && cur.legOut) {
+			this.inputs.outRange[0].checked = true;
+		}
+	}
+};
 LUTFormats.prototype.updateGammaIn = function() {
 	var cur,idx;
 	if (this.inputs.lutUsage[0].checked) {
@@ -813,17 +857,30 @@ LUTFormats.prototype.updateGammaIn = function() {
 		curIn = parseInt(this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].value);
 	}
 	var gamDat = this.inputs.gammaDataLevel[curIn];
-	if (!cur.defLegDat) {
-		if (gamDat && cur.datIn) {
+	// Allow for Arri codec range legal / full
+	var override = false;
+	if (this.inputs.gammaArriList.indexOf(curIn) > -1) {
+		if (this.inputs.arriLegalIn[1].checked && cur.datIn) {
 			this.inputs.inRange[1].checked = true;
-		} else if (!gamDat && cur.legIn) {
+			override = true;
+		} else if ((!this.inputs.arriLegalIn[1].checked) && cur.legIn) {
 			this.inputs.inRange[0].checked = true;
+			override = true;
 		}
-	} else {
-		if (cur.defLegIn) {
-			this.inputs.inRange[0].checked = true;
+	}
+	if (!override) {
+		if (!cur.defLegDat) {
+			if (gamDat && cur.datIn) {
+				this.inputs.inRange[1].checked = true;
+			} else if (!gamDat && cur.legIn) {
+				this.inputs.inRange[0].checked = true;
+			}
 		} else {
-			this.inputs.inRange[1].checked = true;
+			if (cur.defLegIn) {
+				this.inputs.inRange[0].checked = true;
+			} else {
+				this.inputs.inRange[1].checked = true;
+			}
 		}
 	}
 	if (this.inputs.gammaExt[curIn] && !gamDat) {
@@ -856,17 +913,30 @@ LUTFormats.prototype.updateGammaOut = function() {
 		curOut = parseInt(this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].value);
 	}
 	var gamDat = this.inputs.gammaDataLevel[curOut];
-	if (!cur.defLegDat) {
-		if (gamDat && cur.datOut) {
+	// Allow for Arri codec range legal / full
+	var override = false;
+	if (this.inputs.gammaArriList.indexOf(curOut) > -1) {
+		if (this.inputs.arriLegalOut[1].checked && cur.datOut) {
 			this.inputs.outRange[1].checked = true;
-		} else if (!gamDat && cur.legOut) {
+			override = true;
+		} else if ((!this.inputs.arriLegalOut[1].checked) && cur.legOut) {
 			this.inputs.outRange[0].checked = true;
+			override = true;
 		}
-	} else {
-		if (cur.defLegOut) {
-			this.inputs.outRange[0].checked = true;
+	}
+	if (!override) {
+		if (!cur.defLegDat) {
+			if (gamDat && cur.datOut) {
+				this.inputs.outRange[1].checked = true;
+			} else if (!gamDat && cur.legOut) {
+				this.inputs.outRange[0].checked = true;
+			}
 		} else {
-			this.inputs.outRange[1].checked = true;
+			if (cur.defLegOut) {
+				this.inputs.outRange[0].checked = true;
+			} else {
+				this.inputs.outRange[1].checked = true;
+			}
 		}
 	}
 	this.messages.displayCLC();

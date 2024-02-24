@@ -118,6 +118,7 @@ LUTCameraBox.prototype.cameraList = function() {
 	this.cameras.push({make:"Canon",model:"C300mkIII",iso:800,type:2,defgamma:"Canon C-Log2",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
 	this.cameras.push({make:"Canon",model:"C500",iso:850,type:2,defgamma:"C-Log",defgamut:"Canon Cinema Gamut",bclip:-6.7,wclip:5.3});
 	this.cameras.push({make:"Canon",model:"C500mkIII",iso:800,type:2,defgamma:"Canon C-Log2",defgamut:"Canon Cinema Gamut",bclip:-8.7,wclip:6.3});
+	this.cameras.push({make:"Apple",model:"iPhone 15 Pro",iso:55,type:2,defgamma:"Apple Log",defgamut:"Rec2020",bclip:-6.2,wclip:6});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
 	this.cameras.push({make:"Panasonic",model:"Varicam 35 (High Base)",iso:5000,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
 	this.cameras.push({make:"Panasonic",model:"AU-EVA1",iso:800,type:2,defgamma:"Panasonic V-Log",defgamut:"Panasonic V-Gamut",bclip:-7.5,wclip:6.5});
@@ -155,7 +156,7 @@ LUTCameraBox.prototype.clearSelect = function(sel) {
 	}
 };
 LUTCameraBox.prototype.manufacturerOptions = function() {
-	var manufacturers = ["Sony", "ARRI", "RED", "Canon", "Panasonic", "Blackmagic", "GoPro", "DJI", "Nikon", "All"];
+	var manufacturers = ["Sony", "ARRI", "RED", "Canon", "Apple", "Panasonic", "Blackmagic", "GoPro", "DJI", "Nikon", "All"];
 	var max = manufacturers.length;
 	for (var i=0; i<max; i++) {
 		var option = document.createElement('option');

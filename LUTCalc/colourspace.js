@@ -117,22 +117,23 @@ LUTColourSpace.prototype.subIdx = function(cat) {
 		case 'Sony': 		return 0;
 		case 'ARRI': 		return 1;
 		case 'Canon':		return 2;
-		case 'Panasonic':	return 3;
-		case 'Fujifilm':	return 4;
-		case 'RED':			return 5;
-		case 'DJI':			return 6;
-		case 'GoPro':		return 7;
-		case 'Blackmagic':	return 8;
-		case 'Nikon':		return 9;
-		case 'Bolex':		return 10;
-		case 'Adobe':		return 11;
-		case 'Rec709':		return 12;
-		case 'Rec2020':		return 13;
-		case 'Rec2100':		return 14;
-		case 'P3':			return 15;
-		case 'Wide Gamut':	return 16;
-		case 'ACES':		return 17;
-		case 'All':			return 18;
+		case 'Apple':		return 3;
+		case 'Panasonic':	return 4;
+		case 'Fujifilm':	return 5;
+		case 'RED':			return 6;
+		case 'DJI':			return 7;
+		case 'GoPro':		return 8;
+		case 'Blackmagic':	return 9;
+		case 'Nikon':		return 10;
+		case 'Bolex':		return 11;
+		case 'Adobe':		return 12;
+		case 'Rec709':		return 13;
+		case 'Rec2020':		return 14;
+		case 'Rec2100':		return 15;
+		case 'P3':			return 16;
+		case 'Wide Gamut':	return 17;
+		case 'ACES':		return 18;
+		case 'All':			return 19;
 	}
 	return false;
 };
@@ -140,6 +141,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.subNames = [	'Sony',
 						'ARRI',
 						'Canon',
+						'Apple',
 						'Panasonic',
 						'Fujifilm',
 						'RED',
@@ -168,6 +170,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Sony S-Gamut'));
 	this.csInSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
+	this.csIn.push(this.toSys('ARRI Wide Gamut 4'));
+	this.csInSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Alexa Wide Gamut'));
 	this.csInSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Canon Cinema Gamut'));
@@ -210,7 +214,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Rec709'));
 	this.csInSub.push([this.subIdx('Rec709'),this.subIdx('DJI')]);
 	this.csIn.push(this.toSys('Rec2020'));
-	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
+	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Apple'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Rec2100'));
 	this.csInSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('sRGB'));
@@ -239,6 +243,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csInSub.push([this.subIdx('Adobe'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('ProPhoto RGB'));
 	this.csInSub.push([this.subIdx('Wide Gamut')]);
+	this.csIn.push(new CSLabSpace('CIELAB D65', 95.0489, 100.0, 108.8840, true, this.toSys('XYZ')));
+	this.csInSub.push([this.subIdx('Wide Gamut')]);
+	this.csIn.push(new CSLabSpace('CIELAB D50', 96.4212, 100.0, 82.5188, true, this.toSys('XYZ')));
+	this.csInSub.push([this.subIdx('Wide Gamut')]);
 	this.custIn = this.csIn.length;
 	this.csIn.push(this.toSys('Custom In'));
 	this.csInSub.push([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]);
@@ -255,6 +263,8 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Sony S-Gamut'));
 	this.csOutSub.push([this.subIdx('Sony'),this.subIdx('Wide Gamut')]);
+	this.csOut.push(this.fromSys('ARRI Wide Gamut 4'));
+	this.csOutSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Alexa Wide Gamut'));
 	this.csOutSub.push([this.subIdx('ARRI'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Canon Cinema Gamut'));
@@ -425,7 +435,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	);
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Rec709')]);
 	this.csOut.push(this.fromSys('Rec2020'));
-	this.csOutSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
+	this.csOutSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Apple'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Rec2100'));
 	this.csOutSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('sRGB'));
@@ -452,6 +462,10 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csOut.push(this.fromSys('Adobe Wide Gamut RGB'));
 	this.csOutSub.push([this.subIdx('Adobe'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('ProPhoto RGB'));
+	this.csOutSub.push([this.subIdx('Wide Gamut')]);
+	this.csOut.push(new CSLabSpace('CIELAB D65', 95.0489, 100.0, 108.8840, false, this.fromSys('XYZ')));
+	this.csOutSub.push([this.subIdx('Wide Gamut')]);
+	this.csOut.push(new CSLabSpace('CIELAB D50', 96.4212, 100.0, 82.5188, false, this.fromSys('XYZ')));
 	this.csOutSub.push([this.subIdx('Wide Gamut')]);
 	this.custOut = this.csOut.length;
 	this.csOut.push(this.toSys('Custom Out'));
@@ -853,6 +867,14 @@ LUTColourSpace.prototype.xyzMatrices = function() {
 	sgamut.white = this.illuminant('d65');
 	sgamut.toXYZ = this.RGBtoXYZ(sgamut.xy,sgamut.white);
 	this.g.push(sgamut);
+// ARRI Wide Gamut 4
+	var arriwg4 = {};
+	arriwg4.name = 'ARRI Wide Gamut 4';
+	arriwg4.cat = this.CATs.modelIdx('CIECAT02');
+	arriwg4.xy = new Float64Array([0.7347,0.2653, 0.1424,0.8576, 0.0991,-0.0308]);
+	arriwg4.white = this.illuminant('d65');
+	arriwg4.toXYZ = this.RGBtoXYZ(arriwg4.xy,arriwg4.white);
+	this.g.push(arriwg4);
 // ALEXA Wide Gamut RGB
 	var alexawgrgb = {};
 	alexawgrgb.name = 'Alexa Wide Gamut';
@@ -4232,6 +4254,116 @@ CSCanonIDT.prototype.lc = function(buff) {
 CSCanonIDT.prototype.lf = function(buff) {
 	this.lc(buff);
 };
+function CSLabSpace(name, Xn, Yn, Zn, toSys, XYZ) {
+	this.name = name;
+	this.toSys = toSys;
+	this.XYZ = XYZ;
+	this.Xn = Xn / Yn;
+	this.Yn = 1.0;
+	this.Zn = Zn / Yn;
+	this.d = 6.0 / 29.0;
+	this.d3 = Math.pow(this.d, 3);
+	this.oneover3d2 = 1.0 / (3.0 * this.d * this.d);
+	this.threed2 = 3.0 * this.d * this.d;
+	this.fourover29 = 4.0 / 29.0;
+	
+	this.p1 = 24389.0 / 2700.0;
+	this.p2 = 0.16;
+	this.p3 = 216.0 / 24389.0;
+	this.p4 = 216.0 / 2700.0;
+}
+CSLabSpace.prototype.f = function(buff, transfer) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (transfer) {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p3) {
+				c[j] = (1.16 * Math.cbrt(c[j])) - 0.16;
+			} else {
+				c[j] = this.p1 * c[j];
+			}
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p3) {
+				c[j] = Math.cbrt(c[j]);
+			} else {
+				c[j] = ((this.p1 * c[j]) + 0.16) / 1.16;
+			}
+		}
+	}
+};
+CSLabSpace.prototype.fInv = function(buff, transfer) {
+	var c= new Float64Array(buff);
+	var m = c.length;
+	if (transfer) {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p4) {
+				c[j] = Math.pow((c[j] + 0.16)/(1.16), 3.0);		
+			} else {
+				c[j] = (c[j] / this.p1);
+			}
+		}
+	} else {
+		for (var j=0; j<m; j++) {
+			if (c[j] >= this.p4) {
+				c[j] = Math.pow(c[j], 3.0);		
+			} else {
+				c[j] = ((c[j] * 1.16) - 0.16) / this.p1;
+			}
+		}
+	}
+};
+CSLabSpace.prototype.getWP = function() {
+	return new Float64Array([this.Xn, this.Yn, this.Zn]);
+};
+CSLabSpace.prototype.isMatrix = function() {
+	return false;
+};
+CSLabSpace.prototype.cb = function() {
+	return false;
+};
+CSLabSpace.prototype.lc = function(buff) {
+	var c = new Float64Array(buff);
+	var m = c.length;
+	if (this.toSys) {
+		this.f(c.buffer, true);
+		var m = c.length;
+		var fY;
+		for (var j=0; j<m; j+= 3) {
+			fY = (c[ j ] + 0.16) / 1.16;
+			c[ j ] = (c[j+1] + fY) / 5.0;
+			c[j+2] = (c[j+2] + fY) / 2.0;
+			c[j+1] = fY;
+		}
+		this.fInv(c.buffer, false);
+		for (var j=0; j<m; j+= 3) {
+			c[ j ] *= this.Xn;
+			c[j+1] *= this.Yn;
+			c[j+2] *= this.Zn;
+		}
+		this.XYZ.lc(c.buffer);
+	} else {
+		this.XYZ.lc(c.buffer);
+		for (var j=0; j<m; j+= 3) {
+			c[ j ] /= this.Xn;
+			c[j+1] /= this.Yn;
+			c[j+2] /= this.Zn;
+		}
+		this.f(c.buffer, false);
+		var fY;
+		for (var j=0; j<m; j+= 3) {
+			fY = c[j+1];
+			c[j+1] = 5.0 * (c[ j ] - fY);	// a*
+			c[j+2] = 2.0 * (c[j+2] - fY);	// b*
+			c[ j ] = (1.16 * fY) - 0.16;	// L*
+		}
+		this.fInv(c.buffer, true);
+	}
+};
+CSLabSpace.prototype.lf = function(buff) {
+	this.lc(buff);
+};
 // IO functions
 LUTColourSpace.prototype.setParams = function(params) {
 	var out = {	t: 20, v: this.ver };
@@ -5088,6 +5220,11 @@ function getCSString() {
 	out += CSCanonIDT.toString() + "\n";
 	for (var j in CSCanonIDT.prototype) {
 		out += 'CSCanonIDT.prototype.' + j + '=' + CSCanonIDT.prototype[j].toString() + "\n";
+	}
+	// CSLabSpace
+	out += CSLabSpace.toString() + "\n";
+	for (var j in CSLabSpace.prototype) {
+		out += 'CSLabSpace.prototype.' + j + '=' + CSLabSpace.prototype[j].toString() + "\n";
 	}
 	// LUTCSWorker
 	out += LUTCSWorker.toString() + "\n";

@@ -131,6 +131,15 @@ LUTGammaBox.prototype.io = function() {
 	this.hlgScaleOut[0] = lutRadioElement('hlgScaleOut', true); // NHK / Base Spec (90% maps to 50% IRE)
 	this.hlgScaleOut[1] = lutRadioElement('hlgScaleOut', false); // BBC (90% maps to 75% IRE)
 	this.inputs.addInput('hlgBBCScaleOut',this.hlgScaleOut);
+	
+	this.arriLegalIn = [];
+	this.arriLegalIn[0] = lutRadioElement('arriLegalIn', true); // ARRI recording legal / full range
+	this.arriLegalIn[1] = lutRadioElement('arriLegalIn', false); 
+	this.inputs.addInput('arriLegalIn',this.arriLegalIn);
+	this.arriLegalOut = [];
+	this.arriLegalOut[0] = lutRadioElement('arriLegalOut', true); // ARRI recording legal / full range
+	this.arriLegalOut[1] = lutRadioElement('arriLegalOut', false);
+	this.inputs.addInput('arriLegalOut',this.arriLegalOut);
 };
 LUTGammaBox.prototype.ui = function() {
 	this.box.appendChild(document.createElement('label').appendChild(document.createTextNode('Rec Gamma')));
@@ -182,6 +191,15 @@ LUTGammaBox.prototype.ui = function() {
 	this.hlgOETFInBox.appendChild(this.hlgScaleIn[1]);
 	this.hlgOETFInBox.appendChild(document.createElement('label').appendChild(document.createTextNode('BBC')));
 	this.box.appendChild(this.hlgOETFInBox);
+	
+	this.arriLegalInBox = document.createElement('div');
+	this.arriLegalInBox.className = 'smallerbox';
+	this.arriLegalInBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Codec Range')));
+	this.arriLegalInBox.appendChild(this.arriLegalIn[0]);
+	this.arriLegalInBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.arriLegalInBox.appendChild(this.arriLegalIn[1]);
+	this.arriLegalInBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Full Range')));
+	this.box.appendChild(this.arriLegalInBox);
 	
 	this.inGamutBox = document.createElement('div');
 	this.inGamutBox.className = 'base-inputbox';
@@ -242,6 +260,15 @@ LUTGammaBox.prototype.ui = function() {
 	this.hlgOETFOutBox.appendChild(this.hlgScaleOut[1]);
 	this.hlgOETFOutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('BBC')));
 	this.box.appendChild(this.hlgOETFOutBox);
+
+	this.arriLegalOutBox = document.createElement('div');
+	this.arriLegalOutBox.className = 'smallerbox';
+	this.arriLegalOutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Codec Range')));
+	this.arriLegalOutBox.appendChild(this.arriLegalOut[0]);
+	this.arriLegalOutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.arriLegalOutBox.appendChild(this.arriLegalOut[1]);
+	this.arriLegalOutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Full Range')));
+	this.box.appendChild(this.arriLegalOutBox);
 
 	this.outGamutBox = document.createElement('div');
 	this.outGamutBox.className = 'base-inputbox';
@@ -346,6 +373,23 @@ LUTGammaBox.prototype.events = function() {
 	};}(this);
 	this.hlgScaleOut[1].onchange = function(here){ return function(){
 //		here.testNHKBBC(false);
+		here.messages.gaSetParams();
+	};}(this);
+
+	this.arriLegalIn[0].onchange = function(here){ return function(){
+		here.messages.updateARRIRangeIn();
+		here.messages.gaSetParams();
+	};}(this);
+	this.arriLegalIn[1].onchange = function(here){ return function(){
+		here.messages.updateARRIRangeIn();
+		here.messages.gaSetParams();
+	};}(this);
+	this.arriLegalOut[0].onchange = function(here){ return function(){
+		here.messages.updateARRIRangeOut();
+		here.messages.gaSetParams();
+	};}(this);
+	this.arriLegalOut[1].onchange = function(here){ return function(){
+		here.messages.updateARRIRangeOut();
 		here.messages.gaSetParams();
 	};}(this);
 };
@@ -586,6 +630,7 @@ LUTGammaBox.prototype.changeGammaIn = function() {
 	this.pqEOTFInBox.className = 'smallerbox-hide';
 	this.hlgOOTFInBox.className = 'smallerbox-hide';
 	this.hlgOETFInBox.className = 'smallerbox-hide';
+	this.arriLegalInBox.className = 'smallerbox-hide';
 	// Show As Required
 	var idx = parseInt(this.inGammaSelect.options[this.inGammaSelect.options.selectedIndex].value);
 	if (idx === 9999) {
@@ -608,6 +653,8 @@ LUTGammaBox.prototype.changeGammaIn = function() {
 		this.hlgOETFInBox.className = 'smallerbox';
 	} else if (idx === this.inputs.gammaDLogM) {
 		this.inCon.className = 'smallerbox';
+	} else if (this.inputs.gammaArriList.indexOf(idx) > -1) {
+		this.arriLegalInBox.className = 'smallerbox';
 	}
 	this.messages.updateGammaIn();
 };
@@ -619,6 +666,7 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 	this.pqEOTFOutBox.className = 'smallerbox-hide';
 	this.hlgOOTFOutBox.className = 'smallerbox-hide';
 	this.hlgOETFOutBox.className = 'smallerbox-hide';
+	this.arriLegalOutBox.className = 'smallerbox-hide';
 	// Show As Required
 	var idx = parseInt(this.outGammaSelect.options[this.outGammaSelect.options.selectedIndex].value);
 	if (idx === 9999) {
@@ -641,6 +689,8 @@ LUTGammaBox.prototype.changeGammaOut = function() {
 		this.hlgOETFOutBox.className = 'smallerbox';
 	} else if (idx === this.inputs.gammaDLogM) {
 		this.outCon.className = 'smallerbox';
+	} else if (this.inputs.gammaArriList.indexOf(idx) > -1) {
+		this.arriLegalOutBox.className = 'smallerbox';
 	}
 	this.messages.updateGammaOut();
 };

@@ -169,7 +169,7 @@ function lutSlider(p, list) {
 		this.inputLim = false;
 	}
 	// Input Box decimal places - default is 2, inputDP = false is unlimited
-	this.inputDP = 100;
+	this.inputDP = 10000;
 	if (typeof p.inputDP === 'number' && parseInt(p.inputDP) >= 0) {
 		this.inputDP = Math.pow(10,parseInt(p.inputDP));
 	} else if (typeof p.inputDP === 'boolean' && !p.inputDP) {

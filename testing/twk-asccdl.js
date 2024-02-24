@@ -51,7 +51,7 @@ TWKASCCDL.prototype.io = function() {
 			mid: 1,
 			max: 10,
 			value: 1,
-			step: 0.01,
+			step: 0.0001,
 			title: false,
 			lhs: 'Slope',
 			minLabel: false,

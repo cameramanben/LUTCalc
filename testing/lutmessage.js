@@ -172,6 +172,8 @@ LUTMessage.prototype.gaSetParams = function() {
 			hlgLwOut: parseFloat(this.inputs.outHLGLw.value),
 			hlgBBCIn: this.inputs.hlgBBCScaleIn[1].checked,
 			hlgBBCOut: this.inputs.hlgBBCScaleOut[1].checked,
+			arriLegalIn: !this.inputs.arriLegalIn[1].checked,
+			arriLegalOut: !this.inputs.arriLegalOut[1].checked,
 
 			defGamma: this.inputs.defGammaIn,
 			newISO: parseFloat(this.inputs.cineEI.value),
@@ -388,6 +390,7 @@ LUTMessage.prototype.gotGammaLists = function(d) {
 	this.inputs.addInput('gammaPQOOTF',d.PQOOTF);
 	this.inputs.addInput('gammaPQEOTF',d.PQEOTF);
 	this.inputs.addInput('gammaHLGOOTF',d.HLGOOTF);
+	this.inputs.addInput('gammaArriList', d.ARRIList)
 	this.inputs.addInput('gammaDLogM',d.DLogM);
 	this.inputs.addInput('gammaInList',d.inList);
 	this.inputs.addInput('gammaOutList',d.outList);
@@ -782,14 +785,21 @@ LUTMessage.prototype.updateGammaIn = function() {
 	if (this.go) {
 		this.ui[11].updateGammaIn();
 	}
-}
+};
 LUTMessage.prototype.updateGammaOut = function() {
 	if (this.go) {
 		this.ui[11].updateGammaOut();
 		this.ui[17].updateGammaOut();
 		this.ui[3].updateGammaOut();
 	}
-}
+};
+LUTMessage.prototype.updateARRIRangeIn = function() {
+	this.ui[11].updateARRIRangeIn();
+};
+LUTMessage.prototype.updateARRIRangeOut = function() {
+	this.ui[11].updateARRIRangeOut();
+};
+
 LUTMessage.prototype.changeGamut = function() {
 	if (this.go) {
 		this.ui[3].changeGamut();

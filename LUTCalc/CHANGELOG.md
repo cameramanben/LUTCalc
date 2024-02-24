@@ -1,6 +1,18 @@
 LUTCalc Changelog
 =================
 
+v4.06
+-----
+* New Feature - Apple iPhone 15 Apple Log / Rec2020
+* New Feature / Bugfix - ARRI give code value for recording log across the legal range or full range. With ARRI log Gammas, the option now comes up for setting the codec range to legal or full.
+
+v4.05
+-----
+* New Feature - ARRI LogC4 and Wide Gamut 4.
+* New Feature - CIE L* gamma function.
+* New Feature - CIELAB gamut, combined with L* gamma, makes CIE LAB colourspace.
+* New Feature - Additional camera presets - ARRI Alexa 35, DJI 4D, DJI Xenmuse X9.
+
 v4.03
 -----
 * Bugfix - Fixed Nikon N-Log bug

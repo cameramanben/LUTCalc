@@ -1,6 +1,11 @@
 LUTCalc Changelog
 =================
 
+v4.06
+-----
+* New Feature - Apple iPhone 15 Apple Log / Rec2020
+* New Feature / Bugfix - ARRI give code value for recording log across the legal range or full range. With ARRI log Gammas, the option now comes up for setting the codec range to legal or full.
+
 v4.05
 -----
 * New Feature - ARRI LogC4 and Wide Gamut 4.

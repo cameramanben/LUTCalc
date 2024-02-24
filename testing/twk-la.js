@@ -101,6 +101,9 @@ TWKLA.prototype.io = function() {
 	this.hlgScale = [];
 	this.hlgScale[0] = lutRadioElement('hlgScale', true); // NHK / Base Spec (90% maps to 50% IRE)
 	this.hlgScale[1] = lutRadioElement('hlgScale', false); // BBC (90% maps to 75% IRE)
+	this.arriLegal = [];
+	this.arriLegal[0] = lutRadioElement('arriLegal', true); // arri recording range
+	this.arriLegal[1] = lutRadioElement('arriLegal', false);
 
 	this.dim33 = this.createRadioElement('lutAnalystDim',false);
 	this.dim65 = this.createRadioElement('lutAnalystDim',true);
@@ -228,6 +231,15 @@ TWKLA.prototype.ui = function() {
 	this.hlgOETFBox.appendChild(this.hlgScale[1]);
 	this.hlgOETFBox.appendChild(document.createElement('label').appendChild(document.createTextNode('BBC')));
 	this.analysisBox.appendChild(this.hlgOETFBox);
+
+	this.arriLegalBox = document.createElement('div');
+	this.arriLegalBox.className = 'twk-tab-hide';
+	this.arriLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Codec Range')));
+	this.arriLegalBox.appendChild(this.arriLegal[0]);
+	this.arriLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Legal')));
+	this.arriLegalBox.appendChild(this.arriLegal[1]);
+	this.arriLegalBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Full Range')));
+	this.analysisBox.appendChild(this.arriLegalBox);
 
 	this.gamutBox = document.createElement('div');
 	this.gamutBox.appendChild(document.createElement('label').appendChild(document.createTextNode('Input Gamut')));
@@ -494,6 +506,14 @@ TWKLA.prototype.events = function() {
 		here.testNHKBBC();
 		here.messages.gaSetParams();
 	};}(this);
+	this.arriLegal[0].onchange = function(here){ return function(){
+		here.testARRILegal();
+		here.messages.gaSetParams();
+	};}(this);
+	this.arriLegal[1].onchange = function(here){ return function(){
+		here.testARRILegal();
+		here.messages.gaSetParams();
+	};}(this);
 };
 // Tweak-Specific Code
 TWKLA.prototype.testPQLw = function() {
@@ -534,6 +554,11 @@ TWKLA.prototype.testNHKBBC = function() {
 	this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
 //	this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
 //	this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+};
+TWKLA.prototype.testARRILegal = function() {
+	this.inputs.arriLegalIn[0].checked = this.arriLegal[0].checked;
+	this.inputs.arriLegalIn[1].checked = this.arriLegal[1].checked;
+	this.messages.updateARRIRangeIn();
 };
 TWKLA.prototype.createRadioElement = function(name, checked) {
     var radioInput;
@@ -649,6 +674,7 @@ TWKLA.prototype.testGamma = function() {
 	this.pqEOTFBox.className = 'twk-tab-hide';
 	this.hlgOOTFBox.className = 'twk-tab-hide';
 	this.hlgOETFBox.className = 'twk-tab-hide';
+	this.arriLegalBox.className = 'twk-tab-hide';
 	// Show As Required
 	var idx = parseInt(this.gammaSelect.options[this.gammaSelect.options.selectedIndex].value);
 	if (idx === 9999) {
@@ -669,6 +695,8 @@ TWKLA.prototype.testGamma = function() {
 		this.pqEOTFBox.className = 'twk-tab';
 	} else if (idx === this.inputs.gammaHLG) {
 		this.hlgOETFBox.className = 'twk-tab';
+	} else if (this.inputs.gammaArriList.indexOf(idx) > -1) {
+		this.arriLegalBox.className = 'twk-tab';
 	}
 };
 TWKLA.prototype.doStuff = function() {
@@ -870,6 +898,8 @@ TWKLA.prototype.syncHDRVals = function(here) {
 		this.inputs.hlgBBCScaleIn[1].checked = this.hlgScale[1].checked;
 //		this.inputs.hlgBBCScaleOut[0].checked = this.hlgScale[0].checked;
 //		this.inputs.hlgBBCScaleOut[1].checked = this.hlgScale[1].checked;
+		this.inputs.arriLegalIn[0].checked = this.arriLegal[0].checked;
+		this.inputs.arriLegalIn[1].checked = this.arriLegal[1].checked;
 	} else { // collect from gamma box
 		this.pqOOTFLw.value = this.inputs.inPQLw.value;
 		this.pqEOTFLw.value = this.inputs.inPQEOTFLw.value;
@@ -877,6 +907,8 @@ TWKLA.prototype.syncHDRVals = function(here) {
 		this.hlgOOTFLb.value = this.inputs.inHLGLb.value;
 		this.hlgScale[0].checked = this.inputs.hlgBBCScaleIn[0].checked;
 		this.hlgScale[1].checked = this.inputs.hlgBBCScaleIn[1].checked;
+		this.arriLegal[0].checked = this.inputs.arriLegalIn[0].checked;
+		this.arriLegal[1].checked = this.inputs.arriLegalIn[1].checked;
 	}
 };
 TWKLA.prototype.cleanTitle = function() {

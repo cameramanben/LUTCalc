@@ -117,22 +117,23 @@ LUTColourSpace.prototype.subIdx = function(cat) {
 		case 'Sony': 		return 0;
 		case 'ARRI': 		return 1;
 		case 'Canon':		return 2;
-		case 'Panasonic':	return 3;
-		case 'Fujifilm':	return 4;
-		case 'RED':			return 5;
-		case 'DJI':			return 6;
-		case 'GoPro':		return 7;
-		case 'Blackmagic':	return 8;
-		case 'Nikon':		return 9;
-		case 'Bolex':		return 10;
-		case 'Adobe':		return 11;
-		case 'Rec709':		return 12;
-		case 'Rec2020':		return 13;
-		case 'Rec2100':		return 14;
-		case 'P3':			return 15;
-		case 'Wide Gamut':	return 16;
-		case 'ACES':		return 17;
-		case 'All':			return 18;
+		case 'Apple':		return 3;
+		case 'Panasonic':	return 4;
+		case 'Fujifilm':	return 5;
+		case 'RED':			return 6;
+		case 'DJI':			return 7;
+		case 'GoPro':		return 8;
+		case 'Blackmagic':	return 9;
+		case 'Nikon':		return 10;
+		case 'Bolex':		return 11;
+		case 'Adobe':		return 12;
+		case 'Rec709':		return 13;
+		case 'Rec2020':		return 14;
+		case 'Rec2100':		return 15;
+		case 'P3':			return 16;
+		case 'Wide Gamut':	return 17;
+		case 'ACES':		return 18;
+		case 'All':			return 19;
 	}
 	return false;
 };
@@ -140,6 +141,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.subNames = [	'Sony',
 						'ARRI',
 						'Canon',
+						'Apple',
 						'Panasonic',
 						'Fujifilm',
 						'RED',
@@ -212,7 +214,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	this.csIn.push(this.toSys('Rec709'));
 	this.csInSub.push([this.subIdx('Rec709'),this.subIdx('DJI')]);
 	this.csIn.push(this.toSys('Rec2020'));
-	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
+	this.csInSub.push([this.subIdx('Rec2020'),this.subIdx('Apple'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('Rec2100'));
 	this.csInSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csIn.push(this.toSys('sRGB'));
@@ -433,7 +435,7 @@ LUTColourSpace.prototype.loadColourSpaces = function() {
 	);
 	this.csOutSub.push([this.subIdx('Panasonic'),this.subIdx('Rec709')]);
 	this.csOut.push(this.fromSys('Rec2020'));
-	this.csOutSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Wide Gamut')]);
+	this.csOutSub.push([this.subIdx('Rec2020'),this.subIdx('Nikon'),this.subIdx('Apple'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('Rec2100'));
 	this.csOutSub.push([this.subIdx('Rec2100'),this.subIdx('Wide Gamut')]);
 	this.csOut.push(this.fromSys('sRGB'));
