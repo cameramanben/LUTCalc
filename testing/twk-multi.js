@@ -586,7 +586,7 @@ TWKMulti.prototype.buildPicker = function() {
 	this.pCan.className = 'picker-can';
 	this.pCan.width = '256';
 	this.pCan.height = '256';
-	this.pCtx = this.pCan.getContext('2d');
+	this.pCtx = this.pCan.getContext('2d', { willReadFrequently: true });
 	this.pData = this.pCtx.createImageData(256,256);
 	this.pickerBox.appendChild(this.pCan);
 	var infoBox = document.createElement('div');
