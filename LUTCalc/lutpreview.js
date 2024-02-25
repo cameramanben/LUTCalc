@@ -192,7 +192,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.inputs.addInput('previewCanvas',this.pCan);
 	this.pCan.width = this.width.toString();
 	this.pCan.height = this.height.toString();
-	this.pCtx = this.pCan.getContext('2d');
+	this.pCtx = this.pCan.getContext('2d', { willReadFrequently: true });
 	this.pData = this.pCtx.createImageData(this.width,this.height);
 	this.pRaw = new Float64Array(this.width * this.height * 3);
 	this.inputs.addInput('preRaw',this.pRaw);
@@ -218,7 +218,7 @@ LUTPreview.prototype.uiCanvases = function() {
 	this.lCan.className = 'can-hide';
 	this.lCan.width = this.width.toString();
 	this.lCan.height = this.height.toString();
-	this.lCtx = this.lCan.getContext('2d');
+	this.lCtx = this.lCan.getContext('2d', { willReadFrequently: true });
 	this.box.appendChild(this.lCan);
 	// Waveform
 	this.wCan = document.createElement('canvas');

@@ -1,87 +1,96 @@
 {
+	"short_name": "LUTCalc",
 	"name": "LUTCalc",
-	"description": "Camera LUT Generator / Analyser / Visualiser.",
 	"version": "4.06",
-	"manifest_version": 2,
-	"minimum_chrome_version": "23",
-	"app": {
-		"background": {
-			"scripts": [
-				"colourspace.js",
-				"gamma.js",
-				"background.js",
-				"splash.js",
-				"bounding.js",
-				"lut.js",
-				"ring.js",
-				"lutmessage.js",
-				"lut-cube.js",
-				"lut-davinci.js",
-				"lut-vlt.js",
-				"lut-3dl.js",
-				"lut-lut.js",
-				"lut-spi1d.js",
-				"lut-spi3d.js",
-				"lut-ncp.js",
-				"lut-la.js",
-				"lutformats.js",
-				"brent.js",
-				"lutanalyst.js",
-				"lutfile.js",
-				"lutcamerabox.js",
-				"lutgammabox.js",
-				"twk-cs.js",
-				"twk-white.js",
-				"twk-asccdl.js",
-				"twk-psstcdl.js",
-				"twk-hg.js",
-				"twk-multi.js",
-				"twk-sdrsat.js",
-				"twk-gamlim.js",
-				"twk-display.js",
-				"twk-knee.js",
-				"twk-blkhi.js",
-				"twk-blkgam.js",
-				"twk-fc.js",
-				"twk-sampler.js",
-				"twk-la.js",
-				"luttweaksbox.js",
-				"lutlutbox.js",
-				"lutgeneratebox.js",
-				"lutpreview.js",
-				"lutinfobox.js",
-				"lutmobile.js",
-				"lutcalc.js",
-				"gammaworker.js",
-				"colourspaceworker.js"
-			]
+	"developer": {
+		"name": "Ben Turley",
+		"url": "https://turley.tv"
+	},
+	"default_locale": "en",
+	"lang": "en-gb",
+	"type": "web",
+	"icons": [
+    {
+      "src": "./img/lutcalc-16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "./img/lutcalc-19.png",
+      "type": "image/png",
+      "sizes": "19x19"
+    },
+    {
+      "src": "./img/lutcalc-32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "./img/lutcalc-38.png",
+      "type": "image/png",
+      "sizes": "38x38"
+    },
+    {
+      "src": "./img/lutcalc-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "./img/lutcalc-60.png",
+      "type": "image/png",
+      "sizes": "60x60"
+    },
+    {
+      "src": "./img/lutcalc-64.png",
+      "type": "image/png",
+      "sizes": "64x64"
+    },
+    {
+      "src": "./img/lutcalc-90.png",
+      "type": "image/png",
+      "sizes": "90x90"
+    },
+    {
+      "src": "./img/lutcalc-128.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    },
+    {
+      "src": "./img/lutcalc-256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "./img/lutcalc-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "./img/lutcalc-1024.png",
+      "type": "image/png",
+      "sizes": "1024x1024"
+    }
+  ],
+	"start_url": "./index.html",
+	"launch_path": "./index.html",
+	"background_color": "#eaeaea",
+	"display": "standalone",
+	"scope": "./",
+	"theme_color": "#202090",
+	"shortcuts": [],
+	"description": "Camera LUT Generator / Analyser / Visualiser.",
+	"screenshots": [
+		{
+			"src": "./img/Screenshot-Wide-1.png",
+			"type": "image/png",
+			"sizes": "720x389",
+			"form_factor": "wide"
+		},
+		{
+			"src": "./img/Screenshot-Tall-1.png",
+			"type": "image/png",
+			"sizes": "649x720",
+			"form_factor": "narrow"
 		}
-	},
-	"author": "Ben Turley",
-	"icons": {
-		"16": "/img/chrome16.png",
-		"19": "/img/chrome19.png",
-		"32": "/img/chrome32.png",
-		"38": "/img/chrome38.png",
-		"48": "/img/chrome48.png",
-		"64": "/img/chrome64.png",
-		"128": "/img/chrome128.png",
-		"256": "/img/chrome256.png",
-		"512": "/img/chrome512.png"
-	},
-	"offline_enabled": true,
-	"permissions": [
-		"notifications",
-		{ "fileSystem": ["write"] }
-	],
-	"file_handlers": {
-		"any": {
-			"extensions": [
-				"cube",
-				"lacube",
-				"labin",
-				"lutcalc"
-			]
-		} 
-	}
+	]
 }
