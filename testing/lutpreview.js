@@ -582,7 +582,7 @@ LUTPreview.prototype.preGotImg = function() {
 		var fCan = document.createElement('canvas');
 		fCan.width = '960';
 		fCan.height = '540';
-		var fCtx = fCan.getContext('2d', { willReadFrequently: true });
+		var fCtx = fCan.getContext('2d');
 		fCtx.drawImage(this.inputs.preFileData.pic,0,0,wS,hS);
 		var f = fCtx.getImageData(0,0,960,540);
 		var max = Math.round(f.data.length/4);
