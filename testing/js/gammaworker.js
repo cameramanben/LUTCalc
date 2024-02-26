@@ -1,5 +1,5 @@
 var lutGammaWorker;
 if (typeof importScripts === 'function') {
-	importScripts('gamma.js','lut.js');
+	importScripts('gammaworkerscripts.min.js');
 	lutGammaWorker = new LUTGammaWorker();
 }
