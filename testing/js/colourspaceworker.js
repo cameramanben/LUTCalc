@@ -1,5 +1,5 @@
 var lutCSWorker;
 if (typeof importScripts === 'function') {
-	importScripts('colourspaceworkerscripts.min.js');
+	importScripts('colourspaceworkerscombined.js');
 	lutCSWorker = new LUTCSWorker();
 }
