@@ -1,6 +1,15 @@
 LUTCalc Changelog
 =================
 
+v4.09
+* New Feature - Blackmagic BMDFilm Gen 5.
+* New Feature - Fuji F-Log2.
+* New Feature - Additional camera presets.
+
+v4.08
+-----
+* New Feature - Additional Sony camera presets.
+
 v4.06
 -----
 * New Feature - Apple iPhone 15 Apple Log / Rec2020

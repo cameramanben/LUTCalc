@@ -176,12 +176,6 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
-		'C-Log', [ 0.3734467748,-0.0467265867, 0.45310179472141, 10.1596, 10, 0.1251224801564, 1, 0.00391002619746, -0.0452664 ]));
-	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
-	this.gts.push('Rec709');
-	this.gammaDat.push(true);
-	this.gammaExt.push(true);
-	this.gammas.push(new LUTGammaLog(
 		'Canon C-Log2', [ 0.045164984,-0.006747091156,0.241360772,87.09937546,10,0.092864125,1,0,-0.006747091156 ]));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
 	this.gts.push('Canon Cinema Gamut');
@@ -191,6 +185,12 @@ LUTGamma.prototype.gammaList = function() {
 		'Canon C-Log3'));
 	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
 	this.gts.push('Canon Cinema Gamut');
+	this.gammaDat.push(true);
+	this.gammaExt.push(true);
+	this.gammas.push(new LUTGammaLog(
+		'C-Log', [ 0.3734467748,-0.0467265867, 0.45310179472141, 10.1596, 10, 0.1251224801564, 1, 0.00391002619746, -0.0452664 ]));
+	this.gammaSub.push([this.subIdx('Canon'),this.subIdx('Log')]);
+	this.gts.push('Rec709');
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaAppleLog(
@@ -213,6 +213,12 @@ LUTGamma.prototype.gammaList = function() {
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
 	this.gammas.push(new LUTGammaLog(
+		'Fujifilm F-Log2', [ 0.12627036, -0.011725971, 0.245281, 5.0000004, 10, 0.384316, 0.064829, 0.100686685, 0.000987778 ]));
+	this.gammaSub.push([this.subIdx('Fujifilm'),this.subIdx('Log')]);
+	this.gts.push('Fujifilm F-Log Gamut');
+	this.gammaDat.push(true);
+	this.gammaExt.push(true);
+	this.gammas.push(new LUTGammaLog(
 		'Fujifilm F-Log', [ 0.1144737, -0.010630486, 0.344676, 0.5000004, 10, 0.790453, 0.009468, 0.100537775, 0.000988889 ]));
 	this.gammaSub.push([this.subIdx('Fujifilm'),this.subIdx('Log')]);
 	this.gts.push('Fujifilm F-Log Gamut');
@@ -230,6 +236,13 @@ LUTGamma.prototype.gammaList = function() {
 	this.gts.push('*');
 	this.gammaDat.push(true);
 	this.gammaExt.push(true);
+
+	this.gammas.push(new LUTGammaLog(
+		'BMDFilm Gen5', [ 0.156642493, -0.022202504, 0.074437531, 0.9, 2.718281828, 0.516414159, 0.005494072, 0.177206446, 0.005555556 ]));
+	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);
+	this.gts.push('Blackmagic Wide Gamut');
+	this.gammaDat.push(false);
+	this.gammaExt.push(false);
 
 	this.gammas.push(new LUTGammaDaVinci('DaVinci Intermediate'));
 	this.gammaSub.push([this.subIdx('Blackmagic'),this.subIdx('Log')]);

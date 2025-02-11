@@ -455,20 +455,20 @@ LUTPreview.prototype.loadDefault = function(opt) {
 	});
 	switch(opt) {
 		case 0:
-			msb.src = "HDRPreviewMSB.png";
-			lsb.src = "HDRPreviewLSB.png";
+			msb.src = "HDRPreviewMSB.jpg";
+			lsb.src = "HDRPreviewLSB.jpg";
 			break;
 		case 1:
-			msb.src = "LDRPreviewMSB.png";
-			lsb.src = "LDRPreviewLSB.png";
+			msb.src = "LDRPreviewMSB.jpg";
+			lsb.src = "LDRPreviewLSB.jpg";
 			break;
 		case 2:
-			msb.src = "CWMSB.png";
-			lsb.src = "CWLSB.png";
+			msb.src = "CWMSB.jpg";
+			lsb.src = "CWLSB.jpg";
 			break;
 		case 3:
-			msb.src = "xyuvMSB.png";
-			lsb.src = "xyuvLSB.png";
+			msb.src = "xyuvMSB.jpg";
+			lsb.src = "xyuvLSB.jpg";
 			break;
 		case 4:
 			msb.src = "GrayMSB.png";

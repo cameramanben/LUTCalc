@@ -729,6 +729,11 @@ LUTInfoBox.prototype.createClgInfo = function() {
 	this.insClg.appendChild(this.insClgBack);
 	this.insClgInfo = document.createElement('div');
 	this.insClgInfo.setAttribute('class','infotext');
+    this.addInfo(this.insClgInfo,false,null,"v4.09");
+    this.addInfo(this.insClgInfo,true,null,"* New Feature - Blackmagic BMDFilm Gen 5.");
+    this.addInfo(this.insClgInfo,true,null,"* New Feature - Fuji F-Log2.");
+    this.addInfo(this.insClgInfo,false,null,"v4.08");
+    this.addInfo(this.insClgInfo,true,null,"* New Feature - Additonal Sony camera presets.");
 	this.addInfo(this.insClgInfo,false,null,"v4.06");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature - Apple iPhone 15 Apple Log / Rec2020.");
 	this.addInfo(this.insClgInfo,true,null,"* New Feature / Bugfix - ARRI give code value for recording log across the legal range or full range. With ARRI log Gammas, the option now comes up for setting the codec range to legal or full.");
@@ -2060,6 +2065,52 @@ LUTInfoBox.prototype.createFigure = function(type, filename, ratio) {
 	return box;
 };
 // Event Responses
+LUTInfoBox.prototype.triggerSaveChart = function() {
+        if (this.inputs.appleApp) {
+            var custom = this.messages.isCustomGamma();
+            var title = this.inputs.name.value;
+            var recGamma;
+            if (this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].value !== '9999') {
+                recGamma = this.inputs.inGamma.options[this.inputs.inGamma.selectedIndex].lastChild.nodeValue;
+            } else {
+                recGamma = this.inputs.inLinGamma.options[this.inputs.inLinGamma.selectedIndex].lastChild.nodeValue;
+            }
+            var gamma;
+            if (this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].value !== '9999') {
+                gamma = this.inputs.outGamma.options[this.inputs.outGamma.selectedIndex].lastChild.nodeValue;
+            } else {
+                gamma = this.inputs.outLinGamma.options[this.inputs.outLinGamma.selectedIndex].lastChild.nodeValue;
+            }
+            if (title === 'Custom LUT') {
+                if (custom) {
+                    title = 'Customised ' + gamma;
+                } else {
+                    title = gamma;
+                }
+            } else if (custom) {
+                title += ' based on ' + gamma;
+            }
+            var data = {
+                title: title,
+                camera: this.messages.getCamera(),
+                recGamma: this.gammaInName,
+                details: 'LUTCalc ' + this.inputs.version,
+                inValues: Array.from(this.stopIn),
+                outValues: Array.from(this.stopOut),
+                lutIn: Array.from(this.lutIn),
+                lutOut: Array.from(this.lutOut),
+                minStop: this.stopX[0],
+                maxStop: this.stopX[this.stopX.length - 1],
+                reflectances: [0,0.18,0.38,0.44,0.9,7.2,Math.pow(2,parseFloat(this.inputs.wclip))*0.18],
+                reflectanceValues: Array.from(this.tableIREVals),
+                stops: [-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8],
+                stopValues: Array.from(this.stopVals),
+                blackClip: this.inputs.bclip,
+                whiteClip: this.inputs.wclip
+            };
+             window.webkit.messageHandlers.saveCharts.postMessage(JSON.stringify(data));
+     
+        }};
 LUTInfoBox.prototype.triggerInstructions = function() {
         console.log("instructions")
         this.instructionsOpt();
